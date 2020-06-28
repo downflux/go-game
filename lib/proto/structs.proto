@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package rts_pathing.lib.proto.structs;
+option go_package = "rts_pathing.lib.proto.structs";
+
+import "lib/proto/constants.proto";
+
+message Coordinate {
+	int32 X = 1;
+	int32 Y = 2;
+}
+
+message Tile {
+	Coordinate coordinate = 1;
+	rts_pathing.lib.proto.constants.TerrainType terrain_type = 2;
+}
+
+message TerrainCost {
+	rts_pathing.lib.proto.constants.TerrainType terrain_type = 1;
+	float cost = 2;
+}
+
+message TileMap {
+	Coordinate dimensions = 1;
+	repeated Tile tiles = 2;
+	repeated TerrainCost terrain_costs = 3;
+}
