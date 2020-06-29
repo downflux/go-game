@@ -1,10 +1,39 @@
 package tile
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
+)
+
+var (
+	simpleMap = &TileMap{
+		d: &rtsspb.Coordinate{X: 3, Y: 3},
+		m: map[int32]map[int32]*Tile{
+			0: {
+				0: {t: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+				1: {t: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+				2: {t: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			},
+			1: {
+				0: {t: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+				1: {t: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+				2: {t: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			},
+			2: {
+				0: {t: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+				1: {t: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+				2: {t: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			},
+		},
+	}
 )
 
 func TestIsAdjacent(t *testing.T) {
@@ -105,6 +134,73 @@ func TestH(t *testing.T) {
 				&Tile{t: &rtsspb.Tile{Coordinate: c.c1}},
 				&Tile{t: &rtsspb.Tile{Coordinate: c.c2}}); res != c.want {
 				t.Errorf("H((%v, %v), (%v, %v)) = %v, want = %v", c.c1.GetX(), c.c1.GetY(), c.c2.GetX(), c.c2.GetY(), res, c.want)
+			}
+		})
+	}
+}
+
+func TestGetTile(t *testing.T) {
+	testConfigs := []struct {
+		name       string
+		coordinate *rtsspb.Coordinate
+		want       *Tile
+	}{
+		{name: "TrivialTile", coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: simpleMap.m[0][0]},
+		{name: "DNETile", coordinate: &rtsspb.Coordinate{X: 100, Y: 100}, want: nil},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			if res := simpleMap.Tile(c.coordinate.GetX(), c.coordinate.GetY()); res != c.want {
+				t.Errorf("Tile((%v, %v)) = %v, want = %v", c.coordinate.GetX(), c.coordinate.GetY(), res, c.want)
+			}
+		})
+	}
+}
+
+func tileLess(t1, t2 *Tile) bool {
+	// lol
+	return fmt.Sprintf("%v, %v", t1.X(), t1.Y()) < fmt.Sprintf("%v, %v", t2.X(), t2.Y())
+}
+
+func TestGetNeighbors(t *testing.T) {
+	testConfigs := []struct {
+		name       string
+		m          *TileMap
+		coordinate *rtsspb.Coordinate
+		want       []*Tile
+		err        error
+	}{
+		{name: "NullMapNeighbors", m: &TileMap{}, coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: nil, err: status.Errorf(codes.NotFound, "")},
+		{name: "DNETileNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 100, Y: 100}, want: nil, err: status.Errorf(codes.NotFound, "")},
+		{name: "FullNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, want: []*Tile{
+			simpleMap.Tile(0, 1),
+			simpleMap.Tile(2, 1),
+			simpleMap.Tile(1, 0),
+			simpleMap.Tile(1, 2),
+		}, err: nil},
+		{name: "EdgeNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, want: []*Tile{
+			simpleMap.Tile(0, 2),
+			simpleMap.Tile(0, 0),
+			simpleMap.Tile(1, 1),
+		}, err: nil},
+		{name: "CornerNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: []*Tile{
+			simpleMap.Tile(0, 1),
+			simpleMap.Tile(1, 0),
+		}, err: nil},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			res, err := c.m.Neighbors(c.coordinate)
+			resStatus, success := status.FromError(err)
+			wantStatus, _ := status.FromError(c.err)
+			if !success || resStatus.Code() != wantStatus.Code() {
+				t.Errorf("Neighbors((%v, %v)) = (_, %v), want = (_, %v)", c.coordinate.GetX(), c.coordinate.GetY(), err, c.err)
+				return
+			}
+			if !cmp.Equal(res, c.want, cmpopts.SortSlices(tileLess)) {
+				t.Errorf("Neighbors((%v, %v) = %v, want = %v", c.coordinate.GetX(), c.coordinate.GetY(), res, c.want)
 			}
 		})
 	}

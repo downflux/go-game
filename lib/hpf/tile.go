@@ -5,6 +5,7 @@ package tile
 import (
 	"math"
 
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -16,10 +17,10 @@ var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
 	neighborCoordinates = []*rtsspb.Coordinate{
-		{X: -1, Y: -1},
-		{X: -1, Y: 1},
-		{X: 1, Y: -1},
-		{X: 1, Y: 1},
+		{X: 0, Y: 1},
+		{X: 0, Y: -1},
+		{X: 1, Y: 0},
+		{X: -1, Y: 0},
 	}
 )
 
@@ -50,7 +51,14 @@ type TileMap struct {
 }
 
 // NewTileMap constructs a new TileMap object from the input protobuf.
+// List of TileMap.Tiles may be sparse.
 func NewTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
+	return nil, notImplemented
+}
+
+// TileMapProto converts an internal TileMap object into an exportable
+// protobuf. Certain tiles may be ignored to be reconstructed later.
+func TileMapProto(m *TileMap) (*rtsspb.TileMap, error) {
 	return nil, notImplemented
 }
 
@@ -63,15 +71,15 @@ func (m TileMap) Tile(x, y int32) *Tile {
 }
 
 // Neighbors returns the adjacent Tiles of an input Tile object.
-func (m TileMap) Neighbors(tile *Tile) ([]*Tile, error) {
-	if m.Tile(tile.X(), tile.Y()) == nil {
+func (m TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
+	if m.Tile(coordinate.GetX(), coordinate.GetY()) == nil {
 		return nil, status.Error(
 			codes.NotFound, "tile not found in the map")
 	}
 
 	var neighbors []*Tile
 	for _, c := range neighborCoordinates {
-		if t := m.Tile(tile.X()+c.GetX(), tile.Y()+c.GetY()); t != nil && t.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
+		if t := m.Tile(coordinate.GetX()+c.GetX(), coordinate.GetY()+c.GetY()); t != nil && t.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
 			neighbors = append(neighbors, t)
 		}
 	}
@@ -83,7 +91,6 @@ type Tile struct {
 	// t is the underlying representation of the map node. It may be
 	// mutated, e.g. changing TerrainType to / from TERRAIN_TYPE_BLOCKED
 	t *rtsspb.Tile
-	m TileMap
 }
 
 // X returns the X-coordinate of the Tile.
@@ -104,4 +111,10 @@ func (t *Tile) TerrainType() rtscpb.TerrainType {
 // SetTerrainType sets the TerrainType enum of the Tile.
 func (t *Tile) SetTerrainType(terrainType rtscpb.TerrainType) {
 	t.t.TerrainType = terrainType
+}
+
+// Equal checks if two Tile objects are equal to one another.
+// This is useful in tests; we should generally avoid this in actual code.
+func (t *Tile) Equal(other *Tile) bool {
+	return proto.Equal(t.t, other.t)
 }
