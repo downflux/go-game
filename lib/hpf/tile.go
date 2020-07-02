@@ -5,7 +5,6 @@ package tile
 import (
 	"math"
 
-	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -50,15 +49,15 @@ type TileMap struct {
 	c map[rtscpb.TerrainType]float64 // terrain cost
 }
 
-// NewTileMap constructs a new TileMap object from the input protobuf.
+// ImportTileMap constructs a new TileMap object from the input protobuf.
 // List of TileMap.Tiles may be sparse.
-func NewTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
+func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
 	return nil, notImplemented
 }
 
-// TileMapProto converts an internal TileMap object into an exportable
+// ExportTileMap converts an internal TileMap object into an exportable
 // protobuf. Certain tiles may be ignored to be reconstructed later.
-func TileMapProto(m *TileMap) (*rtsspb.TileMap, error) {
+func ExportTileMap(m *TileMap) (*rtsspb.TileMap, error) {
 	return nil, notImplemented
 }
 
@@ -111,10 +110,4 @@ func (t *Tile) TerrainType() rtscpb.TerrainType {
 // SetTerrainType sets the TerrainType enum of the Tile.
 func (t *Tile) SetTerrainType(terrainType rtscpb.TerrainType) {
 	t.t.TerrainType = terrainType
-}
-
-// Equal checks if two Tile objects are equal to one another.
-// This is useful in tests; we should generally avoid this in actual code.
-func (t *Tile) Equal(other *Tile) bool {
-	return proto.Equal(t.t, other.t)
 }

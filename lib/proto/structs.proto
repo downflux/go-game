@@ -21,7 +21,19 @@ message TerrainCost {
 }
 
 message TileMap {
-	Coordinate dimensions = 1;
+	Coordinate dimension = 1;
 	repeated Tile tiles = 2;
 	repeated TerrainCost terrain_costs = 3;
+}
+
+message ClusterMap {
+	Coordinate dimension = 1;
+	int32 level = 2;
+	repeated Cluster clusters = 3;
+}
+
+message Cluster {
+	Coordinate coordinate = 1;
+	Coordinate tile_boundary = 2;
+	Coordinate tile_dimension = 3;
 }

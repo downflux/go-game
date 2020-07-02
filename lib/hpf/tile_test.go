@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+        "github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/grpc/codes"
@@ -12,6 +13,11 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 )
+
+
+func (t *Tile) Equal(other *Tile) bool {
+        return proto.Equal(t.t, other.t)
+}
 
 var (
 	simpleMap = &TileMap{
