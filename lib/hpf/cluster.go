@@ -90,8 +90,8 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 	}
 
 	m.m = make(map[int32]map[int32]*Cluster)
-	m.d.X = tileMapDimension.GetX() / tileDimension.GetX()
-	m.d.Y = tileMapDimension.GetY() / tileDimension.GetY()
+	m.d.X = int32(math.Ceil(float64(tileMapDimension.GetX()) / float64(tileDimension.GetX())))
+	m.d.Y = int32(math.Ceil(float64(tileMapDimension.GetY()) / float64(tileDimension.GetY())))
 
 	for _, xp := range xPartitions {
 		x := xp.TileBoundary / tileDimension.GetX()
