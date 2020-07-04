@@ -5,11 +5,11 @@ package tile
 import (
 	"math"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var (
@@ -52,7 +52,27 @@ type TileMap struct {
 // ImportTileMap constructs a new TileMap object from the input protobuf.
 // List of TileMap.Tiles may be sparse.
 func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
-	return nil, notImplemented
+	m := make(map[int32]map[int32]*Tile)
+	for _, pbt := range pb.GetTiles() {
+		t, err := ImportTile(pbt)
+		if err != nil {
+			return nil, err
+		}
+		if _, found := m[t.X()]; !found {
+			m[t.X()] = make(map[int32]*Tile)
+		}
+		m[t.X()][t.Y()] = t
+	}
+	tc := make(map[rtscpb.TerrainType]float64)
+	for _, c := range pb.GetTerrainCosts() {
+		tc[c.GetTerrainType()] = c.GetCost()
+	}
+
+	return &TileMap{
+		d: pb.GetDimension(),
+		m: m,
+		c: tc,
+	}, nil
 }
 
 // ExportTileMap converts an internal TileMap object into an exportable
@@ -87,9 +107,23 @@ func (m TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 
 // Tile represents a physical map node.
 type Tile struct {
-	// t is the underlying representation of the map node. It may be
+	// T is the underlying representation of the map node. It may be
 	// mutated, e.g. changing TerrainType to / from TERRAIN_TYPE_BLOCKED
 	t *rtsspb.Tile
+}
+
+func ImportTile(pb *rtsspb.Tile) (*Tile, error) {
+	return &Tile{
+		t: pb,
+	}, nil
+}
+
+func ExportTile(t *Tile) (*rtsspb.Tile, error) {
+	return nil, notImplemented
+}
+
+func (t *Tile) Coordinate() *rtsspb.Coordinate {
+	return t.t.GetCoordinate()
 }
 
 // X returns the X-coordinate of the Tile.

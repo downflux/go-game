@@ -26,7 +26,7 @@ go_library(
 go_test(
     name = "tile_test",
     srcs = ["tile_test.go"],
-    importpath = "github.com/cripplet/rts-pathing/lib/hpf/tile-test",
+    importpath = "github.com/cripplet/rts-pathing/lib/hpf/tile_test",
     embed = [":tile"],
     deps = [
 	"//lib/proto:constants_go_proto",
@@ -54,11 +54,41 @@ go_library(
 go_test(
     name ="cluster_test",
     srcs = ["cluster_test.go"],
-    importpath = "github.com/cripplet/rts-pathing/lib/hpf/cluster-test",
+    importpath = "github.com/cripplet/rts-pathing/lib/hpf/cluster_test",
     embed = [":cluster"],
     deps = [
         "//lib/proto:structs_go_proto",
 	"@com_github_golang_protobuf//proto:go_default_library",
+	"@com_github_google_go_cmp//cmp:go_default_library",
+    ],
+)
+
+go_library(
+    name = "entrance",
+    srcs = ["entrance.go"],
+    importpath = "github.com/cripplet/rts-pathing/lib/hpf/entrance",
+    deps = [
+	":cluster",
+        ":tile",
+        "//lib/proto:constants_go_proto",
+	"//lib/proto:structs_go_proto",
+        "@com_github_golang_protobuf//proto:go_default_library",
+	"@org_golang_google_grpc//status:go_default_library",
+	"@org_golang_google_grpc//codes:go_default_library",
+    ],
+)
+
+go_test(
+    name = "entrance_test",
+    srcs = ["entrance_test.go"],
+    importpath = "github.com/cripplet/rts-pathing/lib/hpf/entrance_test",
+    embed = [":entrance"],
+    deps = [
+	":cluster",
+	":tile",
+        "//lib/proto:constants_go_proto",
+	"//lib/proto:structs_go_proto",
+        "@com_github_golang_protobuf//proto:go_default_library",
 	"@com_github_google_go_cmp//cmp:go_default_library",
     ],
 )

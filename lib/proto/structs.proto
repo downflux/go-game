@@ -17,7 +17,7 @@ message Tile {
 
 message TerrainCost {
 	rts_pathing.lib.proto.constants.TerrainType terrain_type = 1;
-	float cost = 2;
+	double cost = 2;
 }
 
 message TileMap {
@@ -36,4 +36,14 @@ message Cluster {
 	Coordinate coordinate = 1;
 	Coordinate tile_boundary = 2;
 	Coordinate tile_dimension = 3;
+}
+
+message ClusterBorderSegment {
+	Coordinate source = 1;
+	Coordinate destination = 2;
+}
+
+message Entrance {
+	ClusterBorderSegment source = 1;
+	ClusterBorderSegment destination = 2;
 }

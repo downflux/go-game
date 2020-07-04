@@ -4,9 +4,10 @@ package cluster
 import (
 	"math"
 
+	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 )
 
 var (
@@ -19,10 +20,6 @@ var (
 		{X: -1, Y: 0},
 	}
 )
-
-func IsAdjacent(c1, c2 *Cluster) bool {
-	return math.Abs(float64(c2.c.GetCoordinate().GetX()-c1.c.GetCoordinate().GetX()))+math.Abs(float64(c2.c.GetCoordinate().GetY()-c1.c.GetCoordinate().GetY())) == 1
-}
 
 type ClusterMap struct {
 	l int32
@@ -42,28 +39,23 @@ type Cluster struct {
 	c *rtsspb.Cluster
 }
 
+func NewCluster(c *rtsspb.Cluster) *Cluster {
+	return &Cluster{
+		c: c,
+	}
+}
+
+func (c *Cluster) Cluster() *rtsspb.Cluster {
+	return c.c
+}
+
 type partitionInfo struct{
 	TileBoundary int32
 	TileDimension int32
 }
 
-func partition(tileMapDimension int32, tileDimension int32) ([]partitionInfo, error) {
-	if tileDimension == 0 {
-		return nil, status.Errorf(codes.FailedPrecondition, "invalid tileDimension value %v", tileDimension)
-	}
-	var partitions []partitionInfo
-
-	for x := int32(0); x * tileDimension < tileMapDimension; x++ {
-		minX := x * tileDimension
-		maxX := int32(math.Min(
-			float64((x + 1) * tileDimension - 1), float64(tileMapDimension - 1)))
-
-		partitions = append(partitions, partitionInfo{
-			TileBoundary: minX,
-			TileDimension: maxX - minX + 1,
-		})
-	}
-	return partitions, nil
+func IsAdjacent(c1, c2 *Cluster) bool {
+	return math.Abs(float64(c2.c.GetCoordinate().GetX()-c1.c.GetCoordinate().GetX()))+math.Abs(float64(c2.c.GetCoordinate().GetY()-c1.c.GetCoordinate().GetY())) == 1
 }
 
 func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate, l int32) (*ClusterMap, error) {
@@ -109,4 +101,23 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 	}
 
 	return m, nil
+}
+
+func partition(tileMapDimension int32, tileDimension int32) ([]partitionInfo, error) {
+	if tileDimension == 0 {
+		return nil, status.Errorf(codes.FailedPrecondition, "invalid tileDimension value %v", tileDimension)
+	}
+	var partitions []partitionInfo
+
+	for x := int32(0); x * tileDimension < tileMapDimension; x++ {
+		minX := x * tileDimension
+		maxX := int32(math.Min(
+			float64((x + 1) * tileDimension - 1), float64(tileMapDimension - 1)))
+
+		partitions = append(partitions, partitionInfo{
+			TileBoundary: minX,
+			TileDimension: maxX - minX + 1,
+		})
+	}
+	return partitions, nil
 }
