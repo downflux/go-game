@@ -1,3 +1,4 @@
+// Package entrance provides a way to detect contiguous open segments on Cluster borders.
 package entrance
 
 import (
@@ -11,10 +12,13 @@ import (
         "google.golang.org/grpc/status"
 )
 
+// ClusterBorderSegment encapsulates a specific contiguous open segment within a cluster border.
+// All coordinates within the segment are contained within the cluster itself.
 type ClusterBorderSegment struct {
         s *rtsspb.ClusterBorderSegment
 }
 
+// BuildClusterBorderSegments constructs a list of ClusterBorderSegment instances based on the input Cluter and TileMap objects.
 func BuildClusterBorderSegments(c *cluster.Cluster, m *tile.TileMap, d rtscpb.Direction) ([]*ClusterBorderSegment, error) {
 	start, end, err := candidateVector(c, d)
 	if err != nil {
@@ -29,6 +33,8 @@ func BuildClusterBorderSegments(c *cluster.Cluster, m *tile.TileMap, d rtscpb.Di
 	return segments(candidates)
 }
 
+// candidateVector constructs a (start, end) Coordinate pair representing the edge of a Cluster in the specified direction.
+// All Tile t on the edge are between the start and end coordinates, i.e. start <= t <= end with usual 2D coordinate comparison.
 func candidateVector(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.Coordinate, *rtsspb.Coordinate, error) {
 	if c.Cluster().GetTileDimension().GetX() == 0 || c.Cluster().GetTileDimension().GetY() == 0 {
 		return nil, nil, status.Error(codes.FailedPrecondition, "input cluster must have non-zero dimensions")
@@ -89,6 +95,10 @@ func candidateVectorTiles(start, end *rtsspb.Coordinate, m *tile.TileMap) ([]*ti
 	return candidates, nil
 }
 
+// segments constructs the list of contiguous open segments based on the input Tile instances.
+// segments expect that the list of Tile are sorted in 2D coordinate comparison order,
+// i.e. A < B iff A.Y < B.Y || A.Y == B.Y && A.X < B.X. This is trivially true in this package
+// since we're only dealing with a single row or column of tiles for all expected input.
 func segments(candidates []*tile.Tile) ([]*ClusterBorderSegment, error) {
 	var segments []*ClusterBorderSegment
 	var segment *ClusterBorderSegment
