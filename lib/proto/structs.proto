@@ -39,8 +39,8 @@ message Cluster {
 }
 
 message ClusterBorderSegment {
-	Coordinate source = 1;
-	Coordinate destination = 2;
+	Coordinate start = 1;
+	Coordinate end = 2;
 }
 
 message Entrance {

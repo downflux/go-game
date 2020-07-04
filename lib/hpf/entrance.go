@@ -2,20 +2,20 @@
 package entrance
 
 import (
-        rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
-        rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
+	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
+	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"github.com/golang/protobuf/proto"
-        "google.golang.org/grpc/codes"
-        "google.golang.org/grpc/status"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // ClusterBorderSegment encapsulates a specific contiguous open segment within a cluster border.
 // All coordinates within the segment are contained within the cluster itself.
 type ClusterBorderSegment struct {
-        s *rtsspb.ClusterBorderSegment
+	s *rtsspb.ClusterBorderSegment
 }
 
 // BuildClusterBorderSegments constructs a list of ClusterBorderSegment instances based on the input Cluter and TileMap objects.
@@ -41,40 +41,40 @@ func candidateVector(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.Coordinate
 	}
 
 	var start, end *rtsspb.Coordinate
-        switch d {
-                case rtscpb.Direction_DIRECTION_NORTH:
-			start = &rtsspb.Coordinate{
-				X: c.Cluster().GetTileBoundary().GetX(),
-				Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
-			}
-			end = &rtsspb.Coordinate{
-				X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
-				Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
-			}
-                case rtscpb.Direction_DIRECTION_SOUTH:
-			start = proto.Clone(c.Cluster().GetTileBoundary()).(*rtsspb.Coordinate)
-			end = &rtsspb.Coordinate{
-				X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
-				Y: c.Cluster().GetTileBoundary().GetY(),
-			}
-                case rtscpb.Direction_DIRECTION_EAST:
-			start = &rtsspb.Coordinate{
-				X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
-				Y: c.Cluster().GetTileBoundary().GetY(),
-			}
-			end = &rtsspb.Coordinate{
-				X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
-				Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
-			}
-                case rtscpb.Direction_DIRECTION_WEST:
-			start = proto.Clone(c.Cluster().GetTileBoundary()).(*rtsspb.Coordinate)
-			end = &rtsspb.Coordinate{
-				X: c.Cluster().GetTileBoundary().GetX(),
-				Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
-			}
-                default:
-                        return nil, nil, status.Errorf(codes.FailedPrecondition, "invalid direction specified %v", d)
-        }
+	switch d {
+	case rtscpb.Direction_DIRECTION_NORTH:
+		start = &rtsspb.Coordinate{
+			X: c.Cluster().GetTileBoundary().GetX(),
+			Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
+		}
+		end = &rtsspb.Coordinate{
+			X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
+			Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
+		}
+	case rtscpb.Direction_DIRECTION_SOUTH:
+		start = proto.Clone(c.Cluster().GetTileBoundary()).(*rtsspb.Coordinate)
+		end = &rtsspb.Coordinate{
+			X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
+			Y: c.Cluster().GetTileBoundary().GetY(),
+		}
+	case rtscpb.Direction_DIRECTION_EAST:
+		start = &rtsspb.Coordinate{
+			X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
+			Y: c.Cluster().GetTileBoundary().GetY(),
+		}
+		end = &rtsspb.Coordinate{
+			X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
+			Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
+		}
+	case rtscpb.Direction_DIRECTION_WEST:
+		start = proto.Clone(c.Cluster().GetTileBoundary()).(*rtsspb.Coordinate)
+		end = &rtsspb.Coordinate{
+			X: c.Cluster().GetTileBoundary().GetX(),
+			Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
+		}
+	default:
+		return nil, nil, status.Errorf(codes.FailedPrecondition, "invalid direction specified %v", d)
+	}
 	return start, end, nil
 }
 
@@ -104,19 +104,23 @@ func segments(candidates []*tile.Tile) ([]*ClusterBorderSegment, error) {
 	var segment *ClusterBorderSegment
 
 	for _, t := range candidates {
-		if t.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
-			if segment == nil {
-				segment = &ClusterBorderSegment{
-					s: &rtsspb.ClusterBorderSegment{
-						Source: t.Coordinate(),
-					},
+		switch t.TerrainType() {
+			case rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED:
+				if segment != nil {
+					segments = append(segments, segment)
+					segment = nil
 				}
-			}
-			segment.s.Destination = t.Coordinate()
-		} else {
-			segments = append(segments, segment)
-			segment = nil
+			default:
+				if segment == nil {
+					segment = &ClusterBorderSegment{
+						s: &rtsspb.ClusterBorderSegment{Start: t.Coordinate()},
+					}
+				}
+				segment.s.End = t.Coordinate()
 		}
+	}
+	if segment != nil {
+		segments = append(segments, segment)
 	}
 	return segments, nil
 }

@@ -5,16 +5,16 @@ import (
 
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
-        "github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 )
 
 func (m *ClusterMap) Equal(other *ClusterMap) bool {
-        return m.l == other.l && proto.Equal(m.d, other.d) && cmp.Equal(m.m, other.m)
+	return m.l == other.l && proto.Equal(m.d, other.d) && cmp.Equal(m.m, other.m)
 }
 
 func (c *Cluster) Equal(other *Cluster) bool {
-        return proto.Equal(c.c, other.c)
+	return proto.Equal(c.c, other.c)
 }
 
 func TestIsAdjacent(t *testing.T) {
@@ -44,11 +44,11 @@ func TestIsAdjacent(t *testing.T) {
 
 func TestPartition(t *testing.T) {
 	testConfigs := []struct {
-		name string
+		name             string
 		tileMapDimension int32
-		tileDimension int32
-		want []partitionInfo
-		wantSuccess bool
+		tileDimension    int32
+		want             []partitionInfo
+		wantSuccess      bool
 	}{
 		{name: "ZeroWidthMapTest", tileMapDimension: 0, tileDimension: 1, want: nil, wantSuccess: true},
 		{name: "ZeroWidthMapZeroDimTest", tileMapDimension: 0, tileDimension: 0, want: nil, wantSuccess: false},
@@ -83,11 +83,11 @@ func TestPartition(t *testing.T) {
 
 func TestBuildCluster(t *testing.T) {
 	testConfigs := []struct {
-		name string
+		name             string
 		tileMapDimension *rtsspb.Coordinate
-		tileDimension *rtsspb.Coordinate
-		want *ClusterMap
-		wantSuccess bool
+		tileDimension    *rtsspb.Coordinate
+		want             *ClusterMap
+		wantSuccess      bool
 	}{
 		{name: "ZeroWidthDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 0}, want: nil, wantSuccess: false},
 		{name: "ZeroXDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 1}, want: nil, wantSuccess: false},
@@ -100,11 +100,11 @@ func TestBuildCluster(t *testing.T) {
 			l: 1, d: &rtsspb.Coordinate{X: 0, Y: 0}, m: nil}, wantSuccess: true},
 		{name: "SimpleTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
 			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 1}, m: map[int32]map[int32]*Cluster{
-				0: map[int32]*Cluster{
-					0: &Cluster{
+				0: {
+					0: {
 						c: &rtsspb.Cluster{
-							Coordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-							TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0},
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
 							TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
 						},
 					},
@@ -112,18 +112,18 @@ func TestBuildCluster(t *testing.T) {
 			}}, wantSuccess: true},
 		{name: "MultiplePartitionTest", tileMapDimension: &rtsspb.Coordinate{X: 2, Y: 3}, tileDimension: &rtsspb.Coordinate{X: 2, Y: 2}, want: &ClusterMap{
 			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 2}, m: map[int32]map[int32]*Cluster{
-				0: map[int32]*Cluster{
-					0: &Cluster{
+				0: {
+					0: {
 						c: &rtsspb.Cluster{
-							Coordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-							TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0},
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
 							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
 						},
 					},
-					1: &Cluster{
+					1: {
 						c: &rtsspb.Cluster{
-							Coordinate: &rtsspb.Coordinate{X: 0, Y: 1},
-							TileBoundary: &rtsspb.Coordinate{X: 0, Y: 2},
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},
 							TileDimension: &rtsspb.Coordinate{X: 2, Y: 1},
 						},
 					},

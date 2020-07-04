@@ -49,8 +49,8 @@ func (c *Cluster) Cluster() *rtsspb.Cluster {
 	return c.c
 }
 
-type partitionInfo struct{
-	TileBoundary int32
+type partitionInfo struct {
+	TileBoundary  int32
 	TileDimension int32
 }
 
@@ -109,13 +109,13 @@ func partition(tileMapDimension int32, tileDimension int32) ([]partitionInfo, er
 	}
 	var partitions []partitionInfo
 
-	for x := int32(0); x * tileDimension < tileMapDimension; x++ {
+	for x := int32(0); x*tileDimension < tileMapDimension; x++ {
 		minX := x * tileDimension
 		maxX := int32(math.Min(
-			float64((x + 1) * tileDimension - 1), float64(tileMapDimension - 1)))
+			float64((x+1)*tileDimension-1), float64(tileMapDimension-1)))
 
 		partitions = append(partitions, partitionInfo{
-			TileBoundary: minX,
+			TileBoundary:  minX,
 			TileDimension: maxX - minX + 1,
 		})
 	}
