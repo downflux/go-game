@@ -105,18 +105,18 @@ func segments(candidates []*tile.Tile) ([]*ClusterBorderSegment, error) {
 
 	for _, t := range candidates {
 		switch t.TerrainType() {
-			case rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED:
-				if segment != nil {
-					segments = append(segments, segment)
-					segment = nil
+		case rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED:
+			if segment != nil {
+				segments = append(segments, segment)
+				segment = nil
+			}
+		default:
+			if segment == nil {
+				segment = &ClusterBorderSegment{
+					s: &rtsspb.ClusterBorderSegment{Start: t.Coordinate()},
 				}
-			default:
-				if segment == nil {
-					segment = &ClusterBorderSegment{
-						s: &rtsspb.ClusterBorderSegment{Start: t.Coordinate()},
-					}
-				}
-				segment.s.End = t.Coordinate()
+			}
+			segment.s.End = t.Coordinate()
 		}
 	}
 	if segment != nil {

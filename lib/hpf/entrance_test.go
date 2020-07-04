@@ -200,49 +200,49 @@ func TestSegments(t *testing.T) {
 	}{
 		{name: "EmptySegmentsTest", ts: []*rtsspb.Tile{}, want: nil},
 		{name: "TrivialSegmentsTest", ts: []*rtsspb.Tile{
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		}, want: []*ClusterBorderSegment{
-			&ClusterBorderSegment{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 0, Y: 0}}},
+			{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 0, Y: 0}}},
 		}},
 		{name: "AllBlockedSegmentsTest", ts: []*rtsspb.Tile{
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
 		}, want: nil},
 		{name: "LongerContinuousYSegmentsTest", ts: []*rtsspb.Tile{
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		}, want: []*ClusterBorderSegment{
-			&ClusterBorderSegment{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 0, Y: 2}}},
+			{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 0, Y: 2}}},
 		}},
 		{name: "LongerContinuousXSegmentsTest", ts: []*rtsspb.Tile{
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		}, want: []*ClusterBorderSegment{
-			&ClusterBorderSegment{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 2, Y: 0}}},
+			{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 2, Y: 0}}},
 		}},
 		{name: "BlockedSegmentsTest", ts: []*rtsspb.Tile{
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		}, want: []*ClusterBorderSegment{
-			&ClusterBorderSegment{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 0, Y: 0}}},
-			&ClusterBorderSegment{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 2}, End: &rtsspb.Coordinate{X: 0, Y: 2}}},
+			{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 0, Y: 0}}},
+			{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 2}, End: &rtsspb.Coordinate{X: 0, Y: 2}}},
 		}},
 		{name: "BlockedStartSegmentsTest", ts: []*rtsspb.Tile{
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		}, want: []*ClusterBorderSegment{
-			&ClusterBorderSegment{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 1}, End: &rtsspb.Coordinate{X: 0, Y: 2}}},
+			{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 1}, End: &rtsspb.Coordinate{X: 0, Y: 2}}},
 		}},
 		{name: "BlockedEndSegmentsTest", ts: []*rtsspb.Tile{
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
 		}, want: []*ClusterBorderSegment{
-			&ClusterBorderSegment{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 0, Y: 1}}},
+			{s: &rtsspb.ClusterBorderSegment{Start: &rtsspb.Coordinate{X: 0, Y: 0}, End: &rtsspb.Coordinate{X: 0, Y: 1}}},
 		}},
 	}
 
