@@ -4,6 +4,7 @@ package cluster
 import (
 	"math"
 
+	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"google.golang.org/grpc/codes"
@@ -56,6 +57,28 @@ type partitionInfo struct {
 
 func IsAdjacent(c1, c2 *Cluster) bool {
 	return math.Abs(float64(c2.c.GetCoordinate().GetX()-c1.c.GetCoordinate().GetX()))+math.Abs(float64(c2.c.GetCoordinate().GetY()-c1.c.GetCoordinate().GetY())) == 1
+}
+
+// GetRelativeDirection will return the direction of travel from c to other.
+// c and other must be immediately adjacent to one another.
+func GetRelativeDirection(c, other *Cluster) (rtscpb.Direction, error) {
+	if !IsAdjacent(c, other) {
+		return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "input clusters are not immediately adjacent to one another")
+	}
+
+	if c.c.GetCoordinate().GetX() == other.c.GetCoordinate().GetX() && c.c.GetCoordinate().GetY() < other.c.GetCoordinate().GetY() {
+		return rtscpb.Direction_DIRECTION_NORTH, nil
+	}
+	if c.c.GetCoordinate().GetX() == other.c.GetCoordinate().GetX() && c.c.GetCoordinate().GetY() > other.c.GetCoordinate().GetY() {
+		return rtscpb.Direction_DIRECTION_SOUTH, nil
+	}
+	if c.c.GetCoordinate().GetX() < other.c.GetCoordinate().GetX() && c.c.GetCoordinate().GetY() == other.c.GetCoordinate().GetY() {
+		return rtscpb.Direction_DIRECTION_EAST, nil
+	}
+	if c.c.GetCoordinate().GetX() > other.c.GetCoordinate().GetX() && c.c.GetCoordinate().GetY() == other.c.GetCoordinate().GetY() {
+		return rtscpb.Direction_DIRECTION_WEST, nil
+	}
+	return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "clusters which are immediately adjacent are somehow not traversible via cardinal directions")
 }
 
 func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate, l int32) (*ClusterMap, error) {

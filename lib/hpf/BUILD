@@ -45,6 +45,7 @@ go_library(
     importpath = "github.com/cripplet/rts-pathing/lib/hpf/cluster",
     deps = [
         ":tile",
+        "//lib/proto:constants_go_proto",
 	"//lib/proto:structs_go_proto",
 	"@org_golang_google_grpc//status:go_default_library",
 	"@org_golang_google_grpc//codes:go_default_library",
@@ -57,6 +58,7 @@ go_test(
     importpath = "github.com/cripplet/rts-pathing/lib/hpf/cluster_test",
     embed = [":cluster"],
     deps = [
+        "//lib/proto:constants_go_proto",
         "//lib/proto:structs_go_proto",
 	"@com_github_golang_protobuf//proto:go_default_library",
 	"@com_github_google_go_cmp//cmp:go_default_library",

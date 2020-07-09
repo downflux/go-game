@@ -47,3 +47,7 @@ message Entrance {
 	ClusterBorderSegment source = 1;
 	ClusterBorderSegment destination = 2;
 }
+
+message EntranceNode {
+	Coordinate coordinate = 1;
+}

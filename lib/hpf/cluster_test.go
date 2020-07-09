@@ -3,6 +3,7 @@ package cluster
 import (
 	"testing"
 
+	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/golang/protobuf/proto"
@@ -40,6 +41,36 @@ func TestIsAdjacent(t *testing.T) {
 		})
 	}
 
+}
+
+func TestAdjacentDirection(t *testing.T) {
+	testConfigs := []struct {
+		name string
+		c1 *rtsspb.Coordinate
+		c2 *rtsspb.Coordinate
+		want rtscpb.Direction
+		wantSuccess bool
+	}{
+		{name: "AdjacentDirectionNorth", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 1}, want: rtscpb.Direction_DIRECTION_NORTH, wantSuccess: true},
+		{name: "AdjacentDirectionSouth", c1: &rtsspb.Coordinate{X: 0, Y: 1}, c2: &rtsspb.Coordinate{X: 0, Y: 0}, want: rtscpb.Direction_DIRECTION_SOUTH, wantSuccess: true},
+		{name: "AdjacentDirectionEast", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 0}, want: rtscpb.Direction_DIRECTION_EAST, wantSuccess: true},
+		{name: "AdjacentDirectionWest", c1: &rtsspb.Coordinate{X: 1, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 0}, want: rtscpb.Direction_DIRECTION_WEST, wantSuccess: true},
+		{name: "NonAdjacentDirection", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 1}, want: rtscpb.Direction_DIRECTION_UNKNOWN, wantSuccess: false},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			res, err := GetRelativeDirection(
+				&Cluster{c: &rtsspb.Cluster{Coordinate: c.c1}},
+				&Cluster{c: &rtsspb.Cluster{Coordinate: c.c2}})
+			if (err == nil) != c.wantSuccess {
+				t.Fatalf("GetRelativeDirection() = _, %v, want wantSuccess = %v", err, c.wantSuccess)
+			}
+			if err == nil && res != c.want {
+				t.Errorf("GetRelativeDirection() = %v, want = %v", res, c.want)
+			}
+		})
+	}
 }
 
 func TestPartition(t *testing.T) {
