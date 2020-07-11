@@ -59,43 +59,52 @@ func BuildTransitions(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*rtsspb.Trans
 	return buildTransitions(v1, v2, m)
 }
 
-type orientationInfo struct {
-	rank, file, width int32
-	orientation       rtscpb.Orientation
+// coordinateSlice encapsulates data of a single row / column of tiles. This is an internal data struct
+// and input may not be validated.
+type coordinateSlice struct {
+	// rank is the dominant, static coordinate of the list of tiles.
+	rank int32
+
+	// file is the variable coordinate in the list of tiles.
+	file        int32
+	width       int32
+	orientation rtscpb.Orientation
 }
 
-func segmentCoordinateInfo(s *rtsspb.ClusterBorderSegment) (orientationInfo, error) {
+// buildCoordinateSlice constructs a coordinateSlice object from the tuple of Coordnate objects representing the start and stop of a slice of tiles.
+// We assume CluserBorderSegment is of valid dimension, i.e. it is a 1D slice.
+func buildCoordinateSlice(s *rtsspb.ClusterBorderSegment) (coordinateSlice, error) {
 	switch s.GetOrientation() {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-		return orientationInfo{
+		return coordinateSlice{
 			orientation: s.GetOrientation(),
 			rank:        s.GetStart().GetY(),
 			file:        s.GetStart().GetX(),
 			width:       int32(math.Abs(float64(s.GetEnd().GetX() - s.GetStart().GetX()))),
 		}, nil
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
-		return orientationInfo{
+		return coordinateSlice{
 			orientation: s.GetOrientation(),
 			rank:        s.GetStart().GetX(),
 			file:        s.GetStart().GetY(),
 			width:       int32(math.Abs(float64(s.GetEnd().GetY() - s.GetStart().GetY()))),
 		}, nil
 	default:
-		return orientationInfo{}, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
+		return coordinateSlice{}, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
 	}
 }
 
-func buildCoordinateWithSegmentCoordinateInfo(sInfo orientationInfo, offset int32) (*rtsspb.Coordinate, error) {
-	switch sInfo.orientation {
+func buildCoordinateWithCoordinateSlice(slice coordinateSlice, offset int32) (*rtsspb.Coordinate, error) {
+	switch slice.orientation {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
 		return &rtsspb.Coordinate{
-			X: sInfo.rank,
-			Y: sInfo.file + offset,
+			X: slice.rank,
+			Y: slice.file + offset,
 		}, nil
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
 		return &rtsspb.Coordinate{
-			X: sInfo.file + offset,
-			Y: sInfo.rank,
+			X: slice.file + offset,
+			Y: slice.rank,
 		}, nil
 	default:
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
@@ -158,29 +167,29 @@ func candidateVector(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.ClusterBor
 }
 
 func buildTransitionsFromContiguousOpenSegment(s1, s2 *rtsspb.ClusterBorderSegment) ([]*rtsspb.Transition, error) {
-	sInfo1, err := segmentCoordinateInfo(s1)
+	slice1, err := buildCoordinateSlice(s1)
 	if err != nil {
 		return nil, err
 	}
-	sInfo2, err := segmentCoordinateInfo(s2)
+	slice2, err := buildCoordinateSlice(s2)
 	if err != nil {
 		return nil, err
 	}
 
 	var transitions []*rtsspb.Transition
 	var offsets []int32
-	if sInfo1.width > 3 {
-		offsets = append(offsets, 0, sInfo1.width-1)
+	if slice1.width > 3 {
+		offsets = append(offsets, 0, slice1.width-1)
 	} else {
-		offsets = append(offsets, sInfo1.width/2)
+		offsets = append(offsets, slice1.width/2)
 	}
 
 	for _, o := range offsets {
-		c1, err := buildCoordinateWithSegmentCoordinateInfo(sInfo1, o)
+		c1, err := buildCoordinateWithCoordinateSlice(slice1, o)
 		if err != nil {
 			return nil, err
 		}
-		c2, err := buildCoordinateWithSegmentCoordinateInfo(sInfo2, o)
+		c2, err := buildCoordinateWithCoordinateSlice(slice2, o)
 		if err != nil {
 			return nil, err
 		}
@@ -191,11 +200,11 @@ func buildTransitionsFromContiguousOpenSegment(s1, s2 *rtsspb.ClusterBorderSegme
 }
 
 func buildTransitions(v1, v2 *rtsspb.ClusterBorderSegment, m *tile.TileMap) ([]*rtsspb.Transition, error) {
-	sInfo1, err := segmentCoordinateInfo(v1)
+	slice1, err := buildCoordinateSlice(v1)
 	if err != nil {
 		return nil, err
 	}
-	sInfo2, err := segmentCoordinateInfo(v2)
+	slice2, err := buildCoordinateSlice(v2)
 	if err != nil {
 		return nil, err
 	}
@@ -204,12 +213,12 @@ func buildTransitions(v1, v2 *rtsspb.ClusterBorderSegment, m *tile.TileMap) ([]*
 	var res []*rtsspb.Transition
 
 	var s1, s2 *rtsspb.ClusterBorderSegment
-	for o := int32(0); o < sInfo1.width; o++ {
-		c1, err := buildCoordinateWithSegmentCoordinateInfo(sInfo1, o)
+	for o := int32(0); o < slice1.width; o++ {
+		c1, err := buildCoordinateWithCoordinateSlice(slice1, o)
 		if err != nil {
 			return nil, err
 		}
-		c2, err := buildCoordinateWithSegmentCoordinateInfo(sInfo2, o)
+		c2, err := buildCoordinateWithCoordinateSlice(slice2, o)
 		if err != nil {
 			return nil, err
 		}
