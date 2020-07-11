@@ -2,6 +2,8 @@
 package entrance
 
 import (
+	"math"
+
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
@@ -124,13 +126,37 @@ func buildClusterEdgeCoordinateSlice(c *cluster.Cluster, d rtscpb.Direction) (*r
 	}, nil
 }
 
+// buildTransitionsFromOpenCoordinateSlice constructs the actual transition points between two contiguous open tile slices.
+// We have configured, as per Botea 2004, one transition node for a segment of width three tiles or less, and two transition
+// nodes for segments longer than three tiles.
+//
+// In general, the less nodes we have, the faster the hierarchical part of the pathing algorithm will take, which would be the case
+// if we increase minLength. We may also consider a more contextual reworking of this function and take into consideration the
+// nearest transition node from adjacent slices, e.g. "transition nodes must be N tiles apart".
 func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb.Transition, error) {
+	const minLength = 3
+
+	if s1.GetOrientation() != s2.GetOrientation() || s1.GetLength() != s2.GetLength() {
+		return nil, status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
+	}
+
+	switch s1.GetOrientation() {
+	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+		if s1.GetStart().GetX() != s2.GetStart().GetX() || math.Abs(float64(s2.GetStart().GetY()-s1.GetStart().GetY())) != 1 {
+			return nil, status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
+		}
+	case rtscpb.Orientation_ORIENTATION_VERTICAL:
+		if s1.GetStart().GetY() != s2.GetStart().GetY() || math.Abs(float64(s2.GetStart().GetX()-s1.GetStart().GetX())) != 1 {
+			return nil, status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
+		}
+	}
+
 	var transitions []*rtsspb.Transition
 	var offsets []int32
-	if s1.GetLength() > 3 {
-		offsets = append(offsets, 0, s1.GetLength()-1)
-	} else {
+	if s1.GetLength() <= minLength {
 		offsets = append(offsets, s1.GetLength()/2)
+	} else {
+		offsets = append(offsets, 0, s1.GetLength()-1)
 	}
 
 	for _, o := range offsets {
