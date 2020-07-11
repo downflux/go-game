@@ -38,9 +38,12 @@ message Cluster {
 	Coordinate tile_dimension = 3;
 }
 
+// ClusterBorderSegment encapsulates a specific contiguous open segment within a cluster border.
+// All coordinates within the segment are contained within the cluster itself.
 message ClusterBorderSegment {
-	Coordinate start = 1;
-	Coordinate end = 2;
+	rts_pathing.lib.proto.constants.Orientation orientation = 1;
+	Coordinate start = 2;
+	Coordinate end = 3;
 }
 
 message Entrance {
@@ -48,6 +51,26 @@ message Entrance {
 	ClusterBorderSegment destination = 2;
 }
 
-message EntranceNode {
-	Coordinate coordinate = 1;
+message Transition {
+	Coordinate c1 = 1;
+	Coordinate c2 = 2;
+}
+
+message AbstractGraph {
+	int32 level = 1;
+	repeated AbstractNode nodes = 2;
+	repeated AbstractEdge edges = 3;
+}
+
+message AbstractNode {
+	int32 level = 1;
+	Coordinate coordinate = 2;
+}
+
+message AbstractEdge {
+	int32 level = 1;
+	AbstractNode source = 2;
+	AbstractNode destination = 3;
+	rts_pathing.lib.proto.constants.EdgeType edge_type = 4;
+	float weight = 5;
 }

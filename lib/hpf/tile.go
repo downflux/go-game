@@ -89,6 +89,10 @@ func (m TileMap) Tile(x, y int32) *Tile {
 	return m.m[x][y]
 }
 
+func (m TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
+	return m.Tile(c.GetX(), c.GetY())
+}
+
 // Neighbors returns the adjacent Tiles of an input Tile object.
 func (m TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 	if m.Tile(coordinate.GetX(), coordinate.GetY()) == nil {

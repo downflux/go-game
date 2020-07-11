@@ -2,6 +2,8 @@
 package entrance
 
 import (
+	"math"
+
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
@@ -13,59 +15,98 @@ import (
 )
 
 var (
-	reverseDirection := map[rtscpb.Direction]rtscpb.Direction{
+	edgeDirectionToOrientation = map[rtscpb.Direction]rtscpb.Orientation{
+		rtscpb.Direction_DIRECTION_NORTH: rtscpb.Orientation_ORIENTATION_HORIZONTAL,
+		rtscpb.Direction_DIRECTION_SOUTH: rtscpb.Orientation_ORIENTATION_HORIZONTAL,
+		rtscpb.Direction_DIRECTION_EAST: rtscpb.Orientation_ORIENTATION_VERTICAL,
+		rtscpb.Direction_DIRECTION_WEST: rtscpb.Orientation_ORIENTATION_VERTICAL,
+	}
+	reverseDirection = map[rtscpb.Direction]rtscpb.Direction{
 		rtscpb.Direction_DIRECTION_NORTH: rtscpb.Direction_DIRECTION_SOUTH,
 		rtscpb.Direction_DIRECTION_SOUTH: rtscpb.Direction_DIRECTION_NORTH,
 		rtscpb.Direction_DIRECTION_EAST: rtscpb.Direction_DIRECTION_WEST,
 		rtscpb.Direction_DIRECTION_WEST: rtscpb.Direction_DIRECTION_EAST,
 	}
-	directionVector := map[rtscpb.Direction]*rtsspb.Coordinate{
-		rtscpb.Direction_DIRECTION_NORTH: &rtsspb.Coordinate{X: 0, Y: 1},
-		rtscpb.Direction_DIRECTION_SOUTH: &rtsspb.Coordinate{X: 0,Y: -1},
-		rtscpb.Direction_DIRECTION_EAST: &rtsspb.Coordinate{X: 1,Y: 0},
-		rtscpb.Direction_DIRECTION_WEST: &rtsspb.Coordinate{X: -1,Y: 0},
-	}
 )
 
-// ClusterBorderSegment encapsulates a specific contiguous open segment within a cluster border.
-// All coordinates within the segment are contained within the cluster itself.
-type ClusterBorderSegment struct {
-	s *rtsspb.ClusterBorderSegment
-}
+func BuildTransitions(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*rtsspb.Transition, error) {
+	if c1 == nil || c2 == nil {
+		return nil, status.Error(codes.FailedPrecondition, "input Cluster references must be non-nil")
+	}
+	if m == nil {
+		return nil, status.Error(codes.FailedPrecondition, "input TileMap reference must be non-nil")
+	}
 
-// BuildClusterBorderSegments constructs a list of ClusterBorderSegment instances based on the input Cluter and TileMap objects.
-func BuildClusterBorderSegments(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*ClusterBorderSegment, []*ClusterBorderSegment, error) {
+	if !cluster.IsAdjacent(c1, c2) {
+		return nil, status.Errorf(codes.FailedPrecondition, "clusters must be immediately adjacent to one another")
+	}
+
 	d1, err := cluster.GetRelativeDirection(c1, c2)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	d2, found := reverseDirection[d1]
-	if !found {
-		return nil, nil, status.Errorf(codes.FailedPrecondition, "reverse vector of %v not found", d1)
-	}
+	d2 := reverseDirection[d1]
 
-	start1, end1, err := candidateVector(c1, d1)
+	v1, err := candidateVector(c1, d1)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	start2, end2, err := candidateVector(c2, d2)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	candidates1, candidates2, err := candidateVectorTiles(start1, end1, start2, end2, m)
+	v2, err := candidateVector(c2, d2)
 	if err != nil {
 		return nil, err
 	}
 
-	return segments(candidates)
+	return buildTransitions(v1, v2, m)
 }
 
-// candidateVector constructs a (start, end) Coordinate pair representing the edge of a Cluster in the specified direction.
+type orientationInfo struct {
+	rank, file, width int32
+	orientation rtscpb.Orientation
+}
+
+func segmentCoordinateInfo(s *rtsspb.ClusterBorderSegment) (orientationInfo, error) {
+	switch s.GetOrientation() {
+		case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+			return orientationInfo{
+				orientation: s.GetOrientation(),
+				rank: s.GetStart().GetY(),
+				file: s.GetStart().GetX(),
+				width: int32(math.Abs(float64(s.GetEnd().GetX() - s.GetStart().GetX()))),
+			}, nil
+		case rtscpb.Orientation_ORIENTATION_VERTICAL:
+			return orientationInfo{
+				orientation: s.GetOrientation(),
+				rank: s.GetStart().GetX(),
+				file: s.GetStart().GetY(),
+				width: int32(math.Abs(float64(s.GetEnd().GetY() - s.GetStart().GetY()))),
+			}, nil
+		default:
+			return orientationInfo{}, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
+	}
+}
+
+func buildCoordinateWithSegmentCoordinateInfo(sInfo orientationInfo, offset int32) (*rtsspb.Coordinate, error) {
+	switch sInfo.orientation {
+		case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+			return &rtsspb.Coordinate{
+				X: sInfo.rank,
+				Y: sInfo.file + offset,
+			}, nil
+		case rtscpb.Orientation_ORIENTATION_VERTICAL:
+			return &rtsspb.Coordinate{
+				X: sInfo.file + offset,
+				Y: sInfo.rank,
+			}, nil
+		default:
+			return nil, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
+	}
+}
+
+// candidateVector constructs a ClusterBorderSegment instance representing the contiguous edge of a Cluster in the specified direction.
 // All Tile t on the edge are between the start and end coordinates, i.e. start <= t <= end with usual 2D coordinate comparison.
-func candidateVector(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.Coordinate, *rtsspb.Coordinate, error) {
+func candidateVector(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.ClusterBorderSegment, error) {
 	if c.Cluster().GetTileDimension().GetX() == 0 || c.Cluster().GetTileDimension().GetY() == 0 {
-		return nil, nil, status.Error(codes.FailedPrecondition, "input cluster must have non-zero dimensions")
+		return nil, status.Error(codes.FailedPrecondition, "input Cluster must have non-zero dimensions")
 	}
 
 	var start, end *rtsspb.Coordinate
@@ -101,71 +142,117 @@ func candidateVector(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.Coordinate
 			Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
 		}
 	default:
-		return nil, nil, status.Errorf(codes.FailedPrecondition, "invalid direction specified %v", d)
-	}
-	return start, end, nil
-}
-
-func containerBox(start, end *rtsspb.Coordinate) *rtsspb.Coordinate {
-	return &rtsspb.Coordinate{
-		X: int32(math.Abs(float64(end.GetX() - start.GetX()))),
-		X: int32(math.Abs(float64(end.GetY() - start.GetY()))),
-	}
-}
-func coordinateAdd(c1, c2) *rtsspb.Coordinate{
-	return &rtsspb.Coordinate{
-		X: c1.GetX() + c2.GetX(),
-		Y: c2.GetY() + c2.GetY(),
-	}
-}
-
-// candidateVectorTiles return the Tile objects caught in between the start and end range Coordinates.
-// for all tiles returned, start <= t <= end, per usual 2D coordinate comparison. Tiles returned are
-// ordered.
-func candidateVectorTiles(start1, end1, start2, end2 *rtsspb.Coordinate, d rtscpb.Direction, m *tile.TileMap) ([]*tile.Tile, []*tile.Tile, error) {
-	if box1, box2 := containerBox(start1, end1), containerBox(start2, end2); !proto.Equal(box1, box2) {
-		return nil, nil, status.Errorf(codes.FailedPrecondition, "edge tiles shape is different: %v != %v", box1, box2)
+		return nil, status.Errorf(codes.FailedPrecondition, "invalid direction specified %v", d)
 	}
 
-	var candidates1, candidates2 []*tile.Tile
-	for x := start.GetX(); x <= end.GetX(); x++ {
-		for y := start.GetY(); y <= end.GetY(); y++ {
-			t := m.Tile(x, y)
-			if t == nil {
-				return nil, status.Errorf(codes.FailedPrecondition, "Tile (%v, %v) not found in underlying TileMap", x, y)
-			}
-			candidates = append(candidates, t)
+	orientation, found := edgeDirectionToOrientation[d]
+	if !found {
+		return nil, status.Errorf(codes.FailedPrecondition, "invalid direction specified %v", d)
+	}
+
+	return &rtsspb.ClusterBorderSegment{
+		Orientation: orientation,
+		Start: start,
+		End: end,
+	}, nil
+}
+
+func buildTransitionsFromContiguousOpenSegment(s1, s2 *rtsspb.ClusterBorderSegment) ([]*rtsspb.Transition, error) {
+	sInfo1, err := segmentCoordinateInfo(s1)
+	if err != nil {
+		return nil, err
+	}
+	sInfo2, err := segmentCoordinateInfo(s2)
+	if err != nil {
+		return nil, err
+	}
+
+	var transitions []*rtsspb.Transition
+	var offsets []int32
+	if sInfo1.width > 3 {
+		offsets = append(offsets, 0, sInfo1.width - 1)
+	} else {
+		offsets = append(offsets, sInfo1.width / 2)
+	}
+
+	for _, o := range offsets {
+		c1, err := buildCoordinateWithSegmentCoordinateInfo(sInfo1, o)
+		if err != nil {
+			return nil, err
 		}
+		c2, err := buildCoordinateWithSegmentCoordinateInfo(sInfo2, o)
+		if err != nil {
+			return nil, err
+		}
+
+		transitions = append(transitions, &rtsspb.Transition{C1: c1, C2: c2})
 	}
-	return candidates, nil
+	return transitions, nil
 }
 
-// segments constructs the list of contiguous open segments based on the input Tile instances.
-// segments expect that the list of Tile are sorted in 2D coordinate comparison order,
-// i.e. A < B iff A.Y < B.Y || A.Y == B.Y && A.X < B.X. This is trivially true in this package
-// since we're only dealing with a single row or column of tiles for all expected input.
-func segments(candidates []*tile.Tile) ([]*ClusterBorderSegment, error) {
-	var segments []*ClusterBorderSegment
-	var segment *ClusterBorderSegment
+func buildTransitions(v1, v2 *rtsspb.ClusterBorderSegment, m *tile.TileMap) ([]*rtsspb.Transition, error) {
+	sInfo1, err := segmentCoordinateInfo(v1)
+	if err != nil {
+		return nil, err
+	}
+	sInfo2, err := segmentCoordinateInfo(v2)
+	if err != nil {
+		return nil, err
+	}
 
-	for _, t := range candidates {
-		switch t.TerrainType() {
-		case rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED:
-			if segment != nil {
-				segments = append(segments, segment)
-				segment = nil
-			}
-		default:
-			if segment == nil {
-				segment = &ClusterBorderSegment{
-					s: &rtsspb.ClusterBorderSegment{Start: t.Coordinate()},
+	orientation := v1.GetOrientation()
+	var res []*rtsspb.Transition
+
+	var s1, s2 *rtsspb.ClusterBorderSegment
+	for o := int32(0); o < sInfo1.width; o++ {
+		c1, err := buildCoordinateWithSegmentCoordinateInfo(sInfo1, o)
+		if err != nil {
+			return nil, err
+		}
+		c2, err := buildCoordinateWithSegmentCoordinateInfo(sInfo2, o)
+		if err != nil {
+			return nil, err
+		}
+
+		if (
+			m.TileFromCoordinate(c1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (
+			m.TileFromCoordinate(c2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+			if s1 == nil {
+				s1 = &rtsspb.ClusterBorderSegment{
+					Orientation: orientation,
+					Start: c1,
 				}
 			}
-			segment.s.End = t.Coordinate()
+			if s2 == nil {
+				s2 = &rtsspb.ClusterBorderSegment{
+					Orientation: orientation,
+					Start: c2,
+				}
+			}
+			s1.End = c1
+			s2.End = c2
+		}
+		if (
+			m.TileFromCoordinate(c1).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) || (
+			m.TileFromCoordinate(c2).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+			if s1 != nil && s2 != nil {
+				transitions, err := buildTransitionsFromContiguousOpenSegment(s1, s2)
+				if err != nil {
+					return nil, err
+				}
+				res = append(res, transitions...)
+			}
+			s1 = nil
+			s2 = nil
 		}
 	}
-	if segment != nil {
-		segments = append(segments, segment)
+	if s1 != nil && s2 != nil {
+		transitions, err := buildTransitionsFromContiguousOpenSegment(s1, s2)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, transitions...)
 	}
-	return segments, nil
+
+	return res, nil
 }
