@@ -123,5 +123,65 @@ func TestBuildClusterEdgeCoordinateSlice(t *testing.T) {
 	}
 }
 
-func TestBuildCoordinateSlice(t *testing.T) {
+func TestBuildCoordinateWithCoordinateSlice(t *testing.T) {
+	testConfigs := []struct {
+		name string
+		s    *rtsspb.CoordinateSlice
+		o    int32
+		want *rtsspb.Coordinate
+	}{
+		{
+			name: "SingleTileSliceHorizontal",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
+			o:    0,
+			want: &rtsspb.Coordinate{X: 0, Y: 0},
+		},
+		{
+			name: "SingleTileSliceVertical",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
+			o:    0,
+			want: &rtsspb.Coordinate{X: 0, Y: 0},
+		},
+		{
+			name: "MultiTileTileSliceHorizontal",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2},
+			o:    1,
+			want: &rtsspb.Coordinate{X: 2, Y: 1},
+		},
+		{
+			name: "MultiTileTileSliceVertical",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2},
+			o:    1,
+			want: &rtsspb.Coordinate{X: 1, Y: 2},
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			if got, err := buildCoordinateWithCoordinateSlice(c.s, c.o); err != nil || !proto.Equal(got, c.want) {
+				t.Errorf("buildCoordinateWithCoordinateSlice() = %v, %v, want = %v, nil", got, err, c.want)
+			}
+		})
+	}
+}
+
+func TestBuildCoordinateWithCoordinateSliceError(t *testing.T) {
+	testConfigs := []struct {
+		name string
+		s    *rtsspb.CoordinateSlice
+		o    int32
+	}{
+		{name: "NullTileSlice", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 0}, o: 0},
+		{name: "OutOfBoundsTileSliceBefore", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}, o: -1},
+		{name: "OutOfBoundsTileSliceAfter", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}, o: 2},
+		{name: "InvalidOrientationTileSlice", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_UNKNOWN, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}, o: 0},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			if _, err := buildCoordinateWithCoordinateSlice(c.s, c.o); err == nil {
+				t.Error("buildCoordinateWithCoordinateSlice() = nil, want a non-nil error")
+			}
+		})
+	}
 }

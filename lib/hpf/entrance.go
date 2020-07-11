@@ -57,17 +57,21 @@ func BuildTransitions(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*rtsspb.Trans
 	return buildTransitions(v1, v2, m)
 }
 
+// buildCoordinateWithCoordinateSlice reconstructs the Coordinate object back from the given slice info.
 func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32) (*rtsspb.Coordinate, error) {
+	if offset < 0 || offset >= s.GetLength() {
+		return nil, status.Errorf(codes.FailedPrecondition, "invalid offset specified, end coordinate must be contained within the slice")
+	}
 	switch s.GetOrientation() {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
 		return &rtsspb.Coordinate{
-			X: s.GetStart().GetX(),
-			Y: s.GetStart().GetY() + offset,
+			X: s.GetStart().GetX() + offset,
+			Y: s.GetStart().GetY(),
 		}, nil
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
 		return &rtsspb.Coordinate{
-			X: s.GetStart().GetX() + offset,
-			Y: s.GetStart().GetY(),
+			X: s.GetStart().GetX(),
+			Y: s.GetStart().GetY() + offset,
 		}, nil
 	default:
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
