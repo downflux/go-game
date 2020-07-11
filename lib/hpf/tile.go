@@ -111,14 +111,14 @@ func (m TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 
 // Tile represents a physical map node.
 type Tile struct {
-	// T is the underlying representation of the map node. It may be
+	// Val is the underlying representation of the map node. It may be
 	// mutated, e.g. changing TerrainType to / from TERRAIN_TYPE_BLOCKED
-	t *rtsspb.Tile
+	Val *rtsspb.Tile
 }
 
 func ImportTile(pb *rtsspb.Tile) (*Tile, error) {
 	return &Tile{
-		t: pb,
+		Val: pb,
 	}, nil
 }
 
@@ -127,25 +127,25 @@ func ExportTile(t *Tile) (*rtsspb.Tile, error) {
 }
 
 func (t *Tile) Coordinate() *rtsspb.Coordinate {
-	return t.t.GetCoordinate()
+	return t.Val.GetCoordinate()
 }
 
 // X returns the X-coordinate of the Tile.
 func (t *Tile) X() int32 {
-	return t.t.GetCoordinate().GetX()
+	return t.Val.GetCoordinate().GetX()
 }
 
 // X returns the Y-coordinate of the Tile.
 func (t *Tile) Y() int32 {
-	return t.t.GetCoordinate().GetY()
+	return t.Val.GetCoordinate().GetY()
 }
 
 // TerrainType returns the TerrainType enum of the Tile.
 func (t *Tile) TerrainType() rtscpb.TerrainType {
-	return t.t.GetTerrainType()
+	return t.Val.GetTerrainType()
 }
 
 // SetTerrainType sets the TerrainType enum of the Tile.
 func (t *Tile) SetTerrainType(terrainType rtscpb.TerrainType) {
-	t.t.TerrainType = terrainType
+	t.Val.TerrainType = terrainType
 }

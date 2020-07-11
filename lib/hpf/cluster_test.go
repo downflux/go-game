@@ -15,7 +15,7 @@ func (m *ClusterMap) Equal(other *ClusterMap) bool {
 }
 
 func (c *Cluster) Equal(other *Cluster) bool {
-	return proto.Equal(c.c, other.c)
+	return proto.Equal(c.Val, other.Val)
 }
 
 func TestIsAdjacent(t *testing.T) {
@@ -34,8 +34,8 @@ func TestIsAdjacent(t *testing.T) {
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
 			if res := IsAdjacent(
-				&Cluster{c: &rtsspb.Cluster{Coordinate: c.c1}},
-				&Cluster{c: &rtsspb.Cluster{Coordinate: c.c2}}); res != c.want {
+				&Cluster{Val: &rtsspb.Cluster{Coordinate: c.c1}},
+				&Cluster{Val: &rtsspb.Cluster{Coordinate: c.c2}}); res != c.want {
 				t.Errorf("IsAdjacent((%v, %v), (%v, %v)) = %v, want = %v", c.c1.GetX(), c.c1.GetY(), c.c2.GetX(), c.c2.GetY(), res, c.want)
 			}
 		})
@@ -61,8 +61,8 @@ func TestAdjacentDirection(t *testing.T) {
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
 			res, err := GetRelativeDirection(
-				&Cluster{c: &rtsspb.Cluster{Coordinate: c.c1}},
-				&Cluster{c: &rtsspb.Cluster{Coordinate: c.c2}})
+				&Cluster{Val: &rtsspb.Cluster{Coordinate: c.c1}},
+				&Cluster{Val: &rtsspb.Cluster{Coordinate: c.c2}})
 			if (err == nil) != c.wantSuccess {
 				t.Fatalf("GetRelativeDirection() = _, %v, want wantSuccess = %v", err, c.wantSuccess)
 			}
@@ -133,7 +133,7 @@ func TestBuildCluster(t *testing.T) {
 			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 1}, m: map[int32]map[int32]*Cluster{
 				0: {
 					0: {
-						c: &rtsspb.Cluster{
+						Val: &rtsspb.Cluster{
 							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
 							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
 							TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
@@ -145,14 +145,14 @@ func TestBuildCluster(t *testing.T) {
 			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 2}, m: map[int32]map[int32]*Cluster{
 				0: {
 					0: {
-						c: &rtsspb.Cluster{
+						Val: &rtsspb.Cluster{
 							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
 							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
 							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
 						},
 					},
 					1: {
-						c: &rtsspb.Cluster{
+						Val: &rtsspb.Cluster{
 							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
 							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},
 							TileDimension: &rtsspb.Coordinate{X: 2, Y: 1},

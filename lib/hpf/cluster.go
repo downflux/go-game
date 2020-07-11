@@ -37,26 +37,17 @@ func ExportClusterMap(m *ClusterMap) (*rtsspb.ClusterMap, error) {
 }
 
 type Cluster struct {
-	c *rtsspb.Cluster
+	Val *rtsspb.Cluster
 }
 
-func NewCluster(c *rtsspb.Cluster) *Cluster {
+func ImportCluster(pb *rtsspb.Cluster) *Cluster {
 	return &Cluster{
-		c: c,
+		Val: pb,
 	}
 }
 
-func (c *Cluster) Cluster() *rtsspb.Cluster {
-	return c.c
-}
-
-type partitionInfo struct {
-	TileBoundary  int32
-	TileDimension int32
-}
-
 func IsAdjacent(c1, c2 *Cluster) bool {
-	return math.Abs(float64(c2.c.GetCoordinate().GetX()-c1.c.GetCoordinate().GetX()))+math.Abs(float64(c2.c.GetCoordinate().GetY()-c1.c.GetCoordinate().GetY())) == 1
+	return math.Abs(float64(c2.Val.GetCoordinate().GetX()-c1.Val.GetCoordinate().GetX()))+math.Abs(float64(c2.Val.GetCoordinate().GetY()-c1.Val.GetCoordinate().GetY())) == 1
 }
 
 // GetRelativeDirection will return the direction of travel from c to other.
@@ -66,16 +57,16 @@ func GetRelativeDirection(c, other *Cluster) (rtscpb.Direction, error) {
 		return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "input clusters are not immediately adjacent to one another")
 	}
 
-	if c.c.GetCoordinate().GetX() == other.c.GetCoordinate().GetX() && c.c.GetCoordinate().GetY() < other.c.GetCoordinate().GetY() {
+	if c.Val.GetCoordinate().GetX() == other.Val.GetCoordinate().GetX() && c.Val.GetCoordinate().GetY() < other.Val.GetCoordinate().GetY() {
 		return rtscpb.Direction_DIRECTION_NORTH, nil
 	}
-	if c.c.GetCoordinate().GetX() == other.c.GetCoordinate().GetX() && c.c.GetCoordinate().GetY() > other.c.GetCoordinate().GetY() {
+	if c.Val.GetCoordinate().GetX() == other.Val.GetCoordinate().GetX() && c.Val.GetCoordinate().GetY() > other.Val.GetCoordinate().GetY() {
 		return rtscpb.Direction_DIRECTION_SOUTH, nil
 	}
-	if c.c.GetCoordinate().GetX() < other.c.GetCoordinate().GetX() && c.c.GetCoordinate().GetY() == other.c.GetCoordinate().GetY() {
+	if c.Val.GetCoordinate().GetX() < other.Val.GetCoordinate().GetX() && c.Val.GetCoordinate().GetY() == other.Val.GetCoordinate().GetY() {
 		return rtscpb.Direction_DIRECTION_EAST, nil
 	}
-	if c.c.GetCoordinate().GetX() > other.c.GetCoordinate().GetX() && c.c.GetCoordinate().GetY() == other.c.GetCoordinate().GetY() {
+	if c.Val.GetCoordinate().GetX() > other.Val.GetCoordinate().GetX() && c.Val.GetCoordinate().GetY() == other.Val.GetCoordinate().GetY() {
 		return rtscpb.Direction_DIRECTION_WEST, nil
 	}
 	return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "clusters which are immediately adjacent are somehow not traversible via cardinal directions")
@@ -114,7 +105,7 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 		for _, yp := range yPartitions {
 			y := yp.TileBoundary / tileDimension.GetY()
 			m.m[x][y] = &Cluster{
-				c: &rtsspb.Cluster{
+				Val: &rtsspb.Cluster{
 					Coordinate:    &rtsspb.Coordinate{X: x, Y: y},
 					TileBoundary:  &rtsspb.Coordinate{X: xp.TileBoundary, Y: yp.TileBoundary},
 					TileDimension: &rtsspb.Coordinate{X: xp.TileDimension, Y: yp.TileDimension},
@@ -124,6 +115,11 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 	}
 
 	return m, nil
+}
+
+type partitionInfo struct {
+	TileBoundary  int32
+	TileDimension int32
 }
 
 func partition(tileMapDimension int32, tileDimension int32) ([]partitionInfo, error) {

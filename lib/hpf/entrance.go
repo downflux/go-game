@@ -105,7 +105,7 @@ func buildCoordinateWithSegmentCoordinateInfo(sInfo orientationInfo, offset int3
 // candidateVector constructs a ClusterBorderSegment instance representing the contiguous edge of a Cluster in the specified direction.
 // All Tile t on the edge are between the start and end coordinates, i.e. start <= t <= end with usual 2D coordinate comparison.
 func candidateVector(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.ClusterBorderSegment, error) {
-	if c.Cluster().GetTileDimension().GetX() == 0 || c.Cluster().GetTileDimension().GetY() == 0 {
+	if c.Val.GetTileDimension().GetX() == 0 || c.Val.GetTileDimension().GetY() == 0 {
 		return nil, status.Error(codes.FailedPrecondition, "input Cluster must have non-zero dimensions")
 	}
 
@@ -113,33 +113,33 @@ func candidateVector(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.ClusterBor
 	switch d {
 	case rtscpb.Direction_DIRECTION_NORTH:
 		start = &rtsspb.Coordinate{
-			X: c.Cluster().GetTileBoundary().GetX(),
-			Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
+			X: c.Val.GetTileBoundary().GetX(),
+			Y: c.Val.GetTileBoundary().GetY() + c.Val.GetTileDimension().GetY() - 1,
 		}
 		end = &rtsspb.Coordinate{
-			X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
-			Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
+			X: c.Val.GetTileBoundary().GetX() + c.Val.GetTileDimension().GetX() - 1,
+			Y: c.Val.GetTileBoundary().GetY() + c.Val.GetTileDimension().GetY() - 1,
 		}
 	case rtscpb.Direction_DIRECTION_SOUTH:
-		start = proto.Clone(c.Cluster().GetTileBoundary()).(*rtsspb.Coordinate)
+		start = proto.Clone(c.Val.GetTileBoundary()).(*rtsspb.Coordinate)
 		end = &rtsspb.Coordinate{
-			X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
-			Y: c.Cluster().GetTileBoundary().GetY(),
+			X: c.Val.GetTileBoundary().GetX() + c.Val.GetTileDimension().GetX() - 1,
+			Y: c.Val.GetTileBoundary().GetY(),
 		}
 	case rtscpb.Direction_DIRECTION_EAST:
 		start = &rtsspb.Coordinate{
-			X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
-			Y: c.Cluster().GetTileBoundary().GetY(),
+			X: c.Val.GetTileBoundary().GetX() + c.Val.GetTileDimension().GetX() - 1,
+			Y: c.Val.GetTileBoundary().GetY(),
 		}
 		end = &rtsspb.Coordinate{
-			X: c.Cluster().GetTileBoundary().GetX() + c.Cluster().GetTileDimension().GetX() - 1,
-			Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
+			X: c.Val.GetTileBoundary().GetX() + c.Val.GetTileDimension().GetX() - 1,
+			Y: c.Val.GetTileBoundary().GetY() + c.Val.GetTileDimension().GetY() - 1,
 		}
 	case rtscpb.Direction_DIRECTION_WEST:
-		start = proto.Clone(c.Cluster().GetTileBoundary()).(*rtsspb.Coordinate)
+		start = proto.Clone(c.Val.GetTileBoundary()).(*rtsspb.Coordinate)
 		end = &rtsspb.Coordinate{
-			X: c.Cluster().GetTileBoundary().GetX(),
-			Y: c.Cluster().GetTileBoundary().GetY() + c.Cluster().GetTileDimension().GetY() - 1,
+			X: c.Val.GetTileBoundary().GetX(),
+			Y: c.Val.GetTileBoundary().GetY() + c.Val.GetTileDimension().GetY() - 1,
 		}
 	default:
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid direction specified %v", d)
