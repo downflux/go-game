@@ -38,17 +38,10 @@ message Cluster {
 	Coordinate tile_dimension = 3;
 }
 
-// ClusterBorderSegment encapsulates a specific contiguous open segment within a cluster border.
-// All coordinates within the segment are contained within the cluster itself.
-message ClusterBorderSegment {
+message CoordinateSlice {
 	rts_pathing.lib.proto.constants.Orientation orientation = 1;
 	Coordinate start = 2;
-	Coordinate end = 3;
-}
-
-message Entrance {
-	ClusterBorderSegment source = 1;
-	ClusterBorderSegment destination = 2;
+	int32 length = 3;
 }
 
 message Transition {
