@@ -18,14 +18,14 @@ var (
 	edgeDirectionToOrientation = map[rtscpb.Direction]rtscpb.Orientation{
 		rtscpb.Direction_DIRECTION_NORTH: rtscpb.Orientation_ORIENTATION_HORIZONTAL,
 		rtscpb.Direction_DIRECTION_SOUTH: rtscpb.Orientation_ORIENTATION_HORIZONTAL,
-		rtscpb.Direction_DIRECTION_EAST: rtscpb.Orientation_ORIENTATION_VERTICAL,
-		rtscpb.Direction_DIRECTION_WEST: rtscpb.Orientation_ORIENTATION_VERTICAL,
+		rtscpb.Direction_DIRECTION_EAST:  rtscpb.Orientation_ORIENTATION_VERTICAL,
+		rtscpb.Direction_DIRECTION_WEST:  rtscpb.Orientation_ORIENTATION_VERTICAL,
 	}
 	reverseDirection = map[rtscpb.Direction]rtscpb.Direction{
 		rtscpb.Direction_DIRECTION_NORTH: rtscpb.Direction_DIRECTION_SOUTH,
 		rtscpb.Direction_DIRECTION_SOUTH: rtscpb.Direction_DIRECTION_NORTH,
-		rtscpb.Direction_DIRECTION_EAST: rtscpb.Direction_DIRECTION_WEST,
-		rtscpb.Direction_DIRECTION_WEST: rtscpb.Direction_DIRECTION_EAST,
+		rtscpb.Direction_DIRECTION_EAST:  rtscpb.Direction_DIRECTION_WEST,
+		rtscpb.Direction_DIRECTION_WEST:  rtscpb.Direction_DIRECTION_EAST,
 	}
 )
 
@@ -61,44 +61,44 @@ func BuildTransitions(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*rtsspb.Trans
 
 type orientationInfo struct {
 	rank, file, width int32
-	orientation rtscpb.Orientation
+	orientation       rtscpb.Orientation
 }
 
 func segmentCoordinateInfo(s *rtsspb.ClusterBorderSegment) (orientationInfo, error) {
 	switch s.GetOrientation() {
-		case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-			return orientationInfo{
-				orientation: s.GetOrientation(),
-				rank: s.GetStart().GetY(),
-				file: s.GetStart().GetX(),
-				width: int32(math.Abs(float64(s.GetEnd().GetX() - s.GetStart().GetX()))),
-			}, nil
-		case rtscpb.Orientation_ORIENTATION_VERTICAL:
-			return orientationInfo{
-				orientation: s.GetOrientation(),
-				rank: s.GetStart().GetX(),
-				file: s.GetStart().GetY(),
-				width: int32(math.Abs(float64(s.GetEnd().GetY() - s.GetStart().GetY()))),
-			}, nil
-		default:
-			return orientationInfo{}, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
+	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+		return orientationInfo{
+			orientation: s.GetOrientation(),
+			rank:        s.GetStart().GetY(),
+			file:        s.GetStart().GetX(),
+			width:       int32(math.Abs(float64(s.GetEnd().GetX() - s.GetStart().GetX()))),
+		}, nil
+	case rtscpb.Orientation_ORIENTATION_VERTICAL:
+		return orientationInfo{
+			orientation: s.GetOrientation(),
+			rank:        s.GetStart().GetX(),
+			file:        s.GetStart().GetY(),
+			width:       int32(math.Abs(float64(s.GetEnd().GetY() - s.GetStart().GetY()))),
+		}, nil
+	default:
+		return orientationInfo{}, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
 	}
 }
 
 func buildCoordinateWithSegmentCoordinateInfo(sInfo orientationInfo, offset int32) (*rtsspb.Coordinate, error) {
 	switch sInfo.orientation {
-		case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-			return &rtsspb.Coordinate{
-				X: sInfo.rank,
-				Y: sInfo.file + offset,
-			}, nil
-		case rtscpb.Orientation_ORIENTATION_VERTICAL:
-			return &rtsspb.Coordinate{
-				X: sInfo.file + offset,
-				Y: sInfo.rank,
-			}, nil
-		default:
-			return nil, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
+	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+		return &rtsspb.Coordinate{
+			X: sInfo.rank,
+			Y: sInfo.file + offset,
+		}, nil
+	case rtscpb.Orientation_ORIENTATION_VERTICAL:
+		return &rtsspb.Coordinate{
+			X: sInfo.file + offset,
+			Y: sInfo.rank,
+		}, nil
+	default:
+		return nil, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
 	}
 }
 
@@ -152,8 +152,8 @@ func candidateVector(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.ClusterBor
 
 	return &rtsspb.ClusterBorderSegment{
 		Orientation: orientation,
-		Start: start,
-		End: end,
+		Start:       start,
+		End:         end,
 	}, nil
 }
 
@@ -170,9 +170,9 @@ func buildTransitionsFromContiguousOpenSegment(s1, s2 *rtsspb.ClusterBorderSegme
 	var transitions []*rtsspb.Transition
 	var offsets []int32
 	if sInfo1.width > 3 {
-		offsets = append(offsets, 0, sInfo1.width - 1)
+		offsets = append(offsets, 0, sInfo1.width-1)
 	} else {
-		offsets = append(offsets, sInfo1.width / 2)
+		offsets = append(offsets, sInfo1.width/2)
 	}
 
 	for _, o := range offsets {
@@ -214,27 +214,23 @@ func buildTransitions(v1, v2 *rtsspb.ClusterBorderSegment, m *tile.TileMap) ([]*
 			return nil, err
 		}
 
-		if (
-			m.TileFromCoordinate(c1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (
-			m.TileFromCoordinate(c2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+		if (m.TileFromCoordinate(c1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (m.TileFromCoordinate(c2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
 			if s1 == nil {
 				s1 = &rtsspb.ClusterBorderSegment{
 					Orientation: orientation,
-					Start: c1,
+					Start:       c1,
 				}
 			}
 			if s2 == nil {
 				s2 = &rtsspb.ClusterBorderSegment{
 					Orientation: orientation,
-					Start: c2,
+					Start:       c2,
 				}
 			}
 			s1.End = c1
 			s2.End = c2
 		}
-		if (
-			m.TileFromCoordinate(c1).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) || (
-			m.TileFromCoordinate(c2).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+		if (m.TileFromCoordinate(c1).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) || (m.TileFromCoordinate(c2).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
 			if s1 != nil && s2 != nil {
 				transitions, err := buildTransitionsFromContiguousOpenSegment(s1, s2)
 				if err != nil {

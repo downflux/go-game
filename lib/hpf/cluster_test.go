@@ -45,10 +45,10 @@ func TestIsAdjacent(t *testing.T) {
 
 func TestAdjacentDirection(t *testing.T) {
 	testConfigs := []struct {
-		name string
-		c1 *rtsspb.Coordinate
-		c2 *rtsspb.Coordinate
-		want rtscpb.Direction
+		name        string
+		c1          *rtsspb.Coordinate
+		c2          *rtsspb.Coordinate
+		want        rtscpb.Direction
 		wantSuccess bool
 	}{
 		{name: "AdjacentDirectionNorth", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 1}, want: rtscpb.Direction_DIRECTION_NORTH, wantSuccess: true},
