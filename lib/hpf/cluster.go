@@ -40,10 +40,10 @@ type Cluster struct {
 	Val *rtsspb.Cluster
 }
 
-func ImportCluster(pb *rtsspb.Cluster) *Cluster {
+func ImportCluster(pb *rtsspb.Cluster) (*Cluster, error) {
 	return &Cluster{
 		Val: pb,
-	}
+	}, nil
 }
 
 func IsAdjacent(c1, c2 *Cluster) bool {

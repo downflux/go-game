@@ -29,6 +29,9 @@ var (
 	}
 )
 
+// BuildTransitions takes in two adjacent map Cluster objects and returns the list of Transition nodes which connect them.
+// Transition nodes are a tuple of non-blocking Tiles which are 1. immediately adjacent to one another, and 2. are in different
+// Clusters. See Botea 2004 for more information.
 func BuildTransitions(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*rtsspb.Transition, error) {
 	if c1 == nil || c2 == nil {
 		return nil, status.Error(codes.FailedPrecondition, "input Cluster references must be non-nil")
@@ -56,7 +59,7 @@ func BuildTransitions(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*rtsspb.Trans
 		return nil, err
 	}
 
-	return buildTransitions(v1, v2, m)
+	return buildTransitionsAux(v1, v2, m)
 }
 
 // buildCoordinateWithCoordinateSlice reconstructs the Coordinate object back from the given slice info.
@@ -136,19 +139,8 @@ func buildClusterEdgeCoordinateSlice(c *cluster.Cluster, d rtscpb.Direction) (*r
 func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb.Transition, error) {
 	const minLength = 3
 
-	if s1.GetOrientation() != s2.GetOrientation() || s1.GetLength() != s2.GetLength() {
-		return nil, status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
-	}
-
-	switch s1.GetOrientation() {
-	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-		if s1.GetStart().GetX() != s2.GetStart().GetX() || math.Abs(float64(s2.GetStart().GetY()-s1.GetStart().GetY())) != 1 {
-			return nil, status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
-		}
-	case rtscpb.Orientation_ORIENTATION_VERTICAL:
-		if s1.GetStart().GetY() != s2.GetStart().GetY() || math.Abs(float64(s2.GetStart().GetX()-s1.GetStart().GetX())) != 1 {
-			return nil, status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
-		}
+	if err := verifyCoordinateSlices(s1, s2); err != nil {
+		return nil, err
 	}
 
 	var transitions []*rtsspb.Transition
@@ -174,7 +166,12 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]
 	return transitions, nil
 }
 
-func buildTransitions(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rtsspb.Transition, error) {
+// buildTransitionsAux constructs the list of Transition nodes given the corresponding edges of two adjacent Cluster objects.
+func buildTransitionsAux(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rtsspb.Transition, error) {
+	if err := verifyCoordinateSlices(s1, s2); err != nil {
+		return nil, err
+	}
+
 	orientation := s1.GetOrientation()
 	var res []*rtsspb.Transition
 
@@ -213,6 +210,7 @@ func buildTransitions(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rtssp
 				}
 				res = append(res, transitions...)
 			}
+
 			tmps1 = nil
 			tmps2 = nil
 		}
@@ -226,4 +224,25 @@ func buildTransitions(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rtssp
 	}
 
 	return res, nil
+}
+
+// verifyCoordinateSlices ensures our input slices meet some basic criteria, e.g. adjacent, same orientation, etc.
+// If we need to optimize, we can skip this step, as it's only called in internal functions that are not exposed to
+// the end user.
+func verifyCoordinateSlices(s1, s2 *rtsspb.CoordinateSlice) error {
+	if s1.GetOrientation() != s2.GetOrientation() || s1.GetLength() != s2.GetLength() {
+		return status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
+	}
+
+	switch s1.GetOrientation() {
+	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+		if s1.GetStart().GetX() != s2.GetStart().GetX() || math.Abs(float64(s2.GetStart().GetY()-s1.GetStart().GetY())) != 1 {
+			return status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
+		}
+	case rtscpb.Orientation_ORIENTATION_VERTICAL:
+		if s1.GetStart().GetY() != s2.GetStart().GetY() || math.Abs(float64(s2.GetStart().GetX()-s1.GetStart().GetX())) != 1 {
+			return status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
+		}
+	}
+	return nil
 }
