@@ -7,6 +7,7 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -25,7 +26,7 @@ var (
 type ClusterMap struct {
 	l int32
 	d *rtsspb.Coordinate
-	m map[int32]map[int32]*Cluster
+	m map[utils.MapCoordinate]*Cluster
 }
 
 func ImportClusterMap(pb *rtsspb.ClusterMap) (*ClusterMap, error) {
@@ -100,16 +101,15 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 		return m, nil
 	}
 
-	m.m = make(map[int32]map[int32]*Cluster)
+	m.m = make(map[utils.MapCoordinate]*Cluster)
 	m.d.X = int32(math.Ceil(float64(tileMapDimension.GetX()) / float64(tileDimension.GetX())))
 	m.d.Y = int32(math.Ceil(float64(tileMapDimension.GetY()) / float64(tileDimension.GetY())))
 
 	for _, xp := range xPartitions {
 		x := xp.TileBoundary / tileDimension.GetX()
-		m.m[x] = map[int32]*Cluster{}
 		for _, yp := range yPartitions {
 			y := yp.TileBoundary / tileDimension.GetY()
-			m.m[x][y] = &Cluster{
+			m.m[utils.MC(&rtsspb.Coordinate{X: x, Y: y})] = &Cluster{
 				Val: &rtsspb.Cluster{
 					Coordinate:    &rtsspb.Coordinate{X: x, Y: y},
 					TileBoundary:  &rtsspb.Coordinate{X: xp.TileBoundary, Y: yp.TileBoundary},

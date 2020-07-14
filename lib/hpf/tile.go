@@ -8,6 +8,7 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -45,23 +46,20 @@ func H(src, dst *Tile) (float64, error) {
 // Coordinates are expected to be accessed in (x, y) order.
 type TileMap struct {
 	d *rtsspb.Coordinate
-	m map[int32]map[int32]*Tile
+	m map[utils.MapCoordinate]*Tile
 	c map[rtscpb.TerrainType]float64 // terrain cost
 }
 
 // ImportTileMap constructs a new TileMap object from the input protobuf.
 // List of TileMap.Tiles may be sparse.
 func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
-	m := make(map[int32]map[int32]*Tile)
+	m := make(map[utils.MapCoordinate]*Tile)
 	for _, pbt := range pb.GetTiles() {
 		t, err := ImportTile(pbt)
 		if err != nil {
 			return nil, err
 		}
-		if _, found := m[t.X()]; !found {
-			m[t.X()] = make(map[int32]*Tile)
-		}
-		m[t.X()][t.Y()] = t
+		m[utils.MC(t.Val.GetCoordinate())] = t
 	}
 	tc := make(map[rtscpb.TerrainType]float64)
 	for _, c := range pb.GetTerrainCosts() {
@@ -83,10 +81,7 @@ func ExportTileMap(m *TileMap) (*rtsspb.TileMap, error) {
 
 // Tile returns the Tile object from the input coordinates.
 func (m TileMap) Tile(x, y int32) *Tile {
-	if _, found := m.m[x]; !found {
-		return nil
-	}
-	return m.m[x][y]
+	return m.m[utils.MapCoordinate{X: x, Y: y}]
 }
 
 func (m TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {

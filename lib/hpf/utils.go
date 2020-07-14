@@ -5,12 +5,12 @@ import (
 )
 
 type MapCoordinate struct {
-	x, y int32
+	X, Y int32
 }
 
 func MC(c *rtsspb.Coordinate) MapCoordinate {
 	return MapCoordinate{
-		x: c.GetX(),
-		y: c.GetY(),
+		X: c.GetX(),
+		Y: c.GetY(),
 	}
 }

@@ -6,6 +6,7 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 )
@@ -130,33 +131,29 @@ func TestBuildCluster(t *testing.T) {
 		{name: "ZeroYMapTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
 			l: 1, d: &rtsspb.Coordinate{X: 0, Y: 0}, m: nil}, wantSuccess: true},
 		{name: "SimpleTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
-			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 1}, m: map[int32]map[int32]*Cluster{
-				0: {
-					0: {
-						Val: &rtsspb.Cluster{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-						},
+			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 1}, m: map[utils.MapCoordinate]*Cluster{
+				utils.MapCoordinate{X: 0, Y: 0}: {
+					Val: &rtsspb.Cluster{
+						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+						TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
 					},
 				},
 			}}, wantSuccess: true},
 		{name: "MultiplePartitionTest", tileMapDimension: &rtsspb.Coordinate{X: 2, Y: 3}, tileDimension: &rtsspb.Coordinate{X: 2, Y: 2}, want: &ClusterMap{
-			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 2}, m: map[int32]map[int32]*Cluster{
-				0: {
-					0: {
-						Val: &rtsspb.Cluster{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
+			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 2}, m: map[utils.MapCoordinate]*Cluster{
+				utils.MapCoordinate{X: 0, Y: 0}: {
+					Val: &rtsspb.Cluster{
+						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+						TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
 					},
-					1: {
-						Val: &rtsspb.Cluster{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 1},
-						},
+				},
+				utils.MapCoordinate{X: 0, Y: 1}: {
+					Val: &rtsspb.Cluster{
+						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
+						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},
+						TileDimension: &rtsspb.Coordinate{X: 2, Y: 1},
 					},
 				},
 			}}, wantSuccess: true},
