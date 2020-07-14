@@ -95,3 +95,22 @@ go_test(
 	"@com_github_google_go_cmp//cmp:go_default_library",
     ],
 )
+
+go_library(
+    name = "abstractgraph",
+    srcs = ["abstractgraph.go"],
+    importpath = "github.com/cripplet/rts-pathing/lib/hpf/abstractgraph",
+    deps = [
+        ":utils",
+	"//lib/proto:structs_go_proto",
+    ],
+)
+
+go_library(
+    name = "utils",
+    srcs = ["utils.go"],
+    importpath = "github.com/cripplet/rts-pathing/lib/hpf/utils",
+    deps = [
+	"//lib/proto:structs_go_proto",
+    ],
+)

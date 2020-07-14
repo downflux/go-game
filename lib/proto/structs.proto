@@ -58,15 +58,17 @@ message AbstractGraph {
 	repeated AbstractEdge edges = 3;
 }
 
+
 message AbstractNode {
 	int32 level = 1;
-	Coordinate coordinate = 2;
+	Coordinate cluster_coordinate = 2;
+	Coordinate tile_coordinate = 3;
 }
 
 message AbstractEdge {
 	int32 level = 1;
-	AbstractNode source = 2;
-	AbstractNode destination = 3;
+	Coordinate source = 2;
+	Coordinate destination = 3;
 	rts_pathing.lib.proto.constants.EdgeType edge_type = 4;
 	float weight = 5;
 }
