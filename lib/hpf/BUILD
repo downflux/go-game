@@ -105,8 +105,14 @@ go_library(
     srcs = ["abstractgraph.go"],
     importpath = "github.com/cripplet/rts-pathing/lib/hpf/abstractgraph",
     deps = [
+	":cluster",
+	":entrance",
         ":utils",
+	":tile",
+        "//lib/proto:constants_go_proto",
 	"//lib/proto:structs_go_proto",
+	"@org_golang_google_grpc//status:go_default_library",
+	"@org_golang_google_grpc//codes:go_default_library",
     ],
 )
 

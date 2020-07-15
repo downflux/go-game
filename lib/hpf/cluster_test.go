@@ -12,7 +12,7 @@ import (
 )
 
 func (m *ClusterMap) Equal(other *ClusterMap) bool {
-	return m.l == other.l && proto.Equal(m.d, other.d) && cmp.Equal(m.m, other.m)
+	return m.L == other.L && proto.Equal(m.D, other.D) && cmp.Equal(m.M, other.M)
 }
 
 func (c *Cluster) Equal(other *Cluster) bool {
@@ -125,14 +125,14 @@ func TestBuildCluster(t *testing.T) {
 		{name: "ZeroXDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 1}, want: nil, wantSuccess: false},
 		{name: "ZeroYDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 0}, want: nil, wantSuccess: false},
 		{name: "ZeroWidthMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
-			l: 1, d: &rtsspb.Coordinate{X: 0, Y: 0}, m: nil}, wantSuccess: true},
+			L: 1, D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
 		{name: "ZeroXMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
-			l: 1, d: &rtsspb.Coordinate{X: 0, Y: 0}, m: nil}, wantSuccess: true},
+			L: 1, D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
 		{name: "ZeroYMapTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
-			l: 1, d: &rtsspb.Coordinate{X: 0, Y: 0}, m: nil}, wantSuccess: true},
+			L: 1, D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
 		{name: "SimpleTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
-			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 1}, m: map[utils.MapCoordinate]*Cluster{
-				utils.MapCoordinate{X: 0, Y: 0}: {
+			L: 1, D: &rtsspb.Coordinate{X: 1, Y: 1}, M: map[utils.MapCoordinate]*Cluster{
+				{X: 0, Y: 0}: {
 					Val: &rtsspb.Cluster{
 						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
 						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
@@ -141,15 +141,15 @@ func TestBuildCluster(t *testing.T) {
 				},
 			}}, wantSuccess: true},
 		{name: "MultiplePartitionTest", tileMapDimension: &rtsspb.Coordinate{X: 2, Y: 3}, tileDimension: &rtsspb.Coordinate{X: 2, Y: 2}, want: &ClusterMap{
-			l: 1, d: &rtsspb.Coordinate{X: 1, Y: 2}, m: map[utils.MapCoordinate]*Cluster{
-				utils.MapCoordinate{X: 0, Y: 0}: {
+			L: 1, D: &rtsspb.Coordinate{X: 1, Y: 2}, M: map[utils.MapCoordinate]*Cluster{
+				{X: 0, Y: 0}: {
 					Val: &rtsspb.Cluster{
 						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
 						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
 						TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
 					},
 				},
-				utils.MapCoordinate{X: 0, Y: 1}: {
+				{X: 0, Y: 1}: {
 					Val: &rtsspb.Cluster{
 						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
 						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},

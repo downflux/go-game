@@ -21,17 +21,17 @@ func (t *Tile) Equal(other *Tile) bool {
 
 var (
 	simpleMap = &TileMap{
-		d: &rtsspb.Coordinate{X: 3, Y: 3},
-		m: map[utils.MapCoordinate]*Tile{
-			utils.MapCoordinate{X: 0, Y: 0}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			utils.MapCoordinate{X: 0, Y: 1}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			utils.MapCoordinate{X: 0, Y: 2}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			utils.MapCoordinate{X: 1, Y: 0}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			utils.MapCoordinate{X: 1, Y: 1}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			utils.MapCoordinate{X: 1, Y: 2}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			utils.MapCoordinate{X: 2, Y: 0}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			utils.MapCoordinate{X: 2, Y: 1}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			utils.MapCoordinate{X: 0, Y: 2}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+		D: &rtsspb.Coordinate{X: 3, Y: 3},
+		M: map[utils.MapCoordinate]*Tile{
+			{X: 0, Y: 0}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			{X: 0, Y: 1}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			{X: 0, Y: 2}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			{X: 1, Y: 0}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			{X: 1, Y: 1}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			{X: 1, Y: 2}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			{X: 2, Y: 0}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			{X: 2, Y: 1}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+			{X: 0, Y: 2}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
 		},
 	}
 )
@@ -145,7 +145,7 @@ func TestGetTile(t *testing.T) {
 		coordinate *rtsspb.Coordinate
 		want       *Tile
 	}{
-		{name: "TrivialTile", coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: simpleMap.m[utils.MapCoordinate{X: 0, Y: 0}]},
+		{name: "TrivialTile", coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: simpleMap.M[utils.MapCoordinate{X: 0, Y: 0}]},
 		{name: "DNETile", coordinate: &rtsspb.Coordinate{X: 100, Y: 100}, want: nil},
 	}
 

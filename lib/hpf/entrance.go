@@ -123,9 +123,10 @@ func buildClusterEdgeCoordinateSlice(c *cluster.Cluster, d rtscpb.Direction) (*r
 	}
 
 	return &rtsspb.CoordinateSlice{
-		Orientation: orientation,
-		Start:       start,
-		Length:      length,
+		Orientation:       orientation,
+		Start:             start,
+		Length:            length,
+		ClusterCoordinate: proto.Clone(c.Val.GetCoordinate()).(*rtsspb.Coordinate),
 	}, nil
 }
 
@@ -161,7 +162,16 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]
 			return nil, err
 		}
 
-		transitions = append(transitions, &rtsspb.Transition{C1: c1, C2: c2})
+		transitions = append(transitions, &rtsspb.Transition{
+			N1: &rtsspb.AbstractNode{
+				TileCoordinate:    c1,
+				ClusterCoordinate: s1.GetClusterCoordinate(),
+			},
+			N2: &rtsspb.AbstractNode{
+				TileCoordinate:    c2,
+				ClusterCoordinate: s2.GetClusterCoordinate(),
+			},
+		})
 	}
 	return transitions, nil
 }
@@ -175,7 +185,7 @@ func buildTransitionsAux(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rt
 	orientation := s1.GetOrientation()
 	var res []*rtsspb.Transition
 
-	var tmps1, tmps2 *rtsspb.CoordinateSlice
+	var tSegment1, tSegment2 *rtsspb.CoordinateSlice
 	for o := int32(0); o < s1.GetLength(); o++ {
 		c1, err := buildCoordinateWithCoordinateSlice(s1, o)
 		if err != nil {
@@ -187,36 +197,38 @@ func buildTransitionsAux(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rt
 		}
 
 		if (m.TileFromCoordinate(c1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (m.TileFromCoordinate(c2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
-			if tmps1 == nil {
-				tmps1 = &rtsspb.CoordinateSlice{
-					Orientation: orientation,
-					Start:       c1,
+			if tSegment1 == nil {
+				tSegment1 = &rtsspb.CoordinateSlice{
+					Orientation:       orientation,
+					Start:             c1,
+					ClusterCoordinate: s1.GetClusterCoordinate(),
 				}
 			}
-			if tmps2 == nil {
-				tmps2 = &rtsspb.CoordinateSlice{
-					Orientation: orientation,
-					Start:       c2,
+			if tSegment2 == nil {
+				tSegment2 = &rtsspb.CoordinateSlice{
+					Orientation:       orientation,
+					Start:             c2,
+					ClusterCoordinate: s2.GetClusterCoordinate(),
 				}
 			}
-			tmps1.Length += 1
-			tmps2.Length += 1
+			tSegment1.Length += 1
+			tSegment2.Length += 1
 		}
 		if (m.TileFromCoordinate(c1).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) || (m.TileFromCoordinate(c2).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
-			if tmps1 != nil && tmps2 != nil {
-				transitions, err := buildTransitionsFromOpenCoordinateSlice(tmps1, tmps2)
+			if tSegment1 != nil && tSegment2 != nil {
+				transitions, err := buildTransitionsFromOpenCoordinateSlice(tSegment1, tSegment2)
 				if err != nil {
 					return nil, err
 				}
 				res = append(res, transitions...)
 			}
 
-			tmps1 = nil
-			tmps2 = nil
+			tSegment1 = nil
+			tSegment2 = nil
 		}
 	}
-	if tmps1 != nil && tmps2 != nil {
-		transitions, err := buildTransitionsFromOpenCoordinateSlice(tmps1, tmps2)
+	if tSegment1 != nil && tSegment2 != nil {
+		transitions, err := buildTransitionsFromOpenCoordinateSlice(tSegment1, tSegment2)
 		if err != nil {
 			return nil, err
 		}

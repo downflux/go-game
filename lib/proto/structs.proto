@@ -45,11 +45,12 @@ message CoordinateSlice {
 	rts_pathing.lib.proto.constants.Orientation orientation = 1;
 	Coordinate start = 2;
 	int32 length = 3;
+	Coordinate cluster_coordinate = 4;
 }
 
 message Transition {
-	Coordinate c1 = 1;
-	Coordinate c2 = 2;
+	AbstractNode n1 = 1;
+	AbstractNode n2 = 2;
 }
 
 message AbstractGraph {

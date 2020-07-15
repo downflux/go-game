@@ -24,9 +24,9 @@ var (
 )
 
 type ClusterMap struct {
-	l int32
-	d *rtsspb.Coordinate
-	m map[utils.MapCoordinate]*Cluster
+	L int32
+	D *rtsspb.Coordinate
+	M map[utils.MapCoordinate]*Cluster
 }
 
 func ImportClusterMap(pb *rtsspb.ClusterMap) (*ClusterMap, error) {
@@ -83,9 +83,9 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 		return nil, status.Errorf(codes.FailedPrecondition, "specified l-level must be a non-zero positive integer")
 	}
 	m := &ClusterMap{
-		l: l,
-		d: &rtsspb.Coordinate{},
-		m: nil,
+		L: l,
+		D: &rtsspb.Coordinate{},
+		M: nil,
 	}
 
 	xPartitions, err := partition(tileMapDimension.GetX(), tileDimension.GetX())
@@ -101,15 +101,15 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 		return m, nil
 	}
 
-	m.m = make(map[utils.MapCoordinate]*Cluster)
-	m.d.X = int32(math.Ceil(float64(tileMapDimension.GetX()) / float64(tileDimension.GetX())))
-	m.d.Y = int32(math.Ceil(float64(tileMapDimension.GetY()) / float64(tileDimension.GetY())))
+	m.M = make(map[utils.MapCoordinate]*Cluster)
+	m.D.X = int32(math.Ceil(float64(tileMapDimension.GetX()) / float64(tileDimension.GetX())))
+	m.D.Y = int32(math.Ceil(float64(tileMapDimension.GetY()) / float64(tileDimension.GetY())))
 
 	for _, xp := range xPartitions {
 		x := xp.TileBoundary / tileDimension.GetX()
 		for _, yp := range yPartitions {
 			y := yp.TileBoundary / tileDimension.GetY()
-			m.m[utils.MC(&rtsspb.Coordinate{X: x, Y: y})] = &Cluster{
+			m.M[utils.MC(&rtsspb.Coordinate{X: x, Y: y})] = &Cluster{
 				Val: &rtsspb.Cluster{
 					Coordinate:    &rtsspb.Coordinate{X: x, Y: y},
 					TileBoundary:  &rtsspb.Coordinate{X: xp.TileBoundary, Y: yp.TileBoundary},

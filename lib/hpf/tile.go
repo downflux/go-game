@@ -45,9 +45,9 @@ func H(src, dst *Tile) (float64, error) {
 // TileMap is a 2D hashmap of the terrain map file.
 // Coordinates are expected to be accessed in (x, y) order.
 type TileMap struct {
-	d *rtsspb.Coordinate
-	m map[utils.MapCoordinate]*Tile
-	c map[rtscpb.TerrainType]float64 // terrain cost
+	D *rtsspb.Coordinate
+	M map[utils.MapCoordinate]*Tile
+	C map[rtscpb.TerrainType]float64 // terrain cost
 }
 
 // ImportTileMap constructs a new TileMap object from the input protobuf.
@@ -67,9 +67,9 @@ func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
 	}
 
 	return &TileMap{
-		d: pb.GetDimension(),
-		m: m,
-		c: tc,
+		D: pb.GetDimension(),
+		M: m,
+		C: tc,
 	}, nil
 }
 
@@ -81,7 +81,7 @@ func ExportTileMap(m *TileMap) (*rtsspb.TileMap, error) {
 
 // Tile returns the Tile object from the input coordinates.
 func (m TileMap) Tile(x, y int32) *Tile {
-	return m.m[utils.MapCoordinate{X: x, Y: y}]
+	return m.M[utils.MapCoordinate{X: x, Y: y}]
 }
 
 func (m TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {

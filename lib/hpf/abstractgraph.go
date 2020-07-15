@@ -5,16 +5,24 @@ package abstractgraph
 import (
 	"sync"
 
+	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
+	// "github.com/cripplet/rts-pathing/lib/hpf/entrance"
+	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
+	"github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
+	// "google.golang.org/grpc/codes"
+	// "google.golang.org/grpc/status"
 )
 
 type AbstractGraph struct {
 	L int32
 
 	Mu sync.RWMutex
+	// N is a map from the Cluster coordinate to a list of nodes contained within that Cluster.
 	N map[utils.MapCoordinate][]*AbstractNode
+	// E is a map of Tile coordinates to the list of edges that connect to the Tle.
 	E map[utils.MapCoordinate][]*AbstractEdge
 }
 
@@ -72,7 +80,37 @@ func (g *AbstractGraph) AddEdge(pb *rtsspb.AbstractEdge) error {
 	g.Mu.Lock()
 	defer g.Mu.Unlock()
 
+	// Assuming symmetrical bidirectional graph.
 	g.E[utils.MC(e.Val.GetSource())] = append(g.E[utils.MC(e.Val.GetSource())], e)
 	g.E[utils.MC(e.Val.GetDestination())] = append(g.E[utils.MC(e.Val.GetDestination())], e)
 	return nil
+}
+
+func BuildAbstractGraph(tm []*tile.TileMap, cm *cluster.ClusterMap, ts []*rtsspb.Transition) (*AbstractGraph, error) {
+	g := &AbstractGraph{
+		L: cm.L,
+	}
+
+	for _, t := range ts {
+		g.AddNode(&rtsspb.AbstractNode{
+			Level:             g.L,
+			ClusterCoordinate: t.GetN1().GetClusterCoordinate(),
+			TileCoordinate:    t.GetN1().GetTileCoordinate(),
+		})
+		g.AddNode(&rtsspb.AbstractNode{
+			Level:             g.L,
+			ClusterCoordinate: t.GetN2().GetClusterCoordinate(),
+			TileCoordinate:    t.GetN2().GetTileCoordinate(),
+		})
+		g.AddEdge(&rtsspb.AbstractEdge{
+			Level:       g.L,
+			Source:      t.GetN1().GetClusterCoordinate(),
+			Destination: t.GetN2().GetClusterCoordinate(),
+			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+			Weight:      1, // Inter-edges are always of cost 1, per Botea.
+		})
+	}
+
+	// TODO(cripplet): Add INTRA edge calculations here.
+	return g, nil
 }
