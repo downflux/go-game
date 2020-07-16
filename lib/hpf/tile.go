@@ -8,6 +8,7 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/beefsack/go-astar"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,6 +23,7 @@ var (
 		{X: 1, Y: 0},
 		{X: -1, Y: 0},
 	}
+	infinity = math.Inf(1)
 )
 
 // IsAdjacent tests if two Tile objects are adjacent to one another.
@@ -54,23 +56,26 @@ type TileMap struct {
 // List of TileMap.Tiles may be sparse.
 func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
 	m := make(map[utils.MapCoordinate]*Tile)
+	tc := make(map[rtscpb.TerrainType]float64)
+
+	for _, c := range pb.GetTerrainCosts() {
+		tc[c.GetTerrainType()] = c.GetCost()
+	}
+	tm := &TileMap{
+		D: pb.GetDimension(),
+		M: m,
+		C: tc,
+	}
+
 	for _, pbt := range pb.GetTiles() {
-		t, err := ImportTile(pbt)
+		t, err := ImportTile(pbt, tm)
 		if err != nil {
 			return nil, err
 		}
 		m[utils.MC(t.Val.GetCoordinate())] = t
 	}
-	tc := make(map[rtscpb.TerrainType]float64)
-	for _, c := range pb.GetTerrainCosts() {
-		tc[c.GetTerrainType()] = c.GetCost()
-	}
 
-	return &TileMap{
-		D: pb.GetDimension(),
-		M: m,
-		C: tc,
-	}, nil
+	return tm, nil
 }
 
 // ExportTileMap converts an internal TileMap object into an exportable
@@ -80,11 +85,11 @@ func ExportTileMap(m *TileMap) (*rtsspb.TileMap, error) {
 }
 
 // Tile returns the Tile object from the input coordinates.
-func (m TileMap) Tile(x, y int32) *Tile {
+func (m *TileMap) Tile(x, y int32) *Tile {
 	return m.M[utils.MapCoordinate{X: x, Y: y}]
 }
 
-func (m TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
+func (m *TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
 	return m.Tile(c.GetX(), c.GetY())
 }
 
@@ -105,14 +110,58 @@ func (m TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 }
 
 // Tile represents a physical map node.
+//
+// Tile implements astar.Pather.
 type Tile struct {
+	// M is a backreference to the originating map. We need this
+	// to implement astar.Pather (i.e. if we expect to call A*
+	// on this Tile object.
+	//
+	// M is not automatically exported when calling ExportTile.
+	M *TileMap
+
 	// Val is the underlying representation of the map node. It may be
 	// mutated, e.g. changing TerrainType to / from TERRAIN_TYPE_BLOCKED
 	Val *rtsspb.Tile
 }
 
-func ImportTile(pb *rtsspb.Tile) (*Tile, error) {
+func (t *Tile) PathNeighbors() []astar.Pather {
+	var ps []astar.Pather
+	if t.M == nil {
+		return ps
+	}
+	tiles, err := t.M.Neighbors(t.Val.GetCoordinate())
+	if err != nil {
+		return ps
+	}
+	for _, t := range tiles {
+		ps = append(ps, t)
+	}
+	return ps
+}
+
+func (t *Tile) PathNeighborCost(to astar.Pather) float64 {
+	if t.M == nil {
+		return infinity
+	}
+	cost, err := D(t.M.C, t, to.(*Tile))
+	if err != nil {
+		return infinity
+	}
+	return cost
+}
+
+func (t *Tile) PathEstimatedCost(to astar.Pather) float64 {
+	cost, err := H(t, to.(*Tile))
+	if err != nil {
+		return infinity
+	}
+	return cost
+}
+
+func ImportTile(pb *rtsspb.Tile, m *TileMap) (*Tile, error) {
 	return &Tile{
+		M:   m,
 		Val: pb,
 	}, nil
 }

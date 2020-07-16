@@ -3,17 +3,23 @@
 package abstractgraph
 
 import (
+	"math"
 	"sync"
 
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/beefsack/go-astar"
 	// "github.com/cripplet/rts-pathing/lib/hpf/entrance"
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	// "google.golang.org/grpc/codes"
 	// "google.golang.org/grpc/status"
+)
+
+var (
+	infinity = math.Inf(1)
 )
 
 type AbstractGraph struct {
@@ -86,7 +92,7 @@ func (g *AbstractGraph) AddEdge(pb *rtsspb.AbstractEdge) error {
 	return nil
 }
 
-func BuildAbstractGraph(tm []*tile.TileMap, cm *cluster.ClusterMap, ts []*rtsspb.Transition) (*AbstractGraph, error) {
+func BuildAbstractGraph(tm *tile.TileMap, cm *cluster.ClusterMap, ts []*rtsspb.Transition) (*AbstractGraph, error) {
 	g := &AbstractGraph{
 		L: cm.L,
 	}
@@ -104,13 +110,33 @@ func BuildAbstractGraph(tm []*tile.TileMap, cm *cluster.ClusterMap, ts []*rtsspb
 		})
 		g.AddEdge(&rtsspb.AbstractEdge{
 			Level:       g.L,
-			Source:      t.GetN1().GetClusterCoordinate(),
-			Destination: t.GetN2().GetClusterCoordinate(),
+			Source:      t.GetN1().GetTileCoordinate(),
+			Destination: t.GetN2().GetTileCoordinate(),
 			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 			Weight:      1, // Inter-edges are always of cost 1, per Botea.
 		})
 	}
 
-	// TODO(cripplet): Add INTRA edge calculations here.
+	// Add intra-edges for all tiles within the same Cluster.
+	for _, ns := range g.N {
+		for i, n1 := range ns {
+			for j, n2 := range ns {
+				if i != j {
+					// TODO(cripplet): Add INTRA edge calculation for L > 1.
+					_, cost, found := astar.Path(tm.TileFromCoordinate(n1.Val.GetTileCoordinate()), tm.TileFromCoordinate(n2.Val.GetTileCoordinate()))
+					if found {
+						g.AddEdge(&rtsspb.AbstractEdge{
+							Level:       g.L,
+							Source:      n1.Val.GetTileCoordinate(),
+							Destination: n2.Val.GetTileCoordinate(),
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+							Weight:      float32(cost),
+						})
+					}
+				}
+			}
+		}
+	}
+
 	return g, nil
 }
