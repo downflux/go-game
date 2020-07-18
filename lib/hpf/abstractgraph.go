@@ -9,7 +9,6 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
-	"github.com/beefsack/go-astar"
 	// "github.com/cripplet/rts-pathing/lib/hpf/entrance"
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
@@ -123,14 +122,17 @@ func BuildAbstractGraph(tm *tile.TileMap, cm *cluster.ClusterMap, ts []*rtsspb.T
 			for j, n2 := range ns {
 				if i != j {
 					// TODO(cripplet): Add INTRA edge calculation for L > 1.
-					_, cost, found := astar.Path(tm.TileFromCoordinate(n1.Val.GetTileCoordinate()), tm.TileFromCoordinate(n2.Val.GetTileCoordinate()))
+					_, cost, found, err := tile.Path(tm.TileFromCoordinate(n1.Val.GetTileCoordinate()), tm.TileFromCoordinate(n2.Val.GetTileCoordinate()))
+					if err != nil {
+						return nil, err
+					}
 					if found {
 						g.AddEdge(&rtsspb.AbstractEdge{
 							Level:       g.L,
 							Source:      n1.Val.GetTileCoordinate(),
 							Destination: n2.Val.GetTileCoordinate(),
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
-							Weight:      float32(cost),
+							Weight:      cost,
 						})
 					}
 				}

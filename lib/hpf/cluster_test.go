@@ -7,17 +7,9 @@ import (
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
-	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
+	"google.golang.org/protobuf/testing/protocmp"
 )
-
-func (m *ClusterMap) Equal(other *ClusterMap) bool {
-	return m.L == other.L && proto.Equal(m.D, other.D) && cmp.Equal(m.M, other.M)
-}
-
-func (c *Cluster) Equal(other *Cluster) bool {
-	return proto.Equal(c.Val, other.Val)
-}
 
 func TestIsAdjacent(t *testing.T) {
 	testConfigs := []struct {
@@ -165,7 +157,7 @@ func TestBuildCluster(t *testing.T) {
 			if (err == nil) != c.wantSuccess {
 				t.Fatalf("BuildClusterMap() = _, %v, want wantSuccess = %v", err, c.wantSuccess)
 			}
-			if err == nil && !cmp.Equal(m, c.want) {
+			if err == nil && !cmp.Equal(m, c.want, protocmp.Transform()) {
 				t.Errorf("BuildClusterMap() = %v, want = %v", m, c.want)
 			}
 		})

@@ -19,7 +19,9 @@ go_library(
 	":utils",
 	"//lib/proto:constants_go_proto",
 	"//lib/proto:structs_go_proto",
+	# TODO(minkezhang): Delete dis.
 	"@com_github_beefsack_go_astar//:go_default_library",
+	"@com_github_fzipp_astar//:go_default_library",
 	"@org_golang_google_grpc//status:go_default_library",
 	"@org_golang_google_grpc//codes:go_default_library",
     ],
@@ -34,11 +36,11 @@ go_test(
 	":utils",
 	"//lib/proto:constants_go_proto",
 	"//lib/proto:structs_go_proto",
-	"@com_github_golang_protobuf//proto:go_default_library",
 	"@com_github_google_go_cmp//cmp:go_default_library",
 	"@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
 	"@org_golang_google_grpc//status:go_default_library",
 	"@org_golang_google_grpc//codes:go_default_library",
+	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
@@ -65,8 +67,8 @@ go_test(
 	":utils",
         "//lib/proto:constants_go_proto",
         "//lib/proto:structs_go_proto",
-	"@com_github_golang_protobuf//proto:go_default_library",
 	"@com_github_google_go_cmp//cmp:go_default_library",
+	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
@@ -112,7 +114,6 @@ go_library(
 	":tile",
         "//lib/proto:constants_go_proto",
 	"//lib/proto:structs_go_proto",
-	"@com_github_beefsack_go_astar//:go_default_library",
 	"@org_golang_google_grpc//status:go_default_library",
 	"@org_golang_google_grpc//codes:go_default_library",
     ],

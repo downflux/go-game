@@ -81,8 +81,15 @@ go_repository(
     commit = "77ae86f624cb174e21763cffcbbf070eb06cb016",  # v0.5.0
 )
 
+# TODO(cripplet): Delete dis.
 go_repository(
     name = "com_github_beefsack_go_astar",
     importpath = "github.com/beefsack/go-astar",
     commit = "f324bbb0d6f79849d76a6d94329152c6adfccee2",
+)
+
+go_repository(
+    name = "com_github_fzipp_astar",
+    importpath = "github.com/fzipp/astar",
+    commit = "330d9f048c8e9a904c80f32aa3a95ce6d24afbe0",
 )

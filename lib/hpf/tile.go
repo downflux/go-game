@@ -31,12 +31,16 @@ func IsAdjacent(src, dst *Tile) bool {
 	return math.Abs(float64(dst.X()-src.X()))+math.Abs(float64(dst.Y()-src.Y())) == 1
 }
 
-// D gets exact cost of two neighboring Tiles.
+// D gets exact cost between two neighboring Tiles.
+//
+// We're only taking the "difficulty" metric of the target Tile here; moving into and out of
+// a Tile will essentially just double its cost, and the cost doesn't matter when
+// the Tile is a source or target (since moving there is mandatory).
 func D(c map[rtscpb.TerrainType]float64, src, dst *Tile) (float64, error) {
 	if !IsAdjacent(src, dst) {
 		return 0, status.Error(codes.InvalidArgument, "input tiles are not adjacent to one another")
 	}
-	return c[src.TerrainType()] + c[dst.TerrainType()], nil
+	return c[dst.TerrainType()], nil
 }
 
 // H gets the estimated cost of moving between two arbitrary Tiles.
@@ -95,14 +99,16 @@ func (m *TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
 
 // Neighbors returns the adjacent Tiles of an input Tile object.
 func (m TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
-	if m.Tile(coordinate.GetX(), coordinate.GetY()) == nil {
+	if m.TileFromCoordinate(coordinate) == nil {
 		return nil, status.Error(
 			codes.NotFound, "tile not found in the map")
+
 	}
 
+	src := m.TileFromCoordinate(coordinate)
 	var neighbors []*Tile
 	for _, c := range neighborCoordinates {
-		if t := m.Tile(coordinate.GetX()+c.GetX(), coordinate.GetY()+c.GetY()); t != nil && t.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
+		if t := m.Tile(coordinate.GetX()+c.GetX(), coordinate.GetY()+c.GetY()); src.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED && t != nil && t.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
 			neighbors = append(neighbors, t)
 		}
 	}
@@ -157,6 +163,26 @@ func (t *Tile) PathEstimatedCost(to astar.Pather) float64 {
 		return infinity
 	}
 	return cost
+}
+
+func Path(src, dest *Tile) ([]*Tile, bool, error) {
+	if src == nil || dest == nil {
+		return nil, false, status.Errorf(codes.FailedPrecondition, "cannot have nil Tile inputs")
+	}
+	if src.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED || dest.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
+		return nil, false, nil
+	}
+
+	path, _, found := astar.Path(src, dest)
+
+	// astar.Path returns the path starting from destination, which is not useful for a majority
+	// of our cases. Reversing here for convenience.
+	var tiles []*Tile
+	for i := range path {
+		tiles = append(tiles, path[len(path)-1-i].(*Tile))
+	}
+
+	return tiles, found, nil
 }
 
 func ImportTile(pb *rtsspb.Tile, m *TileMap) (*Tile, error) {

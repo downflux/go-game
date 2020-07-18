@@ -71,5 +71,5 @@ message AbstractEdge {
 	Coordinate source = 2;
 	Coordinate destination = 3;
 	rts_pathing.lib.proto.constants.EdgeType edge_type = 4;
-	float weight = 5;
+	double weight = 5;
 }
