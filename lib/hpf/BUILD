@@ -132,6 +132,7 @@ go_library(
     srcs = ["abstractgraph.go"],
     importpath = "github.com/cripplet/rts-pathing/lib/hpf/abstractgraph",
     deps = [
+	":astar",
 	":cluster",
 	":entrance",
         ":utils",

@@ -9,6 +9,7 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/cripplet/rts-pathing/lib/hpf/astar"
 	// "github.com/cripplet/rts-pathing/lib/hpf/entrance"
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
@@ -117,16 +118,19 @@ func BuildAbstractGraph(tm *tile.TileMap, cm *cluster.ClusterMap, ts []*rtsspb.T
 	}
 
 	// Add intra-edges for all tiles within the same Cluster.
-	for _, ns := range g.N {
-		for i, n1 := range ns {
-			for j, n2 := range ns {
+	for _, abstractNodes := range g.N {
+		for i, n1 := range abstractNodes {
+			for j, n2 := range abstractNodes {
 				if i != j {
 					// TODO(cripplet): Add INTRA edge calculation for L > 1.
-					_, cost, found, err := tile.Path(tm.TileFromCoordinate(n1.Val.GetTileCoordinate()), tm.TileFromCoordinate(n2.Val.GetTileCoordinate()))
+					path, cost, err := astar.TileMapPath(
+						tm,
+						tm.TileFromCoordinate(n1.Val.GetTileCoordinate()),
+						tm.TileFromCoordinate(n2.Val.GetTileCoordinate()))
 					if err != nil {
 						return nil, err
 					}
-					if found {
+					if path != nil {
 						g.AddEdge(&rtsspb.AbstractEdge{
 							Level:       g.L,
 							Source:      n1.Val.GetTileCoordinate(),
