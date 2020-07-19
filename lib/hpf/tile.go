@@ -8,7 +8,6 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
-	"github.com/fzipp/astar"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -99,21 +98,8 @@ func (m *TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
 	return m.Tile(c.GetX(), c.GetY())
 }
 
-// Returns a list of adjacent Tiles.
-//
-// Implements astar.Graph.Neighbours.
-func (m TileMap) Neighbours(n astar.Node) []astar.Node {
-	ts, _ := m.Neighbors(n.(*Tile).Val.GetCoordinate())
-
-	var res []astar.Node
-	for _, t := range ts {
-		res = append(res, t)
-	}
-	return res
-}
-
 // Neighbors returns the adjacent Tiles of an input Tile object.
-func (m TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
+func (m *TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 	if m.TileFromCoordinate(coordinate) == nil {
 		return nil, status.Error(
 			codes.NotFound, "tile not found in the map")
@@ -135,28 +121,6 @@ type Tile struct {
 	// Val is the underlying representation of the map node. It may be
 	// mutated, e.g. changing TerrainType to / from TERRAIN_TYPE_BLOCKED
 	Val *rtsspb.Tile
-}
-
-func Path(m *TileMap, src, dest *Tile) ([]*Tile, error) {
-	if src == nil || dest == nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "cannot have nil Tile inputs")
-	}
-	if src.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED || dest.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
-		return nil, nil
-	}
-
-	var res []*Tile
-	path := astar.FindPath(m, src, dest, func(a, b astar.Node) float64{
-		cost, _ := D(m.C, a.(*Tile), b.(*Tile))
-		return cost
-	}, func(a, b astar.Node) float64{
-		cost, _ := H(a.(*Tile), b.(*Tile))
-		return cost
-	})
-	for _, p := range path {
-		res = append(res, p.(*Tile))
-	}
-	return res, nil
 }
 
 func ImportTile(pb *rtsspb.Tile) (*Tile, error) {

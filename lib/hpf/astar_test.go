@@ -1,0 +1,198 @@
+package astar
+
+import (
+	"testing"
+
+	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
+	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
+
+	"github.com/cripplet/rts-pathing/lib/hpf/tile"
+	"github.com/google/go-cmp/cmp"
+	"google.golang.org/protobuf/testing/protocmp"
+)
+
+var (
+	/**
+	 * Y = 0 -
+	 *   X = 0
+	 */
+	trivialOpenMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 1, Y: 1},
+		Tiles: []*rtsspb.Tile{
+			{
+				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+			},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{},
+	}
+
+	/**
+	 * Y = 0 W
+	 *   X = 0
+	 */
+	trivialClosedMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 1, Y: 1},
+		Tiles: []*rtsspb.Tile{
+			{
+				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED,
+			},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{},
+	}
+
+	/**
+	 *       W
+	 * Y = 0 -
+	 *   X = 0
+	 */
+	trivialSemiOpenMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 1, Y: 2},
+		Tiles: []*rtsspb.Tile{
+			{
+				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+			},
+			{
+				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 1},
+				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED,
+			},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{},
+	}
+
+	/**
+	 *       -
+	 *       W
+	 * Y = 0 -
+	 *   X = 0
+	 */
+	impassableMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 1, Y: 3},
+		Tiles: []*rtsspb.Tile{
+			{
+				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+			},
+			{
+				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 1},
+				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED,
+			},
+			{
+				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 2},
+				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+			},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{},
+	}
+
+	/**
+	 *       - - -
+	 *       W W W
+	 * Y = 0 - - -
+	 *   X = 0
+	 */
+	passableMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 3, Y: 3},
+		Tiles: []*rtsspb.Tile{
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		},
+	}
+)
+
+type aStarResult struct {
+	path []*rtsspb.Coordinate
+}
+
+func TestAStarSearchError(t *testing.T) {
+	testConfigs := []struct {
+		name      string
+		m         *rtsspb.TileMap
+		src, dest *rtsspb.Coordinate
+	}{
+		{name: "SourceOutOfBounds", m: trivialOpenMap, src: &rtsspb.Coordinate{X: 1, Y: 1}, dest: &rtsspb.Coordinate{X: 0, Y: 0}},
+		{name: "DestinationOutOfBounds", m: trivialOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 1, Y: 1}},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			tm, err := tile.ImportTileMap(c.m)
+			if err != nil {
+				t.Fatalf("ImportTileMap() = %v, want = nil", err)
+			}
+
+			if _, err = TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest)); err == nil {
+				t.Fatal("TileMapPath() = nil, want a non-nil error")
+			}
+		})
+	}
+}
+
+func TestAStarSearch(t *testing.T) {
+	testConfigs := []struct {
+		name      string
+		m         *rtsspb.TileMap
+		src, dest *rtsspb.Coordinate
+		want      aStarResult
+	}{
+		{name: "TrivialOpenMap", m: trivialOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, want: aStarResult{
+			path: []*rtsspb.Coordinate{{X: 0, Y: 0}},
+		}},
+		{name: "TrivialClosedMap", m: trivialClosedMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, want: aStarResult{
+			path: nil,
+		}},
+		{name: "BlockedSource", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 1}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, want: aStarResult{
+			path: nil,
+		}},
+		{name: "BlockedDestination", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 1}, want: aStarResult{
+			path: nil,
+		}},
+		{name: "ImpassableMap", m: impassableMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 2}, want: aStarResult{
+			path: nil,
+		}},
+		{name: "SimpleSearch", m: passableMap, src: &rtsspb.Coordinate{X: 1, Y: 0}, dest: &rtsspb.Coordinate{X: 2, Y: 0}, want: aStarResult{
+			path: []*rtsspb.Coordinate{
+				{X: 1, Y: 0},
+				{X: 2, Y: 0},
+			},
+		}},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			tm, err := tile.ImportTileMap(c.m)
+			if err != nil {
+				t.Fatalf("ImportTileMap() = %v, want = nil", err)
+			}
+
+			tiles, err := TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest))
+			if err != nil {
+				t.Fatalf("TileMapPath() = %v, want = nil", err)
+			}
+
+			var path []*rtsspb.Coordinate
+			for _, t := range tiles {
+				path = append(path, t.Val.GetCoordinate())
+			}
+
+			got := aStarResult{
+				path: path,
+			}
+			if !cmp.Equal(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()) {
+				t.Errorf("TileMapPath() mismatch (-want +got): %v", cmp.Diff(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()))
+			}
+		})
+	}
+}
