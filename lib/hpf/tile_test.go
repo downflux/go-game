@@ -297,7 +297,6 @@ func TestGetNeighbors(t *testing.T) {
 
 type AStarResult struct {
 	path  []*rtsspb.Coordinate
-	found bool
 }
 
 func TestAStarSearchError(t *testing.T) {
@@ -317,7 +316,7 @@ func TestAStarSearchError(t *testing.T) {
 				t.Fatalf("ImportTileMap() = %v, want = nil", err)
 			}
 
-			if _, _, err = Path(tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest)); err == nil {
+			if _, err = Path(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest)); err == nil {
 				t.Fatal("Path() = nil, want a non-nil error")
 			}
 		})
@@ -333,31 +332,24 @@ func TestAStarSearch(t *testing.T) {
 	}{
 		{name: "TrivialOpenMap", m: trivialOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, want: AStarResult{
 			path:  []*rtsspb.Coordinate{{X: 0, Y: 0}},
-			found: true,
 		}},
 		{name: "TrivialClosedMap", m: trivialClosedMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, want: AStarResult{
 			path:  nil,
-			found: false,
 		}},
 		{name: "BlockedSource", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 1}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, want: AStarResult{
 			path:  nil,
-			found: false,
 		}},
 		{name: "BlockedDestination", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 1}, want: AStarResult{
 			path:  nil,
-			found: false,
 		}},
 		{name: "ImpassableMap", m: impassableMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 2}, want: AStarResult{
 			path:  nil,
-			found: false,
 		}},
 		{name: "SimpleSearch", m: passableMap, src: &rtsspb.Coordinate{X: 1, Y: 0}, dest: &rtsspb.Coordinate{X: 2, Y: 0}, want: AStarResult{
 			path: []*rtsspb.Coordinate{
-				{X: 0, Y: 0},
 				{X: 1, Y: 0},
 				{X: 2, Y: 0},
 			},
-			found: true,
 		}},
 	}
 
@@ -369,13 +361,9 @@ func TestAStarSearch(t *testing.T) {
 			}
 
 			fmt.Println(tm.TileFromCoordinate(c.src), "---", tm.TileFromCoordinate(c.dest))
-			tiles, found, err := Path(tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest))
+			tiles, err := Path(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest))
 			if err != nil {
 				t.Fatalf("Path() = %v, want = nil", err)
-			}
-			// Don't check for return types if path cannot be found.
-			if c.want.found != found {
-				t.Fatalf("Path() = _, _, _, %v, want = %v", found, c.want.found)
 			}
 
 			var path []*rtsspb.Coordinate
@@ -385,7 +373,6 @@ func TestAStarSearch(t *testing.T) {
 
 			got := AStarResult{
 				path:  path,
-				found: found,
 			}
 			if !cmp.Equal(c.want, got, cmp.AllowUnexported(AStarResult{}), protocmp.Transform()) {
 				t.Errorf("Path() mismatch (-want +got): %v", cmp.Diff(c.want, got, cmp.AllowUnexported(AStarResult{}), protocmp.Transform()))

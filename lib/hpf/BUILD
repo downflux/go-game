@@ -19,8 +19,6 @@ go_library(
 	":utils",
 	"//lib/proto:constants_go_proto",
 	"//lib/proto:structs_go_proto",
-	# TODO(minkezhang): Delete dis.
-	"@com_github_beefsack_go_astar//:go_default_library",
 	"@com_github_fzipp_astar//:go_default_library",
 	"@org_golang_google_grpc//status:go_default_library",
 	"@org_golang_google_grpc//codes:go_default_library",

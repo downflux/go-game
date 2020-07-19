@@ -8,7 +8,7 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
-	"github.com/beefsack/go-astar"
+	"github.com/fzipp/astar"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -50,6 +50,8 @@ func H(src, dst *Tile) (float64, error) {
 
 // TileMap is a 2D hashmap of the terrain map file.
 // Coordinates are expected to be accessed in (x, y) order.
+//
+// TileMap implements astar.Graph.
 type TileMap struct {
 	D *rtsspb.Coordinate
 	M map[utils.MapCoordinate]*Tile
@@ -72,7 +74,7 @@ func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
 	}
 
 	for _, pbt := range pb.GetTiles() {
-		t, err := ImportTile(pbt, tm)
+		t, err := ImportTile(pbt)
 		if err != nil {
 			return nil, err
 		}
@@ -97,6 +99,19 @@ func (m *TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
 	return m.Tile(c.GetX(), c.GetY())
 }
 
+// Returns a list of adjacent Tiles.
+//
+// Implements astar.Graph.Neighbours.
+func (m TileMap) Neighbours(n astar.Node) []astar.Node {
+	ts, _ := m.Neighbors(n.(*Tile).Val.GetCoordinate())
+
+	var res []astar.Node
+	for _, t := range ts {
+		res = append(res, t)
+	}
+	return res
+}
+
 // Neighbors returns the adjacent Tiles of an input Tile object.
 func (m TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 	if m.TileFromCoordinate(coordinate) == nil {
@@ -116,78 +131,36 @@ func (m TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 }
 
 // Tile represents a physical map node.
-//
-// Tile implements astar.Pather.
 type Tile struct {
-	// M is a backreference to the originating map. We need this
-	// to implement astar.Pather (i.e. if we expect to call A*
-	// on this Tile object.
-	//
-	// M is not automatically exported when calling ExportTile.
-	M *TileMap
-
 	// Val is the underlying representation of the map node. It may be
 	// mutated, e.g. changing TerrainType to / from TERRAIN_TYPE_BLOCKED
 	Val *rtsspb.Tile
 }
 
-func (t *Tile) PathNeighbors() []astar.Pather {
-	var ps []astar.Pather
-	if t.M == nil {
-		return ps
-	}
-	tiles, err := t.M.Neighbors(t.Val.GetCoordinate())
-	if err != nil {
-		return ps
-	}
-	for _, t := range tiles {
-		ps = append(ps, t)
-	}
-	return ps
-}
-
-func (t *Tile) PathNeighborCost(to astar.Pather) float64 {
-	if t.M == nil {
-		return infinity
-	}
-	cost, err := D(t.M.C, t, to.(*Tile))
-	if err != nil {
-		return infinity
-	}
-	return cost
-}
-
-func (t *Tile) PathEstimatedCost(to astar.Pather) float64 {
-	cost, err := H(t, to.(*Tile))
-	if err != nil {
-		return infinity
-	}
-	return cost
-}
-
-func Path(src, dest *Tile) ([]*Tile, bool, error) {
+func Path(m *TileMap, src, dest *Tile) ([]*Tile, error) {
 	if src == nil || dest == nil {
-		return nil, false, status.Errorf(codes.FailedPrecondition, "cannot have nil Tile inputs")
+		return nil, status.Errorf(codes.FailedPrecondition, "cannot have nil Tile inputs")
 	}
 	if src.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED || dest.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
-		return nil, false, nil
+		return nil, nil
 	}
 
-	path, _, found := astar.Path(src, dest)
-
-	// astar.Path returns the path starting from destination, which is not useful for a majority
-	// of our cases. Reversing here for convenience.
-	var tiles []*Tile
-	for i := range path {
-		tiles = append(tiles, path[len(path)-1-i].(*Tile))
+	var res []*Tile
+	path := astar.FindPath(m, src, dest, func(a, b astar.Node) float64{
+		cost, _ := D(m.C, a.(*Tile), b.(*Tile))
+		return cost
+	}, func(a, b astar.Node) float64{
+		cost, _ := H(a.(*Tile), b.(*Tile))
+		return cost
+	})
+	for _, p := range path {
+		res = append(res, p.(*Tile))
 	}
-
-	return tiles, found, nil
+	return res, nil
 }
 
-func ImportTile(pb *rtsspb.Tile, m *TileMap) (*Tile, error) {
+func ImportTile(pb *rtsspb.Tile) (*Tile, error) {
 	return &Tile{
-		M:   m,
 		Val: pb,
 	}, nil
 }
