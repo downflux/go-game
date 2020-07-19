@@ -33,22 +33,25 @@ func (t tileMapGraph) Neighbours(n fastar.Node) []fastar.Node {
 	return res
 }
 
-func TileMapPath(m *tile.TileMap, src, dest *tile.Tile) ([]*tile.Tile, error) {
+func TileMapPath(m *tile.TileMap, src, dest *tile.Tile) ([]*tile.Tile, float64, error) {
 	if m == nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "cannot have nil TileMap input")
+		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil TileMap input")
 	}
 	if src == nil || dest == nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "cannot have nil Tile inputs")
+		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil Tile inputs")
 	}
 	if src.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED || dest.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
-		return nil, nil
+		return nil, 0, nil
 	}
 
-	var path []*tile.Tile
-	for _, node := range fastar.FindPath(tileMapGraph{m: m}, src, dest, func(a, b fastar.Node) float64 {
+	d := func(a, b fastar.Node) float64 {
 		return tileMapD(m.C, a, b)
-	}, tileMapH) {
-		path = append(path, node.(*tile.Tile))
 	}
-	return path, nil
+	nodes := fastar.FindPath(tileMapGraph{m: m}, src, dest, d, tileMapH)
+
+	var tiles []*tile.Tile
+	for _, node := range nodes {
+		tiles = append(tiles, node.(*tile.Tile))
+	}
+	return tiles, nodes.Cost(d), nil
 }

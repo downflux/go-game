@@ -114,6 +114,7 @@ var (
 
 type aStarResult struct {
 	path []*rtsspb.Coordinate
+	cost float64
 }
 
 func TestAStarSearchError(t *testing.T) {
@@ -133,7 +134,7 @@ func TestAStarSearchError(t *testing.T) {
 				t.Fatalf("ImportTileMap() = %v, want = nil", err)
 			}
 
-			if _, err = TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest)); err == nil {
+			if _, _, err = TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest)); err == nil {
 				t.Fatal("TileMapPath() = nil, want a non-nil error")
 			}
 		})
@@ -162,11 +163,13 @@ func TestAStarSearch(t *testing.T) {
 		{name: "ImpassableMap", m: impassableMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 2}, want: aStarResult{
 			path: nil,
 		}},
-		{name: "SimpleSearch", m: passableMap, src: &rtsspb.Coordinate{X: 1, Y: 0}, dest: &rtsspb.Coordinate{X: 2, Y: 0}, want: aStarResult{
+		{name: "SimpleSearch", m: passableMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 2, Y: 0}, want: aStarResult{
 			path: []*rtsspb.Coordinate{
+				{X: 0, Y: 0},
 				{X: 1, Y: 0},
 				{X: 2, Y: 0},
 			},
+			cost: 2,
 		}},
 	}
 
@@ -177,7 +180,7 @@ func TestAStarSearch(t *testing.T) {
 				t.Fatalf("ImportTileMap() = %v, want = nil", err)
 			}
 
-			tiles, err := TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest))
+			tiles, cost, err := TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest))
 			if err != nil {
 				t.Fatalf("TileMapPath() = %v, want = nil", err)
 			}
@@ -189,6 +192,7 @@ func TestAStarSearch(t *testing.T) {
 
 			got := aStarResult{
 				path: path,
+				cost: cost,
 			}
 			if !cmp.Equal(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()) {
 				t.Errorf("TileMapPath() mismatch (-want +got): %v", cmp.Diff(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()))
