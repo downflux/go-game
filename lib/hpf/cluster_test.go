@@ -110,21 +110,24 @@ func TestBuildCluster(t *testing.T) {
 		name             string
 		tileMapDimension *rtsspb.Coordinate
 		tileDimension    *rtsspb.Coordinate
+		level int32
 
 		// TODO(cripplet): Replace with rtsspb.ClusterMap and use ImportClusterMap instead.
 		want        *ClusterMap
 		wantSuccess bool
 	}{
-		{name: "ZeroWidthDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 0}, want: nil, wantSuccess: false},
-		{name: "ZeroXDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 1}, want: nil, wantSuccess: false},
-		{name: "ZeroYDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 0}, want: nil, wantSuccess: false},
-		{name: "ZeroWidthMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
-			D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
-		{name: "ZeroXMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
-			D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
-		{name: "ZeroYMapTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
-			D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
-		{name: "SimpleTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, want: &ClusterMap{
+		{name: "ZeroWidthDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 0}, level: 1, want: nil, wantSuccess: false},
+		{name: "ZeroXDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 1}, level: 1, want: nil, wantSuccess: false},
+		{name: "ZeroYDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 0}, level: 1, want: nil, wantSuccess: false},
+		{name: "InvalidLevelTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 0, want: nil, wantSuccess: false},
+		{name: "ZeroWidthMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: &ClusterMap{
+			L: 1, D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
+		{name: "ZeroXMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: &ClusterMap{
+			L: 1, D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
+		{name: "ZeroYMapTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: &ClusterMap{
+			L: 1, D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
+		{name: "SimpleTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: &ClusterMap{
+			L: 1,
 			D: &rtsspb.Coordinate{X: 1, Y: 1}, M: map[utils.MapCoordinate]*Cluster{
 				{X: 0, Y: 0}: {
 					Val: &rtsspb.Cluster{
@@ -134,7 +137,8 @@ func TestBuildCluster(t *testing.T) {
 					},
 				},
 			}}, wantSuccess: true},
-		{name: "MultiplePartitionTest", tileMapDimension: &rtsspb.Coordinate{X: 2, Y: 3}, tileDimension: &rtsspb.Coordinate{X: 2, Y: 2}, want: &ClusterMap{
+		{name: "MultiplePartitionTest", tileMapDimension: &rtsspb.Coordinate{X: 2, Y: 3}, tileDimension: &rtsspb.Coordinate{X: 2, Y: 2}, level: 1, want: &ClusterMap{
+			L: 1,
 			D: &rtsspb.Coordinate{X: 1, Y: 2}, M: map[utils.MapCoordinate]*Cluster{
 				{X: 0, Y: 0}: {
 					Val: &rtsspb.Cluster{
@@ -155,7 +159,7 @@ func TestBuildCluster(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			m, err := BuildClusterMap(c.tileMapDimension, c.tileDimension)
+			m, err := BuildClusterMap(c.tileMapDimension, c.tileDimension, c.level)
 			if (err == nil) != c.wantSuccess {
 				t.Fatalf("BuildClusterMap() = _, %v, want wantSuccess = %v", err, c.wantSuccess)
 			}

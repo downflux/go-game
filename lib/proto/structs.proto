@@ -27,8 +27,9 @@ message TileMap {
 }
 
 message ClusterMap {
-	Coordinate dimension = 1;
-	repeated Cluster clusters = 2;
+	int32 level = 1;
+	Coordinate dimension = 2;
+	repeated Cluster clusters = 3;
 }
 
 message Cluster {
@@ -54,8 +55,9 @@ message Transition {
 
 message AbstractGraph {
 	int32 level = 1;
-	repeated AbstractNode nodes = 2;
-	repeated AbstractEdge edges = 3;
+	repeated ClusterMap cluster_maps = 2;
+	repeated AbstractNode nodes = 3;
+	repeated AbstractEdge edges = 4;
 }
 
 

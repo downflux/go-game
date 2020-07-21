@@ -26,6 +26,7 @@ type AbstractGraph struct {
 	L int32
 
 	Mu sync.RWMutex
+	C map[int32]*cluster.ClusterMap
 	// N is a [L][ClusterCoordinate][TileCoordinate] map from the Cluster coordinate to a list of nodes contained within that Cluster.
 	N map[int32]map[utils.MapCoordinate]map[utils.MapCoordinate]*AbstractNode
 	// E is a [L][SourceTile][DestinationTile] map of Tile coordinates to the list of edges that connect to the Tle.
@@ -43,6 +44,14 @@ func ImportAbstractGraph(pb *rtsspb.AbstractGraph) (*AbstractGraph, error) {
 	g := &AbstractGraph{
 		L: pb.GetLevel(),
 	}
+	for _, cm := range pb.GetClusterMaps() {
+		clusterMap, err := cluster.ImportClusterMap(cm)
+		if err != nil {
+			return nil, err
+		}
+		g.C[clusterMap.L] = clusterMap
+	}
+
 	for _, n := range pb.GetNodes() {
 		if err := g.AddNode(n); err != nil {
 			return nil, err
@@ -116,11 +125,12 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 
 	var transitions []*rtsspb.Transition
 
-	cm, err := cluster.BuildClusterMap(tm.D, &rtsspb.Coordinate{X: clusterDimension.GetX(), Y: clusterDimension.GetY()})
+	cm, err := cluster.BuildClusterMap(tm.D, &rtsspb.Coordinate{X: clusterDimension.GetX(), Y: clusterDimension.GetY()}, 1)
 	if err != nil {
 		return nil, err
 	}
 
+	g.C[cm.L] = cm
 	for _, c1 := range cm.M {
 		neighbors, err := cm.Neighbors(c1.Val.GetCoordinate())
 		if err != nil {
@@ -165,7 +175,8 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 					path, cost, err := astar.TileMapPath(
 						tm,
 						tm.TileFromCoordinate(n1.Val.GetTileCoordinate()),
-						tm.TileFromCoordinate(n2.Val.GetTileCoordinate()))
+						tm.TileFromCoordinate(n2.Val.GetTileCoordinate()),
+						)
 					if err != nil {
 						return nil, err
 					}
@@ -181,6 +192,10 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 				}
 			}
 		}
+	}
+
+	for i := 2; i <= level; i++ {
+		...
 	}
 
 	return g, nil

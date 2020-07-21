@@ -1,7 +1,6 @@
 package tile
 
 import (
-	"fmt"
 	"testing"
 
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
@@ -149,8 +148,7 @@ func TestGetTile(t *testing.T) {
 }
 
 func tileLess(t1, t2 *Tile) bool {
-	// lol
-	return fmt.Sprintf("%v, %v", t1.X(), t1.Y()) < fmt.Sprintf("%v, %v", t2.X(), t2.Y())
+	return t1.Val.GetCoordinate().GetX() < t2.Val.GetCoordinate().GetX() || (t1.Val.GetCoordinate().GetX() == t2.Val.GetCoordinate().GetX() && t1.Val.GetCoordinate().GetY() < t2.Val.GetCoordinate().GetY())
 }
 
 func TestGetNeighbors(t *testing.T) {

@@ -110,6 +110,26 @@ var (
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
 		},
 	}
+
+	/**
+	 *       - - -
+	 * Y = 0 - W -
+	 *   X = 0
+	 */
+	blockedRowMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 3, Y: 2},
+		Tiles: []*rtsspb.Tile{
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		},
+	}
 )
 
 type aStarResult struct {
@@ -122,9 +142,22 @@ func TestAStarSearchError(t *testing.T) {
 		name      string
 		m         *rtsspb.TileMap
 		src, dest *rtsspb.Coordinate
+		boundary, dimension *rtsspb.Coordinate
 	}{
-		{name: "SourceOutOfBounds", m: trivialOpenMap, src: &rtsspb.Coordinate{X: 1, Y: 1}, dest: &rtsspb.Coordinate{X: 0, Y: 0}},
-		{name: "DestinationOutOfBounds", m: trivialOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 1, Y: 1}},
+		{
+			name: "SourceOutOfBounds",
+			m: trivialOpenMap,
+			src: &rtsspb.Coordinate{X: 1, Y: 1},
+			dest: &rtsspb.Coordinate{X: 0, Y: 0},
+			dimension: trivialOpenMap.GetDimension(),
+		},
+		{
+			name: "DestinationOutOfBounds",
+			m: trivialOpenMap,
+			src: &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 1, Y: 1},
+			dimension: trivialOpenMap.GetDimension(),
+		},
 	}
 
 	for _, c := range testConfigs {
@@ -134,7 +167,7 @@ func TestAStarSearchError(t *testing.T) {
 				t.Fatalf("ImportTileMap() = %v, want = nil", err)
 			}
 
-			if _, _, err = TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest)); err == nil {
+			if _, _, err = TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest), c.boundary, c.dimension); err == nil {
 				t.Fatal("TileMapPath() = nil, want a non-nil error")
 			}
 		})
@@ -146,31 +179,73 @@ func TestAStarSearch(t *testing.T) {
 		name      string
 		m         *rtsspb.TileMap
 		src, dest *rtsspb.Coordinate
+		boundary, dimension *rtsspb.Coordinate
 		want      aStarResult
 	}{
-		{name: "TrivialOpenMap", m: trivialOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, want: aStarResult{
-			path: []*rtsspb.Coordinate{{X: 0, Y: 0}},
-		}},
-		{name: "TrivialClosedMap", m: trivialClosedMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, want: aStarResult{
-			path: nil,
-		}},
-		{name: "BlockedSource", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 1}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, want: aStarResult{
-			path: nil,
-		}},
-		{name: "BlockedDestination", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 1}, want: aStarResult{
-			path: nil,
-		}},
-		{name: "ImpassableMap", m: impassableMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 2}, want: aStarResult{
-			path: nil,
-		}},
-		{name: "SimpleSearch", m: passableMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 2, Y: 0}, want: aStarResult{
-			path: []*rtsspb.Coordinate{
-				{X: 0, Y: 0},
-				{X: 1, Y: 0},
-				{X: 2, Y: 0},
+		{
+			name: "TrivialOpenMap",
+			m: trivialOpenMap,
+			src: &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 0, Y: 0},
+			dimension: trivialOpenMap.GetDimension(),
+			want: aStarResult{
+				path: []*rtsspb.Coordinate{{X: 0, Y: 0}},
 			},
-			cost: 2,
+		},
+		{name: "TrivialClosedMap", m: trivialClosedMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, dimension: trivialClosedMap.GetDimension(), want: aStarResult{
+			path: nil,
 		}},
+		{name: "BlockedSource", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 1}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, dimension: trivialSemiOpenMap.GetDimension(), want: aStarResult{
+			path: nil,
+		}},
+		{name: "BlockedDestination", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 1}, dimension: trivialSemiOpenMap.GetDimension(), want: aStarResult{
+			path: nil,
+		}},
+		{name: "ImpassableMap", m: impassableMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 2}, dimension: impassableMap.GetDimension(), want: aStarResult{
+			path: nil,
+		}},
+		{
+			name: "SimpleSearch",
+			m: passableMap,
+			src: &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 2, Y: 0},
+			dimension: passableMap.GetDimension(),
+			want: aStarResult{
+				path: []*rtsspb.Coordinate{
+					{X: 0, Y: 0},
+					{X: 1, Y: 0},
+					{X: 2, Y: 0},
+				},
+				cost: 2,
+			},
+		},
+		{
+			name: "BlockedScopeSearch",
+			m: blockedRowMap,
+			src: &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 2, Y: 0},
+			dimension: &rtsspb.Coordinate{X: 3, Y: 1},
+			want: aStarResult{
+				path: nil,
+			},
+		},
+		{
+			name: "ExpandedScopeSearch",
+			m: blockedRowMap,
+			src: &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 2, Y: 0},
+			dimension: blockedRowMap.GetDimension(),
+			want: aStarResult{
+				path: []*rtsspb.Coordinate{
+					{X: 0, Y: 0},
+					{X: 0, Y: 1},
+					{X: 1, Y: 1},
+					{X: 2, Y: 1},
+					{X: 2, Y: 0},
+				},
+				cost: 4,
+			},
+		},
 	}
 
 	for _, c := range testConfigs {
@@ -180,7 +255,7 @@ func TestAStarSearch(t *testing.T) {
 				t.Fatalf("ImportTileMap() = %v, want = nil", err)
 			}
 
-			tiles, cost, err := TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest))
+			tiles, cost, err := TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest), c.boundary, c.dimension)
 			if err != nil {
 				t.Fatalf("TileMapPath() = %v, want = nil", err)
 			}

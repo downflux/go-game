@@ -24,12 +24,25 @@ var (
 )
 
 type ClusterMap struct {
+	L int32
 	D *rtsspb.Coordinate
 	M map[utils.MapCoordinate]*Cluster
 }
 
 func ImportClusterMap(pb *rtsspb.ClusterMap) (*ClusterMap, error) {
-	return nil, notImplemented
+	cm := &ClusterMap{
+		L: pb.GetLevel(),
+		D: pb.GetDimension(),
+	}
+	for _, c := range pb.GetClusters() {
+		cluster, err := ImportCluster(c)
+		if err != nil {
+			return nil, err
+		}
+		cm.M[utils.MC(c.GetCoordinate())] = cluster
+	}
+
+	return cm, nil
 }
 
 func ExportClusterMap(m *ClusterMap) (*rtsspb.ClusterMap, error) {
@@ -95,8 +108,13 @@ func GetRelativeDirection(c, other *Cluster) (rtscpb.Direction, error) {
 // BuildClusterMap constructs a ClusterMap instance which will be used to organize and group Tile objects in the
 // underlying TileMap. ClusterMap does not link to the actual Tile -- we need to manually pass the TileMap object along
 // when looking up the Tile by a given coordinate.
-func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate) (*ClusterMap, error) {
+func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate, level int32) (*ClusterMap, error) {
+	if level < 1 {
+		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
+	}
+
 	m := &ClusterMap{
+		L: level,
 		D: &rtsspb.Coordinate{},
 		M: nil,
 	}
