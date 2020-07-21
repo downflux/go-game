@@ -24,7 +24,6 @@ var (
 )
 
 type ClusterMap struct {
-	L int32
 	D *rtsspb.Coordinate
 	M map[utils.MapCoordinate]*Cluster
 }
@@ -53,6 +52,24 @@ func IsAdjacent(c1, c2 *Cluster) bool {
 	return math.Abs(float64(c2.Val.GetCoordinate().GetX()-c1.Val.GetCoordinate().GetX()))+math.Abs(float64(c2.Val.GetCoordinate().GetY()-c1.Val.GetCoordinate().GetY())) == 1
 }
 
+func (m *ClusterMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Cluster, error) {
+	src, found := m.M[utils.MC(coordinate)]
+	if !found {
+		return nil, status.Error(codes.NotFound, "no Cluster exists with given coordinates in the ClusterMap")
+	}
+
+	var neighbors []*Cluster
+	for  _, c := range neighborCoordinates {
+		if dest := m.M[utils.MC(&rtsspb.Coordinate{
+			X: src.Val.GetCoordinate().GetX() + c.GetX(),
+			Y: src.Val.GetCoordinate().GetY() + c.GetY(),
+		})]; dest != nil {
+			neighbors = append(neighbors, dest)
+		}
+	}
+	return neighbors, nil
+}
+
 // GetRelativeDirection will return the direction of travel from c to other.
 // c and other must be immediately adjacent to one another.
 func GetRelativeDirection(c, other *Cluster) (rtscpb.Direction, error) {
@@ -78,12 +95,8 @@ func GetRelativeDirection(c, other *Cluster) (rtscpb.Direction, error) {
 // BuildClusterMap constructs a ClusterMap instance which will be used to organize and group Tile objects in the
 // underlying TileMap. ClusterMap does not link to the actual Tile -- we need to manually pass the TileMap object along
 // when looking up the Tile by a given coordinate.
-func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate, l int32) (*ClusterMap, error) {
-	if l < 1 {
-		return nil, status.Errorf(codes.FailedPrecondition, "specified l-level must be a non-zero positive integer")
-	}
+func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate) (*ClusterMap, error) {
 	m := &ClusterMap{
-		L: l,
 		D: &rtsspb.Coordinate{},
 		M: nil,
 	}

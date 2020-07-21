@@ -100,13 +100,13 @@ func (m *TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
 
 // Neighbors returns the adjacent Tiles of an input Tile object.
 func (m *TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
-	if m.TileFromCoordinate(coordinate) == nil {
+	src := m.TileFromCoordinate(coordinate)
+	if src == nil {
 		return nil, status.Error(
 			codes.NotFound, "tile not found in the map")
 
 	}
 
-	src := m.TileFromCoordinate(coordinate)
 	var neighbors []*Tile
 	for _, c := range neighborCoordinates {
 		if t := m.Tile(coordinate.GetX()+c.GetX(), coordinate.GetY()+c.GetY()); src.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED && t != nil && t.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {

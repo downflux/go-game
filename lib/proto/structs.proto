@@ -27,9 +27,8 @@ message TileMap {
 }
 
 message ClusterMap {
-	int32 level = 1;
-	Coordinate dimension = 2;
-	repeated Cluster clusters = 3;
+	Coordinate dimension = 1;
+	repeated Cluster clusters = 2;
 }
 
 message Cluster {
