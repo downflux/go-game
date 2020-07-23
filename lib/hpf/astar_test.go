@@ -139,23 +139,23 @@ type aStarResult struct {
 
 func TestAStarSearchError(t *testing.T) {
 	testConfigs := []struct {
-		name      string
-		m         *rtsspb.TileMap
-		src, dest *rtsspb.Coordinate
+		name                string
+		m                   *rtsspb.TileMap
+		src, dest           *rtsspb.Coordinate
 		boundary, dimension *rtsspb.Coordinate
 	}{
 		{
-			name: "SourceOutOfBounds",
-			m: trivialOpenMap,
-			src: &rtsspb.Coordinate{X: 1, Y: 1},
-			dest: &rtsspb.Coordinate{X: 0, Y: 0},
+			name:      "SourceOutOfBounds",
+			m:         trivialOpenMap,
+			src:       &rtsspb.Coordinate{X: 1, Y: 1},
+			dest:      &rtsspb.Coordinate{X: 0, Y: 0},
 			dimension: trivialOpenMap.GetDimension(),
 		},
 		{
-			name: "DestinationOutOfBounds",
-			m: trivialOpenMap,
-			src: &rtsspb.Coordinate{X: 0, Y: 0},
-			dest: &rtsspb.Coordinate{X: 1, Y: 1},
+			name:      "DestinationOutOfBounds",
+			m:         trivialOpenMap,
+			src:       &rtsspb.Coordinate{X: 0, Y: 0},
+			dest:      &rtsspb.Coordinate{X: 1, Y: 1},
 			dimension: trivialOpenMap.GetDimension(),
 		},
 	}
@@ -176,17 +176,17 @@ func TestAStarSearchError(t *testing.T) {
 
 func TestAStarSearch(t *testing.T) {
 	testConfigs := []struct {
-		name      string
-		m         *rtsspb.TileMap
-		src, dest *rtsspb.Coordinate
+		name                string
+		m                   *rtsspb.TileMap
+		src, dest           *rtsspb.Coordinate
 		boundary, dimension *rtsspb.Coordinate
-		want      aStarResult
+		want                aStarResult
 	}{
 		{
-			name: "TrivialOpenMap",
-			m: trivialOpenMap,
-			src: &rtsspb.Coordinate{X: 0, Y: 0},
-			dest: &rtsspb.Coordinate{X: 0, Y: 0},
+			name:      "TrivialOpenMap",
+			m:         trivialOpenMap,
+			src:       &rtsspb.Coordinate{X: 0, Y: 0},
+			dest:      &rtsspb.Coordinate{X: 0, Y: 0},
 			dimension: trivialOpenMap.GetDimension(),
 			want: aStarResult{
 				path: []*rtsspb.Coordinate{{X: 0, Y: 0}},
@@ -205,10 +205,10 @@ func TestAStarSearch(t *testing.T) {
 			path: nil,
 		}},
 		{
-			name: "SimpleSearch",
-			m: passableMap,
-			src: &rtsspb.Coordinate{X: 0, Y: 0},
-			dest: &rtsspb.Coordinate{X: 2, Y: 0},
+			name:      "SimpleSearch",
+			m:         passableMap,
+			src:       &rtsspb.Coordinate{X: 0, Y: 0},
+			dest:      &rtsspb.Coordinate{X: 2, Y: 0},
 			dimension: passableMap.GetDimension(),
 			want: aStarResult{
 				path: []*rtsspb.Coordinate{
@@ -220,20 +220,20 @@ func TestAStarSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "BlockedScopeSearch",
-			m: blockedRowMap,
-			src: &rtsspb.Coordinate{X: 0, Y: 0},
-			dest: &rtsspb.Coordinate{X: 2, Y: 0},
+			name:      "BlockedScopeSearch",
+			m:         blockedRowMap,
+			src:       &rtsspb.Coordinate{X: 0, Y: 0},
+			dest:      &rtsspb.Coordinate{X: 2, Y: 0},
 			dimension: &rtsspb.Coordinate{X: 3, Y: 1},
 			want: aStarResult{
 				path: nil,
 			},
 		},
 		{
-			name: "ExpandedScopeSearch",
-			m: blockedRowMap,
-			src: &rtsspb.Coordinate{X: 0, Y: 0},
-			dest: &rtsspb.Coordinate{X: 2, Y: 0},
+			name:      "ExpandedScopeSearch",
+			m:         blockedRowMap,
+			src:       &rtsspb.Coordinate{X: 0, Y: 0},
+			dest:      &rtsspb.Coordinate{X: 2, Y: 0},
 			dimension: blockedRowMap.GetDimension(),
 			want: aStarResult{
 				path: []*rtsspb.Coordinate{

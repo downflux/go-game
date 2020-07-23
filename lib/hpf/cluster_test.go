@@ -110,7 +110,7 @@ func TestBuildCluster(t *testing.T) {
 		name             string
 		tileMapDimension *rtsspb.Coordinate
 		tileDimension    *rtsspb.Coordinate
-		level int32
+		level            int32
 
 		// TODO(cripplet): Replace with rtsspb.ClusterMap and use ImportClusterMap instead.
 		want        *ClusterMap

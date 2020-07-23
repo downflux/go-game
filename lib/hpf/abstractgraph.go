@@ -27,7 +27,7 @@ type AbstractGraph struct {
 	L int32
 
 	Mu sync.RWMutex
-	C map[int32]*cluster.ClusterMap
+	C  map[int32]*cluster.ClusterMap
 	// N is a [L][ClusterCoordinate][TileCoordinate] map from the Cluster coordinate to a list of nodes contained within that Cluster.
 	N map[int32]map[utils.MapCoordinate]map[utils.MapCoordinate]*AbstractNode
 	// E is a [L][SourceTile][DestinationTile] map of Tile coordinates to the list of edges that connect to the Tle.
@@ -114,9 +114,7 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 	}
 	// Highest level ClusterMap should still have more than one Cluster,
 	// otherwise we'll be routing units to the edge first before going back inwards.
-	if (
-		int32(math.Pow(float64(level), float64(clusterDimension.GetX()))) >= tm.D.GetX()) || (
-		int32(math.Pow(float64(level), float64(clusterDimension.GetY()))) >= tm.D.GetY()) {
+	if (int32(math.Pow(float64(level), float64(clusterDimension.GetX()))) >= tm.D.GetX()) || (int32(math.Pow(float64(level), float64(clusterDimension.GetY()))) >= tm.D.GetY()) {
 		return nil, status.Error(codes.FailedPrecondition, "given clusterDimension and level will result in too large a cluster map")
 	}
 
@@ -200,9 +198,9 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 	}
 
 	/*
-	for i := 2; i <= level; i++ {
-		...
-	}
+		for i := 2; i <= level; i++ {
+			...
+		}
 	*/
 
 	return g, nil

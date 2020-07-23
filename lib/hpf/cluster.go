@@ -77,7 +77,7 @@ func (m *ClusterMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Cluster, error
 	}
 
 	var neighbors []*Cluster
-	for  _, c := range neighborCoordinates {
+	for _, c := range neighborCoordinates {
 		if dest := m.M[utils.MC(&rtsspb.Coordinate{
 			X: src.Val.GetCoordinate().GetX() + c.GetX(),
 			Y: src.Val.GetCoordinate().GetY() + c.GetY(),

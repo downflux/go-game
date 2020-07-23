@@ -21,15 +21,13 @@ func tileMapH(src, dest fastar.Node) float64 {
 }
 
 type tileMapGraph struct {
-	m *tile.TileMap
+	m                   *tile.TileMap
 	boundary, dimension *rtsspb.Coordinate
 }
 
 // boundedBy returns true if a <= b < c.
 func boundedBy(a, b, c *rtsspb.Coordinate) bool {
-	return (
-		a.GetX() <= b.GetX() && a.GetY() <= b.GetY()) && (
-		b.GetX() < c.GetX() && b.GetY() < c.GetY())
+	return (a.GetX() <= b.GetX() && a.GetY() <= b.GetY()) && (b.GetX() < c.GetX() && b.GetY() < c.GetY())
 }
 
 func (t tileMapGraph) Neighbours(n fastar.Node) []fastar.Node {
@@ -39,7 +37,7 @@ func (t tileMapGraph) Neighbours(n fastar.Node) []fastar.Node {
 		if boundedBy(t.boundary, n.Val.GetCoordinate(), &rtsspb.Coordinate{
 			X: t.boundary.GetX() + t.dimension.GetX(),
 			Y: t.boundary.GetY() + t.dimension.GetY(),
-			},
+		},
 		) {
 			res = append(res, n)
 		}
