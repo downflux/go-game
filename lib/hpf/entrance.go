@@ -1,4 +1,5 @@
-// Package entrance provides a way to detect contiguous open segments on Cluster borders.
+// Package entrance provides a way to detect contiguous open segments on
+// Cluster borders.
 package entrance
 
 import (
@@ -24,7 +25,8 @@ var (
 		rtscpb.Direction_DIRECTION_WEST:  rtscpb.Orientation_ORIENTATION_VERTICAL,
 	}
 
-	// reverseDirection transforms a cardinal direction into its complement.
+	// reverseDirection transforms a cardinal direction into its
+	// complement.
 	reverseDirection = map[rtscpb.Direction]rtscpb.Direction{
 		rtscpb.Direction_DIRECTION_NORTH: rtscpb.Direction_DIRECTION_SOUTH,
 		rtscpb.Direction_DIRECTION_SOUTH: rtscpb.Direction_DIRECTION_NORTH,
@@ -33,9 +35,12 @@ var (
 	}
 )
 
-// BuildTransitions takes in two adjacent map Cluster objects and returns the list of Transition nodes which connect them.
-// Transition nodes are a tuple of non-blocking Tiles which are 1. immediately adjacent to one another, and 2. are in different
-// Clusters. See Botea 2004 for more information.
+// BuildTransitions takes in two adjacent map Cluster objects and returns the
+// list of Transition nodes which connect them. Transition nodes are a tuple of
+// non-blocking Tiles which are
+//   1. immediately adjacent to one another, and
+//   2. are in different Clusters.
+// See Botea 2004 for more information.
 func BuildTransitions(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*rtsspb.Transition, error) {
 	if c1 == nil || c2 == nil {
 		return nil, status.Error(codes.FailedPrecondition, "input Cluster references must be non-nil")
@@ -66,7 +71,8 @@ func BuildTransitions(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*rtsspb.Trans
 	return buildTransitionsAux(v1, v2, m)
 }
 
-// buildCoordinateWithCoordinateSlice reconstructs the Coordinate object back from the given slice info.
+// buildCoordinateWithCoordinateSlice reconstructs the Coordinate object back
+// from the given slice info.
 func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32) (*rtsspb.Coordinate, error) {
 	if offset < 0 || offset >= s.GetLength() {
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid offset specified, end coordinate must be contained within the slice")
@@ -87,8 +93,10 @@ func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32)
 	}
 }
 
-// buildClusterEdgeCoordinateSlice constructs a CoordinateSlice instance representing the contiguous edge of a Cluster in the specified direction.
-// All Tile t on the edge are between the start and end coordinates, i.e. start <= t <= end with usual 2D coordinate comparison.
+// buildClusterEdgeCoordinateSlice constructs a CoordinateSlice instance
+// representing the contiguous edge of a Cluster in the specified direction.
+// All Tile t on the edge are between the start and end coordinates,
+// i.e. start <= t <= end with usual 2D coordinate comparison.
 func buildClusterEdgeCoordinateSlice(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.CoordinateSlice, error) {
 	if c.Val.GetTileDimension().GetX() == 0 || c.Val.GetTileDimension().GetY() == 0 {
 		return nil, status.Error(codes.FailedPrecondition, "input Cluster must have non-zero dimensions")
@@ -134,13 +142,16 @@ func buildClusterEdgeCoordinateSlice(c *cluster.Cluster, d rtscpb.Direction) (*r
 	}, nil
 }
 
-// buildTransitionsFromOpenCoordinateSlice constructs the actual transition points between two contiguous open tile slices.
-// We have configured, as per Botea 2004, one transition node for a segment of width three tiles or less, and two transition
-// nodes for segments longer than three tiles.
+// buildTransitionsFromOpenCoordinateSlice constructs the actual transition
+// points between two contiguous open tile slices. We have configured, as per
+// Botea 2004, one transition node for a segment of width three tiles or less,
+// and two transition nodes for segments longer than three tiles.
 //
-// In general, the less nodes we have, the faster the hierarchical part of the pathing algorithm will take, which would be the case
-// if we increase minLength. We may also consider a more contextual reworking of this function and take into consideration the
-// nearest transition node from adjacent slices, e.g. "transition nodes must be N tiles apart".
+// In general, the less nodes we have, the faster the hierarchical part of the
+// pathing algorithm will take, which would be the case if we increase
+// minLength. We may also consider a more contextual reworking of this function
+// and take into consideration the nearest transition node from adjacent
+// slices, e.g. "transition nodes must be N tiles apart".
 func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb.Transition, error) {
 	const minLength = 3
 
@@ -180,7 +191,8 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]
 	return transitions, nil
 }
 
-// buildTransitionsAux constructs the list of Transition nodes given the corresponding edges of two adjacent Cluster objects.
+// buildTransitionsAux constructs the list of Transition nodes given the
+// corresponding edges of two adjacent Cluster objects.
 func buildTransitionsAux(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rtsspb.Transition, error) {
 	if err := verifyCoordinateSlices(s1, s2); err != nil {
 		return nil, err
@@ -242,8 +254,9 @@ func buildTransitionsAux(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rt
 	return res, nil
 }
 
-// verifyCoordinateSlices ensures our input slices meet some basic criteria, e.g. adjacent, same orientation, etc.
-// If we need to optimize, we can skip this step, as it's only called in internal functions that are not exposed to
+// verifyCoordinateSlices ensures our input slices meet some basic criteria,
+// e.g. adjacent, same orientation, etc. If we need to optimize, we can skip
+// this step, as it's only called in internal functions that are not exposed to
 // the end user.
 func verifyCoordinateSlices(s1, s2 *rtsspb.CoordinateSlice) error {
 	if s1.GetOrientation() != s2.GetOrientation() || s1.GetLength() != s2.GetLength() {

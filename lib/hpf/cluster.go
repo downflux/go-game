@@ -90,8 +90,11 @@ func ExportCluster(c *Cluster) (*rtsspb.Cluster, error) {
 	return proto.Clone(c.Val).(*rtsspb.Cluster), nil
 }
 
-// IsAdjacent checks if two Cluster objects are next to each other in the same ClusterMap.
-// TODO(cripplet): Check if we need an l-level in Cluster proto -- if so, we should check that here as well.
+// IsAdjacent checks if two Cluster objects are next to each other in the same
+// ClusterMap.
+//
+// TODO(cripplet): Check if we need an l-level in Cluster proto -- if so, we
+// should check that here as well.
 func IsAdjacent(c1, c2 *Cluster) bool {
 	return math.Abs(float64(c2.Val.GetCoordinate().GetX()-c1.Val.GetCoordinate().GetX()))+math.Abs(float64(c2.Val.GetCoordinate().GetY()-c1.Val.GetCoordinate().GetY())) == 1
 }
@@ -142,9 +145,10 @@ func GetRelativeDirection(c, other *Cluster) (rtscpb.Direction, error) {
 	return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "clusters which are immediately adjacent are somehow not traversible via cardinal directions")
 }
 
-// BuildClusterMap constructs a ClusterMap instance which will be used to organize and group Tile objects in the
-// underlying TileMap. ClusterMap does not link to the actual Tile -- we need to manually pass the TileMap object along
-// when looking up the Tile by a given coordinate.
+// BuildClusterMap constructs a ClusterMap instance which will be used to
+// organize and group Tile objects in the underlying TileMap. ClusterMap does
+// not link to the actual Tile -- we need to manually pass the TileMap object
+// along when looking up the Tile by a given coordinate.
 func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate, level int32) (*ClusterMap, error) {
 	if level < 1 {
 		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
@@ -202,8 +206,8 @@ type partitionInfo struct {
 	TileDimension int32
 }
 
-// partition builds a 1D list of partitions -- we will combine the X-specific and Y-specific partitions into
-// a 2D partition array.
+// partition builds a 1D list of partitions -- we will combine the X-specific
+// and Y-specific partitions into a 2D partition array.
 func partition(tileMapDimension int32, tileDimension int32) ([]partitionInfo, error) {
 	if tileDimension == 0 {
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid tileDimension value %v", tileDimension)

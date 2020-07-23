@@ -1,5 +1,6 @@
-// Package tile implements the TileInterface for the underlying map, i.e. for l = 0.
-// Higher l-levels abstract the map away into logical nodes instead.
+// Package tile implements the TileInterface for the underlying map,
+// i.e. for l = 0. Higher l-levels abstract the map away into logical nodes
+// instead.
 package tile
 
 import (
@@ -35,9 +36,10 @@ func IsAdjacent(src, dst *Tile) bool {
 
 // D gets exact cost between two neighboring Tiles.
 //
-// We're only taking the "difficulty" metric of the target Tile here; moving into and out of
-// a Tile will essentially just double its cost, and the cost doesn't matter when
-// the Tile is a source or target (since moving there is mandatory).
+// We're only taking the "difficulty" metric of the target Tile here; moving
+// into and out of a Tile will essentially just double its cost, and the cost
+// doesn't matter when the Tile is a source or target (since moving there is
+// mandatory).
 func D(c map[rtscpb.TerrainType]float64, src, dst *Tile) (float64, error) {
 	if !IsAdjacent(src, dst) {
 		return 0, status.Error(codes.InvalidArgument, "input tiles are not adjacent to one another")
