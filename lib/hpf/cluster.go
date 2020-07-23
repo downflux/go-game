@@ -65,6 +65,11 @@ func IsAdjacent(c1, c2 *Cluster) bool {
 	return math.Abs(float64(c2.Val.GetCoordinate().GetX()-c1.Val.GetCoordinate().GetX()))+math.Abs(float64(c2.Val.GetCoordinate().GetY()-c1.Val.GetCoordinate().GetY())) == 1
 }
 
+// Cluster returns the Cluster object from the input coordinates.
+func (m *ClusterMap) Cluster(x, y int32) *Cluster {
+	return m.M[utils.MapCoordinate{X: x, Y: y}]
+}
+
 func (m *ClusterMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Cluster, error) {
 	src, found := m.M[utils.MC(coordinate)]
 	if !found {

@@ -14,6 +14,7 @@ import (
 	"github.com/cripplet/rts-pathing/lib/hpf/entrance"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -119,26 +120,27 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 		return nil, status.Error(codes.FailedPrecondition, "given clusterDimension and level will result in too large a cluster map")
 	}
 
-	g := &AbstractGraph{
-		L: level,
-	}
-
-	var transitions []*rtsspb.Transition
-
 	cm, err := cluster.BuildClusterMap(tm.D, &rtsspb.Coordinate{X: clusterDimension.GetX(), Y: clusterDimension.GetY()}, 1)
 	if err != nil {
 		return nil, err
 	}
 
-	g.C[cm.L] = cm
-	for _, c1 := range cm.M {
-		neighbors, err := cm.Neighbors(c1.Val.GetCoordinate())
+	g := &AbstractGraph{
+		L: level,
+		C: map[int32]*cluster.ClusterMap{
+			cm.L: cm,
+		},
+	}
+
+	var transitions []*rtsspb.Transition
+	for _, cluster1 := range g.C[1].M {
+		neighbors, err := g.C[1].Neighbors(cluster1.Val.GetCoordinate())
 		if err != nil {
 			return nil, err
 		}
 
-		for _, c2 := range neighbors {
-			ts, err := entrance.BuildTransitions(c1, c2, tm)
+		for _, cluster2 := range neighbors {
+			ts, err := entrance.BuildTransitions(cluster1, cluster2, tm)
 			if err != nil {
 				return nil, err
 			}
@@ -148,17 +150,17 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 
 	for _, t := range transitions {
 		g.AddNode(&rtsspb.AbstractNode{
-			Level:             g.L,
+			Level:             1,
 			ClusterCoordinate: t.GetN1().GetClusterCoordinate(),
 			TileCoordinate:    t.GetN1().GetTileCoordinate(),
 		})
 		g.AddNode(&rtsspb.AbstractNode{
-			Level:             g.L,
+			Level:             1,
 			ClusterCoordinate: t.GetN2().GetClusterCoordinate(),
 			TileCoordinate:    t.GetN2().GetTileCoordinate(),
 		})
 		g.AddEdge(&rtsspb.AbstractEdge{
-			Level:       g.L,
+			Level:       1,
 			Source:      t.GetN1().GetTileCoordinate(),
 			Destination: t.GetN2().GetTileCoordinate(),
 			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
@@ -167,16 +169,19 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 	}
 
 	// Add intra-edges for all tiles within the same Cluster.
-	for _, clusterNodes := range g.N[1] {
-		for c1, n1 := range clusterNodes {
-			for c2, n2 := range clusterNodes {
-				if c1 != c2 {
+	for clusterCoordinate, nodes := range g.N[1] {
+		nodesCluster := g.C[1].Cluster(clusterCoordinate.X, clusterCoordinate.Y)
+		for _, n1 := range nodes {
+			for _, n2 := range nodes {
+				if !proto.Equal(n1.Val.GetTileCoordinate(), n2.Val.GetTileCoordinate()) {
 					// TODO(cripplet): Add INTRA edge calculation for L > 1.
 					path, cost, err := astar.TileMapPath(
 						tm,
 						tm.TileFromCoordinate(n1.Val.GetTileCoordinate()),
 						tm.TileFromCoordinate(n2.Val.GetTileCoordinate()),
-						)
+						nodesCluster.Val.GetTileBoundary(),
+						nodesCluster.Val.GetTileDimension(),
+					)
 					if err != nil {
 						return nil, err
 					}
@@ -194,9 +199,11 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 		}
 	}
 
+	/*
 	for i := 2; i <= level; i++ {
 		...
 	}
+	*/
 
 	return g, nil
 }
