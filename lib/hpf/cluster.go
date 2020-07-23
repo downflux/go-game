@@ -1,4 +1,7 @@
-// Package cluster implements the clustering logic necessary to build and operate on logical MapTile subsets.
+// Package cluster implements the clustering logic necessary to build and
+// operate on logical MapTile subsets.
+//
+// See Botea 2004 for more details.
 package cluster
 
 import (
@@ -8,6 +11,7 @@ import (
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -15,6 +19,10 @@ import (
 var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
+
+	// neighborCoordinates provides the Coordinate deltas between a
+	// specific Coordinate and adjacent Coordinates to expand to in
+	// a graph search.
 	neighborCoordinates = []*rtsspb.Coordinate{
 		{X: 0, Y: 1},
 		{X: 0, Y: -1},
@@ -23,12 +31,26 @@ var (
 	}
 )
 
+// ClusterMap is a logical abstraction of an underlying TileMap. A TileMap may
+// be broken up into separate rectangular partitions, where the cost of a
+// partition-partition move is known. This will save cycles when iterating over
+// large maps.
 type ClusterMap struct {
+	// L specifies the abstaction level of the ClusterMap -- higher
+	// abstraction Clusters contain groups of lower level Clusters.
 	L int32
+
+	// D specifies the number of Cluster objects extending in each spatial
+	// dimension.
 	D *rtsspb.Coordinate
+
+	// M contains the list of Clusters in a ClusterMap. The key here
+	// is relative to other Clusters -- it does not represent any TileMap
+	// Coordinates.
 	M map[utils.MapCoordinate]*Cluster
 }
 
+// ImportClusterMap constructs a ClusterMap object from the given protobuf.
 func ImportClusterMap(pb *rtsspb.ClusterMap) (*ClusterMap, error) {
 	cm := &ClusterMap{
 		L: pb.GetLevel(),
@@ -45,18 +67,27 @@ func ImportClusterMap(pb *rtsspb.ClusterMap) (*ClusterMap, error) {
 	return cm, nil
 }
 
+// ExportClusterMap constructs a protobuf from the given ClusterMap object.
 func ExportClusterMap(m *ClusterMap) (*rtsspb.ClusterMap, error) {
 	return nil, notImplemented
 }
 
+// Cluster encapsulates a group of Tile objects.
 type Cluster struct {
+	// Val is the underlying
 	Val *rtsspb.Cluster
 }
 
+// ImportCluster constructs a Cluster object from the given protobuf.
 func ImportCluster(pb *rtsspb.Cluster) (*Cluster, error) {
 	return &Cluster{
-		Val: pb,
+		Val: proto.Clone(pb).(*rtsspb.Cluster),
 	}, nil
+}
+
+// ExportCluster constructs a protobuf from the given Cluster object.
+func ExportCluster(c *Cluster) (*rtsspb.Cluster, error) {
+	return proto.Clone(c.Val).(*rtsspb.Cluster), nil
 }
 
 // IsAdjacent checks if two Cluster objects are next to each other in the same ClusterMap.
@@ -70,6 +101,7 @@ func (m *ClusterMap) Cluster(x, y int32) *Cluster {
 	return m.M[utils.MapCoordinate{X: x, Y: y}]
 }
 
+// Neighbors returns the adjacent Cluster objects given a Cluster Coordinate.
 func (m *ClusterMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Cluster, error) {
 	src, found := m.M[utils.MC(coordinate)]
 	if !found {
@@ -158,8 +190,15 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 	return m, nil
 }
 
+// partitionInfo is a 1D partition data struct, representing a semi-open
+// interval of Tile Coordinates, projected onto a specific axis.
 type partitionInfo struct {
-	TileBoundary  int32
+	// TileBoundary is the acceptable lower bound of a Tile; Tile objects
+	// may include this projected Coordinate.
+	TileBoundary int32
+
+	// TileDimension is the length of the partition interval. The upper
+	// bound as defined by the TileDimension is open (exclusive).
 	TileDimension int32
 }
 

@@ -15,12 +15,16 @@ import (
 )
 
 var (
+	// edgeDirectionToOrientation indicates the orientatino of a Cluster
+	// edge.
 	edgeDirectionToOrientation = map[rtscpb.Direction]rtscpb.Orientation{
 		rtscpb.Direction_DIRECTION_NORTH: rtscpb.Orientation_ORIENTATION_HORIZONTAL,
 		rtscpb.Direction_DIRECTION_SOUTH: rtscpb.Orientation_ORIENTATION_HORIZONTAL,
 		rtscpb.Direction_DIRECTION_EAST:  rtscpb.Orientation_ORIENTATION_VERTICAL,
 		rtscpb.Direction_DIRECTION_WEST:  rtscpb.Orientation_ORIENTATION_VERTICAL,
 	}
+
+	// reverseDirection transforms a cardinal direction into its complement.
 	reverseDirection = map[rtscpb.Direction]rtscpb.Direction{
 		rtscpb.Direction_DIRECTION_NORTH: rtscpb.Direction_DIRECTION_SOUTH,
 		rtscpb.Direction_DIRECTION_SOUTH: rtscpb.Direction_DIRECTION_NORTH,

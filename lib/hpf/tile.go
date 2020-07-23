@@ -16,13 +16,16 @@ import (
 var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
+
+	// neighborCoordinates provides the Coordinate deltas between a
+	// specific Coordinate and adjacent Coordinates to expand to in
+	// a graph search.
 	neighborCoordinates = []*rtsspb.Coordinate{
 		{X: 0, Y: 1},
 		{X: 0, Y: -1},
 		{X: 1, Y: 0},
 		{X: -1, Y: 0},
 	}
-	infinity = math.Inf(1)
 )
 
 // IsAdjacent tests if two Tile objects are adjacent to one another.
@@ -52,9 +55,16 @@ func H(src, dst *Tile) (float64, error) {
 //
 // TileMap implements astar.Graph.
 type TileMap struct {
+	// D is the dimension of the TileMap, i.e. the number of Tile objects
+	// in each direction.
 	D *rtsspb.Coordinate
+
+	// M is the actual list of Tile objects in the map; the MapCoordinate
+	// here is the Coordinate of the actual Tile.
 	M map[utils.MapCoordinate]*Tile
-	C map[rtscpb.TerrainType]float64 // terrain cost
+
+	// C is an embedded lookup table of terrain costs.
+	C map[rtscpb.TerrainType]float64
 }
 
 // ImportTileMap constructs a new TileMap object from the input protobuf.
@@ -94,6 +104,8 @@ func (m *TileMap) Tile(x, y int32) *Tile {
 	return m.M[utils.MapCoordinate{X: x, Y: y}]
 }
 
+// TileFromCoordinate returns the Tile object from the input Coordinate
+// protobuf.
 func (m *TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
 	return m.Tile(c.GetX(), c.GetY())
 }
@@ -123,16 +135,19 @@ type Tile struct {
 	Val *rtsspb.Tile
 }
 
+// ImportTile constructs the Tile object from the specified protobuf.
 func ImportTile(pb *rtsspb.Tile) (*Tile, error) {
 	return &Tile{
 		Val: pb,
 	}, nil
 }
 
+// ExportTile constrcts a protobuf based on the specified Tile object.
 func ExportTile(t *Tile) (*rtsspb.Tile, error) {
 	return nil, notImplemented
 }
 
+// Coordinate returns the Tile Coordinate.
 func (t *Tile) Coordinate() *rtsspb.Coordinate {
 	return t.Val.GetCoordinate()
 }
