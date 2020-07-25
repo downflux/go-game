@@ -733,3 +733,105 @@ func TestBuildTransitionsAux(t *testing.T) {
 		})
 	}
 }
+
+func TestSliceContainsError(t *testing.T) {
+	s := &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_UNKNOWN, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}
+	if _, err := sliceContains(s, &rtsspb.Coordinate{X: 0, Y: 0}); err == nil {
+		t.Error("sliceContains() = _, nil, want a non-nil error")
+	}
+}
+
+func TestSliceContains(t *testing.T) {
+	testConfigs := []struct {
+		name string
+		s    *rtsspb.CoordinateSlice
+		c    *rtsspb.Coordinate
+		want bool
+	}{
+		{
+			name: "TrivialSliceContains",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
+			c:    &rtsspb.Coordinate{X: 0, Y: 0},
+			want: true,
+		},
+		{
+			name: "TrivialPreSliceNoContains",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
+			c:    &rtsspb.Coordinate{X: -1, Y: 0},
+			want: false,
+		},
+		{
+			name: "TrivialPostSliceNoContains",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
+			c:    &rtsspb.Coordinate{X: 1, Y: 0},
+			want: false,
+		},
+		{
+			name: "TrivialBadAxisSliceNoContains",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
+			c:    &rtsspb.Coordinate{X: 0, Y: -1},
+			want: false,
+		},
+		{
+			name: "SimpleSliceContainsHorizontal",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 2},
+			c:    &rtsspb.Coordinate{X: 1, Y: 0},
+			want: true,
+		},
+		{
+			name: "SimpleSliceContainsVertical",
+			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 2},
+			c:    &rtsspb.Coordinate{X: 0, Y: 1},
+			want: true,
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			if res, err := sliceContains(c.s, c.c); err != nil || res != c.want {
+				t.Errorf("sliceContains() = %v, %v, want = %v, nil", res, err, c.want)
+			}
+		})
+	}
+}
+
+func TestOnClusterEdge(t *testing.T) {
+	testConfigs := []struct {
+		name string
+		cl   *rtsspb.Cluster
+		co   *rtsspb.Coordinate
+		want bool
+	}{
+		{
+			name: "TrivialClusterContains",
+			cl:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			co:   &rtsspb.Coordinate{X: 0, Y: 0},
+			want: true,
+		},
+		{
+			name: "TrivialClusterNoContains",
+			cl:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			co:   &rtsspb.Coordinate{X: 0, Y: 1},
+			want: false,
+		},
+		{
+			name: "ClusterInternalNoContains",
+			cl:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 3, Y: 3}},
+			co:   &rtsspb.Coordinate{X: 1, Y: 1},
+			want: false,
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			clusterInstance, err := cluster.ImportCluster(c.cl)
+			if err != nil {
+				t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
+			}
+
+			if res, err := OnClusterEdge(clusterInstance, c.co); err != nil || res != c.want {
+				t.Errorf("OnClusterEdge() = %v, %v, want = %v, nil", res, err, c.want)
+			}
+		})
+	}
+}

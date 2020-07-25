@@ -169,3 +169,100 @@ func TestBuildCluster(t *testing.T) {
 		})
 	}
 }
+
+func TestIsDisjoint(t *testing.T) {
+	testConfigs := []struct {
+		name   string
+		c1, c2 *rtsspb.Cluster
+		want   bool
+	}{
+		{
+			name: "TrivialDisjointHorizontal",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			want: true,
+		},
+		{
+			name: "TrivialDisjointHorizontalWLOG",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			want: true,
+		},
+		{
+			name: "TrivialDisjointVertical",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			want: true,
+		},
+		{
+			name: "TrivialDisjointVerticalWLOG",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			want: true,
+		},
+		{
+			name: "DisjointDiagonal",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			want: true,
+		},
+		{
+			name: "DisjointHorizontal",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 5, Y: 1}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 10, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 5, Y: 1}},
+			want: true,
+		},
+		{
+			name: "DisjointVertical",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 10}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 5}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 5}},
+			want: true,
+		},
+		// Testing IsOverlap using IsDisjoint, where IsOverlap == !IsDisjoint.
+		{
+			name: "TrivialOverlap",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			want: false,
+		},
+		{
+			name: "OverlapHorizontal",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 2, Y: 1}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 2, Y: 1}},
+			want: false,
+		},
+		{
+			name: "OverlapVertical",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 2}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 2}},
+			want: false,
+		},
+		{
+			name: "OverlapDiagonal",
+			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 2, Y: 2}},
+			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 2, Y: 2}},
+			want: false,
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			cl1, err := ImportCluster(c.c1)
+			if err != nil {
+				t.Fatalf("ImportCluster() = _, err, want = _, nil", err)
+			}
+			cl2, err := ImportCluster(c.c2)
+			if err != nil {
+				t.Fatalf("ImportCluster() = _, err, want = _, nil", err)
+			}
+
+			got := IsDisjoint(cl1, cl2)
+			if got != c.want {
+				t.Errorf("IsDisjoint() = %v, want = %v", got, c.want)
+			}
+			if got != IsDisjoint(cl2, cl1) {
+				t.Errorf("IsDisjoint() = %v, want = %v", got, c.want)
+			}
+		})
+	}
+}

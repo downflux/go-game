@@ -93,6 +93,43 @@ func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32)
 	}
 }
 
+// sliceContains checks if the given Coordinate falls within the slice.
+func sliceContains(s *rtsspb.CoordinateSlice, coord *rtsspb.Coordinate) (bool, error) {
+	switch s.GetOrientation() {
+	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+		return coord.GetY() == s.GetStart().GetY() && s.GetStart().GetX() <= coord.GetX() && coord.GetX() < s.GetStart().GetX()+s.GetLength(), nil
+	case rtscpb.Orientation_ORIENTATION_VERTICAL:
+		return coord.GetX() == s.GetStart().GetX() && s.GetStart().GetY() <= coord.GetY() && coord.GetY() < s.GetStart().GetY()+s.GetLength(), nil
+	default:
+		return false, status.Errorf(codes.FailedPrecondition, "invalid slice orientation %v", s.GetOrientation())
+	}
+}
+
+// OnClusterEdge checks if the given Coordinate falls on the edge of a Cluster.
+func OnClusterEdge(c *cluster.Cluster, coord *rtsspb.Coordinate) (bool, error) {
+	for _, d := range []rtscpb.Direction{
+		rtscpb.Direction_DIRECTION_NORTH,
+		rtscpb.Direction_DIRECTION_SOUTH,
+		rtscpb.Direction_DIRECTION_EAST,
+		rtscpb.Direction_DIRECTION_WEST,
+	} {
+		slice, err := buildClusterEdgeCoordinateSlice(c, d)
+		if err != nil {
+			return false, err
+		}
+
+		res, err := sliceContains(slice, coord)
+		if err != nil {
+			return false, err
+		}
+
+		if res {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // buildClusterEdgeCoordinateSlice constructs a CoordinateSlice instance
 // representing the contiguous edge of a Cluster in the specified direction.
 // All Tile t on the edge are between the start and end coordinates,

@@ -99,6 +99,36 @@ func IsAdjacent(c1, c2 *Cluster) bool {
 	return math.Abs(float64(c2.Val.GetCoordinate().GetX()-c1.Val.GetCoordinate().GetX()))+math.Abs(float64(c2.Val.GetCoordinate().GetY()-c1.Val.GetCoordinate().GetY())) == 1
 }
 
+// IsOverlapped checks if the two Clusters have a non-empty intersection.
+func IsOverlapped(c1, c2 *Cluster) bool {
+	minX1 := c1.Val.GetTileBoundary().GetX()
+	minY1 := c1.Val.GetTileBoundary().GetY()
+	minX2 := c2.Val.GetTileBoundary().GetX()
+	minY2 := c2.Val.GetTileBoundary().GetY()
+	maxX1 := minX1 + c1.Val.GetTileDimension().GetX() - 1
+	maxX2 := minX2 + c2.Val.GetTileDimension().GetX() - 1
+	maxY1 := minY1 + c1.Val.GetTileDimension().GetY() - 1
+	maxY2 := minY2 + c2.Val.GetTileDimension().GetY() - 1
+	return (minX1 <= maxX2 && minX2 <= maxX1) && (minY1 <= maxY2 && minY2 <= maxY1)
+}
+
+func IsDisjoint(c1, c2 *Cluster) bool {
+	return !IsOverlapped(c1, c2)
+}
+
+// IsBoundedBy checks if c1 is completely contained within c2.
+func IsBoundedBy(c1, c2 *Cluster) bool {
+	minX1 := c1.Val.GetTileBoundary().GetX()
+	minY1 := c1.Val.GetTileBoundary().GetY()
+	minX2 := c2.Val.GetTileBoundary().GetX()
+	minY2 := c2.Val.GetTileBoundary().GetY()
+	maxX1 := minX1 + c1.Val.GetTileDimension().GetX() - 1
+	maxX2 := minX2 + c2.Val.GetTileDimension().GetX() - 1
+	maxY1 := minY1 + c1.Val.GetTileDimension().GetY() - 1
+	maxY2 := minY2 + c2.Val.GetTileDimension().GetY() - 1
+	return (minX2 <= minX1 && minY2 <= minY1) && (maxX1 <= maxX2 && maxY1 <= maxY2)
+}
+
 // Cluster returns the Cluster object from the input coordinates.
 func (m *ClusterMap) Cluster(x, y int32) *Cluster {
 	return m.M[utils.MapCoordinate{X: x, Y: y}]
