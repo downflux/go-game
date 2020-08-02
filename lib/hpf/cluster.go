@@ -129,6 +129,16 @@ func IsBoundedBy(c1, c2 *Cluster) bool {
 	return (minX2 <= minX1 && minY2 <= minY1) && (maxX1 <= maxX2 && maxY1 <= maxY2)
 }
 
+// CoordinateInCluster checks if the given coordinate is bounded by the input
+// Cluster object.
+func CoordinateInCluster(coord *rtsspb.Coordinate, c *Cluster) bool {
+	minX := c.Val.GetTileBoundary().GetX()
+	minY := c.Val.GetTileBoundary().GetY()
+	maxX := minX + c.Val.GetTileDimension().GetX() - 1
+	maxY := minY + c.Val.GetTileDimension().GetY() - 1
+	return (minX <= coord.GetX() && coord.GetX() <= maxX) && (minY <= coord.GetY() && coord.GetY() <= maxY)
+}
+
 // Cluster returns the Cluster object from the input coordinates.
 func (m *ClusterMap) Cluster(x, y int32) *Cluster {
 	return m.M[utils.MapCoordinate{X: x, Y: y}]
