@@ -30,8 +30,9 @@ type AbstractNodeMap map[utils.MapCoordinate]*rtsspb.AbstractNode
 // between different AbstractNode instances.
 type AbstractEdgeMap map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractEdge
 
-func (m AbstractNodeMap) Remove(c *rtsspb.Coordinate) error {
-	delete(m, utils.MC(c))
+// Remove deletes the specified AbstractNode from the AbstractNodeMap.
+func (m AbstractNodeMap) Remove(c utils.MapCoordinate) error {
+	delete(m, c)
 	return nil
 }
 
@@ -77,13 +78,14 @@ func (m AbstractNodeMap) Get(c utils.MapCoordinate) (*rtsspb.AbstractNode, error
 	return m[c], nil
 }
 
-func (m AbstractEdgeMap) Remove(s *rtsspb.Coordinate) error {
-	if destinations, found := m[utils.MC(s)]; found {
-		for d := range destinations {
-			delete(m[utils.MC(s)], d)
-		}
+// Remove deletes the specified AbstractEdge from the AbstractEdgeMap.
+func (m AbstractEdgeMap) Remove(s, d utils.MapCoordinate) error {
+	if _, found := m[s]; found {
+		delete(m[s], d)
 	}
-	delete(m, utils.MC(s))
+	if _, found := m[d]; found {
+		delete(m[d], s)
+	}
 	return nil
 }
 
@@ -92,32 +94,32 @@ func (m AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 	s := utils.MC(e.GetSource())
 	d := utils.MC(e.GetDestination())
 
+	edge, err := m.Get(s, d)
+	if err != nil {
+		return err
+	}
+	if edge != nil {
+		return status.Errorf(codes.AlreadyExists, "AbstractEdge unexpectedly found at %v, %v", s, d)
+	}
+
 	if _, found := m[s]; !found {
 		m[s] = map[utils.MapCoordinate]*rtsspb.AbstractEdge{}
 	}
-	if _, found := m[d]; !found {
-		m[d] = map[utils.MapCoordinate]*rtsspb.AbstractEdge{}
-	}
 
-	// Assuming symmetrical bidirectional graph.
 	m[s][d] = e
-	m[d][s] = &rtsspb.AbstractEdge{
-		Level:       e.GetLevel(),
-		Source:      e.GetDestination(),
-		Destination: e.GetSource(),
-		EdgeType:    e.GetEdgeType(),
-		Weight:      e.GetWeight(),
-	}
 	return nil
 }
 
 // Get queries the AbstractEdgeMap for an AbstractEdge instance which connects
 // two TileMap Coordinate instances.
 func (m AbstractEdgeMap) Get(s, d utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
-	if _, found := m[s]; !found {
-		return nil, nil
+	if _, found := m[s]; found {
+		return m[s][d], nil
 	}
-	return m[s][d], nil
+	if _, found := m[d]; found {
+		return m[d][s], nil
+	}
+	return nil, nil
 }
 
 type AbstractGraph struct {
