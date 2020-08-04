@@ -97,15 +97,9 @@ func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32)
 func sliceContains(s *rtsspb.CoordinateSlice, coord *rtsspb.Coordinate) (bool, error) {
 	switch s.GetOrientation() {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-		return (
-			coord.GetY() == s.GetStart().GetY()) && (
-			s.GetStart().GetX() <= coord.GetX()) && (
-			coord.GetX() < s.GetStart().GetX()+s.GetLength()), nil
+		return (coord.GetY() == s.GetStart().GetY()) && (s.GetStart().GetX() <= coord.GetX()) && (coord.GetX() < s.GetStart().GetX()+s.GetLength()), nil
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
-		return (
-			coord.GetX() == s.GetStart().GetX()) && (
-			s.GetStart().GetY() <= coord.GetY()) && (
-			coord.GetY() < s.GetStart().GetY()+s.GetLength()), nil
+		return (coord.GetX() == s.GetStart().GetX()) && (s.GetStart().GetY() <= coord.GetY()) && (coord.GetY() < s.GetStart().GetY()+s.GetLength()), nil
 	default:
 		return false, status.Errorf(codes.FailedPrecondition, "invalid slice orientation %v", s.GetOrientation())
 	}
@@ -255,9 +249,7 @@ func buildTransitionsAux(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rt
 			return nil, err
 		}
 
-		if (
-			m.TileFromCoordinate(c1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (
-			m.TileFromCoordinate(c2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+		if (m.TileFromCoordinate(c1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (m.TileFromCoordinate(c2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
 			if tSegment1 == nil {
 				tSegment1 = &rtsspb.CoordinateSlice{
 					Orientation:       orientation,
@@ -275,9 +267,7 @@ func buildTransitionsAux(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rt
 			tSegment1.Length += 1
 			tSegment2.Length += 1
 		}
-		if (
-			m.TileFromCoordinate(c1).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) || (
-			m.TileFromCoordinate(c2).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+		if (m.TileFromCoordinate(c1).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) || (m.TileFromCoordinate(c2).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
 			if tSegment1 != nil && tSegment2 != nil {
 				transitions, err := buildTransitionsFromOpenCoordinateSlice(tSegment1, tSegment2)
 				if err != nil {
