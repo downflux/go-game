@@ -6,6 +6,7 @@ import (
 	"math"
 
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
+	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/entrance"
@@ -13,6 +14,11 @@ import (
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
+
+var (
+        notImplemented = status.Error(
+                codes.Unimplemented, "function not implemented")
 )
 
 type AbstractNodeMap map[utils.MapCoordinate]*rtsspb.AbstractNode
@@ -81,7 +87,13 @@ func (m AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 
 	// Assuming symmetrical bidirectional graph.
 	m[s][d] = e
-	m[d][s] = e
+	m[d][s] = &rtsspb.AbstractEdge{
+		Level: e.GetLevel(),
+		Source: e.GetDestination(),
+		Destination: e.GetSource(),
+		EdgeType: e.GetEdgeType(),
+		Weight: e.GetWeight(),
+	}
 	return nil
 }
 
@@ -89,14 +101,20 @@ type AbstractGraph struct {
 	Level int32
 
 	ClusterMap map[int32]*cluster.ClusterMap
-	NodeMap    map[int32]map[utils.MapCoordinate]*rtsspb.AbstractNode
-	EdgeMap    map[int32]map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractEdge
+	NodeMap    map[int32]AbstractNodeMap
+	EdgeMap    map[int32]AbstractEdgeMap
 }
 
 func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.Coordinate) (*AbstractGraph, error) {
 	if level < 1 {
 		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
 	}
+
+	// TODO(cripplet): Add higher-level node generation.
+	if level >= 2 {
+		return nil, notImplemented
+	}
+
 	// Highest level ClusterMap should still have more than one Cluster,
 	// otherwise we'll be routing units to the edge first before going back
 	// inwards.
@@ -111,24 +129,52 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 		return nil, err
 	}
 
-	g := &AbstractGraph{
-		Level: level,
-		ClusterMap: clusterMaps,
-	}
-	/*
-
-	if err = buildBaseGraph(g, tm); err != nil {
+	transitions, err := buildTransitions(clusterMaps[1], tm)
+	if err != nil {
 		return nil, err
 	}
 
-	// Add intra-edges for l > 1.
-	for i := int32(2); i <= level; i++ {
-		if err := addGraphLevel(g, tm, i); err != nil {
-			return nil, err
-		}
-	} */
+	nm, err := buildBaseNodes(transitions)
+	if err != nil {
+		return nil, err
+	}
+
+	em, err := buildBaseEdges(transitions, tm)
+	if err != nil {
+		return nil, err
+	}
+
+	g := &AbstractGraph{
+		Level: level,
+		ClusterMap: clusterMaps,
+		NodeMap: map[int32]AbstractNodeMap{1: nm},
+		EdgeMap: map[int32]AbstractEdgeMap{1: em},
+	}
 
 	return g, nil
+}
+
+func buildBaseNodes(transitions []*rtsspb.Transition) (AbstractNodeMap, error) {
+	nm := AbstractNodeMap{}
+	for _, t := range transitions {
+		nm.Add(t.GetN1())
+		nm.Add(t.GetN2())
+	}
+	return nm, nil
+}
+
+func buildBaseEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) (AbstractEdgeMap, error) {
+	em := AbstractEdgeMap{}
+	for _, t := range transitions {
+		em.Add(&rtsspb.AbstractEdge{
+			Level: 1,
+			Source: t.GetN1().GetTileCoordinate(),
+			Destination: t.GetN2().GetTileCoordinate(),
+			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+	                Weight:      1,  // Inter-edges are always of cost 1, per Botea.
+		})
+	}
+	return em, nil
 }
 
 func buildTieredClusterMaps(tm *tile.TileMap, level int32, clusterDimension *rtsspb.Coordinate) (map[int32]*cluster.ClusterMap, error) {
@@ -141,4 +187,20 @@ func buildTieredClusterMaps(tm *tile.TileMap, level int32, clusterDimension *rts
 		cms[i] = cm
 	}
 	return cms, nil
+}
+
+func buildTransitions(cm *cluster.ClusterMap, tm *tile.TileMap) ([]*rtsspb.Transition, error) {
+	var ts []*rtsspb.Transition
+	for _, c1 := range cm.M {
+		for _, c2 := range cm.M {
+			if cluster.IsAdjacent(c1, c2) {
+				transitions, err := entrance.BuildTransitions(c1, c2, tm)
+				if err != nil {
+					return nil, err
+				}
+				ts = append(ts, transitions...)
+			}
+		}
+	}
+	return ts, nil
 }
