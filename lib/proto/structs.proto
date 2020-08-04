@@ -63,7 +63,10 @@ message AbstractGraph {
 
 message AbstractNode {
 	int32 level = 1;
+
+	// TODO(cripplet): Remove if this is not necessary.
 	Coordinate cluster_coordinate = 2;
+
 	Coordinate tile_coordinate = 3;
 }
 

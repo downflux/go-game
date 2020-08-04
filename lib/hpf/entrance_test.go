@@ -109,7 +109,7 @@ var (
 	}
 )
 
-func TestbuildClusterEdgeCoordinateSliceError(t *testing.T) {
+func TestBuildClusterEdgeCoordinateSliceError(t *testing.T) {
 	testConfigs := []struct {
 		name string
 		c    *rtsspb.Cluster
@@ -829,8 +829,8 @@ func TestOnClusterEdge(t *testing.T) {
 				t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
 			}
 
-			if res, err := OnClusterEdge(clusterInstance, c.co); err != nil || res != c.want {
-				t.Errorf("OnClusterEdge() = %v, %v, want = %v, nil", res, err, c.want)
+			if got := OnClusterEdge(clusterInstance, c.co); got != c.want {
+				t.Errorf("OnClusterEdge() = %v, want = %v", got, c.want)
 			}
 		})
 	}

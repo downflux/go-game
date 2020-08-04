@@ -44,11 +44,7 @@ func (m AbstractNodeMap) GetByClusterEdge(c *cluster.Cluster) ([]*rtsspb.Abstrac
 	}
 
 	for _, n := range nodes {
-		onClusterEdge, err := entrance.OnClusterEdge(c, n.GetTileCoordinate())
-		if err != nil {
-			return nil, err
-		}
-		if onClusterEdge {
+		if entrance.OnClusterEdge(c, n.GetTileCoordinate()) {
 			res = append(res, n)
 		}
 	}

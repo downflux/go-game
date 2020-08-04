@@ -266,3 +266,43 @@ func TestIsDisjoint(t *testing.T) {
 		})
 	}
 }
+
+func TestCoordinateInCluster(t *testing.T) {
+	testConfigs := []struct {
+		name string
+		co   *rtsspb.Coordinate
+		cl   *rtsspb.Cluster
+		want bool
+	}{
+		{
+			name: "TrivialClusterIn",
+			co:   &rtsspb.Coordinate{X: 0, Y: 0},
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+			},
+			want: true,
+		},
+		{
+			name: "TrivialClusterNotIn",
+			co:   &rtsspb.Coordinate{X: 1, Y: 1},
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+			},
+			want: false,
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			cl, err := ImportCluster(c.cl)
+			if err != nil {
+				t.Fatalf("ImportCluster() = _, err, want = _, nil", err)
+			}
+			if got := CoordinateInCluster(c.co, cl); c.want != got {
+				t.Errorf("CoordinateInCluster() = %v, want = %v", got, c.want)
+			}
+		})
+	}
+}

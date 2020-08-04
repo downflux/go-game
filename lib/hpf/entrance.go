@@ -106,7 +106,7 @@ func sliceContains(s *rtsspb.CoordinateSlice, coord *rtsspb.Coordinate) (bool, e
 }
 
 // OnClusterEdge checks if the given Coordinate falls on the edge of a Cluster.
-func OnClusterEdge(c *cluster.Cluster, coord *rtsspb.Coordinate) (bool, error) {
+func OnClusterEdge(c *cluster.Cluster, coord *rtsspb.Coordinate) bool {
 	for _, d := range []rtscpb.Direction{
 		rtscpb.Direction_DIRECTION_NORTH,
 		rtscpb.Direction_DIRECTION_SOUTH,
@@ -115,19 +115,19 @@ func OnClusterEdge(c *cluster.Cluster, coord *rtsspb.Coordinate) (bool, error) {
 	} {
 		slice, err := buildClusterEdgeCoordinateSlice(c, d)
 		if err != nil {
-			return false, err
+			return false
 		}
 
 		res, err := sliceContains(slice, coord)
 		if err != nil {
-			return false, err
+			return false
 		}
 
 		if res {
-			return true, nil
+			return true
 		}
 	}
-	return false, nil
+	return false
 }
 
 // buildClusterEdgeCoordinateSlice constructs a CoordinateSlice instance
