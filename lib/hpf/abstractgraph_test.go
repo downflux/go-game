@@ -5,6 +5,7 @@ import (
 
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -35,6 +36,78 @@ func TestAbstractNodeMapRemove(t *testing.T) {
 
 	if got, err := nm.Get(utils.MC(c)); err != nil || got != nil {
 		t.Errorf("Get() = %v, %v, want = nil, nil", got, err)
+	}
+}
+
+func TestAbstractNodeMapGetByCluster(t *testing.T) {
+	nm := AbstractNodeMap{
+		utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}): &rtsspb.AbstractNode{
+			TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+		},
+		utils.MC(&rtsspb.Coordinate{X: 0, Y: 1}): &rtsspb.AbstractNode{
+			TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
+		},
+	}
+
+	testConfigs := []struct {
+		name string
+		cl   *rtsspb.Cluster
+		nm   AbstractNodeMap
+		want []*rtsspb.AbstractNode
+	}{
+		{
+			name: "EmptyAbstractNodeMap",
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+			},
+			nm:   AbstractNodeMap{},
+			want: nil,
+		},
+		{
+			name: "TrivialCluster",
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+			},
+			nm: nm,
+			want: []*rtsspb.AbstractNode{
+				{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			},
+		},
+		{
+			name: "NullMatchCluster",
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 100, Y: 100},
+				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+			},
+			nm:   nm,
+			want: nil,
+		},
+		{
+			name: "MultiMatchCluster",
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TileDimension: &rtsspb.Coordinate{X: 100, Y: 100},
+			},
+			nm: nm,
+			want: []*rtsspb.AbstractNode{
+				{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+				{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
+			},
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			cl, err := cluster.ImportCluster(c.cl)
+			if err != nil {
+				t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
+			}
+			if got, err := c.nm.GetByCluster(cl); err != nil || !cmp.Equal(got, c.want, protocmp.Transform()) {
+				t.Errorf("GetByCluster() = %v, %v, want = %v, nil", got, err, c.want)
+			}
+		})
 	}
 }
 

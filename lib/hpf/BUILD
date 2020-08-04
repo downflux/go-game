@@ -153,6 +153,7 @@ go_test(
     importpath = "github.com/cripplet/rts-pathing/lib/hpf/abstractgraph_test",
     embed = [":abstractgraph"],
     deps = [
+        ":cluster",
         ":utils",
 	"//lib/proto:structs_go_proto",
 	"@com_github_google_go_cmp//cmp:go_default_library",

@@ -52,6 +52,8 @@ func (m AbstractNodeMap) GetByClusterEdge(c *cluster.Cluster) ([]*rtsspb.Abstrac
 	return res, nil
 }
 
+// GetByCluster filters the AbstractNodeMap by the input Cluster and returns
+// all AbstractNode objects that are bounded by the input.
 func (m AbstractNodeMap) GetByCluster(c *cluster.Cluster) ([]*rtsspb.AbstractNode, error) {
 	var nodes []*rtsspb.AbstractNode
 	for _, n := range m {
