@@ -21,7 +21,13 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
+// AbstractNodeMap contains a collection of AbstractNode instances, which
+// represent an AbstractGraph node used for hierarchical A* search.
 type AbstractNodeMap map[utils.MapCoordinate]*rtsspb.AbstractNode
+
+// AbstractEdgeMap contains a collection of AbstractEdge instances, which
+// represent an AbstractGraph edge; these edges represent the cost to move
+// between different AbstractNode instances.
 type AbstractEdgeMap map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractEdge
 
 func (m AbstractNodeMap) Remove(c *rtsspb.Coordinate) error {
@@ -59,9 +65,16 @@ func (m AbstractNodeMap) GetByCluster(c *cluster.Cluster) ([]*rtsspb.AbstractNod
 	return nodes, nil
 }
 
+// Add appends an AbstractNode instance into the AbstractNodeMap collection.
 func (m AbstractNodeMap) Add(n *rtsspb.AbstractNode) error {
 	m[utils.MC(n.GetTileCoordinate())] = n
 	return nil
+}
+
+// Get queries the AbstractNodeMap for the AbstractNode instance at a specific
+// TileMap Coordinate.
+func (m AbstractNodeMap) Get(c utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
+	return m[c], nil
 }
 
 func (m AbstractEdgeMap) Remove(s *rtsspb.Coordinate) error {
@@ -74,6 +87,7 @@ func (m AbstractEdgeMap) Remove(s *rtsspb.Coordinate) error {
 	return nil
 }
 
+// Add appends an AbstractEdge instance into the AbstractEdgeMap collection.
 func (m AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 	s := utils.MC(e.GetSource())
 	d := utils.MC(e.GetDestination())
@@ -95,6 +109,15 @@ func (m AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 		Weight:      e.GetWeight(),
 	}
 	return nil
+}
+
+// Get queries the AbstractEdgeMap for an AbstractEdge instance which connects
+// two TileMap Coordinate instances.
+func (m AbstractEdgeMap) Get(s, d utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
+	if _, found := m[s]; !found {
+		return nil, nil
+	}
+	return m[s][d], nil
 }
 
 type AbstractGraph struct {

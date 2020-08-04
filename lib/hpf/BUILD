@@ -147,6 +147,19 @@ go_library(
     ],
 )
 
+go_test(
+    name = "abstractgraph_test",
+    srcs = ["abstractgraph_test.go"],
+    importpath = "github.com/cripplet/rts-pathing/lib/hpf/abstractgraph_test",
+    embed = [":abstractgraph"],
+    deps = [
+        ":utils",
+	"//lib/proto:structs_go_proto",
+	"@com_github_google_go_cmp//cmp:go_default_library",
+	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
+    ],
+)
+
 go_library(
     name = "utils",
     srcs = ["utils.go"],
