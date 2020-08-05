@@ -122,12 +122,31 @@ func (m AbstractEdgeMap) Get(s, d utils.MapCoordinate) (*rtsspb.AbstractEdge, er
 	return nil, nil
 }
 
+// AbstractGraph contains the necessary state information to make an efficient
+// path planning call on very large maps via hierarchical A* search, as
+// described in Botea 2004.
 type AbstractGraph struct {
+	// Level is the maximum hierarchy of AbstractNodes in this graph;
+	// this is a positive, non-zero integer. The 0th level here loosely
+	// refers to the underlying base map.
 	Level int32
 
+	// ClusterMap is a Level: ClusterMap dict representing all generated
+	// tile boundaries for an AbstractGraph of the given Level. There
+	// is a corresponding ClusterMap object per AbstractGraph.Level.
 	ClusterMap map[int32]*cluster.ClusterMap
-	NodeMap    map[int32]AbstractNodeMap
-	EdgeMap    map[int32]AbstractEdgeMap
+
+	// NodeMap contains a Level: AbstractNodeMap dict representing the
+	// AbstractNodes per Level. As per AbstractGraph.ClusterMap, there
+	// is a corresponding AbstractNodeMap object per level. Nodes within
+	// a specific AbstractNodeMap may move between levels, and may be
+	// deleted when the underlying terrain changes.
+	NodeMap map[int32]AbstractNodeMap
+
+	// EdgeMap contains a Level: AbstractEdgeMap dict representing the
+	// AbstractEdges per Level. Edges may move between levels and may
+	// be deleted when the underlying terrain changes.
+	EdgeMap map[int32]AbstractEdgeMap
 }
 
 func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.Coordinate) (*AbstractGraph, error) {

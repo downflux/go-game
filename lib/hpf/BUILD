@@ -154,6 +154,7 @@ go_test(
     embed = [":abstractgraph"],
     deps = [
         ":cluster",
+	":tile",
         ":utils",
 	"//lib/proto:structs_go_proto",
 	"@com_github_google_go_cmp//cmp:go_default_library",

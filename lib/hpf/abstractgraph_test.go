@@ -6,6 +6,7 @@ import (
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
+	"github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -262,5 +263,42 @@ func TestAbstractEdgeMapRemove(t *testing.T) {
 
 	if got, err := em.Get(utils.MC(s), utils.MC(d)); err != nil || got != nil {
 		t.Errorf("Get() = %v, %v, want = nil, nil", got, err)
+	}
+}
+
+func TestBuildTieredClusterMaps(t *testing.T) {
+	testConfigs := []struct {
+		name string
+		tm   *rtsspb.TileMap
+		l    int32
+		dim  *rtsspb.Coordinate
+		want map[int32]*rtsspb.ClusterMap
+	}{}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			tm, err := tile.ImportTileMap(c.tm)
+			if err != nil {
+				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+			}
+
+			want := map[int32]*cluster.ClusterMap{}
+			for l, clPB := range c.want {
+				cl, err := cluster.ImportClusterMap(clPB)
+				if err != nil {
+					t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+				}
+				want[l] = cl
+			}
+
+			got, err := buildTieredClusterMaps(tm, c.l, c.dim)
+			if err != nil {
+				t.Fatalf("buildTieredClusterMaps() = _, %v, want = _, nil", err)
+			}
+
+			if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
+				t.Errorf("buildTieredClusterMaps() mismatch (-want +got):\n%s", diff)
+			}
+		})
 	}
 }
