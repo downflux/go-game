@@ -8,8 +8,13 @@ import (
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
 )
+
+func nodeLess(n1, n2 *rtsspb.AbstractNode) bool {
+	return n1.GetTileCoordinate().GetX() < n2.GetTileCoordinate().GetX() || (n1.GetTileCoordinate().GetX() == n2.GetTileCoordinate().GetX() && n1.GetTileCoordinate().GetY() < n2.GetTileCoordinate().GetY())
+}
 
 func TestAbstractNodeMapAdd(t *testing.T) {
 	want := &rtsspb.AbstractNode{
@@ -104,8 +109,79 @@ func TestAbstractNodeMapGetByCluster(t *testing.T) {
 			if err != nil {
 				t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
 			}
-			if got, err := c.nm.GetByCluster(cl); err != nil || !cmp.Equal(got, c.want, protocmp.Transform()) {
+			if got, err := c.nm.GetByCluster(cl); err != nil || !cmp.Equal(got, c.want, protocmp.Transform(), cmpopts.SortSlices(nodeLess)) {
 				t.Errorf("GetByCluster() = %v, %v, want = %v, nil", got, err, c.want)
+			}
+		})
+	}
+}
+
+func TestAbstractNodeMapGetByClusterEdge(t *testing.T) {
+	nm := AbstractNodeMap{
+		utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}): &rtsspb.AbstractNode{
+			TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+		},
+		utils.MC(&rtsspb.Coordinate{X: 1, Y: 1}): &rtsspb.AbstractNode{
+			TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1},
+		},
+	}
+
+	testConfigs := []struct {
+		name string
+		cl   *rtsspb.Cluster
+		nm   AbstractNodeMap
+		want []*rtsspb.AbstractNode
+	}{
+		{
+			name: "EmptyAbstractNodeMap",
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+			},
+			nm:   AbstractNodeMap{},
+			want: nil,
+		},
+		{
+			name: "TrivialCluster",
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+			},
+			nm: nm,
+			want: []*rtsspb.AbstractNode{
+				{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			},
+		},
+		{
+			name: "NullMatchCluster",
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 100, Y: 100},
+				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+			},
+			nm:   nm,
+			want: nil,
+		},
+		{
+			name: "MatchEdgeCluster",
+			cl: &rtsspb.Cluster{
+				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+				TileDimension: &rtsspb.Coordinate{X: 100, Y: 100},
+			},
+			nm: nm,
+			want: []*rtsspb.AbstractNode{
+				{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			},
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			cl, err := cluster.ImportCluster(c.cl)
+			if err != nil {
+				t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
+			}
+			if got, err := c.nm.GetByClusterEdge(cl); err != nil || !cmp.Equal(got, c.want, protocmp.Transform(), cmpopts.SortSlices(nodeLess)) {
+				t.Errorf("GetByClusterEdge() = %v, %v, want = %v, nil", got, err, c.want)
 			}
 		})
 	}

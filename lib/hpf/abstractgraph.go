@@ -36,6 +36,8 @@ func (m AbstractNodeMap) Remove(c utils.MapCoordinate) error {
 	return nil
 }
 
+// GetByClusterEdge filters the AbstractNodeMap by the input Cluster and
+// returns all AbstractNode objects that are bounded by the edges of the input.
 func (m AbstractNodeMap) GetByClusterEdge(c *cluster.Cluster) ([]*rtsspb.AbstractNode, error) {
 	var res []*rtsspb.AbstractNode
 	nodes, err := m.GetByCluster(c)

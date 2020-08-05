@@ -60,7 +60,6 @@ message AbstractGraph {
 	repeated AbstractEdge edges = 4;
 }
 
-
 message AbstractNode {
 	int32 level = 1;
 
