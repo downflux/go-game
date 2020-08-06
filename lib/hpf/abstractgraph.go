@@ -166,6 +166,11 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 		return nil, status.Error(codes.FailedPrecondition, "given clusterDimension and level will result in too large a cluster map")
 	}
 
+	// This does not add any value for an AbstractGraph.
+	if clusterDimension.GetX() <= 1 || clusterDimension.GetY() <= 1 {
+		return nil, status.Error(codes.FailedPrecondition, "invalid clusterDimension")
+	}
+
 	clusterMaps, err := buildTieredClusterMaps(tm, level, clusterDimension)
 	if err != nil {
 		return nil, err
@@ -219,10 +224,20 @@ func buildBaseEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) (Abstrac
 	return em, nil
 }
 
+// buildTieredClusterMaps constructs a list of ClusterMap objects. Each set of
+// Cluster instances inside a ClusterMap are completely nested inside the
+// corresponding Cluster instances in a higher-level ClusterMap.
 func buildTieredClusterMaps(tm *tile.TileMap, level int32, clusterDimension *rtsspb.Coordinate) (map[int32]*cluster.ClusterMap, error) {
 	cms := map[int32]*cluster.ClusterMap{}
 	for i := int32(1); i <= level; i++ {
-		cm, err := cluster.BuildClusterMap(tm.D, clusterDimension, i)
+		cm, err := cluster.BuildClusterMap(
+			tm.D,
+			&rtsspb.Coordinate{
+				X: int32(math.Pow(float64(clusterDimension.GetX()), float64(i))),
+				Y: int32(math.Pow(float64(clusterDimension.GetY()), float64(i))),
+			},
+			i,
+		)
 		if err != nil {
 			return nil, err
 		}

@@ -266,14 +266,228 @@ func TestAbstractEdgeMapRemove(t *testing.T) {
 	}
 }
 
+func TestBuildTieredClusterMapsError(t *testing.T) {
+	testConfigs := []struct {
+		name string
+		tm   *rtsspb.TileMap
+		l    int32
+		dim  *rtsspb.Coordinate
+	}{
+		{name: "NilMapError", tm: nil, l: 1, dim: &rtsspb.Coordinate{X: 2, Y: 2}},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			tm, err := tile.ImportTileMap(c.tm)
+			if err != nil {
+				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+			}
+
+			if _, err := buildTieredClusterMaps(tm, c.l, c.dim); err == nil {
+				t.Fatal("buildTieredClusterMaps() = _, nil, want a non-nil error")
+			}
+		})
+	}
+}
+
 func TestBuildTieredClusterMaps(t *testing.T) {
+	tm := &rtsspb.TileMap{Dimension: &rtsspb.Coordinate{X: 8, Y: 8}}
 	testConfigs := []struct {
 		name string
 		tm   *rtsspb.TileMap
 		l    int32
 		dim  *rtsspb.Coordinate
 		want map[int32]*rtsspb.ClusterMap
-	}{}
+	}{
+		{
+			name: "SingleTier",
+			tm:   tm,
+			l:    1,
+			dim:  &rtsspb.Coordinate{X: 4, Y: 4},
+			want: map[int32]*rtsspb.ClusterMap{
+				1: {
+					Level:     1,
+					Dimension: &rtsspb.Coordinate{X: 2, Y: 2},
+					Clusters: []*rtsspb.Cluster{
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 4},
+							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 4},
+							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ImperfectBorderScaling",
+			tm:   tm,
+			l:    1,
+			dim:  &rtsspb.Coordinate{X: 5, Y: 5},
+			want: map[int32]*rtsspb.ClusterMap{
+				1: {
+					Level:     1,
+					Dimension: &rtsspb.Coordinate{X: 2, Y: 2},
+					Clusters: []*rtsspb.Cluster{
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 5, Y: 5},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 5},
+							TileDimension: &rtsspb.Coordinate{X: 5, Y: 3},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 5, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 3, Y: 5},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 5, Y: 5},
+							TileDimension: &rtsspb.Coordinate{X: 3, Y: 3},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "DoubleTier",
+			tm:   tm,
+			l:    2,
+			dim:  &rtsspb.Coordinate{X: 2, Y: 2},
+			want: map[int32]*rtsspb.ClusterMap{
+				1: {
+					Level:     1,
+					Dimension: &rtsspb.Coordinate{X: 4, Y: 4},
+					Clusters: []*rtsspb.Cluster{
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 2},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 4},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 3},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 6},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 2},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 2},
+							TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 4},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 3},
+							TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 6},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 2, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 2, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 2},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 2, Y: 2},
+							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 4},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 2, Y: 3},
+							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 6},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 3, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 6, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 3, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 6, Y: 2},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 3, Y: 2},
+							TileBoundary:  &rtsspb.Coordinate{X: 6, Y: 4},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 3, Y: 3},
+							TileBoundary:  &rtsspb.Coordinate{X: 6, Y: 6},
+							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+						},
+					},
+				},
+				2: {
+					Level:     2,
+					Dimension: &rtsspb.Coordinate{X: 2, Y: 2},
+					Clusters: []*rtsspb.Cluster{
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 4},
+							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
+							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 0},
+							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
+						},
+						{
+							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
+							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 4},
+							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
+						},
+					},
+				},
+			},
+		},
+	}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {

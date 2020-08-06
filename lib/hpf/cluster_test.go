@@ -120,12 +120,9 @@ func TestBuildCluster(t *testing.T) {
 		{name: "ZeroXDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 1}, level: 1, want: nil, wantSuccess: false},
 		{name: "ZeroYDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 0}, level: 1, want: nil, wantSuccess: false},
 		{name: "InvalidLevelTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 0, want: nil, wantSuccess: false},
-		{name: "ZeroWidthMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: &ClusterMap{
-			L: 1, D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
-		{name: "ZeroXMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: &ClusterMap{
-			L: 1, D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
-		{name: "ZeroYMapTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: &ClusterMap{
-			L: 1, D: &rtsspb.Coordinate{X: 0, Y: 0}, M: nil}, wantSuccess: true},
+		{name: "ZeroWidthMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: nil, wantSuccess: false},
+		{name: "ZeroXMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: nil, wantSuccess: false},
+		{name: "ZeroYMapTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: nil, wantSuccess: false},
 		{name: "SimpleTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: &ClusterMap{
 			L: 1,
 			D: &rtsspb.Coordinate{X: 1, Y: 1}, M: map[utils.MapCoordinate]*Cluster{

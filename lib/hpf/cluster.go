@@ -55,6 +55,7 @@ func ImportClusterMap(pb *rtsspb.ClusterMap) (*ClusterMap, error) {
 	cm := &ClusterMap{
 		L: pb.GetLevel(),
 		D: pb.GetDimension(),
+		M: make(map[utils.MapCoordinate]*Cluster),
 	}
 	for _, c := range pb.GetClusters() {
 		cluster, err := ImportCluster(c)
@@ -210,7 +211,7 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 	}
 
 	if xPartitions == nil || yPartitions == nil {
-		return m, nil
+		return nil, status.Error(codes.FailedPrecondition, "invalid tile dimensions -- no valid partitions generated")
 	}
 
 	m.M = make(map[utils.MapCoordinate]*Cluster)
