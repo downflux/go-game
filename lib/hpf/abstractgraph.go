@@ -246,6 +246,8 @@ func buildTieredClusterMaps(tm *tile.TileMap, level int32, clusterDimension *rts
 	return cms, nil
 }
 
+// buildTransitions iterates over the TileMap for the input ClusterMap overlay
+// and look for adjacent, open nodes along Cluster-Cluster borders.
 func buildTransitions(cm *cluster.ClusterMap, tm *tile.TileMap) ([]*rtsspb.Transition, error) {
 	var ts []*rtsspb.Transition
 	for _, c1 := range cm.M {
@@ -258,6 +260,10 @@ func buildTransitions(cm *cluster.ClusterMap, tm *tile.TileMap) ([]*rtsspb.Trans
 				ts = append(ts, transitions...)
 			}
 		}
+	}
+	for _, t := range ts {
+		t.GetN1().Level = cm.L
+		t.GetN2().Level = cm.L
 	}
 	return ts, nil
 }

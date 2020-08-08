@@ -15,6 +15,14 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	// MaxSingleGapWidth represents the distance between closed Tile
+	// objects which will need a single Transition node -- gaps wider than
+	// this width should be represented by two transition nodes instead,
+	// per Botea 2004.
+	MaxSingleGapWidth = 3
+)
+
 var (
 	// edgeDirectionToOrientation indicates the orientatino of a Cluster
 	// edge.
@@ -186,19 +194,17 @@ func buildClusterEdgeCoordinateSlice(c *cluster.Cluster, d rtscpb.Direction) (*r
 //
 // In general, the less nodes we have, the faster the hierarchical part of the
 // pathing algorithm will take, which would be the case if we increase
-// minLength. We may also consider a more contextual reworking of this function
-// and take into consideration the nearest transition node from adjacent
-// slices, e.g. "transition nodes must be N tiles apart".
+// MaxSingleGapWidth. We may also consider a more contextual reworking
+// of this function and take into consideration the nearest transition node
+// from adjacent slices, e.g. "transition nodes must be N tiles apart".
 func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb.Transition, error) {
-	const minLength = 3
-
 	if err := verifyCoordinateSlices(s1, s2); err != nil {
 		return nil, err
 	}
 
 	var transitions []*rtsspb.Transition
 	var offsets []int32
-	if s1.GetLength() <= minLength {
+	if s1.GetLength() <= MaxSingleGapWidth {
 		offsets = append(offsets, s1.GetLength()/2)
 	} else {
 		offsets = append(offsets, 0, s1.GetLength()-1)

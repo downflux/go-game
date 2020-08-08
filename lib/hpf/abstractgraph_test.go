@@ -17,6 +17,10 @@ func nodeLess(n1, n2 *rtsspb.AbstractNode) bool {
 	return n1.GetTileCoordinate().GetX() < n2.GetTileCoordinate().GetX() || (n1.GetTileCoordinate().GetX() == n2.GetTileCoordinate().GetX() && n1.GetTileCoordinate().GetY() < n2.GetTileCoordinate().GetY())
 }
 
+func transitionLess(t1, t2 *rtsspb.Transition) bool {
+	return nodeLess(t1.GetN1(), t2.GetN1())
+}
+
 func TestAbstractNodeMapAdd(t *testing.T) {
 	want := &rtsspb.AbstractNode{
 		TileCoordinate: &rtsspb.Coordinate{
@@ -512,6 +516,91 @@ func TestBuildTieredClusterMaps(t *testing.T) {
 
 			if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
 				t.Errorf("buildTieredClusterMaps() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestBuildTransitions(t *testing.T) {
+	testConfigs := []struct{
+		name string
+		cm *rtsspb.ClusterMap
+		tm *rtsspb.TileMap
+		want []*rtsspb.Transition
+	}{
+		{
+			name: "TrivialOpenMap",
+			cm: &rtsspb.ClusterMap{
+				Level: 1,
+				Dimension: &rtsspb.Coordinate{X: 1, Y: 3},
+				Clusters: []*rtsspb.Cluster{
+					&rtsspb.Cluster{
+						Coordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+						TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0},
+						TileDimension: &rtsspb.Coordinate{X: 1, Y: 3},
+					},
+					&rtsspb.Cluster{
+						Coordinate: &rtsspb.Coordinate{X: 1, Y: 0},
+						TileBoundary: &rtsspb.Coordinate{X: 1, Y: 0},
+						TileDimension: &rtsspb.Coordinate{X: 1, Y: 3},
+					},
+				},
+			},
+			tm: &rtsspb.TileMap{
+				Dimension: &rtsspb.Coordinate{X: 2, Y: 6},
+				Tiles: []*rtsspb.Tile{
+					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
+					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}},
+					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
+					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
+				},
+			},
+			want: []*rtsspb.Transition{
+				&rtsspb.Transition{
+					N1: &rtsspb.AbstractNode{
+						Level: 1,
+						ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
+					},
+					N2: &rtsspb.AbstractNode{
+						Level: 1,
+						ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
+						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1},
+					},
+				},
+				&rtsspb.Transition{
+					N1: &rtsspb.AbstractNode{
+						Level: 1,
+						ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
+						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1},
+					},
+					N2: &rtsspb.AbstractNode{
+						Level: 1,
+						ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
+					},
+				},
+			},
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			cm, err := cluster.ImportClusterMap(c.cm)
+			if err != nil {
+				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+			}
+
+			tm, err := tile.ImportTileMap(c.tm)
+			if err != nil {
+				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+			}
+
+			got, err := buildTransitions(cm, tm)
+			if diff := cmp.Diff(c.want, got, protocmp.Transform(), cmpopts.SortSlices(transitionLess)); diff != "" {
+				t.Errorf("buildTieredClusterMaps() mismatch(-want, +got):\n%s", diff)
 			}
 		})
 	}
