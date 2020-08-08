@@ -8,6 +8,7 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/cripplet/rts-pathing/lib/hpf/astar"
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/entrance"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
@@ -186,9 +187,14 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 		return nil, err
 	}
 
-	em, err := buildBaseEdges(transitions, tm)
+	em, err := buildBaseInterEdges(transitions, tm)
 	if err != nil {
 		return nil, err
+	}
+
+	edges, err := buildBaseIntraEdges(clusterMaps[1], tm, nm)
+	for _, e := range edges {
+		em.Add(e)
 	}
 
 	g := &AbstractGraph{
@@ -210,7 +216,7 @@ func buildBaseNodes(transitions []*rtsspb.Transition) (AbstractNodeMap, error) {
 	return nm, nil
 }
 
-func buildBaseEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) (AbstractEdgeMap, error) {
+func buildBaseInterEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) (AbstractEdgeMap, error) {
 	em := AbstractEdgeMap{}
 	for _, t := range transitions {
 		em.Add(&rtsspb.AbstractEdge{
@@ -222,6 +228,42 @@ func buildBaseEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) (Abstrac
 		})
 	}
 	return em, nil
+}
+
+func buildBaseIntraEdges(cm *cluster.ClusterMap, tm *tile.TileMap, nm AbstractNodeMap) ([]*rtsspb.AbstractEdge, error) {
+	var edges []*rtsspb.AbstractEdge
+	for _, c := range cm.M {
+		nodes, err := nm.GetByCluster(c)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, n1 := range nodes {
+			for _, n2 := range nodes {
+				if n1 != n2 && cm.L == n1.GetLevel() && cm.L == n2.GetLevel() {
+					p, cost, err := astar.TileMapPath(
+						tm,
+						tm.TileFromCoordinate(n1.GetTileCoordinate()),
+						tm.TileFromCoordinate(n2.GetTileCoordinate()),
+						c.Val.GetTileBoundary(),
+						c.Val.GetTileDimension())
+					if err != nil {
+						return nil, err
+					}
+					if p != nil {
+						edges = append(edges, &rtsspb.AbstractEdge{
+							Level:       cm.L,
+							Source:      n1.GetTileCoordinate(),
+							Destination: n2.GetTileCoordinate(),
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+							Weight:      cost,
+						})
+					}
+				}
+			}
+		}
+	}
+	return edges, nil
 }
 
 // buildTieredClusterMaps constructs a list of ClusterMap objects. Each set of

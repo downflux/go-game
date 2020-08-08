@@ -522,26 +522,26 @@ func TestBuildTieredClusterMaps(t *testing.T) {
 }
 
 func TestBuildTransitions(t *testing.T) {
-	testConfigs := []struct{
+	testConfigs := []struct {
 		name string
-		cm *rtsspb.ClusterMap
-		tm *rtsspb.TileMap
+		cm   *rtsspb.ClusterMap
+		tm   *rtsspb.TileMap
 		want []*rtsspb.Transition
 	}{
 		{
 			name: "TrivialOpenMap",
 			cm: &rtsspb.ClusterMap{
-				Level: 1,
+				Level:     1,
 				Dimension: &rtsspb.Coordinate{X: 1, Y: 3},
 				Clusters: []*rtsspb.Cluster{
-					&rtsspb.Cluster{
-						Coordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-						TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0},
+					{
+						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
 						TileDimension: &rtsspb.Coordinate{X: 1, Y: 3},
 					},
-					&rtsspb.Cluster{
-						Coordinate: &rtsspb.Coordinate{X: 1, Y: 0},
-						TileBoundary: &rtsspb.Coordinate{X: 1, Y: 0},
+					{
+						Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
+						TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 0},
 						TileDimension: &rtsspb.Coordinate{X: 1, Y: 3},
 					},
 				},
@@ -549,37 +549,37 @@ func TestBuildTransitions(t *testing.T) {
 			tm: &rtsspb.TileMap{
 				Dimension: &rtsspb.Coordinate{X: 2, Y: 6},
 				Tiles: []*rtsspb.Tile{
-					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
-					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}},
-					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
-					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
-					&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
+					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
+					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}},
+					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
+					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
 				},
 			},
 			want: []*rtsspb.Transition{
-				&rtsspb.Transition{
+				{
 					N1: &rtsspb.AbstractNode{
-						Level: 1,
+						Level:             1,
 						ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
+						TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
 					},
 					N2: &rtsspb.AbstractNode{
-						Level: 1,
+						Level:             1,
 						ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
-						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1},
+						TileCoordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
 					},
 				},
-				&rtsspb.Transition{
+				{
 					N1: &rtsspb.AbstractNode{
-						Level: 1,
+						Level:             1,
 						ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
-						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1},
+						TileCoordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
 					},
 					N2: &rtsspb.AbstractNode{
-						Level: 1,
+						Level:             1,
 						ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
+						TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
 					},
 				},
 			},
