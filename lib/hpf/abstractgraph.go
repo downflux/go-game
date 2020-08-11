@@ -182,17 +182,32 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 		return nil, err
 	}
 
-	nm, err := buildBaseNodes(transitions)
+	nm := AbstractNodeMap{}
+	em := AbstractEdgeMap{}
+
+	nodes, err := buildBaseNodes(transitions)
 	if err != nil {
 		return nil, err
 	}
 
-	em, err := buildBaseInterEdges(transitions, tm)
+	for _, n := range nodes {
+		nm.Add(n)
+	}
+
+	edges, err := buildBaseInterEdges(transitions, tm)
 	if err != nil {
 		return nil, err
 	}
 
-	edges, err := buildBaseIntraEdges(clusterMaps[1], tm, nm)
+	for _, e := range edges {
+		em.Add(e)
+	}
+
+	edges, err = buildBaseIntraEdges(clusterMaps[1], tm, nm)
+	if err != nil {
+		return nil, err
+	}
+
 	for _, e := range edges {
 		em.Add(e)
 	}
@@ -207,19 +222,19 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 	return g, nil
 }
 
-func buildBaseNodes(transitions []*rtsspb.Transition) (AbstractNodeMap, error) {
-	nm := AbstractNodeMap{}
+func buildBaseNodes(transitions []*rtsspb.Transition) ([]*rtsspb.AbstractNode, error) {
+	var res []*rtsspb.AbstractNode
 	for _, t := range transitions {
-		nm.Add(t.GetN1())
-		nm.Add(t.GetN2())
+		res = append(res, t.GetN1())
+		res = append(res, t.GetN2())
 	}
-	return nm, nil
+	return res, nil
 }
 
-func buildBaseInterEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) (AbstractEdgeMap, error) {
-	em := AbstractEdgeMap{}
+func buildBaseInterEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) ([]*rtsspb.AbstractEdge, error) {
+	var res []*rtsspb.AbstractEdge
 	for _, t := range transitions {
-		em.Add(&rtsspb.AbstractEdge{
+		res = append(res, &rtsspb.AbstractEdge{
 			Level:       1,
 			Source:      t.GetN1().GetTileCoordinate(),
 			Destination: t.GetN2().GetTileCoordinate(),
@@ -227,7 +242,7 @@ func buildBaseInterEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) (Ab
 			Weight:      1, // Inter-edges are always of cost 1, per Botea.
 		})
 	}
-	return em, nil
+	return res, nil
 }
 
 // buildBaseIntraEdges generates a list of AbstractEdges corresponding to a
