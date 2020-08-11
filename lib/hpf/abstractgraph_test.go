@@ -15,26 +15,26 @@ import (
 )
 
 var (
-        /**
-         *       - - -
-         *       - - -
-         * Y = 0 - - -
-         *   X = 0
-         */
-        simpleMapProto = &rtsspb.TileMap{
-                Dimension: &rtsspb.Coordinate{X: 3, Y: 3},
-                Tiles: []*rtsspb.Tile{
-                        &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-                        &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-                        &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-                        &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-                        &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-                        &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-                        &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-                        &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-                        &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-                },
-        }
+	/**
+	 *       - - -
+	 *       - - -
+	 * Y = 0 - - -
+	 *   X = 0
+	 */
+	simpleMapProto = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 3, Y: 3},
+		Tiles: []*rtsspb.Tile{
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		},
+	}
 )
 
 func nodeLess(n1, n2 *rtsspb.AbstractNode) bool {
@@ -646,67 +646,65 @@ func TestBuildBaseIntraEdges(t *testing.T) {
 		{
 			name: "SingleAbstractNode",
 			cm: &rtsspb.ClusterMap{
-				Level: 1,
+				Level:     1,
 				Dimension: &rtsspb.Coordinate{X: 1, Y: 1},
 				Clusters: []*rtsspb.Cluster{
-					&rtsspb.Cluster{
-						Coordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-						TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0},
+					{
+						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
 						TileDimension: &rtsspb.Coordinate{X: 3, Y: 3},
 					},
 				},
 			},
 			nm: map[utils.MapCoordinate]*rtsspb.AbstractNode{
-				utils.MapCoordinate{X: 0, Y: 0}: &rtsspb.AbstractNode{
-					Level: 1,
+				{X: 0, Y: 0}: {
+					Level:             1,
 					ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-					TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+					TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
 				},
-
 			},
-			tm: simpleMapProto,
+			tm:   simpleMapProto,
 			want: nil,
 		},
 		{
 			name: "MultiAbstractNode",
 			cm: &rtsspb.ClusterMap{
-				Level: 1,
+				Level:     1,
 				Dimension: &rtsspb.Coordinate{X: 1, Y: 1},
 				Clusters: []*rtsspb.Cluster{
-					&rtsspb.Cluster{
-						Coordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-						TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0},
+					{
+						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
+						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
 						TileDimension: &rtsspb.Coordinate{X: 3, Y: 3},
 					},
 				},
 			},
 			nm: map[utils.MapCoordinate]*rtsspb.AbstractNode{
-				utils.MapCoordinate{X: 0, Y: 0}: &rtsspb.AbstractNode{
-					Level: 1,
+				{X: 0, Y: 0}: {
+					Level:             1,
 					ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-					TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+					TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
 				},
 
-				utils.MapCoordinate{X: 0, Y: 1}: &rtsspb.AbstractNode{
-					Level: 1,
+				{X: 0, Y: 1}: {
+					Level:             1,
 					ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-					TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
+					TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
 				},
-
 			},
 			tm: simpleMapProto,
 			want: []*rtsspb.AbstractEdge{
-				&rtsspb.AbstractEdge{
-					Level: 1,
-					Source: &rtsspb.Coordinate{X: 0, Y: 0},
+				{
+					Level:       1,
+					Source:      &rtsspb.Coordinate{X: 0, Y: 0},
 					Destination: &rtsspb.Coordinate{X: 0, Y: 1},
-					EdgeType: rtscpb.EdgeType_EDGE_TYPE_INTRA,
+					EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
 				},
-				&rtsspb.AbstractEdge{
-					Level: 1,
-					Source: &rtsspb.Coordinate{X: 0, Y: 1},
+				{
+					Level:       1,
+					Source:      &rtsspb.Coordinate{X: 0, Y: 1},
 					Destination: &rtsspb.Coordinate{X: 0, Y: 0},
-					EdgeType: rtscpb.EdgeType_EDGE_TYPE_INTRA,
+					EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
 				},
 			},
 		},
