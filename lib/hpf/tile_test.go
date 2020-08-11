@@ -21,18 +21,18 @@ var (
 	 * Y = 0 - - -
 	 *   X = 0
 	 */
-	simpleMap = &TileMap{
-		D: &rtsspb.Coordinate{X: 3, Y: 3},
-		M: map[utils.MapCoordinate]*Tile{
-			{X: 0, Y: 0}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			{X: 0, Y: 1}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			{X: 0, Y: 2}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			{X: 1, Y: 0}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			{X: 1, Y: 1}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			{X: 1, Y: 2}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			{X: 2, Y: 0}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			{X: 2, Y: 1}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
-			{X: 0, Y: 2}: {Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS}},
+	simpleMapProto = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 3, Y: 3},
+		Tiles: []*rtsspb.Tile{
+			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			&rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 	}
 )
@@ -129,6 +129,11 @@ func TestH(t *testing.T) {
 }
 
 func TestGetTile(t *testing.T) {
+	simpleMap, err := ImportTileMap(simpleMapProto)
+	if err != nil {
+		t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+	}
+
 	testConfigs := []struct {
 		name       string
 		coordinate *rtsspb.Coordinate
@@ -152,6 +157,11 @@ func tileLess(t1, t2 *Tile) bool {
 }
 
 func TestGetNeighbors(t *testing.T) {
+	simpleMap, err := ImportTileMap(simpleMapProto)
+	if err != nil {
+		t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+	}
+
 	testConfigs := []struct {
 		name       string
 		m          *TileMap

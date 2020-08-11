@@ -230,10 +230,19 @@ func buildBaseInterEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) (Ab
 	return em, nil
 }
 
+// buildBaseIntraEdges generates a list of AbstractEdges corresponding to a
+// totally connected graph of the AbstractNodes for each Cluster in a
+// ClusterMap object.
 func buildBaseIntraEdges(cm *cluster.ClusterMap, tm *tile.TileMap, nm AbstractNodeMap) ([]*rtsspb.AbstractEdge, error) {
+	if cm.L > 1 {
+		return nil, notImplemented
+	}
+
 	var edges []*rtsspb.AbstractEdge
 	for _, c := range cm.M {
-		nodes, err := nm.GetByCluster(c)
+		// TODO(cripplet): Determine if we only need GetByClusterEdge
+		// instead here.
+		nodes, err := nm.GetByClusterEdge(c)
 		if err != nil {
 			return nil, err
 		}
