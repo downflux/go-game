@@ -115,7 +115,9 @@ func (m AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 // two TileMap Coordinate instances.
 func (m AbstractEdgeMap) Get(s, d utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
 	if _, found := m[s]; found {
-		return m[s][d], nil
+		if e, found := m[s][d]; found {
+			return e, nil
+		}
 	}
 	if _, found := m[d]; found {
 		return m[d][s], nil
@@ -150,6 +152,11 @@ type AbstractGraph struct {
 	EdgeMap map[int32]AbstractEdgeMap
 }
 
+// BuildAbstractGraph build a higher-level representation of a TileMap
+// populated with information about how to travel between different subsections
+// between tiles. The level specified in input represents the number of
+// abstractions that should be built for this map (l > 1 is useful for very,
+// very large maps), and the clusterDimension represents a subsection size.
 func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.Coordinate) (*AbstractGraph, error) {
 	if level < 1 {
 		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
@@ -163,12 +170,12 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 	// Highest level ClusterMap should still have more than one Cluster,
 	// otherwise we'll be routing units to the edge first before going back
 	// inwards.
-	if (int32(math.Pow(float64(level), float64(clusterDimension.GetX()))) >= tm.D.GetX()) || (int32(math.Pow(float64(level), float64(clusterDimension.GetY()))) >= tm.D.GetY()) {
+	if (int32(math.Pow(float64(clusterDimension.GetX()), float64(level))) >= tm.D.GetX()) || (int32(math.Pow(float64(clusterDimension.GetY()), float64(level))) >= tm.D.GetY()) {
 		return nil, status.Error(codes.FailedPrecondition, "given clusterDimension and level will result in too large a cluster map")
 	}
 
 	// This does not add any value for an AbstractGraph.
-	if clusterDimension.GetX() <= 1 || clusterDimension.GetY() <= 1 {
+	if clusterDimension.GetX() <= 1 && clusterDimension.GetY() <= 1 {
 		return nil, status.Error(codes.FailedPrecondition, "invalid clusterDimension")
 	}
 
