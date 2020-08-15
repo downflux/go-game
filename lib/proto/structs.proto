@@ -67,6 +67,8 @@ message AbstractNode {
 	Coordinate cluster_coordinate = 2;
 
 	Coordinate tile_coordinate = 3;
+
+	bool ephemeral = 4;
 }
 
 message AbstractEdge {

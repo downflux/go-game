@@ -13,6 +13,7 @@ import (
 	"github.com/cripplet/rts-pathing/lib/hpf/entrance"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -91,6 +92,9 @@ func (m AbstractEdgeMap) Remove(s, d utils.MapCoordinate) error {
 }
 
 // Add appends an AbstractEdge instance into the AbstractEdgeMap collection.
+//
+// We're assuming the graph is undirected -- that is, for nodes A, B, if
+// A --> B, then B --> A with the same cost.
 func (m AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 	s := utils.MC(e.GetSource())
 	d := utils.MC(e.GetDestination())
@@ -106,8 +110,12 @@ func (m AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 	if _, found := m[s]; !found {
 		m[s] = map[utils.MapCoordinate]*rtsspb.AbstractEdge{}
 	}
+	if _, found := m[d]; !found {
+		m[d] = map[utils.MapCoordinate]*rtsspb.AbstractEdge{}
+	}
 
 	m[s][d] = e
+	m[d][s] = e
 	return nil
 }
 
@@ -119,10 +127,15 @@ func (m AbstractEdgeMap) Get(s, d utils.MapCoordinate) (*rtsspb.AbstractEdge, er
 			return e, nil
 		}
 	}
-	if _, found := m[d]; found {
-		return m[d][s], nil
-	}
 	return nil, nil
+}
+
+func (m AbstractEdgeMap) GetBySource(s utils.MapCoordinate) ([]*rtsspb.AbstractEdge, error) {
+	var edges []*rtsspb.AbstractEdge
+	for _, e := range m[s] {
+		edges = append(edges, e)
+	}
+	return edges, nil
 }
 
 // AbstractGraph contains the necessary state information to make an efficient
@@ -227,6 +240,52 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 	}
 
 	return g, nil
+}
+
+func (g *AbstractGraph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error) {
+	nm, found := g.NodeMap[n.GetLevel()]
+	if !found {
+		return nil, status.Error(codes.FailedPrecondition, "invalid level specified for input")
+	}
+
+	node, err := nm.Get(utils.MC(n.GetTileCoordinate()))
+	if err != nil {
+		return nil, err
+	}
+	if node == nil {
+		return nil, status.Error(codes.FailedPrecondition, "cannot find specified node")
+	}
+
+	em, found := g.EdgeMap[n.GetLevel()]
+	if !found {
+		return nil, status.Error(codes.NotFound, "EdgeMap of specified level not found")
+	}
+
+	edges, err := em.GetBySource(utils.MC(node.GetTileCoordinate()))
+	if err != nil {
+		return nil, err
+	}
+
+	var neighbors []*rtsspb.AbstractNode
+	for _, e := range edges {
+		var d *rtsspb.Coordinate
+		if proto.Equal(node.GetTileCoordinate(), e.GetSource()) {
+			d = e.GetDestination()
+		} else {
+			d = e.GetSource()
+		}
+
+		t, err := nm.Get(utils.MC(d))
+		if err != nil {
+			return nil, err
+		}
+		if t == nil {
+			return nil, status.Errorf(codes.NotFound, "invalid node coordinate %v specified for edge %v", d, e)
+		}
+
+		neighbors = append(neighbors, t)
+	}
+	return neighbors, nil
 }
 
 func buildBaseNodes(transitions []*rtsspb.Transition) ([]*rtsspb.AbstractNode, error) {

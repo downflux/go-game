@@ -62,7 +62,7 @@ func abstractEdgeEqual(e1, e2 *rtsspb.AbstractEdge) bool {
 		e1.GetDestination(),
 		e2.GetSource(),
 		protocmp.Transform(),
-	) && (e1.GetLevel() == e2.GetLevel()) && cmp.Equal(
+	) && cmp.Equal(
 		e1,
 		e2,
 		protocmp.Transform(),
@@ -922,12 +922,42 @@ func TestBuildAbstractGraph(t *testing.T) {
 								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 								Weight:      1,
 							},
+							{X: 1, Y: 1}: {
+								Level:       1,
+								Source:      &rtsspb.Coordinate{X: 1, Y: 2},
+								Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+								Weight:      1,
+							},
 						},
 						utils.MapCoordinate{X: 2, Y: 1}: map[utils.MapCoordinate]*rtsspb.AbstractEdge{
 							{X: 2, Y: 2}: {
 								Level:       1,
 								Source:      &rtsspb.Coordinate{X: 2, Y: 1},
 								Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+								Weight:      1,
+							},
+							{X: 1, Y: 1}: {
+								Level:       1,
+								Source:      &rtsspb.Coordinate{X: 2, Y: 1},
+								Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+								Weight:      1,
+							},
+						},
+						utils.MapCoordinate{X: 2, Y: 2}: map[utils.MapCoordinate]*rtsspb.AbstractEdge{
+							{X: 2, Y: 1}: {
+								Level:       1,
+								Source:      &rtsspb.Coordinate{X: 2, Y: 2},
+								Destination: &rtsspb.Coordinate{X: 2, Y: 1},
+								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+								Weight:      1,
+							},
+							{X: 1, Y: 2}: {
+								Level:       1,
+								Source:      &rtsspb.Coordinate{X: 2, Y: 2},
+								Destination: &rtsspb.Coordinate{X: 1, Y: 2},
 								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 								Weight:      1,
 							},
@@ -954,7 +984,6 @@ func TestBuildAbstractGraph(t *testing.T) {
 				c.want,
 				got,
 				cmp.Comparer(abstractEdgeMapEqual),
-				// protocmp.FilterField(&rtsspb.AbstractEdge{}, "", cmp.Comparer(abstractEdgeMapEqual)),
 				protocmp.Transform(),
 			); diff != "" {
 				t.Errorf("BuildAbstractGraph() mismatch (-want +got):\n%s", diff)
