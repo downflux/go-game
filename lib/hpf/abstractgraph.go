@@ -130,6 +130,8 @@ func (m AbstractEdgeMap) Get(s, d utils.MapCoordinate) (*rtsspb.AbstractEdge, er
 	return nil, nil
 }
 
+// GetBySource returns all edges in an AbstractEdgeMap which originate from the
+// given source coordinate.
 func (m AbstractEdgeMap) GetBySource(s utils.MapCoordinate) ([]*rtsspb.AbstractEdge, error) {
 	var edges []*rtsspb.AbstractEdge
 	for _, e := range m[s] {

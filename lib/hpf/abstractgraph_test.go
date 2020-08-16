@@ -37,8 +37,12 @@ var (
 	}
 )
 
+func coordLess(c1, c2 *rtsspb.Coordinate) bool {
+	return c1.GetX() < c2.GetX() || (c1.GetX() == c2.GetX() && c1.GetY() < c2.GetY())
+}
+
 func nodeLess(n1, n2 *rtsspb.AbstractNode) bool {
-	return n1.GetTileCoordinate().GetX() < n2.GetTileCoordinate().GetX() || (n1.GetTileCoordinate().GetX() == n2.GetTileCoordinate().GetX() && n1.GetTileCoordinate().GetY() < n2.GetTileCoordinate().GetY())
+	return coordLess(n1.GetTileCoordinate(), n2.GetTileCoordinate())
 }
 
 func transitionLess(t1, t2 *rtsspb.Transition) bool {
@@ -46,7 +50,10 @@ func transitionLess(t1, t2 *rtsspb.Transition) bool {
 }
 
 func edgeLess(e1, e2 *rtsspb.AbstractEdge) bool {
-	return (e1.GetSource().GetX() < e2.GetSource().GetX() || (e1.GetSource().GetX() == e2.GetSource().GetX() && e1.GetSource().GetY() < e2.GetSource().GetY())) || (e1.GetSource() == e2.GetSource())
+	return coordLess(e1.GetSource(), e2.GetSource()) || cmp.Equal(
+		e1.GetSource(),
+		e2.GetSource(),
+		protocmp.Transform()) && coordLess(e1.GetDestination(), e2.GetDestination())
 }
 
 func abstractEdgeEqual(e1, e2 *rtsspb.AbstractEdge) bool {
@@ -989,5 +996,37 @@ func TestBuildAbstractGraph(t *testing.T) {
 				t.Errorf("BuildAbstractGraph() mismatch (-want +got):\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestAbstractEdgeGraphGetBySource(t *testing.T) {
+	source := &rtsspb.Coordinate{X: 0, Y: 0}
+	want := []*rtsspb.AbstractEdge{
+		{
+			Source:      source,
+			Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+		},
+		{
+			Source:      source,
+			Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+		},
+	}
+
+	em := AbstractEdgeMap{}
+	for _, e := range want {
+		em.Add(e)
+	}
+	em.Add(&rtsspb.AbstractEdge{
+		Source:      &rtsspb.Coordinate{X: 1, Y: 1},
+		Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+	})
+
+	got, err := em.GetBySource(utils.MC(source))
+	if err != nil {
+		t.Fatalf("GetBySource() = _, %v, want = _, nil", err)
+	}
+
+	if diff := cmp.Diff(want, got, cmp.Comparer(abstractEdgeEqual), cmpopts.SortSlices(edgeLess)); diff != "" {
+		t.Errorf("GetBySource() mismatch (-want +got):\n%s", diff)
 	}
 }
