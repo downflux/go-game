@@ -244,6 +244,12 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 	return g, nil
 }
 
+// Neighbors returns all adjacent AbstractNode instances of the same hierarchy
+// level of the input. Two AbstractNode instances are considered adjacent if
+// there exists an edge defined between the two instances. Note that the
+// instances returned here also include ephemeral AbstractNodes
+// (n.GetEphemeralKey() > 0) -- DFS should take care not to expand these
+// secondary neighbors.
 func (g *AbstractGraph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error) {
 	nm, found := g.NodeMap[n.GetLevel()]
 	if !found {

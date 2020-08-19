@@ -68,7 +68,7 @@ message AbstractNode {
 
 	Coordinate tile_coordinate = 3;
 
-	bool ephemeral = 4;
+	int32 ephemeral_key = 4;
 }
 
 message AbstractEdge {
