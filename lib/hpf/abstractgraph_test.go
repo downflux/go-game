@@ -35,6 +35,57 @@ var (
 			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 	}
+
+	/**
+	 *       - - - - - -
+	 *       - - - - - -
+	 *       - - - - - -
+	 *       - - - - - -
+	 *       - - - - - -
+	 * Y = 0 - - - - - -
+	 *   X = 0
+	 */
+	largeMapProto = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 6, Y: 6},
+		Tiles: []*rtsspb.Tile{
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		},
+	}
 )
 
 func coordLess(c1, c2 *rtsspb.Coordinate) bool {
@@ -1028,5 +1079,54 @@ func TestAbstractEdgeGraphGetBySource(t *testing.T) {
 
 	if diff := cmp.Diff(want, got, cmp.Comparer(abstractEdgeEqual), cmpopts.SortSlices(edgeLess)); diff != "" {
 		t.Errorf("GetBySource() mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestAbstractGraphGetNeighbors(t *testing.T) {
+	const level = 1
+	clusterDimension := &rtsspb.Coordinate{X: 3, Y: 3}
+	nodeCoordinate := &rtsspb.Coordinate{X: 2, Y: 1}
+	want := []*rtsspb.AbstractNode{
+		&rtsspb.AbstractNode{
+			Level: 1,
+			ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+			TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2},
+		},
+		&rtsspb.AbstractNode{
+			Level: 1,
+			ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
+			TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 1},
+		},
+	}
+
+	tm, err := tile.ImportTileMap(largeMapProto)
+	if err != nil {
+		t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+	}
+
+	g, err := BuildAbstractGraph(tm, level, clusterDimension)
+	if err != nil  {
+		t.Fatalf("BuildAbstractGraph() = _, %v, want = _, nil", err)
+	}
+
+	n, err := g.NodeMap[level].Get(utils.MC(nodeCoordinate))
+	if err != nil {
+		t.Fatalf("Get() = _, %v, want = _, nil", err)
+	}
+	if n == nil {
+		t.Fatal("Get() = nil, want a non-nil result")
+	}
+
+	got, err := g.Neighbors(n)
+	if err != nil {
+		t.Fatalf("Neighbors() = _, %v, want = _, nil", err)
+	}
+
+	if diff := cmp.Diff(
+		want,
+		got,
+		protocmp.Transform(),
+		cmpopts.SortSlices(nodeLess)); diff != "" {
+		t.Errorf("Neighbors() mismatch (-want +got):\n%s", diff)
 	}
 }
