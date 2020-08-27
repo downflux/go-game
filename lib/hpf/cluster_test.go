@@ -7,29 +7,37 @@ import (
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
-	"github.com/google/go-cmp/cmp"
-	"google.golang.org/protobuf/testing/protocmp"
+	//	"github.com/google/go-cmp/cmp"
+	//	"google.golang.org/protobuf/testing/protocmp"
+)
+
+var (
+	largeClusterMap = &ClusterMap{
+		Val: &rtsspb.ClusterMap{
+			Level:            1,
+			TileDimension:    &rtsspb.Coordinate{X: 10, Y: 10},
+			TileMapDimension: &rtsspb.Coordinate{X: 10000, Y: 10000},
+		},
+	}
 )
 
 func TestIsAdjacent(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		c1   *rtsspb.Coordinate
-		c2   *rtsspb.Coordinate
+		c1   utils.MapCoordinate
+		c2   utils.MapCoordinate
 		want bool
 	}{
-		{name: "IsAdjacent", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 1}, want: true},
-		{name: "IsSame", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 0}, want: false},
-		{name: "IsDiagonal", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 1}, want: false},
-		{name: "IsNotAdjacent", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 100, Y: 100}, want: false},
+		{name: "IsAdjacent", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 0, Y: 1}, want: true},
+		{name: "IsSame", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 0, Y: 0}, want: false},
+		{name: "IsDiagonal", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 1, Y: 1}, want: false},
+		{name: "IsNotAdjacent", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 100, Y: 100}, want: false},
 	}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			if res := IsAdjacent(
-				&Cluster{Val: &rtsspb.Cluster{Coordinate: c.c1}},
-				&Cluster{Val: &rtsspb.Cluster{Coordinate: c.c2}}); res != c.want {
-				t.Errorf("IsAdjacent((%v, %v), (%v, %v)) = %v, want = %v", c.c1.GetX(), c.c1.GetY(), c.c2.GetX(), c.c2.GetY(), res, c.want)
+			if res := IsAdjacent(largeClusterMap, c.c1, c.c2); res != c.want {
+				t.Errorf("IsAdjacent(m, (%v, %v), (%v, %v)) = %v, want = %v", c.c1.X, c.c1.Y, c.c2.X, c.c2.Y, res, c.want)
 			}
 		})
 	}
@@ -39,23 +47,21 @@ func TestIsAdjacent(t *testing.T) {
 func TestAdjacentDirection(t *testing.T) {
 	testConfigs := []struct {
 		name        string
-		c1          *rtsspb.Coordinate
-		c2          *rtsspb.Coordinate
+		c1          utils.MapCoordinate
+		c2          utils.MapCoordinate
 		want        rtscpb.Direction
 		wantSuccess bool
 	}{
-		{name: "AdjacentDirectionNorth", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 1}, want: rtscpb.Direction_DIRECTION_NORTH, wantSuccess: true},
-		{name: "AdjacentDirectionSouth", c1: &rtsspb.Coordinate{X: 0, Y: 1}, c2: &rtsspb.Coordinate{X: 0, Y: 0}, want: rtscpb.Direction_DIRECTION_SOUTH, wantSuccess: true},
-		{name: "AdjacentDirectionEast", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 0}, want: rtscpb.Direction_DIRECTION_EAST, wantSuccess: true},
-		{name: "AdjacentDirectionWest", c1: &rtsspb.Coordinate{X: 1, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 0}, want: rtscpb.Direction_DIRECTION_WEST, wantSuccess: true},
-		{name: "NonAdjacentDirection", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 1}, want: rtscpb.Direction_DIRECTION_UNKNOWN, wantSuccess: false},
+		{name: "AdjacentDirectionNorth", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 0, Y: 1}, want: rtscpb.Direction_DIRECTION_NORTH, wantSuccess: true},
+		{name: "AdjacentDirectionSouth", c1: utils.MapCoordinate{X: 0, Y: 1}, c2: utils.MapCoordinate{X: 0, Y: 0}, want: rtscpb.Direction_DIRECTION_SOUTH, wantSuccess: true},
+		{name: "AdjacentDirectionEast", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 1, Y: 0}, want: rtscpb.Direction_DIRECTION_EAST, wantSuccess: true},
+		{name: "AdjacentDirectionWest", c1: utils.MapCoordinate{X: 1, Y: 0}, c2: utils.MapCoordinate{X: 0, Y: 0}, want: rtscpb.Direction_DIRECTION_WEST, wantSuccess: true},
+		{name: "NonAdjacentDirection", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 1, Y: 1}, want: rtscpb.Direction_DIRECTION_UNKNOWN, wantSuccess: false},
 	}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			res, err := GetRelativeDirection(
-				&Cluster{Val: &rtsspb.Cluster{Coordinate: c.c1}},
-				&Cluster{Val: &rtsspb.Cluster{Coordinate: c.c2}})
+			res, err := GetRelativeDirection(largeClusterMap, c.c1, c.c2)
 			if (err == nil) != c.wantSuccess {
 				t.Fatalf("GetRelativeDirection() = _, %v, want wantSuccess = %v", err, c.wantSuccess)
 			}
@@ -66,238 +72,30 @@ func TestAdjacentDirection(t *testing.T) {
 	}
 }
 
-func TestPartition(t *testing.T) {
-	testConfigs := []struct {
-		name             string
-		tileMapDimension int32
-		tileDimension    int32
-		want             []partitionInfo
-		wantSuccess      bool
-	}{
-		{name: "ZeroWidthMapTest", tileMapDimension: 0, tileDimension: 1, want: nil, wantSuccess: true},
-		{name: "ZeroWidthMapZeroDimTest", tileMapDimension: 0, tileDimension: 0, want: nil, wantSuccess: false},
-		{name: "SimplePartitionTest", tileMapDimension: 1, tileDimension: 1, want: []partitionInfo{
-			{TileBoundary: 0, TileDimension: 1},
-		}, wantSuccess: true},
-		{name: "SimplePartitionMultipleTest", tileMapDimension: 2, tileDimension: 1, want: []partitionInfo{
-			{TileBoundary: 0, TileDimension: 1},
-			{TileBoundary: 1, TileDimension: 1},
-		}, wantSuccess: true},
-		{name: "PartialPartitionTest", tileMapDimension: 1, tileDimension: 2, want: []partitionInfo{
-			{TileBoundary: 0, TileDimension: 1},
-		}, wantSuccess: true},
-		{name: "PartialPartitionMultipleTest", tileMapDimension: 3, tileDimension: 2, want: []partitionInfo{
-			{TileBoundary: 0, TileDimension: 2},
-			{TileBoundary: 2, TileDimension: 1},
-		}, wantSuccess: true},
-	}
-
-	for _, c := range testConfigs {
-		t.Run(c.name, func(t *testing.T) {
-			ps, err := partition(c.tileMapDimension, c.tileDimension)
-			if (err == nil) != c.wantSuccess {
-				t.Fatalf("partition() = _, %v, want wantSuccess = %v", err, c.wantSuccess)
-			}
-			if err == nil && !cmp.Equal(ps, c.want) {
-				t.Errorf("partition() = %v, want = %v", ps, c.want)
-			}
-		})
-	}
-}
-
-func TestBuildCluster(t *testing.T) {
-	testConfigs := []struct {
-		name             string
-		tileMapDimension *rtsspb.Coordinate
-		tileDimension    *rtsspb.Coordinate
-		level            int32
-
-		// TODO(cripplet): Replace with rtsspb.ClusterMap and use ImportClusterMap instead.
-		want        *ClusterMap
-		wantSuccess bool
-	}{
-		{name: "ZeroWidthDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 0}, level: 1, want: nil, wantSuccess: false},
-		{name: "ZeroXDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 0, Y: 1}, level: 1, want: nil, wantSuccess: false},
-		{name: "ZeroYDimTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 0}, level: 1, want: nil, wantSuccess: false},
-		{name: "InvalidLevelTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 0, want: nil, wantSuccess: false},
-		{name: "ZeroWidthMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: nil, wantSuccess: false},
-		{name: "ZeroXMapTest", tileMapDimension: &rtsspb.Coordinate{X: 0, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: nil, wantSuccess: false},
-		{name: "ZeroYMapTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 0}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: nil, wantSuccess: false},
-		{name: "SimpleTest", tileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}, tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1, want: &ClusterMap{
-			L: 1,
-			D: &rtsspb.Coordinate{X: 1, Y: 1}, M: map[utils.MapCoordinate]*Cluster{
-				{X: 0, Y: 0}: {
-					Val: &rtsspb.Cluster{
-						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-						TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-					},
-				},
-			}}, wantSuccess: true},
-		{name: "MultiplePartitionTest", tileMapDimension: &rtsspb.Coordinate{X: 2, Y: 3}, tileDimension: &rtsspb.Coordinate{X: 2, Y: 2}, level: 1, want: &ClusterMap{
-			L: 1,
-			D: &rtsspb.Coordinate{X: 1, Y: 2}, M: map[utils.MapCoordinate]*Cluster{
-				{X: 0, Y: 0}: {
-					Val: &rtsspb.Cluster{
-						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-						TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-					},
-				},
-				{X: 0, Y: 1}: {
-					Val: &rtsspb.Cluster{
-						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
-						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},
-						TileDimension: &rtsspb.Coordinate{X: 2, Y: 1},
-					},
-				},
-			}}, wantSuccess: true},
-	}
-
-	for _, c := range testConfigs {
-		t.Run(c.name, func(t *testing.T) {
-			m, err := BuildClusterMap(c.tileMapDimension, c.tileDimension, c.level)
-			if (err == nil) != c.wantSuccess {
-				t.Fatalf("BuildClusterMap() = _, %v, want wantSuccess = %v", err, c.wantSuccess)
-			}
-			if err == nil && !cmp.Equal(m, c.want, protocmp.Transform()) {
-				t.Errorf("BuildClusterMap() = %v, want = %v", m, c.want)
-			}
-		})
-	}
-}
-
-func TestIsDisjoint(t *testing.T) {
-	testConfigs := []struct {
-		name   string
-		c1, c2 *rtsspb.Cluster
-		want   bool
-	}{
-		{
-			name: "TrivialDisjointHorizontal",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			want: true,
-		},
-		{
-			name: "TrivialDisjointHorizontalWLOG",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			want: true,
-		},
-		{
-			name: "TrivialDisjointVertical",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			want: true,
-		},
-		{
-			name: "TrivialDisjointVerticalWLOG",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			want: true,
-		},
-		{
-			name: "DisjointDiagonal",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			want: true,
-		},
-		{
-			name: "DisjointHorizontal",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 5, Y: 1}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 10, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 5, Y: 1}},
-			want: true,
-		},
-		{
-			name: "DisjointVertical",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 10}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 5}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 5}},
-			want: true,
-		},
-		// Testing IsOverlap using IsDisjoint, where IsOverlap == !IsDisjoint.
-		{
-			name: "TrivialOverlap",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			want: false,
-		},
-		{
-			name: "OverlapHorizontal",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 2, Y: 1}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 2, Y: 1}},
-			want: false,
-		},
-		{
-			name: "OverlapVertical",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 2}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 2}},
-			want: false,
-		},
-		{
-			name: "OverlapDiagonal",
-			c1:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 2, Y: 2}},
-			c2:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 1, Y: 1}, TileDimension: &rtsspb.Coordinate{X: 2, Y: 2}},
-			want: false,
-		},
-	}
-
-	for _, c := range testConfigs {
-		t.Run(c.name, func(t *testing.T) {
-			cl1, err := ImportCluster(c.c1)
-			if err != nil {
-				t.Fatalf("ImportCluster() = _, err, want = _, nil", err)
-			}
-			cl2, err := ImportCluster(c.c2)
-			if err != nil {
-				t.Fatalf("ImportCluster() = _, err, want = _, nil", err)
-			}
-
-			got := IsDisjoint(cl1, cl2)
-			if got != c.want {
-				t.Errorf("IsDisjoint() = %v, want = %v", got, c.want)
-			}
-			if got != IsDisjoint(cl2, cl1) {
-				t.Errorf("IsDisjoint() = %v, want = %v", got, c.want)
-			}
-		})
-	}
-}
-
 func TestCoordinateInCluster(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		co   *rtsspb.Coordinate
-		cl   *rtsspb.Cluster
+		co   utils.MapCoordinate
+		cl   utils.MapCoordinate
 		want bool
 	}{
 		{
 			name: "TrivialClusterIn",
-			co:   &rtsspb.Coordinate{X: 0, Y: 0},
-			cl: &rtsspb.Cluster{
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			},
+			co:   utils.MapCoordinate{X: 0, Y: 0},
+			cl:   utils.MapCoordinate{X: 0, Y: 0},
 			want: true,
 		},
 		{
 			name: "TrivialClusterNotIn",
-			co:   &rtsspb.Coordinate{X: 1, Y: 1},
-			cl: &rtsspb.Cluster{
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			},
+			co:   utils.MapCoordinate{X: 0, Y: 0},
+			cl:   utils.MapCoordinate{X: 1, Y: 0},
 			want: false,
 		},
 	}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			cl, err := ImportCluster(c.cl)
-			if err != nil {
-				t.Fatalf("ImportCluster() = _, err, want = _, nil", err)
-			}
-			if got := CoordinateInCluster(c.co, cl); c.want != got {
+			if got := CoordinateInCluster(largeClusterMap, c.cl, c.co); c.want != got {
 				t.Errorf("CoordinateInCluster() = %v, want = %v", got, c.want)
 			}
 		})

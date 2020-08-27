@@ -17,3 +17,10 @@ func MC(c *rtsspb.Coordinate) MapCoordinate {
 		Y: c.GetY(),
 	}
 }
+
+func AddMapCoordinate(a, b MapCoordinate) MapCoordinate {
+	return MapCoordinate{
+		X: a.X + b.X,
+		Y: a.Y + b.Y,
+	}
+}

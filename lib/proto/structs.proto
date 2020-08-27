@@ -28,17 +28,12 @@ message TileMap {
 
 message ClusterMap {
 	int32 level = 1;
-	Coordinate dimension = 2;
-	repeated Cluster clusters = 3;
-}
 
-message Cluster {
-	// Position of the Cluster relative to the encapsulating ClusterMap.
-	Coordinate coordinate = 1;
+	// Base dimension per cluster.
+	Coordinate tile_dimension = 2;
 
-	// Position of the underlying Tile.
-	Coordinate tile_boundary = 2;
-	Coordinate tile_dimension = 3;
+	// Underlying TileMap dimension.
+	Coordinate tile_map_dimension = 3;
 }
 
 message CoordinateSlice {

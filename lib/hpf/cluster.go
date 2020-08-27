@@ -11,7 +11,6 @@ import (
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
-	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -36,36 +35,28 @@ var (
 // partition-partition move is known. This will save cycles when iterating over
 // large maps.
 type ClusterMap struct {
-	// L specifies the abstaction level of the ClusterMap -- higher
-	// abstraction Clusters contain groups of lower level Clusters.
-	L int32
+	Val *rtsspb.ClusterMap
+}
 
-	// D specifies the number of Cluster objects extending in each spatial
-	// dimension.
-	D *rtsspb.Coordinate
+func validateClusterInRange(m *ClusterMap, c utils.MapCoordinate) error {
+	dim := utils.MapCoordinate{
+		X: int32(math.Ceil(
+			float64(m.Val.GetTileMapDimension().GetX()) / float64(m.Val.GetTileDimension().GetX()))),
+		Y: int32(math.Ceil(
+			float64(m.Val.GetTileMapDimension().GetY()) / float64(m.Val.GetTileDimension().GetY()))),
+	}
 
-	// M contains the list of Clusters in a ClusterMap. The key here
-	// is relative to other Clusters -- it does not represent any TileMap
-	// Coordinates.
-	M map[utils.MapCoordinate]*Cluster
+	if 0 < c.X || c.X >= dim.X || 0 < c.Y || c.Y >= dim.X {
+		return status.Errorf(codes.OutOfRange, "invalid cluster coordinate %v for ClusterMap", c)
+	}
+	return nil
 }
 
 // ImportClusterMap constructs a ClusterMap object from the given protobuf.
 func ImportClusterMap(pb *rtsspb.ClusterMap) (*ClusterMap, error) {
-	cm := &ClusterMap{
-		L: pb.GetLevel(),
-		D: pb.GetDimension(),
-		M: make(map[utils.MapCoordinate]*Cluster),
-	}
-	for _, c := range pb.GetClusters() {
-		cluster, err := ImportCluster(c)
-		if err != nil {
-			return nil, err
-		}
-		cm.M[utils.MC(c.GetCoordinate())] = cluster
-	}
-
-	return cm, nil
+	return &ClusterMap{
+		Val: pb,
+	}, nil
 }
 
 // ExportClusterMap constructs a protobuf from the given ClusterMap object.
@@ -73,91 +64,65 @@ func ExportClusterMap(m *ClusterMap) (*rtsspb.ClusterMap, error) {
 	return nil, notImplemented
 }
 
-// Cluster encapsulates a group of Tile objects.
-type Cluster struct {
-	// Val is the underlying
-	Val *rtsspb.Cluster
+// IsAdjacent checks if two clusters are next to each other in the same
+// ClusterMap.
+func IsAdjacent(m *ClusterMap, c1, c2 utils.MapCoordinate) bool {
+	return math.Abs(float64(c2.X-c1.X))+math.Abs(float64(c2.Y-c1.Y)) == 1
 }
 
-// ImportCluster constructs a Cluster object from the given protobuf.
-func ImportCluster(pb *rtsspb.Cluster) (*Cluster, error) {
-	return &Cluster{
-		Val: proto.Clone(pb).(*rtsspb.Cluster),
+// TileBoundary returns the starting X, Y coordinates of the specified
+// cluster coordinate.
+func TileBoundary(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, error) {
+	if err := validateClusterInRange(m, c); err != nil {
+		return utils.MapCoordinate{}, err
+	}
+	return utils.MapCoordinate{
+		X: c.X * m.Val.GetTileDimension().GetX(),
+		Y: c.Y * m.Val.GetTileDimension().GetY(),
 	}, nil
 }
 
-// ExportCluster constructs a protobuf from the given Cluster object.
-func ExportCluster(c *Cluster) (*rtsspb.Cluster, error) {
-	return proto.Clone(c.Val).(*rtsspb.Cluster), nil
-}
-
-// IsAdjacent checks if two Cluster objects are next to each other in the same
-// ClusterMap.
-//
-// TODO(cripplet): Check if we need an l-level in Cluster proto -- if so, we
-// should check that here as well.
-func IsAdjacent(c1, c2 *Cluster) bool {
-	return math.Abs(float64(c2.Val.GetCoordinate().GetX()-c1.Val.GetCoordinate().GetX()))+math.Abs(float64(c2.Val.GetCoordinate().GetY()-c1.Val.GetCoordinate().GetY())) == 1
-}
-
-// IsOverlapped checks if the two Clusters have a non-empty intersection.
-func IsOverlapped(c1, c2 *Cluster) bool {
-	minX1 := c1.Val.GetTileBoundary().GetX()
-	minY1 := c1.Val.GetTileBoundary().GetY()
-	minX2 := c2.Val.GetTileBoundary().GetX()
-	minY2 := c2.Val.GetTileBoundary().GetY()
-	maxX1 := minX1 + c1.Val.GetTileDimension().GetX() - 1
-	maxX2 := minX2 + c2.Val.GetTileDimension().GetX() - 1
-	maxY1 := minY1 + c1.Val.GetTileDimension().GetY() - 1
-	maxY2 := minY2 + c2.Val.GetTileDimension().GetY() - 1
-	return (minX1 <= maxX2 && minX2 <= maxX1) && (minY1 <= maxY2 && minY2 <= maxY1)
-}
-
-func IsDisjoint(c1, c2 *Cluster) bool {
-	return !IsOverlapped(c1, c2)
-}
-
-// IsBoundedBy checks if c1 is completely contained within c2.
-func IsBoundedBy(c1, c2 *Cluster) bool {
-	minX1 := c1.Val.GetTileBoundary().GetX()
-	minY1 := c1.Val.GetTileBoundary().GetY()
-	minX2 := c2.Val.GetTileBoundary().GetX()
-	minY2 := c2.Val.GetTileBoundary().GetY()
-	maxX1 := minX1 + c1.Val.GetTileDimension().GetX() - 1
-	maxX2 := minX2 + c2.Val.GetTileDimension().GetX() - 1
-	maxY1 := minY1 + c1.Val.GetTileDimension().GetY() - 1
-	maxY2 := minY2 + c2.Val.GetTileDimension().GetY() - 1
-	return (minX2 <= minX1 && minY2 <= minY1) && (maxX1 <= maxX2 && maxY1 <= maxY2)
+// TileDimension calculates the length of the specified cluster coordinate.
+func TileDimension(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, error) {
+	if err := validateClusterInRange(m, c); err != nil {
+		return utils.MapCoordinate{}, err
+	}
+	return utils.MapCoordinate{
+		X: int32(math.Min(
+			float64(m.Val.GetTileDimension().GetX()),
+			float64(m.Val.GetTileMapDimension().GetX()-c.X*m.Val.GetTileDimension().GetX()))),
+		Y: int32(math.Min(
+			float64(m.Val.GetTileDimension().GetY()),
+			float64(m.Val.GetTileMapDimension().GetY()-c.Y*m.Val.GetTileDimension().GetY()))),
+	}, nil
 }
 
 // CoordinateInCluster checks if the given coordinate is bounded by the input
-// Cluster object.
-func CoordinateInCluster(coord *rtsspb.Coordinate, c *Cluster) bool {
-	minX := c.Val.GetTileBoundary().GetX()
-	minY := c.Val.GetTileBoundary().GetY()
-	maxX := minX + c.Val.GetTileDimension().GetX() - 1
-	maxY := minY + c.Val.GetTileDimension().GetY() - 1
-	return (minX <= coord.GetX() && coord.GetX() <= maxX) && (minY <= coord.GetY() && coord.GetY() <= maxY)
-}
+// cluster coordinate c.
+func CoordinateInCluster(m *ClusterMap, c, t utils.MapCoordinate) bool {
+	tileBoundary, err := TileBoundary(m, c)
+	if err != nil {
+		return false
+	}
 
-// Cluster returns the Cluster object from the input coordinates.
-func (m *ClusterMap) Cluster(x, y int32) *Cluster {
-	return m.M[utils.MapCoordinate{X: x, Y: y}]
+	tileDimension, err := TileDimension(m, c)
+	if err != nil {
+		return false
+	}
+
+	return (tileBoundary.X <= t.X && t.X < tileBoundary.X+tileDimension.X) && (tileBoundary.Y <= t.Y && t.Y < tileBoundary.Y+tileDimension.Y)
 }
 
 // Neighbors returns the adjacent Cluster objects given a Cluster Coordinate.
-func (m *ClusterMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Cluster, error) {
-	src, found := m.M[utils.MC(coordinate)]
-	if !found {
-		return nil, status.Error(codes.NotFound, "no Cluster exists with given coordinates in the ClusterMap")
+func Neighbors(m *ClusterMap, c utils.MapCoordinate) ([]utils.MapCoordinate, error) {
+	if err := validateClusterInRange(m, c); err != nil {
+		return nil, err
 	}
 
-	var neighbors []*Cluster
-	for _, c := range neighborCoordinates {
-		if dest := m.M[utils.MC(&rtsspb.Coordinate{
-			X: src.Val.GetCoordinate().GetX() + c.GetX(),
-			Y: src.Val.GetCoordinate().GetY() + c.GetY(),
-		})]; dest != nil {
+	var neighbors []utils.MapCoordinate
+	for _, coord := range neighborCoordinates {
+		dest := utils.AddMapCoordinate(c, utils.MC(coord))
+		if err := validateClusterInRange(m, dest); err == nil {
 			neighbors = append(neighbors, dest)
 		}
 	}
@@ -166,21 +131,21 @@ func (m *ClusterMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Cluster, error
 
 // GetRelativeDirection will return the direction of travel from c to other.
 // c and other must be immediately adjacent to one another.
-func GetRelativeDirection(c, other *Cluster) (rtscpb.Direction, error) {
-	if !IsAdjacent(c, other) {
+func GetRelativeDirection(m *ClusterMap, c, other utils.MapCoordinate) (rtscpb.Direction, error) {
+	if !IsAdjacent(m, c, other) {
 		return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "input clusters are not immediately adjacent to one another")
 	}
 
-	if c.Val.GetCoordinate().GetX() == other.Val.GetCoordinate().GetX() && c.Val.GetCoordinate().GetY() < other.Val.GetCoordinate().GetY() {
+	if c.X == other.X && c.Y < other.Y {
 		return rtscpb.Direction_DIRECTION_NORTH, nil
 	}
-	if c.Val.GetCoordinate().GetX() == other.Val.GetCoordinate().GetX() && c.Val.GetCoordinate().GetY() > other.Val.GetCoordinate().GetY() {
+	if c.X == other.X && c.Y > other.Y {
 		return rtscpb.Direction_DIRECTION_SOUTH, nil
 	}
-	if c.Val.GetCoordinate().GetX() < other.Val.GetCoordinate().GetX() && c.Val.GetCoordinate().GetY() == other.Val.GetCoordinate().GetY() {
+	if c.X < other.X && c.Y == other.Y {
 		return rtscpb.Direction_DIRECTION_EAST, nil
 	}
-	if c.Val.GetCoordinate().GetX() > other.Val.GetCoordinate().GetX() && c.Val.GetCoordinate().GetY() == other.Val.GetCoordinate().GetY() {
+	if c.X > other.X && c.Y == other.Y {
 		return rtscpb.Direction_DIRECTION_WEST, nil
 	}
 	return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "clusters which are immediately adjacent are somehow not traversible via cardinal directions")
@@ -195,75 +160,11 @@ func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.
 		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
 	}
 
-	m := &ClusterMap{
-		L: level,
-		D: &rtsspb.Coordinate{},
-		M: nil,
-	}
-
-	xPartitions, err := partition(tileMapDimension.GetX(), tileDimension.GetX())
-	if err != nil {
-		return nil, err
-	}
-	yPartitions, err := partition(tileMapDimension.GetY(), tileDimension.GetY())
-	if err != nil {
-		return nil, err
-	}
-
-	if xPartitions == nil || yPartitions == nil {
-		return nil, status.Error(codes.FailedPrecondition, "invalid tile dimensions -- no valid partitions generated")
-	}
-
-	m.M = make(map[utils.MapCoordinate]*Cluster)
-	m.D.X = int32(math.Ceil(float64(tileMapDimension.GetX()) / float64(tileDimension.GetX())))
-	m.D.Y = int32(math.Ceil(float64(tileMapDimension.GetY()) / float64(tileDimension.GetY())))
-
-	for _, xp := range xPartitions {
-		x := xp.TileBoundary / tileDimension.GetX()
-		for _, yp := range yPartitions {
-			y := yp.TileBoundary / tileDimension.GetY()
-			m.M[utils.MC(&rtsspb.Coordinate{X: x, Y: y})] = &Cluster{
-				Val: &rtsspb.Cluster{
-					Coordinate:    &rtsspb.Coordinate{X: x, Y: y},
-					TileBoundary:  &rtsspb.Coordinate{X: xp.TileBoundary, Y: yp.TileBoundary},
-					TileDimension: &rtsspb.Coordinate{X: xp.TileDimension, Y: yp.TileDimension},
-				},
-			}
-		}
-	}
-
-	return m, nil
-}
-
-// partitionInfo is a 1D partition data struct, representing a semi-open
-// interval of Tile Coordinates, projected onto a specific axis.
-type partitionInfo struct {
-	// TileBoundary is the acceptable lower bound of a Tile; Tile objects
-	// may include this projected Coordinate.
-	TileBoundary int32
-
-	// TileDimension is the length of the partition interval. The upper
-	// bound as defined by the TileDimension is open (exclusive).
-	TileDimension int32
-}
-
-// partition builds a 1D list of partitions -- we will combine the X-specific
-// and Y-specific partitions into a 2D partition array.
-func partition(tileMapDimension int32, tileDimension int32) ([]partitionInfo, error) {
-	if tileDimension == 0 {
-		return nil, status.Errorf(codes.FailedPrecondition, "invalid tileDimension value %v", tileDimension)
-	}
-	var partitions []partitionInfo
-
-	for x := int32(0); x*tileDimension < tileMapDimension; x++ {
-		minX := x * tileDimension
-		maxX := int32(math.Min(
-			float64((x+1)*tileDimension-1), float64(tileMapDimension-1)))
-
-		partitions = append(partitions, partitionInfo{
-			TileBoundary:  minX,
-			TileDimension: maxX - minX + 1,
-		})
-	}
-	return partitions, nil
+	return &ClusterMap{
+		Val: &rtsspb.ClusterMap{
+			Level:            level,
+			TileDimension:    tileDimension,
+			TileMapDimension: tileMapDimension,
+		},
+	}, nil
 }
