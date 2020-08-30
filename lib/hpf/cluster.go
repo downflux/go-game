@@ -38,14 +38,17 @@ type ClusterMap struct {
 	Val *rtsspb.ClusterMap
 }
 
-func ValidateClusterInRange(m *ClusterMap, c utils.MapCoordinate) error {
-	dim := utils.MapCoordinate{
+func Dimension(m *ClusterMap) *rtsspb.Coordinate {
+	return &rtsspb.Coordinate{
 		X: int32(math.Ceil(
 			float64(m.Val.GetTileMapDimension().GetX()) / float64(m.Val.GetTileDimension().GetX()))),
 		Y: int32(math.Ceil(
 			float64(m.Val.GetTileMapDimension().GetY()) / float64(m.Val.GetTileDimension().GetY()))),
 	}
+}
 
+func ValidateClusterInRange(m *ClusterMap, c utils.MapCoordinate) error {
+	dim := utils.MC(Dimension(m))
 	if 0 > c.X || c.X >= dim.X || 0 > c.Y || c.Y >= dim.Y {
 		return status.Errorf(codes.OutOfRange, "invalid cluster coordinate %v for ClusterMap", c)
 	}
@@ -108,6 +111,16 @@ func TileDimension(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, e
 	}, nil
 }
 
+func Iterator(m *ClusterMap) []utils.MapCoordinate {
+	var cs []utils.MapCoordinate
+	for x := int32(0); x < Dimension(m).GetX(); x++ {
+		for y := int32(0); x < Dimension(m).GetY(); y++ {
+			cs = append(cs, utils.MC(&rtsspb.Coordinate{X: x, Y: y}))
+		}
+	}
+	return cs
+}
+
 // CoordinateInCluster checks if the given coordinate is bounded by the input
 // cluster coordinate c.
 func CoordinateInCluster(m *ClusterMap, c, t utils.MapCoordinate) bool {
@@ -124,7 +137,8 @@ func CoordinateInCluster(m *ClusterMap, c, t utils.MapCoordinate) bool {
 	return (tileBoundary.X <= t.X && t.X < tileBoundary.X+tileDimension.X) && (tileBoundary.Y <= t.Y && t.Y < tileBoundary.Y+tileDimension.Y)
 }
 
-// Neighbors returns the adjacent Cluster objects given a Cluster Coordinate.
+// Neighbors returns the adjacent cluster coordinates given a cluster
+// coordinate.
 func Neighbors(m *ClusterMap, c utils.MapCoordinate) ([]utils.MapCoordinate, error) {
 	if err := ValidateClusterInRange(m, c); err != nil {
 		return nil, err

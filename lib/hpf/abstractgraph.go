@@ -38,17 +38,18 @@ func (m AbstractNodeMap) Remove(c utils.MapCoordinate) error {
 	return nil
 }
 
-// GetByClusterEdge filters the AbstractNodeMap by the input Cluster and
-// returns all AbstractNode objects that are bounded by the edges of the input.
-func (m AbstractNodeMap) GetByClusterEdge(c *cluster.Cluster) ([]*rtsspb.AbstractNode, error) {
+// GetByClusterEdge filters the AbstractNodeMap by the input cluster coordinate
+// and returns all AbstractNode objects that are bounded by the edges of the
+// input.
+func (m AbstractNodeMap) GetByClusterEdge(cm *cluster.ClusterMap, c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error) {
 	var res []*rtsspb.AbstractNode
-	nodes, err := m.GetByCluster(c)
+	nodes, err := m.GetByCluster(cm, c)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, n := range nodes {
-		if entrance.OnClusterEdge(c, n.GetTileCoordinate()) {
+		if entrance.OnClusterEdge(cm, c, utils.MC(n.GetTileCoordinate())) {
 			res = append(res, n)
 		}
 	}
@@ -56,12 +57,12 @@ func (m AbstractNodeMap) GetByClusterEdge(c *cluster.Cluster) ([]*rtsspb.Abstrac
 	return res, nil
 }
 
-// GetByCluster filters the AbstractNodeMap by the input Cluster and returns
-// all AbstractNode objects that are bounded by the input.
-func (m AbstractNodeMap) GetByCluster(c *cluster.Cluster) ([]*rtsspb.AbstractNode, error) {
+// GetByCluster filters the AbstractNodeMap by the input cluster coordinate
+//  and returns all AbstractNode objects that are bounded by the input.
+func (m AbstractNodeMap) GetByCluster(cm *cluster.ClusterMap, c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error) {
 	var nodes []*rtsspb.AbstractNode
 	for _, n := range m {
-		if cluster.CoordinateInCluster(n.GetTileCoordinate(), c) {
+		if cluster.CoordinateInCluster(cm, c, utils.MC(n.GetTileCoordinate())) {
 			nodes = append(nodes, n)
 		}
 	}
@@ -199,7 +200,7 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 		return nil, err
 	}
 
-	transitions, err := buildTransitions(clusterMaps[1], tm)
+	transitions, err := buildTransitions(tm, clusterMaps[1])
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +217,7 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 		nm.Add(n)
 	}
 
-	edges, err := buildBaseInterEdges(transitions, tm)
+	edges, err := buildBaseInterEdges(tm, transitions)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +226,7 @@ func BuildAbstractGraph(tm *tile.TileMap, level int32, clusterDimension *rtsspb.
 		em.Add(e)
 	}
 
-	edges, err = buildBaseIntraEdges(clusterMaps[1], tm, nm)
+	edges, err = buildBaseIntraEdges(tm, clusterMaps[1], nm)
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +306,7 @@ func buildBaseNodes(transitions []*rtsspb.Transition) ([]*rtsspb.AbstractNode, e
 	return res, nil
 }
 
-func buildBaseInterEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) ([]*rtsspb.AbstractEdge, error) {
+func buildBaseInterEdges(tm *tile.TileMap, transitions []*rtsspb.Transition) ([]*rtsspb.AbstractEdge, error) {
 	var res []*rtsspb.AbstractEdge
 	for _, t := range transitions {
 		res = append(res, &rtsspb.AbstractEdge{
@@ -322,35 +323,44 @@ func buildBaseInterEdges(transitions []*rtsspb.Transition, tm *tile.TileMap) ([]
 // buildBaseIntraEdges generates a list of AbstractEdges corresponding to a
 // totally connected graph of the AbstractNodes for each Cluster in a
 // ClusterMap object.
-func buildBaseIntraEdges(cm *cluster.ClusterMap, tm *tile.TileMap, nm AbstractNodeMap) ([]*rtsspb.AbstractEdge, error) {
-	if cm.L > 1 {
+func buildBaseIntraEdges(tm *tile.TileMap, cm *cluster.ClusterMap, nm AbstractNodeMap) ([]*rtsspb.AbstractEdge, error) {
+	if cm.Val.GetLevel() > 1 {
 		return nil, notImplemented
 	}
 
 	var edges []*rtsspb.AbstractEdge
-	for _, c := range cm.M {
+	for _, c := range cluster.Iterator(cm) {
 		// TODO(cripplet): Determine if we only need GetByClusterEdge
 		// instead here.
-		nodes, err := nm.GetByClusterEdge(c)
+		nodes, err := nm.GetByClusterEdge(cm, c)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, n1 := range nodes {
 			for _, n2 := range nodes {
-				if n1 != n2 && cm.L == n1.GetLevel() && cm.L == n2.GetLevel() {
+				if n1 != n2 && cm.Val.GetLevel() == n1.GetLevel() && cm.Val.GetLevel() == n2.GetLevel() {
+					tileBoundary, err := cluster.TileBoundary(cm, c)
+					if err != nil {
+						return nil, err
+					}
+					tileDimension, err := cluster.TileDimension(cm, c)
+					if err != nil {
+						return nil, err
+					}
+
 					p, cost, err := astar.TileMapPath(
 						tm,
 						tm.TileFromCoordinate(n1.GetTileCoordinate()),
 						tm.TileFromCoordinate(n2.GetTileCoordinate()),
-						c.Val.GetTileBoundary(),
-						c.Val.GetTileDimension())
+						utils.PB(tileBoundary),
+						utils.PB(tileDimension))
 					if err != nil {
 						return nil, err
 					}
 					if p != nil {
 						edges = append(edges, &rtsspb.AbstractEdge{
-							Level:       cm.L,
+							Level:       cm.Val.GetLevel(),
 							Source:      n1.GetTileCoordinate(),
 							Destination: n2.GetTileCoordinate(),
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
@@ -388,12 +398,17 @@ func buildTieredClusterMaps(tm *tile.TileMap, level int32, clusterDimension *rts
 
 // buildTransitions iterates over the TileMap for the input ClusterMap overlay
 // and look for adjacent, open nodes along Cluster-Cluster borders.
-func buildTransitions(cm *cluster.ClusterMap, tm *tile.TileMap) ([]*rtsspb.Transition, error) {
+func buildTransitions(tm *tile.TileMap, cm *cluster.ClusterMap) ([]*rtsspb.Transition, error) {
 	var ts []*rtsspb.Transition
-	for _, c1 := range cm.M {
-		for _, c2 := range cm.M {
-			if cluster.IsAdjacent(c1, c2) {
-				transitions, err := entrance.BuildTransitions(c1, c2, tm)
+	for _, c1 := range cluster.Iterator(cm) {
+		neighbors, err := cluster.Neighbors(cm, c1)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, c2 := range neighbors {
+			if cluster.IsAdjacent(cm, c1, c2) {
+				transitions, err := entrance.BuildTransitions(tm, cm, c1, c2)
 				if err != nil {
 					return nil, err
 				}
@@ -402,8 +417,8 @@ func buildTransitions(cm *cluster.ClusterMap, tm *tile.TileMap) ([]*rtsspb.Trans
 		}
 	}
 	for _, t := range ts {
-		t.GetN1().Level = cm.L
-		t.GetN2().Level = cm.L
+		t.GetN1().Level = cm.Val.GetLevel()
+		t.GetN2().Level = cm.Val.GetLevel()
 	}
 	return ts, nil
 }

@@ -18,6 +18,13 @@ func MC(c *rtsspb.Coordinate) MapCoordinate {
 	}
 }
 
+func PB(c MapCoordinate) *rtsspb.Coordinate {
+	return &rtsspb.Coordinate{
+		X: c.X,
+		Y: c.Y,
+	}
+}
+
 func AddMapCoordinate(a, b MapCoordinate) MapCoordinate {
 	return MapCoordinate{
 		X: a.X + b.X,
