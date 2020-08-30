@@ -1087,15 +1087,15 @@ func TestAbstractGraphGetNeighbors(t *testing.T) {
 	clusterDimension := &rtsspb.Coordinate{X: 3, Y: 3}
 	nodeCoordinate := &rtsspb.Coordinate{X: 2, Y: 1}
 	want := []*rtsspb.AbstractNode{
-		&rtsspb.AbstractNode{
-			Level: 1,
+		{
+			Level:             1,
 			ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-			TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2},
+			TileCoordinate:    &rtsspb.Coordinate{X: 1, Y: 2},
 		},
-		&rtsspb.AbstractNode{
-			Level: 1,
+		{
+			Level:             1,
 			ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
-			TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 1},
+			TileCoordinate:    &rtsspb.Coordinate{X: 3, Y: 1},
 		},
 	}
 
@@ -1105,7 +1105,7 @@ func TestAbstractGraphGetNeighbors(t *testing.T) {
 	}
 
 	g, err := BuildAbstractGraph(tm, level, clusterDimension)
-	if err != nil  {
+	if err != nil {
 		t.Fatalf("BuildAbstractGraph() = _, %v, want = _, nil", err)
 	}
 

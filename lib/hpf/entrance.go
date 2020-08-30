@@ -10,6 +10,7 @@ import (
 
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
+	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -49,34 +50,41 @@ var (
 //   1. immediately adjacent to one another, and
 //   2. are in different Clusters.
 // See Botea 2004 for more information.
-func BuildTransitions(c1, c2 *cluster.Cluster, m *tile.TileMap) ([]*rtsspb.Transition, error) {
-	if c1 == nil || c2 == nil {
-		return nil, status.Error(codes.FailedPrecondition, "input Cluster references must be non-nil")
-	}
+func BuildTransitions(m *tile.TileMap, c *cluster.ClusterMap, c1, c2 utils.MapCoordinate) ([]*rtsspb.Transition, error) {
 	if m == nil {
 		return nil, status.Error(codes.FailedPrecondition, "input TileMap reference must be non-nil")
 	}
-
-	if !cluster.IsAdjacent(c1, c2) {
+	if c == nil || c.Val == nil {
+		return nil, status.Error(codes.FailedPrecondition, "input ClusterMap reference must be non-nil")
+	}
+	if !cluster.IsAdjacent(c, c1, c2) {
 		return nil, status.Errorf(codes.FailedPrecondition, "clusters must be immediately adjacent to one another")
 	}
+	if !proto.Equal(m.D, c.Val.GetTileMapDimension()) {
+		return nil, status.Errorf(codes.FailedPrecondition, "TileMap and ClusterMap dimensions do not agree")
+	}
+	for _, clusterCoord := range []utils.MapCoordinate{c1, c2} {
+		if err := cluster.ValidateClusterInRange(c, clusterCoord); err != nil {
+			return nil, err
+		}
+	}
 
-	d1, err := cluster.GetRelativeDirection(c1, c2)
+	d1, err := cluster.GetRelativeDirection(c, c1, c2)
 	if err != nil {
 		return nil, err
 	}
 	d2 := reverseDirection[d1]
 
-	v1, err := buildClusterEdgeCoordinateSlice(c1, d1)
+	v1, err := buildClusterEdgeCoordinateSlice(c, c1, d1)
 	if err != nil {
 		return nil, err
 	}
-	v2, err := buildClusterEdgeCoordinateSlice(c2, d2)
+	v2, err := buildClusterEdgeCoordinateSlice(c, c2, d2)
 	if err != nil {
 		return nil, err
 	}
 
-	return buildTransitionsAux(v1, v2, m)
+	return buildTransitionsAux(m, v1, v2)
 }
 
 // buildCoordinateWithCoordinateSlice reconstructs the Coordinate object back
@@ -102,26 +110,34 @@ func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32)
 }
 
 // sliceContains checks if the given Coordinate falls within the slice.
-func sliceContains(s *rtsspb.CoordinateSlice, coord *rtsspb.Coordinate) (bool, error) {
+func sliceContains(s *rtsspb.CoordinateSlice, t utils.MapCoordinate) (bool, error) {
 	switch s.GetOrientation() {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-		return (coord.GetY() == s.GetStart().GetY()) && (s.GetStart().GetX() <= coord.GetX()) && (coord.GetX() < s.GetStart().GetX()+s.GetLength()), nil
+		return (t.Y == s.GetStart().GetY()) && (s.GetStart().GetX() <= t.X) && (t.X < s.GetStart().GetX()+s.GetLength()), nil
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
-		return (coord.GetX() == s.GetStart().GetX()) && (s.GetStart().GetY() <= coord.GetY()) && (coord.GetY() < s.GetStart().GetY()+s.GetLength()), nil
+		return (t.X == s.GetStart().GetX()) && (s.GetStart().GetY() <= t.Y) && (t.Y < s.GetStart().GetY()+s.GetLength()), nil
 	default:
 		return false, status.Errorf(codes.FailedPrecondition, "invalid slice orientation %v", s.GetOrientation())
 	}
 }
 
-// OnClusterEdge checks if the given Coordinate falls on the edge of a Cluster.
-func OnClusterEdge(c *cluster.Cluster, coord *rtsspb.Coordinate) bool {
+// OnClusterEdge checks if the given coordinate coord falls on the edge of a
+// cluster coordinate.
+func OnClusterEdge(m *cluster.ClusterMap, clusterCoord utils.MapCoordinate, coord utils.MapCoordinate) bool {
+	if err := cluster.ValidateClusterInRange(m, clusterCoord); err != nil {
+		return false
+	}
+	if _, err := cluster.ClusterCoordinateFromTileCoordinate(m, coord); err != nil {
+		return false
+	}
+
 	for _, d := range []rtscpb.Direction{
 		rtscpb.Direction_DIRECTION_NORTH,
 		rtscpb.Direction_DIRECTION_SOUTH,
 		rtscpb.Direction_DIRECTION_EAST,
 		rtscpb.Direction_DIRECTION_WEST,
 	} {
-		slice, err := buildClusterEdgeCoordinateSlice(c, d)
+		slice, err := buildClusterEdgeCoordinateSlice(m, clusterCoord, d)
 		if err != nil {
 			return false
 		}
@@ -142,29 +158,40 @@ func OnClusterEdge(c *cluster.Cluster, coord *rtsspb.Coordinate) bool {
 // representing the contiguous edge of a Cluster in the specified direction.
 // All Tile t on the edge are between the start and end coordinates,
 // i.e. start <= t <= end with usual 2D coordinate comparison.
-func buildClusterEdgeCoordinateSlice(c *cluster.Cluster, d rtscpb.Direction) (*rtsspb.CoordinateSlice, error) {
-	if c.Val.GetTileDimension().GetX() == 0 || c.Val.GetTileDimension().GetY() == 0 {
-		return nil, status.Error(codes.FailedPrecondition, "input Cluster must have non-zero dimensions")
-	}
-
+func buildClusterEdgeCoordinateSlice(m *cluster.ClusterMap, c utils.MapCoordinate, d rtscpb.Direction) (*rtsspb.CoordinateSlice, error) {
 	var start *rtsspb.Coordinate
 	var length int32
+
+	tileBoundary, err := cluster.TileBoundary(m, c)
+	if err != nil {
+		return nil, err
+	}
+	tileDimension, err := cluster.TileDimension(m, c)
+	if err != nil {
+		return nil, err
+	}
 
 	switch d {
 	case rtscpb.Direction_DIRECTION_NORTH:
 		start = &rtsspb.Coordinate{
-			X: c.Val.GetTileBoundary().GetX(),
-			Y: c.Val.GetTileBoundary().GetY() + c.Val.GetTileDimension().GetY() - 1,
+			X: tileBoundary.X,
+			Y: tileBoundary.Y + tileDimension.Y - 1,
 		}
 	case rtscpb.Direction_DIRECTION_SOUTH:
-		start = proto.Clone(c.Val.GetTileBoundary()).(*rtsspb.Coordinate)
+		start = &rtsspb.Coordinate{
+			X: tileBoundary.X,
+			Y: tileBoundary.Y,
+		}
 	case rtscpb.Direction_DIRECTION_EAST:
 		start = &rtsspb.Coordinate{
-			X: c.Val.GetTileBoundary().GetX() + c.Val.GetTileDimension().GetX() - 1,
-			Y: c.Val.GetTileBoundary().GetY(),
+			X: tileBoundary.X + tileDimension.X - 1,
+			Y: tileBoundary.Y,
 		}
 	case rtscpb.Direction_DIRECTION_WEST:
-		start = proto.Clone(c.Val.GetTileBoundary()).(*rtsspb.Coordinate)
+		start = &rtsspb.Coordinate{
+			X: tileBoundary.X,
+			Y: tileBoundary.Y,
+		}
 	default:
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid direction specified %v", d)
 	}
@@ -172,18 +199,17 @@ func buildClusterEdgeCoordinateSlice(c *cluster.Cluster, d rtscpb.Direction) (*r
 	orientation := edgeDirectionToOrientation[d]
 	switch orientation {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-		length = c.Val.GetTileDimension().GetX()
+		length = tileDimension.X
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
-		length = c.Val.GetTileDimension().GetY()
+		length = tileDimension.Y
 	default:
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid orientation specified %v", orientation)
 	}
 
 	return &rtsspb.CoordinateSlice{
-		Orientation:       orientation,
-		Start:             start,
-		Length:            length,
-		ClusterCoordinate: proto.Clone(c.Val.GetCoordinate()).(*rtsspb.Coordinate),
+		Orientation: orientation,
+		Start:       start,
+		Length:      length,
 	}, nil
 }
 
@@ -222,12 +248,10 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]
 
 		transitions = append(transitions, &rtsspb.Transition{
 			N1: &rtsspb.AbstractNode{
-				TileCoordinate:    c1,
-				ClusterCoordinate: s1.GetClusterCoordinate(),
+				TileCoordinate: c1,
 			},
 			N2: &rtsspb.AbstractNode{
-				TileCoordinate:    c2,
-				ClusterCoordinate: s2.GetClusterCoordinate(),
+				TileCoordinate: c2,
 			},
 		})
 	}
@@ -236,7 +260,7 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]
 
 // buildTransitionsAux constructs the list of Transition nodes given the
 // corresponding edges of two adjacent Cluster objects.
-func buildTransitionsAux(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rtsspb.Transition, error) {
+func buildTransitionsAux(m *tile.TileMap, s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb.Transition, error) {
 	if err := verifyCoordinateSlices(s1, s2); err != nil {
 		return nil, err
 	}
@@ -258,16 +282,14 @@ func buildTransitionsAux(s1, s2 *rtsspb.CoordinateSlice, m *tile.TileMap) ([]*rt
 		if (m.TileFromCoordinate(c1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (m.TileFromCoordinate(c2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
 			if tSegment1 == nil {
 				tSegment1 = &rtsspb.CoordinateSlice{
-					Orientation:       orientation,
-					Start:             c1,
-					ClusterCoordinate: s1.GetClusterCoordinate(),
+					Orientation: orientation,
+					Start:       c1,
 				}
 			}
 			if tSegment2 == nil {
 				tSegment2 = &rtsspb.CoordinateSlice{
-					Orientation:       orientation,
-					Start:             c2,
-					ClusterCoordinate: s2.GetClusterCoordinate(),
+					Orientation: orientation,
+					Start:       c2,
 				}
 			}
 			tSegment1.Length += 1

@@ -38,7 +38,7 @@ type ClusterMap struct {
 	Val *rtsspb.ClusterMap
 }
 
-func validateClusterInRange(m *ClusterMap, c utils.MapCoordinate) error {
+func ValidateClusterInRange(m *ClusterMap, c utils.MapCoordinate) error {
 	dim := utils.MapCoordinate{
 		X: int32(math.Ceil(
 			float64(m.Val.GetTileMapDimension().GetX()) / float64(m.Val.GetTileDimension().GetX()))),
@@ -46,10 +46,21 @@ func validateClusterInRange(m *ClusterMap, c utils.MapCoordinate) error {
 			float64(m.Val.GetTileMapDimension().GetY()) / float64(m.Val.GetTileDimension().GetY()))),
 	}
 
-	if 0 < c.X || c.X >= dim.X || 0 < c.Y || c.Y >= dim.X {
+	if 0 > c.X || c.X >= dim.X || 0 > c.Y || c.Y >= dim.Y {
 		return status.Errorf(codes.OutOfRange, "invalid cluster coordinate %v for ClusterMap", c)
 	}
 	return nil
+}
+
+func ClusterCoordinateFromTileCoordinate(m *ClusterMap, t utils.MapCoordinate) (utils.MapCoordinate, error) {
+	if t.X >= m.Val.GetTileMapDimension().GetX() || t.Y >= m.Val.GetTileMapDimension().GetY() {
+		return utils.MapCoordinate{}, status.Errorf(codes.OutOfRange, "input Tile coordinate %v is outside the map boundary %v", t, m.Val.GetTileMapDimension())
+	}
+
+	return utils.MapCoordinate{
+		X: t.X / m.Val.GetTileDimension().GetX(),
+		Y: t.Y / m.Val.GetTileDimension().GetY(),
+	}, nil
 }
 
 // ImportClusterMap constructs a ClusterMap object from the given protobuf.
@@ -73,7 +84,7 @@ func IsAdjacent(m *ClusterMap, c1, c2 utils.MapCoordinate) bool {
 // TileBoundary returns the starting X, Y coordinates of the specified
 // cluster coordinate.
 func TileBoundary(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, error) {
-	if err := validateClusterInRange(m, c); err != nil {
+	if err := ValidateClusterInRange(m, c); err != nil {
 		return utils.MapCoordinate{}, err
 	}
 	return utils.MapCoordinate{
@@ -84,7 +95,7 @@ func TileBoundary(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, er
 
 // TileDimension calculates the length of the specified cluster coordinate.
 func TileDimension(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, error) {
-	if err := validateClusterInRange(m, c); err != nil {
+	if err := ValidateClusterInRange(m, c); err != nil {
 		return utils.MapCoordinate{}, err
 	}
 	return utils.MapCoordinate{
@@ -115,14 +126,14 @@ func CoordinateInCluster(m *ClusterMap, c, t utils.MapCoordinate) bool {
 
 // Neighbors returns the adjacent Cluster objects given a Cluster Coordinate.
 func Neighbors(m *ClusterMap, c utils.MapCoordinate) ([]utils.MapCoordinate, error) {
-	if err := validateClusterInRange(m, c); err != nil {
+	if err := ValidateClusterInRange(m, c); err != nil {
 		return nil, err
 	}
 
 	var neighbors []utils.MapCoordinate
 	for _, coord := range neighborCoordinates {
 		dest := utils.AddMapCoordinate(c, utils.MC(coord))
-		if err := validateClusterInRange(m, dest); err == nil {
+		if err := ValidateClusterInRange(m, dest); err == nil {
 			neighbors = append(neighbors, dest)
 		}
 	}

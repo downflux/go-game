@@ -40,7 +40,6 @@ message CoordinateSlice {
 	rts_pathing.lib.proto.constants.Orientation orientation = 1;
 	Coordinate start = 2;
 	int32 length = 3;
-	Coordinate cluster_coordinate = 4;
 }
 
 message Transition {
@@ -57,13 +56,8 @@ message AbstractGraph {
 
 message AbstractNode {
 	int32 level = 1;
-
-	// TODO(cripplet): Remove if this is not necessary.
-	Coordinate cluster_coordinate = 2;
-
+	int32 ephemeral_key = 2;
 	Coordinate tile_coordinate = 3;
-
-	int32 ephemeral_key = 4;
 }
 
 message AbstractEdge {

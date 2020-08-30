@@ -8,6 +8,7 @@ import (
 
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
+	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -112,34 +113,55 @@ var (
 func TestBuildClusterEdgeCoordinateSliceError(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		c    *rtsspb.Cluster
+		m    *rtsspb.ClusterMap
+		c    utils.MapCoordinate
 		d    rtscpb.Direction
 	}{
-		{name: "NullClusterTest", c: &rtsspb.Cluster{}, d: rtscpb.Direction_DIRECTION_NORTH},
-		{name: "NullXDimensionClusterTest", c: &rtsspb.Cluster{
-			TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-			TileDimension: &rtsspb.Coordinate{X: 0, Y: 1},
-		}, d: rtscpb.Direction_DIRECTION_NORTH,
+		{
+			name: "NullClusterTest",
+			m: &rtsspb.ClusterMap{
+				TileDimension:    &rtsspb.Coordinate{X: 0, Y: 0},
+				TileMapDimension: &rtsspb.Coordinate{X: 0, Y: 0},
+			},
+			c: utils.MapCoordinate{X: 0, Y: 0},
+			d: rtscpb.Direction_DIRECTION_NORTH,
 		},
-		{name: "NullYDimensionClusterTest", c: &rtsspb.Cluster{
-			TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-			TileDimension: &rtsspb.Coordinate{X: 1, Y: 0},
-		}, d: rtscpb.Direction_DIRECTION_NORTH,
+		{
+			name: "NullXDimensionClusterTest",
+			m: &rtsspb.ClusterMap{
+				TileDimension:    &rtsspb.Coordinate{X: 0, Y: 5},
+				TileMapDimension: &rtsspb.Coordinate{X: 0, Y: 10},
+			},
+			c: utils.MapCoordinate{X: 0, Y: 1},
+			d: rtscpb.Direction_DIRECTION_NORTH,
 		},
-		{name: "InvalidDirectionTest", c: &rtsspb.Cluster{
-			TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-			TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-		}, d: rtscpb.Direction_DIRECTION_UNKNOWN,
+		{
+			name: "NullYDimensionClusterTest",
+			m: &rtsspb.ClusterMap{
+				TileDimension:    &rtsspb.Coordinate{X: 5, Y: 0},
+				TileMapDimension: &rtsspb.Coordinate{X: 10, Y: 0},
+			},
+			c: utils.MapCoordinate{X: 1, Y: 0},
+			d: rtscpb.Direction_DIRECTION_NORTH,
+		},
+		{
+			name: "InvalidDirectionTest",
+			m: &rtsspb.ClusterMap{
+				TileDimension:    &rtsspb.Coordinate{X: 5, Y: 5},
+				TileMapDimension: &rtsspb.Coordinate{X: 10, Y: 10},
+			},
+			c: utils.MapCoordinate{X: 1, Y: 1},
+			d: rtscpb.Direction_DIRECTION_UNKNOWN,
 		},
 	}
 	for _, c := range testConfigs {
-		tmpCluster, err := cluster.ImportCluster(c.c)
-		if err != nil {
-			t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
-		}
-
 		t.Run(c.name, func(t *testing.T) {
-			if got, err := buildClusterEdgeCoordinateSlice(tmpCluster, c.d); err == nil {
+			m, err := cluster.ImportClusterMap(c.m)
+			if err != nil {
+				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+			}
+
+			if got, err := buildClusterEdgeCoordinateSlice(m, c.c, c.d); err == nil {
 				t.Errorf("buildClusterEdgeCoordinateSlice() = %v, %v, want a non-nil error", got, err)
 			}
 		})
@@ -147,70 +169,71 @@ func TestBuildClusterEdgeCoordinateSliceError(t *testing.T) {
 }
 
 func TestBuildClusterEdgeCoordinateSlice(t *testing.T) {
-	trivialCluster := &rtsspb.Cluster{
-		TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-		TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+	trivialClusterMap := &rtsspb.ClusterMap{
+		TileDimension:    &rtsspb.Coordinate{X: 1, Y: 1},
+		TileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1},
 	}
-	smallCluster := &rtsspb.Cluster{
-		TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-		TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+	smallClusterMap := &rtsspb.ClusterMap{
+		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
+		TileMapDimension: &rtsspb.Coordinate{X: 2, Y: 2},
 	}
-	embeddedCluster := &rtsspb.Cluster{
-		TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 1},
-		TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+	embeddedClusterMap := &rtsspb.ClusterMap{
+		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
+		TileMapDimension: &rtsspb.Coordinate{X: 4, Y: 4},
 	}
-	rectangularCluster := &rtsspb.Cluster{
-		TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 1},
-		TileDimension: &rtsspb.Coordinate{X: 1, Y: 2},
+	rectangularClusterMap := &rtsspb.ClusterMap{
+		TileDimension:    &rtsspb.Coordinate{X: 1, Y: 2},
+		TileMapDimension: &rtsspb.Coordinate{X: 2, Y: 4},
 	}
 	testConfigs := []struct {
 		name string
-		c    *rtsspb.Cluster
+		m    *rtsspb.ClusterMap
+		c    utils.MapCoordinate
 		d    rtscpb.Direction
 		want *rtsspb.CoordinateSlice
 	}{
-		{name: "TrivialClusterNorthTest", c: trivialCluster, d: rtscpb.Direction_DIRECTION_NORTH, want: &rtsspb.CoordinateSlice{
+		{name: "TrivialClusterNorthTest", m: trivialClusterMap, c: utils.MapCoordinate{X: 0, Y: 0}, d: rtscpb.Direction_DIRECTION_NORTH, want: &rtsspb.CoordinateSlice{
 			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}},
-		{name: "TrivialClusterSouthTest", c: trivialCluster, d: rtscpb.Direction_DIRECTION_SOUTH, want: &rtsspb.CoordinateSlice{
+		{name: "TrivialClusterSouthTest", m: trivialClusterMap, c: utils.MapCoordinate{X: 0, Y: 0}, d: rtscpb.Direction_DIRECTION_SOUTH, want: &rtsspb.CoordinateSlice{
 			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}},
-		{name: "TrivialClusterEastTest", c: trivialCluster, d: rtscpb.Direction_DIRECTION_EAST, want: &rtsspb.CoordinateSlice{
+		{name: "TrivialClusterEastTest", m: trivialClusterMap, c: utils.MapCoordinate{X: 0, Y: 0}, d: rtscpb.Direction_DIRECTION_EAST, want: &rtsspb.CoordinateSlice{
 			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}},
-		{name: "TrivialClusterWestTest", c: trivialCluster, d: rtscpb.Direction_DIRECTION_WEST, want: &rtsspb.CoordinateSlice{
+		{name: "TrivialClusterWestTest", m: trivialClusterMap, c: utils.MapCoordinate{X: 0, Y: 0}, d: rtscpb.Direction_DIRECTION_WEST, want: &rtsspb.CoordinateSlice{
 			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}},
-		{name: "SmallClusterNorthTest", c: smallCluster, d: rtscpb.Direction_DIRECTION_NORTH, want: &rtsspb.CoordinateSlice{
+		{name: "SmallClusterNorthTest", m: smallClusterMap, c: utils.MapCoordinate{X: 0, Y: 0}, d: rtscpb.Direction_DIRECTION_NORTH, want: &rtsspb.CoordinateSlice{
 			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 1}, Length: 2}},
-		{name: "SmallClusterSouthTest", c: smallCluster, d: rtscpb.Direction_DIRECTION_SOUTH, want: &rtsspb.CoordinateSlice{
+		{name: "SmallClusterSouthTest", m: smallClusterMap, c: utils.MapCoordinate{X: 0, Y: 0}, d: rtscpb.Direction_DIRECTION_SOUTH, want: &rtsspb.CoordinateSlice{
 			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 2}},
-		{name: "SmallClusterEastTest", c: smallCluster, d: rtscpb.Direction_DIRECTION_EAST, want: &rtsspb.CoordinateSlice{
+		{name: "SmallClusterEastTest", m: smallClusterMap, c: utils.MapCoordinate{X: 0, Y: 0}, d: rtscpb.Direction_DIRECTION_EAST, want: &rtsspb.CoordinateSlice{
 			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 1, Y: 0}, Length: 2}},
-		{name: "SmallClusterWestTest", c: smallCluster, d: rtscpb.Direction_DIRECTION_WEST, want: &rtsspb.CoordinateSlice{
+		{name: "SmallClusterWestTest", m: smallClusterMap, c: utils.MapCoordinate{X: 0, Y: 0}, d: rtscpb.Direction_DIRECTION_WEST, want: &rtsspb.CoordinateSlice{
 			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 2}},
-		{name: "EmbeddedClusterNorthTest", c: embeddedCluster, d: rtscpb.Direction_DIRECTION_NORTH, want: &rtsspb.CoordinateSlice{
-			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 1, Y: 2}, Length: 2}},
-		{name: "EmbeddedClusterSouthTest", c: embeddedCluster, d: rtscpb.Direction_DIRECTION_SOUTH, want: &rtsspb.CoordinateSlice{
-			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2}},
-		{name: "EmbeddedClusterEastTest", c: embeddedCluster, d: rtscpb.Direction_DIRECTION_EAST, want: &rtsspb.CoordinateSlice{
-			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 2, Y: 1}, Length: 2}},
-		{name: "EmbeddedClusterWestTest", c: embeddedCluster, d: rtscpb.Direction_DIRECTION_WEST, want: &rtsspb.CoordinateSlice{
-			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2}},
-		{name: "RectangularClusterNorthTest", c: rectangularCluster, d: rtscpb.Direction_DIRECTION_NORTH, want: &rtsspb.CoordinateSlice{
+		{name: "EmbeddedClusterNorthTest", m: embeddedClusterMap, c: utils.MapCoordinate{X: 1, Y: 1}, d: rtscpb.Direction_DIRECTION_NORTH, want: &rtsspb.CoordinateSlice{
+			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 2, Y: 3}, Length: 2}},
+		{name: "EmbeddedClusterSouthTest", m: embeddedClusterMap, c: utils.MapCoordinate{X: 1, Y: 1}, d: rtscpb.Direction_DIRECTION_SOUTH, want: &rtsspb.CoordinateSlice{
+			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 2, Y: 2}, Length: 2}},
+		{name: "EmbeddedClusterEastTest", m: embeddedClusterMap, c: utils.MapCoordinate{X: 1, Y: 1}, d: rtscpb.Direction_DIRECTION_EAST, want: &rtsspb.CoordinateSlice{
+			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 3, Y: 2}, Length: 2}},
+		{name: "EmbeddedClusterWestTest", m: embeddedClusterMap, c: utils.MapCoordinate{X: 1, Y: 1}, d: rtscpb.Direction_DIRECTION_WEST, want: &rtsspb.CoordinateSlice{
+			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 2, Y: 2}, Length: 2}},
+		{name: "RectangularClusterNorthTest", m: rectangularClusterMap, c: utils.MapCoordinate{X: 1, Y: 1}, d: rtscpb.Direction_DIRECTION_NORTH, want: &rtsspb.CoordinateSlice{
+			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 1, Y: 3}, Length: 1}},
+		{name: "RectangularClusterSouthTest", m: rectangularClusterMap, c: utils.MapCoordinate{X: 1, Y: 1}, d: rtscpb.Direction_DIRECTION_SOUTH, want: &rtsspb.CoordinateSlice{
 			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 1, Y: 2}, Length: 1}},
-		{name: "RectangularClusterSouthTest", c: rectangularCluster, d: rtscpb.Direction_DIRECTION_SOUTH, want: &rtsspb.CoordinateSlice{
-			Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 1}},
-		{name: "RectangularClusterEastTest", c: rectangularCluster, d: rtscpb.Direction_DIRECTION_EAST, want: &rtsspb.CoordinateSlice{
-			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2}},
-		{name: "RectangularClusterWestTest", c: rectangularCluster, d: rtscpb.Direction_DIRECTION_WEST, want: &rtsspb.CoordinateSlice{
-			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2}},
+		{name: "RectangularClusterEastTest", m: rectangularClusterMap, c: utils.MapCoordinate{X: 1, Y: 1}, d: rtscpb.Direction_DIRECTION_EAST, want: &rtsspb.CoordinateSlice{
+			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 1, Y: 2}, Length: 2}},
+		{name: "RectangularClusterWestTest", m: rectangularClusterMap, c: utils.MapCoordinate{X: 1, Y: 1}, d: rtscpb.Direction_DIRECTION_WEST, want: &rtsspb.CoordinateSlice{
+			Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 1, Y: 2}, Length: 2}},
 	}
 
 	for _, c := range testConfigs {
-		tmpCluster, err := cluster.ImportCluster(c.c)
-		if err != nil {
-			t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
-		}
-
 		t.Run(c.name, func(t *testing.T) {
-			if got, err := buildClusterEdgeCoordinateSlice(tmpCluster, c.d); err != nil || !proto.Equal(got, c.want) {
+			m, err := cluster.ImportClusterMap(c.m)
+			if err != nil {
+				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+			}
+
+			if got, err := buildClusterEdgeCoordinateSlice(m, c.c, c.d); err != nil || !proto.Equal(got, c.want) {
 				t.Errorf("buildClusterEdgeCoordinateSlice() = %v, %v, want = %v, nil", got, err, c.want)
 			}
 		})
@@ -219,40 +242,40 @@ func TestBuildClusterEdgeCoordinateSlice(t *testing.T) {
 
 func TestBuildCoordinateWithCoordinateSlice(t *testing.T) {
 	testConfigs := []struct {
-		name string
-		s    *rtsspb.CoordinateSlice
-		o    int32
-		want *rtsspb.Coordinate
+		name   string
+		s      *rtsspb.CoordinateSlice
+		offset int32
+		want   *rtsspb.Coordinate
 	}{
 		{
-			name: "SingleTileSliceHorizontal",
-			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
-			o:    0,
-			want: &rtsspb.Coordinate{X: 0, Y: 0},
+			name:   "SingleTileSliceHorizontal",
+			s:      &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
+			offset: 0,
+			want:   &rtsspb.Coordinate{X: 0, Y: 0},
 		},
 		{
-			name: "SingleTileSliceVertical",
-			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
-			o:    0,
-			want: &rtsspb.Coordinate{X: 0, Y: 0},
+			name:   "SingleTileSliceVertical",
+			s:      &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1},
+			offset: 0,
+			want:   &rtsspb.Coordinate{X: 0, Y: 0},
 		},
 		{
-			name: "MultiTileTileSliceHorizontal",
-			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2},
-			o:    1,
-			want: &rtsspb.Coordinate{X: 2, Y: 1},
+			name:   "MultiTileTileSliceHorizontal",
+			s:      &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2},
+			offset: 1,
+			want:   &rtsspb.Coordinate{X: 2, Y: 1},
 		},
 		{
-			name: "MultiTileTileSliceVertical",
-			s:    &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2},
-			o:    1,
-			want: &rtsspb.Coordinate{X: 1, Y: 2},
+			name:   "MultiTileTileSliceVertical",
+			s:      &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &rtsspb.Coordinate{X: 1, Y: 1}, Length: 2},
+			offset: 1,
+			want:   &rtsspb.Coordinate{X: 1, Y: 2},
 		},
 	}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			if got, err := buildCoordinateWithCoordinateSlice(c.s, c.o); err != nil || !proto.Equal(got, c.want) {
+			if got, err := buildCoordinateWithCoordinateSlice(c.s, c.offset); err != nil || !proto.Equal(got, c.want) {
 				t.Errorf("buildCoordinateWithCoordinateSlice() = %v, %v, want = %v, nil", got, err, c.want)
 			}
 		})
@@ -261,19 +284,19 @@ func TestBuildCoordinateWithCoordinateSlice(t *testing.T) {
 
 func TestBuildCoordinateWithCoordinateSliceError(t *testing.T) {
 	testConfigs := []struct {
-		name string
-		s    *rtsspb.CoordinateSlice
-		o    int32
+		name   string
+		s      *rtsspb.CoordinateSlice
+		offset int32
 	}{
-		{name: "NullTileSlice", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 0}, o: 0},
-		{name: "OutOfBoundsTileSliceBefore", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}, o: -1},
-		{name: "OutOfBoundsTileSliceAfter", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}, o: 2},
-		{name: "InvalidOrientationTileSlice", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_UNKNOWN, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}, o: 0},
+		{name: "NullTileSlice", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 0}, offset: 0},
+		{name: "OutOfBoundsTileSliceBefore", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}, offset: -1},
+		{name: "OutOfBoundsTileSliceAfter", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}, offset: 2},
+		{name: "InvalidOrientationTileSlice", s: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_UNKNOWN, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}, offset: 0},
 	}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			if _, err := buildCoordinateWithCoordinateSlice(c.s, c.o); err == nil {
+			if _, err := buildCoordinateWithCoordinateSlice(c.s, c.offset); err == nil {
 				t.Error("buildCoordinateWithCoordinateSlice() = nil, want a non-nil error")
 			}
 		})
@@ -455,195 +478,38 @@ func TestVerifyCoordinateSlicesError(t *testing.T) {
 }
 
 func TestBuildTransitionsError(t *testing.T) {
-	m, err := tile.ImportTileMap(trivialOpenMap)
-	if err != nil {
-		t.Fatalf("ImportMap() = _, %v, want = _, nil")
+	trivialOpenClusterMap := &rtsspb.ClusterMap{
+		TileDimension:    &rtsspb.Coordinate{X: 1, Y: 1},
+		TileMapDimension: trivialOpenMap.GetDimension(),
 	}
-	longM, err := tile.ImportTileMap(longVerticalOpenMap)
-	if err != nil {
-		t.Fatalf("ImportMap() = _, %v, want = _, nil")
+	longVerticalOpenClusterMap := &rtsspb.ClusterMap{
+		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 1},
+		TileMapDimension: longVerticalOpenMap.GetDimension(),
 	}
 
-	testConfigs := []struct {
-		name   string
-		m      *tile.TileMap
-		c1, c2 *cluster.Cluster
-	}{
-		{name: "NullCluster", m: m, c1: nil, c2: nil},
-		{name: "NullMap", m: nil, c1: &cluster.Cluster{
-			Val: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			}}, c2: &cluster.Cluster{
-			Val: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			}},
-		},
-		{name: "NonAdjacentClusters", m: longM,
-			c1: &cluster.Cluster{
-				Val: &rtsspb.Cluster{
-					Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-					TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-					TileDimension: &rtsspb.Coordinate{X: 2, Y: 1},
-				},
-			},
-			c2: &cluster.Cluster{
-				Val: &rtsspb.Cluster{
-					Coordinate:    &rtsspb.Coordinate{X: 0, Y: 2},
-					TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},
-					TileDimension: &rtsspb.Coordinate{X: 2, Y: 1},
-				},
-			},
-		},
-	}
-	for _, c := range testConfigs {
-		t.Run(c.name, func(t *testing.T) {
-			if got, err := BuildTransitions(c.c1, c.c2, c.m); err == nil {
-				t.Errorf("BuildTransitions() = %v, %v, want a non-nil error", got, err)
-			}
-		})
-	}
-}
-
-func TestBuildTransitions(t *testing.T) {
 	testConfigs := []struct {
 		name   string
 		m      *rtsspb.TileMap
-		c1, c2 *rtsspb.Cluster
-		want   []*rtsspb.Transition
+		cm     *rtsspb.ClusterMap
+		c1, c2 utils.MapCoordinate
 	}{
-		{name: "TrivialClosedMap", m: trivialClosedMap,
-			c1: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			},
-			c2: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			},
-			want: nil,
-		},
-		{name: "TrivialSemiOpenMap", m: trivialSemiOpenMap,
-			c1: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			},
-			c2: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			},
-			want: nil,
-		},
-		{name: "TrivialOpenMap", m: trivialOpenMap,
-			c1: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			},
-			c2: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			},
-			want: []*rtsspb.Transition{
-				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}, ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}, ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
-				},
-			},
-		},
-		{name: "LongVerticalOpenMap", m: longVerticalOpenMap,
-			c1: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 4},
-			},
-			c2: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 4},
-			},
-			want: []*rtsspb.Transition{
-				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}, ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}, ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
-				},
-				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 3}, ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 3}, ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
-				},
-			},
-		},
-		{name: "LongHorizontalOpenMap", m: longHorizontalOpenMap,
-			c1: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 4, Y: 1},
-			},
-			c2: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 1},
-				TileDimension: &rtsspb.Coordinate{X: 4, Y: 1},
-			},
-			want: []*rtsspb.Transition{
-				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}, ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}, ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
-				},
-				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 0}, ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 1}, ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
-				},
-			},
-		},
-		{name: "LongSemiOpenMap", m: longSemiOpenMap,
-			c1: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 3},
-			},
-			c2: &rtsspb.Cluster{
-				Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 3},
-			},
-			want: []*rtsspb.Transition{
-				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}, ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}, ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
-				},
-				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 2}, ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}, ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
-				},
-			},
-		},
+		{name: "NullCluster", m: trivialOpenMap, cm: nil, c1: utils.MapCoordinate{}, c2: utils.MapCoordinate{}},
+		{name: "NullMap", m: nil, cm: trivialOpenClusterMap, c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 1, Y: 0}},
+		{name: "NonAdjacentClusters", m: longVerticalOpenMap, cm: longVerticalOpenClusterMap, c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 1, Y: 1}},
 	}
-
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			cluster1, err := cluster.ImportCluster(c.c1)
+			m, err := tile.ImportTileMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportTileMap() = _, %v, want = _, nil")
 			}
-			cluster2, err := cluster.ImportCluster(c.c2)
+			cm, err := cluster.ImportClusterMap(c.cm)
 			if err != nil {
-				t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
-			}
-			tileMap, err := tile.ImportTileMap(c.m)
-			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil")
 			}
 
-			if got, err := BuildTransitions(cluster1, cluster2, tileMap); err != nil || !cmp.Equal(got, c.want, protocmp.Transform()) {
-				t.Errorf("BuildTransitions() = %v, %v, want = %v, nil", got, err, c.want)
+			if got, err := BuildTransitions(m, cm, c.c1, c.c2); err == nil {
+				t.Errorf("BuildTransitions() = %v, %v, want a non-nil error", got, err)
 			}
 		})
 	}
@@ -727,16 +593,93 @@ func TestBuildTransitionsAux(t *testing.T) {
 				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
 			}
 
-			if got, err := buildTransitionsAux(c.s1, c.s2, tileMap); err != nil || !cmp.Equal(got, c.want, protocmp.Transform()) {
+			if got, err := buildTransitionsAux(tileMap, c.s1, c.s2); err != nil || !cmp.Equal(got, c.want, protocmp.Transform()) {
 				t.Errorf("buildTransitionsAux() = %v, %v, want = %v, nil", got, err, c.want)
 			}
 		})
 	}
 }
+func TestBuildTransitions(t *testing.T) {
+	trivialClusterMap := &rtsspb.ClusterMap{TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, TileMapDimension: trivialClosedMap.GetDimension()}
+	longVerticalClusterMap := &rtsspb.ClusterMap{TileDimension: &rtsspb.Coordinate{X: 1, Y: 4}, TileMapDimension: longVerticalOpenMap.GetDimension()}
+	longHorizontalClusterMap := &rtsspb.ClusterMap{TileDimension: &rtsspb.Coordinate{X: 4, Y: 1}, TileMapDimension: longHorizontalOpenMap.GetDimension()}
+	longSemiOpenClusterMap := &rtsspb.ClusterMap{TileDimension: &rtsspb.Coordinate{X: 1, Y: 3}, TileMapDimension: longSemiOpenMap.GetDimension()}
 
+	testConfigs := []struct {
+		name   string
+		m      *rtsspb.TileMap
+		cm     *rtsspb.ClusterMap
+		c1, c2 *rtsspb.Coordinate
+		want   []*rtsspb.Transition
+	}{
+		{name: "TrivialClosedMap", m: trivialClosedMap, cm: trivialClusterMap, c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 0}, want: nil},
+		{name: "TrivialSemiOpenMap", m: trivialSemiOpenMap, cm: trivialClusterMap, c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 0}, want: nil},
+		{name: "TrivialOpenMap", m: trivialOpenMap, cm: trivialClusterMap, c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 0},
+			want: []*rtsspb.Transition{
+				{
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+				},
+			},
+		},
+		{name: "LongVerticalOpenMap", m: longVerticalOpenMap, cm: longVerticalClusterMap, c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 0},
+			want: []*rtsspb.Transition{
+				{
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+				},
+				{
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 3}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 3}},
+				},
+			},
+		},
+		{name: "LongHorizontalOpenMap", m: longHorizontalOpenMap, cm: longHorizontalClusterMap, c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 1},
+			want: []*rtsspb.Transition{
+				{
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
+				},
+				{
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 0}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 1}},
+				},
+			},
+		},
+		{name: "LongSemiOpenMap", m: longSemiOpenMap, cm: longSemiOpenClusterMap, c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 0},
+			want: []*rtsspb.Transition{
+				{
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+				},
+				{
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 2}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
+				},
+			},
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			m, err := tile.ImportTileMap(c.m)
+			if err != nil {
+				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+			}
+			cm, err := cluster.ImportClusterMap(c.cm)
+			if err != nil {
+				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+			}
+
+			if got, err := BuildTransitions(m, cm, utils.MC(c.c1), utils.MC(c.c2)); err != nil || !cmp.Equal(got, c.want, protocmp.Transform()) {
+				t.Errorf("BuildTransitions() = %v, %v, want = %v, nil", got, err, c.want)
+			}
+		})
+	}
+}
 func TestSliceContainsError(t *testing.T) {
 	s := &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_UNKNOWN, Start: &rtsspb.Coordinate{X: 0, Y: 0}, Length: 1}
-	if _, err := sliceContains(s, &rtsspb.Coordinate{X: 0, Y: 0}); err == nil {
+	if _, err := sliceContains(s, utils.MC(&rtsspb.Coordinate{X: 0, Y: 0})); err == nil {
 		t.Error("sliceContains() = _, nil, want a non-nil error")
 	}
 }
@@ -788,7 +731,7 @@ func TestSliceContains(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			if res, err := sliceContains(c.s, c.c); err != nil || res != c.want {
+			if res, err := sliceContains(c.s, utils.MC(c.c)); err != nil || res != c.want {
 				t.Errorf("sliceContains() = %v, %v, want = %v, nil", res, err, c.want)
 			}
 		})
@@ -798,38 +741,42 @@ func TestSliceContains(t *testing.T) {
 func TestOnClusterEdge(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		cl   *rtsspb.Cluster
-		co   *rtsspb.Coordinate
+		m    *rtsspb.ClusterMap
+		c    *rtsspb.Coordinate
+		t    *rtsspb.Coordinate
 		want bool
 	}{
 		{
 			name: "TrivialClusterContains",
-			cl:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			co:   &rtsspb.Coordinate{X: 0, Y: 0},
+			m:    &rtsspb.ClusterMap{TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, TileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			c:    &rtsspb.Coordinate{X: 0, Y: 0},
+			t:    &rtsspb.Coordinate{X: 0, Y: 0},
 			want: true,
 		},
 		{
 			name: "TrivialClusterNoContains",
-			cl:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			co:   &rtsspb.Coordinate{X: 0, Y: 1},
+			m:    &rtsspb.ClusterMap{TileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, TileMapDimension: &rtsspb.Coordinate{X: 2, Y: 2}},
+			c:    &rtsspb.Coordinate{X: 0, Y: 0},
+			t:    &rtsspb.Coordinate{X: 0, Y: 1},
 			want: false,
 		},
 		{
 			name: "ClusterInternalNoContains",
-			cl:   &rtsspb.Cluster{TileBoundary: &rtsspb.Coordinate{X: 0, Y: 0}, TileDimension: &rtsspb.Coordinate{X: 3, Y: 3}},
-			co:   &rtsspb.Coordinate{X: 1, Y: 1},
+			m:    &rtsspb.ClusterMap{TileDimension: &rtsspb.Coordinate{X: 3, Y: 3}, TileMapDimension: &rtsspb.Coordinate{X: 3, Y: 3}},
+			c:    &rtsspb.Coordinate{X: 0, Y: 0},
+			t:    &rtsspb.Coordinate{X: 1, Y: 1},
 			want: false,
 		},
 	}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			clusterInstance, err := cluster.ImportCluster(c.cl)
+			m, err := cluster.ImportClusterMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportCluster() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
 			}
 
-			if got := OnClusterEdge(clusterInstance, c.co); got != c.want {
+			if got := OnClusterEdge(m, utils.MC(c.c), utils.MC(c.t)); got != c.want {
 				t.Errorf("OnClusterEdge() = %v, want = %v", got, c.want)
 			}
 		})
