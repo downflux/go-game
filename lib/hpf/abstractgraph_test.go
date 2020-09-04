@@ -6,11 +6,11 @@ import (
 	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
-	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
-	"github.com/cripplet/rts-pathing/lib/hpf/tile"
+	// "github.com/cripplet/rts-pathing/lib/hpf/cluster"
+	// "github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
+	// "github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
@@ -208,38 +208,40 @@ func TestAbstractNodeMapGetByCluster(t *testing.T) {
 			nm:   AbstractNodeMap{},
 			want: nil,
 		},
-		{
-			name: "TrivialCluster",
-			cl: &rtsspb.Cluster{
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+		/*
+			{
+				name: "TrivialCluster",
+				cl: &rtsspb.Cluster{
+					TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+					TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+				},
+				nm: nm,
+				want: []*rtsspb.AbstractNode{
+					{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+				},
 			},
-			nm: nm,
-			want: []*rtsspb.AbstractNode{
-				{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			{
+				name: "NullMatchCluster",
+				cl: &rtsspb.Cluster{
+					TileBoundary:  &rtsspb.Coordinate{X: 100, Y: 100},
+					TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+				},
+				nm:   nm,
+				want: nil,
 			},
-		},
-		{
-			name: "NullMatchCluster",
-			cl: &rtsspb.Cluster{
-				TileBoundary:  &rtsspb.Coordinate{X: 100, Y: 100},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
+			{
+				name: "MultiMatchCluster",
+				cl: &rtsspb.Cluster{
+					TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
+					TileDimension: &rtsspb.Coordinate{X: 100, Y: 100},
+				},
+				nm: nm,
+				want: []*rtsspb.AbstractNode{
+					{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
+				},
 			},
-			nm:   nm,
-			want: nil,
-		},
-		{
-			name: "MultiMatchCluster",
-			cl: &rtsspb.Cluster{
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 100, Y: 100},
-			},
-			nm: nm,
-			want: []*rtsspb.AbstractNode{
-				{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-				{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
-			},
-		},
+		*/
 	}
 
 	for _, c := range testConfigs {
@@ -255,6 +257,7 @@ func TestAbstractNodeMapGetByCluster(t *testing.T) {
 	}
 }
 
+/*
 func TestAbstractNodeMapGetByClusterEdge(t *testing.T) {
 	nm := AbstractNodeMap{
 		utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}): &rtsspb.AbstractNode{
@@ -1130,3 +1133,4 @@ func TestAbstractGraphGetNeighbors(t *testing.T) {
 		t.Errorf("Neighbors() mismatch (-want +got):\n%s", diff)
 	}
 }
+*/
