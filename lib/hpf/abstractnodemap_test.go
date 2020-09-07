@@ -25,7 +25,7 @@ func coordinateLess(c1, c2 *rtsspb.Coordinate) bool {
 }
 
 func abstractNodeLess(n1, n2 *rtsspb.AbstractNode) bool {
-        return coordinateLess(n1.GetTileCoordinate(), n2.GetTileCoordinate())
+	return coordinateLess(n1.GetTileCoordinate(), n2.GetTileCoordinate())
 }
 
 func TestAbstractNodeMapAdd(t *testing.T) {
@@ -53,7 +53,7 @@ func TestAbstractNodeMapGet(t *testing.T) {
 
 func TestAbstractNodeMapGetByCluster(t *testing.T) {
 	cm, err := cluster.ImportClusterMap(&rtsspb.ClusterMap{
-		TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
+		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
 		TileMapDimension: &rtsspb.Coordinate{X: 4, Y: 4},
 	})
 	if err != nil {
@@ -62,8 +62,8 @@ func TestAbstractNodeMapGetByCluster(t *testing.T) {
 
 	m := AbstractNodeMap{ClusterMap: cm}
 	want := []*rtsspb.AbstractNode{
-		&rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-		&rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
+		{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+		{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
 	}
 
 	for _, n := range want {

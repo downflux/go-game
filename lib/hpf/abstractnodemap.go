@@ -27,6 +27,10 @@ func (nm AbstractNodeMap) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.Abstrac
 		return nil, err
 	}
 
+	if nm.nodes == nil {
+		return nil, nil
+	}
+
 	var nodes []*rtsspb.AbstractNode
 	for _, n := range nm.nodes[c] {
 		if cluster.CoordinateInCluster(nm.ClusterMap, c, utils.MC(n.GetTileCoordinate())) {
@@ -87,7 +91,6 @@ func (nm *AbstractNodeMap) Add(n *rtsspb.AbstractNode) error {
 	if nm.nodes == nil {
 		nm.nodes = map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractNode{}
 	}
-
 	if nm.nodes[c] == nil {
 		nm.nodes[c] = map[utils.MapCoordinate]*rtsspb.AbstractNode{}
 	}

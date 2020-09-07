@@ -141,6 +141,20 @@ go_library(
     ],
 )
 
+go_test(
+    name = "abstractedgemap_test",
+    srcs = ["abstractedgemap_test.go"],
+    importpath = "github.com/cripplet/rts-pathing/lib/hpf/abstractedgemap_test",
+    embed = [":abstractedgemap"],
+    deps = [
+	":utils",
+	"//lib/proto:structs_go_proto",
+	"@com_github_google_go_cmp//cmp:go_default_library",
+	"@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
+	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
+    ],
+)
+
 go_library(
     name = "abstractnodemap",
     srcs = ["abstractnodemap.go"],

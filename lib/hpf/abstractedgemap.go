@@ -16,13 +16,29 @@ type AbstractEdgeMap struct {
 	edges map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractEdge
 }
 
+func (em *AbstractEdgeMap) GetBySource(t utils.MapCoordinate) ([]*rtsspb.AbstractEdge, error) {
+	if em.edges == nil {
+		return nil, nil
+	}
+
+	var res []*rtsspb.AbstractEdge
+	for _, e := range em.edges[t] {
+		res = append(res, e)
+	}
+	return res, nil
+}
+
 // Add appends an AbstractEdge instance into the AbstractEdgeMap collection.
 //
 // We're assuming the graph is undirected -- that is, for nodes A, B, if
 // A --> B, then B --> A with the same cost.
-func (em AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
+func (em *AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 	t1 := utils.MC(e.GetSource())
 	t2 := utils.MC(e.GetDestination())
+
+	if t1 == t2 {
+		return status.Errorf(codes.FailedPrecondition, "AbstractEdge may not specify the same source and destination")
+	}
 
 	edge, err := em.Get(t1, t2)
 	if err != nil {
@@ -32,6 +48,9 @@ func (em AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 		return status.Errorf(codes.AlreadyExists, "AbstractEdge unexpectedly found at %v, %v", t1, t2)
 	}
 
+	if em.edges == nil {
+		em.edges = map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractEdge{}
+	}
 	if _, found := em.edges[t1]; !found {
 		em.edges[t1] = map[utils.MapCoordinate]*rtsspb.AbstractEdge{}
 	}
@@ -47,7 +66,11 @@ func (em AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 
 // Get queries the AbstractEdgeMap for an AbstractEdge instance which connects
 // two TileMap Coordinate instances.
-func (em AbstractEdgeMap) Get(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
+func (em *AbstractEdgeMap) Get(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
+	if em.edges == nil {
+		return nil, nil
+	}
+
 	if _, found := em.edges[t1]; found {
 		if e, found := em.edges[t1][t2]; found {
 			return e, nil
@@ -58,7 +81,7 @@ func (em AbstractEdgeMap) Get(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge,
 }
 
 // Pop deletes the specified AbstractEdge from the AbstractEdgeMap.
-func (em AbstractEdgeMap) Pop(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
+func (em *AbstractEdgeMap) Pop(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
 	e, err := em.Get(t1, t2)
 	if err != nil {
 		return nil, err
