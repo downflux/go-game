@@ -3,18 +3,18 @@
 package abstractgraph
 
 import (
-	// "math"
+	"math"
 
-	// rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
-	// rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
+	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
+	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/abstractedgemap"
 	"github.com/cripplet/rts-pathing/lib/hpf/abstractnodemap"
-	// "github.com/cripplet/rts-pathing/lib/hpf/astar"
-	// "github.com/cripplet/rts-pathing/lib/hpf/cluster"
-	// "github.com/cripplet/rts-pathing/lib/hpf/entrance"
-	// "github.com/cripplet/rts-pathing/lib/hpf/tile"
-	// "github.com/cripplet/rts-pathing/lib/hpf/utils"
+	"github.com/cripplet/rts-pathing/lib/hpf/astar"
+	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
+	"github.com/cripplet/rts-pathing/lib/hpf/entrance"
+	"github.com/cripplet/rts-pathing/lib/hpf/tile"
+	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	// "github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -39,10 +39,188 @@ type AbstractGraph struct {
 	// is a corresponding AbstractNodeMap object per level. Nodes within
 	// a specific AbstractNodeMap may move between levels, and may be
 	// deleted when the underlying terrain changes.
-	NodeMap map[int32]*abstractnodemap.AbstractNodeMap
+	//
+	// The index of the NodeMap is L - 1 -- that is, the first element
+	// of the list is the first level of abstraction.
+	NodeMap []*abstractnodemap.AbstractNodeMap
 
 	// EdgeMap contains a Level: AbstractEdgeMap dict representing the
 	// AbstractEdges per Level. Edges may move between levels and may
 	// be deleted when the underlying terrain changes.
-	EdgeMap map[int32]abstractedgemap.AbstractEdgeMap
+	//
+	// The index of the EdgeMap is L - 1 -- that is, the first element
+	// of the list is the first level of abstraction.
+	EdgeMap []*abstractedgemap.AbstractEdgeMap
+}
+
+// BuildAbstractGraph build a higher-level representation of a TileMap
+// populated with information about how to travel between different subsections
+// between tiles. The level specified in input represents the number of
+// abstractions that should be built for this map (l > 1 is useful for very,
+// very large maps), and the tileDimension represents a subsection size.
+func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, level int32) (*AbstractGraph, error) {
+	if level < 1 {
+		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
+	}
+
+	// TODO(cripplet): Add higher-level node generation.
+	if level > 1 {
+		return nil, notImplemented
+	}
+
+	// Highest level ClusterMap should still have more than one Cluster,
+	// otherwise we'll be routing units to the edge first before going back
+	// inwards.
+	if (int32(math.Pow(float64(tileDimension.GetX()), float64(level))) >= tm.D.GetX()) || (int32(math.Pow(float64(tileDimension.GetY()), float64(level))) >= tm.D.GetY()) {
+		return nil, status.Error(codes.FailedPrecondition, "given tileDimension and level will result in too large a ClusterMap")
+	}
+
+	// This does not add any value for an AbstractGraph.
+	if tileDimension.GetX() <= 1 && tileDimension.GetY() <= 1 {
+		return nil, status.Error(codes.FailedPrecondition, "invalid tileDimension")
+	}
+
+	g := &AbstractGraph{
+		Level: level,
+	}
+
+	// Create all AbstractNodeMap and AbstractEdgeMap instances. These will
+	// be referenced and mutated later on by passing the AbstractGraph
+	// object as a function arg.
+	for i := int32(0); i < level; i++ {
+		cm, err := cluster.BuildClusterMap(tm.D, &rtsspb.Coordinate{
+			X: int32(math.Pow(float64(tileDimension.GetX()), float64(i+1))),
+			Y: int32(math.Pow(float64(tileDimension.GetY()), float64(i+1))),
+		}, i+1)
+		if err != nil {
+			return nil, err
+		}
+
+		g.NodeMap = append(g.NodeMap, &abstractnodemap.AbstractNodeMap{
+			ClusterMap: cm,
+		})
+		g.EdgeMap = append(g.EdgeMap, &abstractedgemap.AbstractEdgeMap{})
+	}
+
+	// Build the Tile-Tile edges which connect between two adjacent
+	// clusters in the L-1 ClusterMap object and store this data into the
+	// AbstractGraph.
+	transitions, err := buildTransitions(tm, g.NodeMap[0].ClusterMap)
+	if err != nil {
+		return nil, err
+	}
+	for _, t := range transitions {
+		g.NodeMap[0].Add(t.GetN1())
+		g.NodeMap[0].Add(t.GetN2())
+		g.EdgeMap[0].Add(&rtsspb.AbstractEdge{
+			Level:       1,
+			Source:      t.GetN1().GetTileCoordinate(),
+			Destination: t.GetN2().GetTileCoordinate(),
+			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+			Weight:      1, // Inter-edges are always of cost 1, per Botea.
+		})
+	}
+
+	// Build Tile-Tile edges within a cluster of an L-1 ClusterMap.
+	for _, c := range cluster.Iterator(g.NodeMap[0].ClusterMap) {
+		nodes, err := g.NodeMap[0].GetByCluster(c)
+		if err != nil {
+			return nil, err
+		}
+		for _, n1 := range nodes {
+			for _, n2 := range nodes {
+				e, err := buildIntraEdge(tm, g, n1, n2, 1)
+				if err != nil {
+					return nil, err
+				}
+
+				g.EdgeMap[0].Add(e)
+			}
+		}
+	}
+
+	for i := int32(1); i < level; i++ {
+		// TODO(cripplet): Implement for L > 1.
+	}
+
+	return g, nil
+}
+
+// buildIntraEdge constructs a single AbstractEdge instance with the correct
+// traversal cost between two underlying AbstractNode objects. The cost
+// function is calculated from the TileMap entity, which holds information
+// on e.g. the terrain information of the map.
+func buildIntraEdge(tm *tile.TileMap, g *AbstractGraph, n1, n2 *rtsspb.AbstractNode, level int32) (*rtsspb.AbstractEdge, error) {
+	cm := g.NodeMap[level-1].ClusterMap
+	if n1 != n2 {
+		c1, err := cluster.ClusterCoordinateFromTileCoordinate(cm, utils.MC(n1.GetTileCoordinate()))
+		if err != nil {
+			return nil, err
+		}
+		c2, err := cluster.ClusterCoordinateFromTileCoordinate(cm, utils.MC(n2.GetTileCoordinate()))
+		if err != nil {
+			return nil, err
+		}
+		if c1 != c2 {
+			return nil, status.Errorf(codes.FailedPrecondition, "input AbstractNode instances are not bounded by the same cluster")
+		}
+
+		tileBoundary, err := cluster.TileBoundary(cm, c1)
+		if err != nil {
+			return nil, err
+		}
+		tileDimension, err := cluster.TileDimension(cm, c1)
+		if err != nil {
+			return nil, err
+		}
+
+		p, cost, err := astar.TileMapPath(
+			tm,
+			tm.TileFromCoordinate(n1.GetTileCoordinate()),
+			tm.TileFromCoordinate(n2.GetTileCoordinate()),
+			utils.PB(tileBoundary),
+			utils.PB(tileDimension))
+		if err != nil {
+			return nil, err
+		}
+
+
+		if p != nil {
+			return &rtsspb.AbstractEdge{
+				Level:       level,
+				Source:      n1.GetTileCoordinate(),
+				Destination: n2.GetTileCoordinate(),
+				EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+				Weight:      cost,
+			}, nil
+		}
+	}
+	return nil, nil
+}
+
+// buildTransitions iterates over the TileMap for the input ClusterMap overlay
+// and look for adjacent, open nodes along cluster-cluster borders.
+func buildTransitions(tm *tile.TileMap, cm *cluster.ClusterMap) ([]*rtsspb.Transition, error) {
+	var ts []*rtsspb.Transition
+	for _, c1 := range cluster.Iterator(cm) {
+		neighbors, err := cluster.Neighbors(cm, c1)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, c2 := range neighbors {
+			if cluster.IsAdjacent(cm, c1, c2) {
+				transitions, err := entrance.BuildTransitions(tm, cm, c1, c2)
+				if err != nil {
+					return nil, err
+				}
+				ts = append(ts, transitions...)
+			}
+		}
+	}
+	for _, t := range ts {
+		t.GetN1().Level = cm.Val.GetLevel()
+		t.GetN2().Level = cm.Val.GetLevel()
+	}
+	return ts, nil
 }
