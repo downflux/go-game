@@ -19,8 +19,8 @@ func abstractEdgeLess(e1, e2 *rtsspb.AbstractEdge) bool {
 	return coordinateLess(e1.GetSource(), e2.GetSource()) || cmp.Equal(e1.GetSource(), e2.GetSource(), protocmp.Transform()) && coordinateLess(e1.GetDestination(), e2.GetDestination())
 }
 
-func TestAbstractEdgeMapAddError(t *testing.T) {
-	addAlreadyExistMap := &AbstractEdgeMap{}
+func TestMapAddError(t *testing.T) {
+	addAlreadyExistMap := &Map{}
 	if err := addAlreadyExistMap.Add(&rtsspb.AbstractEdge{
 		Source:      &rtsspb.Coordinate{X: 0, Y: 0},
 		Destination: &rtsspb.Coordinate{X: 1, Y: 1},
@@ -30,7 +30,7 @@ func TestAbstractEdgeMapAddError(t *testing.T) {
 
 	testConfigs := []struct {
 		name string
-		m    *AbstractEdgeMap
+		m    *Map
 		n    *rtsspb.AbstractEdge
 	}{
 		{
@@ -44,7 +44,7 @@ func TestAbstractEdgeMapAddError(t *testing.T) {
 		},
 		{
 			name: "AddSelfLoop",
-			m:    &AbstractEdgeMap{},
+			m:    &Map{},
 			n: &rtsspb.AbstractEdge{
 				Source:      &rtsspb.Coordinate{X: 0, Y: 0},
 				Destination: &rtsspb.Coordinate{X: 0, Y: 0},
@@ -61,14 +61,14 @@ func TestAbstractEdgeMapAddError(t *testing.T) {
 	}
 }
 
-func TestAbstractEdgeMapAdd(t *testing.T) {
+func TestMapAdd(t *testing.T) {
 	want := &rtsspb.AbstractEdge{
 		Source:      &rtsspb.Coordinate{X: 0, Y: 0},
 		Destination: &rtsspb.Coordinate{X: 1, Y: 1},
 		Weight:      1,
 	}
 
-	em := &AbstractEdgeMap{}
+	em := &Map{}
 	if err := em.Add(want); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
@@ -80,14 +80,14 @@ func TestAbstractEdgeMapAdd(t *testing.T) {
 	}
 }
 
-func TestAbstractEdgeMapGet(t *testing.T) {
+func TestMapGet(t *testing.T) {
 	want := &rtsspb.AbstractEdge{
 		Source:      &rtsspb.Coordinate{X: 0, Y: 0},
 		Destination: &rtsspb.Coordinate{X: 1, Y: 1},
 		Weight:      1,
 	}
 
-	em := &AbstractEdgeMap{}
+	em := &Map{}
 	if err := em.Add(want); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
@@ -110,14 +110,14 @@ func TestAbstractEdgeMapGet(t *testing.T) {
 	}
 }
 
-func TestAbstractEdgeMapPop(t *testing.T) {
+func TestMapPop(t *testing.T) {
 	want := &rtsspb.AbstractEdge{
 		Source:      &rtsspb.Coordinate{X: 0, Y: 0},
 		Destination: &rtsspb.Coordinate{X: 1, Y: 1},
 		Weight:      1,
 	}
 
-	em := &AbstractEdgeMap{}
+	em := &Map{}
 	if err := em.Add(want); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
@@ -129,7 +129,7 @@ func TestAbstractEdgeMapPop(t *testing.T) {
 	}
 }
 
-func TestAbstractEdgeMapGetBySource(t *testing.T) {
+func TestMapGetBySource(t *testing.T) {
 	s := &rtsspb.Coordinate{X: 0, Y: 0}
 	want := []*rtsspb.AbstractEdge{
 		{
@@ -144,7 +144,7 @@ func TestAbstractEdgeMapGetBySource(t *testing.T) {
 		},
 	}
 
-	em := &AbstractEdgeMap{}
+	em := &Map{}
 	for _, n := range want {
 		if err := em.Add(n); err != nil {
 			t.Fatalf("Add() = %v, want = nil", err)

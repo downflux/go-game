@@ -34,23 +34,23 @@ type AbstractGraph struct {
 	// refers to the underlying base map.
 	Level int32
 
-	// NodeMap contains a Level: AbstractNodeMap dict representing the
+	// NodeMap contains a Level: abstractnodemap.Map dict representing the
 	// AbstractNodes per Level. As per AbstractGraph.ClusterMap, there
-	// is a corresponding AbstractNodeMap object per level. Nodes within
-	// a specific AbstractNodeMap may move between levels, and may be
-	// deleted when the underlying terrain changes.
+	// is a corresponding abstractnodemap.Map object per level. Nodes
+	// within a specific abstractnodemap.Map may move between levels, and
+	// may be deleted when the underlying terrain changes.
 	//
-	// The index of the NodeMap is L - 1 -- that is, the first element
+	// The index of the map is L - 1 -- that is, the first element
 	// of the list is the first level of abstraction.
-	NodeMap []*abstractnodemap.AbstractNodeMap
+	NodeMap []*abstractnodemap.Map
 
-	// EdgeMap contains a Level: AbstractEdgeMap dict representing the
+	// EdgeMap contains a Level: abstractedgemap.Map dict representing the
 	// AbstractEdges per Level. Edges may move between levels and may
 	// be deleted when the underlying terrain changes.
 	//
-	// The index of the EdgeMap is L - 1 -- that is, the first element
+	// The index of the map is L - 1 -- that is, the first element
 	// of the list is the first level of abstraction.
-	EdgeMap []*abstractedgemap.AbstractEdgeMap
+	EdgeMap []*abstractedgemap.Map
 }
 
 // BuildAbstractGraph build a higher-level representation of a TileMap
@@ -84,9 +84,9 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 		Level: level,
 	}
 
-	// Create all AbstractNodeMap and AbstractEdgeMap instances. These will
-	// be referenced and mutated later on by passing the AbstractGraph
-	// object as a function arg.
+	// Create all node and edge map instances. These will be referenced and
+	// mutated later on by passing the AbstractGraph object as a function
+	// arg.
 	for i := int32(0); i < level; i++ {
 		cm, err := cluster.BuildClusterMap(tm.D, &rtsspb.Coordinate{
 			X: int32(math.Pow(float64(tileDimension.GetX()), float64(i+1))),
@@ -96,10 +96,10 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 			return nil, err
 		}
 
-		g.NodeMap = append(g.NodeMap, &abstractnodemap.AbstractNodeMap{
+		g.NodeMap = append(g.NodeMap, &abstractnodemap.Map{
 			ClusterMap: cm,
 		})
-		g.EdgeMap = append(g.EdgeMap, &abstractedgemap.AbstractEdgeMap{})
+		g.EdgeMap = append(g.EdgeMap, &abstractedgemap.Map{})
 	}
 
 	// Build the Tile-Tile edges which connect between two adjacent
@@ -183,7 +183,6 @@ func buildIntraEdge(tm *tile.TileMap, g *AbstractGraph, n1, n2 *rtsspb.AbstractN
 		if err != nil {
 			return nil, err
 		}
-
 
 		if p != nil {
 			return &rtsspb.AbstractEdge{

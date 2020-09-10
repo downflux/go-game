@@ -8,15 +8,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// AbstractEdgeMap contains a collection of AbstractEdge instances, which
+// Map contains a collection of AbstractEdge instances, which
 // represent an AbstractGraph edge; these edges represent the cost to move
 // between different AbstractNode instances.
-type AbstractEdgeMap struct {
+type Map struct {
 	// We want to explicitly disallow direct access.
 	edges map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractEdge
 }
 
-func (em *AbstractEdgeMap) GetBySource(t utils.MapCoordinate) ([]*rtsspb.AbstractEdge, error) {
+func (em *Map) GetBySource(t utils.MapCoordinate) ([]*rtsspb.AbstractEdge, error) {
 	if em.edges == nil {
 		return nil, nil
 	}
@@ -28,11 +28,11 @@ func (em *AbstractEdgeMap) GetBySource(t utils.MapCoordinate) ([]*rtsspb.Abstrac
 	return res, nil
 }
 
-// Add appends an AbstractEdge instance into the AbstractEdgeMap collection.
+// Add appends an AbstractEdge instance into the Map collection.
 //
 // We're assuming the graph is undirected -- that is, for nodes A, B, if
 // A --> B, then B --> A with the same cost.
-func (em *AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
+func (em *Map) Add(e *rtsspb.AbstractEdge) error {
 	t1 := utils.MC(e.GetSource())
 	t2 := utils.MC(e.GetDestination())
 
@@ -64,9 +64,9 @@ func (em *AbstractEdgeMap) Add(e *rtsspb.AbstractEdge) error {
 	return nil
 }
 
-// Get queries the AbstractEdgeMap for an AbstractEdge instance which connects
+// Get queries the Map for an AbstractEdge instance which connects
 // two TileMap Coordinate instances.
-func (em *AbstractEdgeMap) Get(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
+func (em *Map) Get(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
 	if em.edges == nil {
 		return nil, nil
 	}
@@ -80,8 +80,8 @@ func (em *AbstractEdgeMap) Get(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge
 	return nil, nil
 }
 
-// Pop deletes the specified AbstractEdge from the AbstractEdgeMap.
-func (em *AbstractEdgeMap) Pop(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
+// Pop deletes the specified AbstractEdge from the Map.
+func (em *Map) Pop(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
 	e, err := em.Get(t1, t2)
 	if err != nil {
 		return nil, err

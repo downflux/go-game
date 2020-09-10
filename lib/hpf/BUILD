@@ -209,6 +209,8 @@ go_test(
     importpath = "github.com/cripplet/rts-pathing/lib/hpf/abstractgraph_test",
     embed = [":abstractgraph"],
     deps = [
+        ":abstractedgemap",
+        ":abstractnodemap",
         ":cluster",
 	":tile",
         ":utils",

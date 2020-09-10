@@ -11,18 +11,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// AbstractNodeMap contains a collection of AbstractNode instances, which
+// Map contains a collection of AbstractNode instances, which
 // represent an AbstractGraph node used for hierarchical A* search.
 //
 // AbstractNodes are indexed by cluster coordinate and then Tile coordinate.
-type AbstractNodeMap struct {
+type Map struct {
 	ClusterMap *cluster.ClusterMap
 	nodes      map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractNode
 }
 
-// GetByCluster filters the AbstractNodeMap by the input cluster coordinate
+// GetByCluster filters the Map by the input cluster coordinate
 // and returns all AbstractNode objects that are bounded by the input.
-func (nm AbstractNodeMap) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error) {
+func (nm Map) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error) {
 	if err := cluster.ValidateClusterInRange(nm.ClusterMap, c); err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (nm AbstractNodeMap) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.Abstrac
 	return nodes, nil
 }
 
-func (nm *AbstractNodeMap) Get(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
+func (nm *Map) Get(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 	c, err := cluster.ClusterCoordinateFromTileCoordinate(nm.ClusterMap, t)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (nm *AbstractNodeMap) Get(t utils.MapCoordinate) (*rtsspb.AbstractNode, err
 	return nm.nodes[c][t], nil
 }
 
-func (nm *AbstractNodeMap) Pop(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
+func (nm *Map) Pop(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 	n, err := nm.Get(t)
 	if err != nil {
 		return nil, err
@@ -67,9 +67,9 @@ func (nm *AbstractNodeMap) Pop(t utils.MapCoordinate) (*rtsspb.AbstractNode, err
 	return n, nil
 }
 
-func (nm *AbstractNodeMap) Add(n *rtsspb.AbstractNode) error {
+func (nm *Map) Add(n *rtsspb.AbstractNode) error {
 	if n.GetLevel() != nm.ClusterMap.Val.GetLevel() {
-		return status.Error(codes.FailedPrecondition, "input mismatch, given AbstractNode does not have the same hierarchy level as the ClusterMap bound to the AbstractNodeMap")
+		return status.Error(codes.FailedPrecondition, "input mismatch, given AbstractNode does not have the same hierarchy level as the ClusterMap bound to the Map")
 	}
 
 	t := utils.MC(n.GetTileCoordinate())
@@ -80,7 +80,7 @@ func (nm *AbstractNodeMap) Add(n *rtsspb.AbstractNode) error {
 	}
 
 	if existingNode != nil {
-		return status.Errorf(codes.AlreadyExists, "an AbstractNode already exists for AbstractNodeMap with the given Coordinate %v", n.GetTileCoordinate())
+		return status.Errorf(codes.AlreadyExists, "an AbstractNode already exists for Map with the given Coordinate %v", n.GetTileCoordinate())
 	}
 
 	c, err := cluster.ClusterCoordinateFromTileCoordinate(nm.ClusterMap, utils.MC(n.GetTileCoordinate()))

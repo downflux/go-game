@@ -28,12 +28,12 @@ func abstractNodeLess(n1, n2 *rtsspb.AbstractNode) bool {
 	return coordinateLess(n1.GetTileCoordinate(), n2.GetTileCoordinate())
 }
 
-func TestAbstractNodeMapAdd(t *testing.T) {
+func TestMapAdd(t *testing.T) {
 	want := &rtsspb.AbstractNode{
 		TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
 	}
 
-	m := AbstractNodeMap{ClusterMap: trivialClusterMap}
+	m := Map{ClusterMap: trivialClusterMap}
 
 	if err := m.Add(want); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
@@ -44,14 +44,14 @@ func TestAbstractNodeMapAdd(t *testing.T) {
 	}
 }
 
-func TestAbstractNodeMapGet(t *testing.T) {
-	m := AbstractNodeMap{ClusterMap: trivialClusterMap}
+func TestMapGet(t *testing.T) {
+	m := Map{ClusterMap: trivialClusterMap}
 	if got, err := m.Get(utils.MapCoordinate{X: 0, Y: 0}); err != nil || got != nil {
 		t.Errorf("Get() = %v, %v, want = nil, nil", got, err)
 	}
 }
 
-func TestAbstractNodeMapGetByCluster(t *testing.T) {
+func TestMapGetByCluster(t *testing.T) {
 	cm, err := cluster.ImportClusterMap(&rtsspb.ClusterMap{
 		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
 		TileMapDimension: &rtsspb.Coordinate{X: 4, Y: 4},
@@ -60,7 +60,7 @@ func TestAbstractNodeMapGetByCluster(t *testing.T) {
 		t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
 	}
 
-	m := AbstractNodeMap{ClusterMap: cm}
+	m := Map{ClusterMap: cm}
 	want := []*rtsspb.AbstractNode{
 		{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
 		{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
@@ -87,18 +87,18 @@ func TestAbstractNodeMapGetByCluster(t *testing.T) {
 	}
 }
 
-func TestAbstractNodeMapAddError(t *testing.T) {
+func TestMapAddError(t *testing.T) {
 	clusterCoordinate := &rtsspb.Coordinate{X: 0, Y: 0}
 	tileCoordinate := &rtsspb.Coordinate{X: 0, Y: 0}
 	testConfigs := []struct {
 		name string
-		m    AbstractNodeMap
+		m    Map
 		n    *rtsspb.AbstractNode
 	}{
-		{name: "LevelMismatch", m: AbstractNodeMap{ClusterMap: trivialClusterMap}, n: &rtsspb.AbstractNode{Level: 1, TileCoordinate: tileCoordinate}},
+		{name: "LevelMismatch", m: Map{ClusterMap: trivialClusterMap}, n: &rtsspb.AbstractNode{Level: 1, TileCoordinate: tileCoordinate}},
 		{
 			name: "AlreadyExist",
-			m: AbstractNodeMap{
+			m: Map{
 				ClusterMap: trivialClusterMap,
 				nodes: map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractNode{
 					utils.MC(clusterCoordinate): {
@@ -120,12 +120,12 @@ func TestAbstractNodeMapAddError(t *testing.T) {
 	}
 }
 
-func TestAbstractNodeMapRemove(t *testing.T) {
+func TestMapRemove(t *testing.T) {
 	want := &rtsspb.AbstractNode{
 		TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
 	}
 
-	m := AbstractNodeMap{ClusterMap: trivialClusterMap}
+	m := Map{ClusterMap: trivialClusterMap}
 
 	if err := m.Add(want); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
