@@ -114,7 +114,7 @@ func TileDimension(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, e
 func Iterator(m *ClusterMap) []utils.MapCoordinate {
 	var cs []utils.MapCoordinate
 	for x := int32(0); x < Dimension(m).GetX(); x++ {
-		for y := int32(0); x < Dimension(m).GetY(); y++ {
+		for y := int32(0); y < Dimension(m).GetY(); y++ {
 			cs = append(cs, utils.MC(&rtsspb.Coordinate{X: x, Y: y}))
 		}
 	}

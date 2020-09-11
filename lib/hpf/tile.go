@@ -92,6 +92,14 @@ func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
 		m[utils.MC(t.Val.GetCoordinate())] = t
 	}
 
+	for x := int32(0); x < tm.D.GetX(); x++ {
+		for y := int32(0); y < tm.D.GetY(); y++ {
+			if tm.Tile(x, y) == nil {
+				return nil, status.Errorf(codes.InvalidArgument, "TileMap does not fully specify all tiles within the given map dimensions")
+			}
+		}
+	}
+
 	return tm, nil
 }
 

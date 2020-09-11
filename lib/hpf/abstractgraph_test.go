@@ -7,12 +7,12 @@ import (
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/abstractedgemap"
-	"github.com/cripplet/rts-pathing/lib/hpf/abstractnodemap"
-	// "github.com/cripplet/rts-pathing/lib/hpf/cluster"
-	// "github.com/cripplet/rts-pathing/lib/hpf/tile"
-	// "github.com/cripplet/rts-pathing/lib/hpf/utils"
+	// "github.com/cripplet/rts-pathing/lib/hpf/abstractnodemap"
+	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
+	"github.com/cripplet/rts-pathing/lib/hpf/tile"
+	"github.com/cripplet/rts-pathing/lib/hpf/utils"
 	"github.com/google/go-cmp/cmp"
-	// "github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
@@ -130,28 +130,24 @@ func abstractEdgeEqual(e1, e2 *rtsspb.AbstractEdge) bool {
 	)
 }
 
-func abstractEdgeMapEqual(em1, em2 abstractedgemap.AbstractEdgeMap) bool {
-	for s, col := range em1 {
-		for d, e1 := range col {
-			e2, err := em2.Get(s, d)
-			if err != nil || e2 == nil {
-				return false
-			}
-			if !cmp.Equal(e1, e2, cmp.Comparer(abstractEdgeEqual)) {
-				return false
-			}
+func abstractEdgeMapEqual(em1, em2 abstractedgemap.Map) bool {
+	for _, e1 := range em1.Iterator() {
+		e2, err := em2.Get(utils.MC(e1.GetSource()), utils.MC(e1.GetDestination()))
+		if err != nil || e2 == nil {
+			return false
+		}
+		if !cmp.Equal(e1, e2, cmp.Comparer(abstractEdgeEqual)) {
+			return false
 		}
 	}
 
-	for s, col := range em2 {
-		for d, e2 := range col {
-			e1, err := em1.Get(s, d)
-			if err != nil || e1 == nil {
-				return false
-			}
-			if !cmp.Equal(e1, e2, cmp.Comparer(abstractEdgeEqual)) {
-				return false
-			}
+	for _, e2 := range em2.Iterator() {
+		e1, err := em1.Get(utils.MC(e2.GetSource()), utils.MC(e2.GetDestination()))
+		if err != nil || e1 == nil {
+			return false
+		}
+		if !cmp.Equal(e1, e2, cmp.Comparer(abstractEdgeEqual)) {
+			return false
 		}
 	}
 	return true
@@ -419,20 +415,9 @@ func TestBuildTransitions(t *testing.T) {
 		{
 			name: "TrivialOpenMap",
 			cm: &rtsspb.ClusterMap{
-				Level:     1,
-				Dimension: &rtsspb.Coordinate{X: 1, Y: 3},
-				Clusters: []*rtsspb.Cluster{
-					{
-						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-						TileDimension: &rtsspb.Coordinate{X: 1, Y: 3},
-					},
-					{
-						Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-						TileBoundary:  &rtsspb.Coordinate{X: 1, Y: 0},
-						TileDimension: &rtsspb.Coordinate{X: 1, Y: 3},
-					},
-				},
+				Level:            1,
+				TileDimension:    &rtsspb.Coordinate{X: 1, Y: 3},
+				TileMapDimension: &rtsspb.Coordinate{X: 2, Y: 6},
 			},
 			tm: &rtsspb.TileMap{
 				Dimension: &rtsspb.Coordinate{X: 2, Y: 6},
@@ -440,34 +425,56 @@ func TestBuildTransitions(t *testing.T) {
 					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
 					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
 					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}},
+					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 3}},
+					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 4}},
+					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 5}},
 					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
 					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
 					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
+					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 3}},
+					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 4}},
+					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 5}},
 				},
 			},
 			want: []*rtsspb.Transition{
 				{
 					N1: &rtsspb.AbstractNode{
-						Level:             1,
-						ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-						TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
+						Level:          1,
+						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
 					},
 					N2: &rtsspb.AbstractNode{
-						Level:             1,
-						ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
-						TileCoordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
+						Level:          1,
+						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1},
 					},
 				},
 				{
 					N1: &rtsspb.AbstractNode{
-						Level:             1,
-						ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
-						TileCoordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
+						Level:          1,
+						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 2},
 					},
 					N2: &rtsspb.AbstractNode{
-						Level:             1,
-						ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-						TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
+						Level:          1,
+						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 3},
+					},
+				},
+				{
+					N1: &rtsspb.AbstractNode{
+						Level:          1,
+						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2},
+					},
+					N2: &rtsspb.AbstractNode{
+						Level:          1,
+						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 3},
+					},
+				},
+				{
+					N1: &rtsspb.AbstractNode{
+						Level:          1,
+						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 4},
+					},
+					N2: &rtsspb.AbstractNode{
+						Level:          1,
+						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 4},
 					},
 				},
 			},
@@ -500,7 +507,7 @@ func TestBuildBaseIntraEdges(t *testing.T) {
 		name string
 		cm   *rtsspb.ClusterMap
 		tm   *rtsspb.TileMap
-		nm   AbstractNodeMap
+		nm   Map
 		want []*rtsspb.AbstractEdge
 	}{
 		{name: "NilCase", cm: nil, nm: nil, tm: nil, want: nil},
@@ -685,7 +692,7 @@ func TestBuildAbstractGraph(t *testing.T) {
 				ClusterMap: map[int32]*cluster.ClusterMap{
 					1: simpleMapClusterMap,
 				},
-				NodeMap: map[int32]AbstractNodeMap{
+				NodeMap: map[int32]Map{
 					1: {
 						utils.MapCoordinate{X: 1, Y: 1}: &rtsspb.AbstractNode{
 							Level:             1,
@@ -709,7 +716,7 @@ func TestBuildAbstractGraph(t *testing.T) {
 						},
 					},
 				},
-				EdgeMap: map[int32]AbstractEdgeMap{
+				EdgeMap: map[int32]Map{
 					1: {
 						utils.MapCoordinate{X: 1, Y: 1}: map[utils.MapCoordinate]*rtsspb.AbstractEdge{
 							{X: 1, Y: 2}: {
@@ -818,7 +825,7 @@ func TestAbstractEdgeGraphGetBySource(t *testing.T) {
 		},
 	}
 
-	em := AbstractEdgeMap{}
+	em := Map{}
 	for _, e := range want {
 		em.Add(e)
 	}

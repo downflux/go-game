@@ -31,3 +31,7 @@ func AddMapCoordinate(a, b MapCoordinate) MapCoordinate {
 		Y: a.Y + b.Y,
 	}
 }
+
+func LessThan(a, b MapCoordinate) bool {
+	return a.X < b.X || a.X == b.X && a.Y < b.Y
+}

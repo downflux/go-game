@@ -16,6 +16,16 @@ type Map struct {
 	edges map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractEdge
 }
 
+func (em *Map) Iterator() []*rtsspb.AbstractEdge {
+	var edges []*rtsspb.AbstractEdge
+	for _, row := range em.edges {
+		for _, e := range row {
+			edges = append(edges, e)
+		}
+	}
+	return edges
+}
+
 func (em *Map) GetBySource(t utils.MapCoordinate) ([]*rtsspb.AbstractEdge, error) {
 	if em.edges == nil {
 		return nil, nil

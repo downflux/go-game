@@ -50,41 +50,41 @@ var (
 //   1. immediately adjacent to one another, and
 //   2. are in different Clusters.
 // See Botea 2004 for more information.
-func BuildTransitions(m *tile.TileMap, c *cluster.ClusterMap, c1, c2 utils.MapCoordinate) ([]*rtsspb.Transition, error) {
-	if m == nil {
+func BuildTransitions(tm *tile.TileMap, cm *cluster.ClusterMap, c1, c2 utils.MapCoordinate) ([]*rtsspb.Transition, error) {
+	if tm == nil {
 		return nil, status.Error(codes.FailedPrecondition, "input TileMap reference must be non-nil")
 	}
-	if c == nil || c.Val == nil {
+	if cm == nil || cm.Val == nil {
 		return nil, status.Error(codes.FailedPrecondition, "input ClusterMap reference must be non-nil")
 	}
-	if !cluster.IsAdjacent(c, c1, c2) {
+	if !cluster.IsAdjacent(cm, c1, c2) {
 		return nil, status.Errorf(codes.FailedPrecondition, "clusters must be immediately adjacent to one another")
 	}
-	if !proto.Equal(m.D, c.Val.GetTileMapDimension()) {
+	if !proto.Equal(tm.D, cm.Val.GetTileMapDimension()) {
 		return nil, status.Errorf(codes.FailedPrecondition, "TileMap and ClusterMap dimensions do not agree")
 	}
 	for _, clusterCoord := range []utils.MapCoordinate{c1, c2} {
-		if err := cluster.ValidateClusterInRange(c, clusterCoord); err != nil {
+		if err := cluster.ValidateClusterInRange(cm, clusterCoord); err != nil {
 			return nil, err
 		}
 	}
 
-	d1, err := cluster.GetRelativeDirection(c, c1, c2)
+	d1, err := cluster.GetRelativeDirection(cm, c1, c2)
 	if err != nil {
 		return nil, err
 	}
 	d2 := reverseDirection[d1]
 
-	v1, err := buildClusterEdgeCoordinateSlice(c, c1, d1)
+	s1, err := buildClusterEdgeCoordinateSlice(cm, c1, d1)
 	if err != nil {
 		return nil, err
 	}
-	v2, err := buildClusterEdgeCoordinateSlice(c, c2, d2)
+	s2, err := buildClusterEdgeCoordinateSlice(cm, c2, d2)
 	if err != nil {
 		return nil, err
 	}
 
-	return buildTransitionsAux(m, v1, v2)
+	return buildTransitionsAux(tm, s1, s2)
 }
 
 // buildCoordinateWithCoordinateSlice reconstructs the Coordinate object back
@@ -270,32 +270,32 @@ func buildTransitionsAux(m *tile.TileMap, s1, s2 *rtsspb.CoordinateSlice) ([]*rt
 
 	var tSegment1, tSegment2 *rtsspb.CoordinateSlice
 	for o := int32(0); o < s1.GetLength(); o++ {
-		c1, err := buildCoordinateWithCoordinateSlice(s1, o)
+		t1, err := buildCoordinateWithCoordinateSlice(s1, o)
 		if err != nil {
 			return nil, err
 		}
-		c2, err := buildCoordinateWithCoordinateSlice(s2, o)
+		t2, err := buildCoordinateWithCoordinateSlice(s2, o)
 		if err != nil {
 			return nil, err
 		}
 
-		if (m.TileFromCoordinate(c1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (m.TileFromCoordinate(c2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+		if (m.TileFromCoordinate(t1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (m.TileFromCoordinate(t2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
 			if tSegment1 == nil {
 				tSegment1 = &rtsspb.CoordinateSlice{
 					Orientation: orientation,
-					Start:       c1,
+					Start:       t1,
 				}
 			}
 			if tSegment2 == nil {
 				tSegment2 = &rtsspb.CoordinateSlice{
 					Orientation: orientation,
-					Start:       c2,
+					Start:       t2,
 				}
 			}
 			tSegment1.Length += 1
 			tSegment2.Length += 1
 		}
-		if (m.TileFromCoordinate(c1).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) || (m.TileFromCoordinate(c2).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+		if (m.TileFromCoordinate(t1).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) || (m.TileFromCoordinate(t2).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
 			if tSegment1 != nil && tSegment2 != nil {
 				transitions, err := buildTransitionsFromOpenCoordinateSlice(tSegment1, tSegment2)
 				if err != nil {

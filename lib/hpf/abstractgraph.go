@@ -208,7 +208,7 @@ func buildTransitions(tm *tile.TileMap, cm *cluster.ClusterMap) ([]*rtsspb.Trans
 		}
 
 		for _, c2 := range neighbors {
-			if cluster.IsAdjacent(cm, c1, c2) {
+			if cluster.IsAdjacent(cm, c1, c2) && utils.LessThan(c1, c2) {
 				transitions, err := entrance.BuildTransitions(tm, cm, c1, c2)
 				if err != nil {
 					return nil, err
