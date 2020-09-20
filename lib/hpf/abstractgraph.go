@@ -53,6 +53,18 @@ type AbstractGraph struct {
 	EdgeMap []*abstractedgemap.Map
 }
 
+// listIndex transforms a proto abstract hierarchy L into the appropriate
+// addressable index for an AbstractGraph.
+func listIndex(l int32) int32 {
+	return l - 1
+}
+
+// abstractHierarchyLevel transforms an AbstractGraph object index into a proto
+// abstract hierarchy L.
+func abstractHierarchyLevel(i int32) int32 {
+	return i + 1
+}
+
 // BuildAbstractGraph build a higher-level representation of a TileMap
 // populated with information about how to travel between different subsections
 // between tiles. The level specified in input represents the number of
@@ -89,9 +101,9 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 	// arg.
 	for i := int32(0); i < level; i++ {
 		cm, err := cluster.BuildClusterMap(tm.D, &rtsspb.Coordinate{
-			X: int32(math.Pow(float64(tileDimension.GetX()), float64(i+1))),
-			Y: int32(math.Pow(float64(tileDimension.GetY()), float64(i+1))),
-		}, i+1)
+			X: int32(math.Pow(float64(tileDimension.GetX()), float64(abstractHierarchyLevel(i)))),
+			Y: int32(math.Pow(float64(tileDimension.GetY()), float64(abstractHierarchyLevel(i)))),
+		}, abstractHierarchyLevel(i))
 		if err != nil {
 			return nil, err
 		}
@@ -105,14 +117,14 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 	// Build the Tile-Tile edges which connect between two adjacent
 	// clusters in the L-1 ClusterMap object and store this data into the
 	// AbstractGraph.
-	transitions, err := buildTransitions(tm, g.NodeMap[0].ClusterMap)
+	transitions, err := buildTransitions(tm, g.NodeMap[listIndex(1)].ClusterMap)
 	if err != nil {
 		return nil, err
 	}
 	for _, t := range transitions {
-		g.NodeMap[0].Add(t.GetN1())
-		g.NodeMap[0].Add(t.GetN2())
-		g.EdgeMap[0].Add(&rtsspb.AbstractEdge{
+		g.NodeMap[listIndex(1)].Add(t.GetN1())
+		g.NodeMap[listIndex(1)].Add(t.GetN2())
+		g.EdgeMap[listIndex(1)].Add(&rtsspb.AbstractEdge{
 			Level:       1,
 			Source:      t.GetN1().GetTileCoordinate(),
 			Destination: t.GetN2().GetTileCoordinate(),
@@ -122,19 +134,23 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 	}
 
 	// Build Tile-Tile edges within a cluster of an L-1 ClusterMap.
-	for _, c := range cluster.Iterator(g.NodeMap[0].ClusterMap) {
-		nodes, err := g.NodeMap[0].GetByCluster(c)
+	for _, c := range cluster.Iterator(g.NodeMap[listIndex(1)].ClusterMap) {
+		nodes, err := g.NodeMap[listIndex(1)].GetByCluster(c)
 		if err != nil {
 			return nil, err
 		}
 		for _, n1 := range nodes {
 			for _, n2 := range nodes {
-				e, err := buildIntraEdge(tm, g, n1, n2, 1)
-				if err != nil {
-					return nil, err
-				}
+				if n1 != n2 {
+					e, err := buildIntraEdge(tm, g.NodeMap[listIndex(1)].ClusterMap, n1, n2)
+					if err != nil {
+						return nil, err
+					}
 
-				g.EdgeMap[0].Add(e)
+					if e != nil {
+						g.EdgeMap[listIndex(1)].Add(e)
+					}
+				}
 			}
 		}
 	}
@@ -150,49 +166,46 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 // traversal cost between two underlying AbstractNode objects. The cost
 // function is calculated from the TileMap entity, which holds information
 // on e.g. the terrain information of the map.
-func buildIntraEdge(tm *tile.TileMap, g *AbstractGraph, n1, n2 *rtsspb.AbstractNode, level int32) (*rtsspb.AbstractEdge, error) {
-	cm := g.NodeMap[level-1].ClusterMap
-	if n1 != n2 {
-		c1, err := cluster.ClusterCoordinateFromTileCoordinate(cm, utils.MC(n1.GetTileCoordinate()))
-		if err != nil {
-			return nil, err
-		}
-		c2, err := cluster.ClusterCoordinateFromTileCoordinate(cm, utils.MC(n2.GetTileCoordinate()))
-		if err != nil {
-			return nil, err
-		}
-		if c1 != c2 {
-			return nil, status.Errorf(codes.FailedPrecondition, "input AbstractNode instances are not bounded by the same cluster")
-		}
+func buildIntraEdge(tm *tile.TileMap, cm *cluster.ClusterMap, n1, n2 *rtsspb.AbstractNode) (*rtsspb.AbstractEdge, error) {
+	c1, err := cluster.ClusterCoordinateFromTileCoordinate(cm, utils.MC(n1.GetTileCoordinate()))
+	if err != nil {
+		return nil, err
+	}
+	c2, err := cluster.ClusterCoordinateFromTileCoordinate(cm, utils.MC(n2.GetTileCoordinate()))
+	if err != nil {
+		return nil, err
+	}
+	if c1 != c2 {
+		return nil, status.Errorf(codes.FailedPrecondition, "input AbstractNode instances are not bounded by the same cluster")
+	}
 
-		tileBoundary, err := cluster.TileBoundary(cm, c1)
-		if err != nil {
-			return nil, err
-		}
-		tileDimension, err := cluster.TileDimension(cm, c1)
-		if err != nil {
-			return nil, err
-		}
+	tileBoundary, err := cluster.TileBoundary(cm, c1)
+	if err != nil {
+		return nil, err
+	}
+	tileDimension, err := cluster.TileDimension(cm, c1)
+	if err != nil {
+		return nil, err
+	}
 
-		p, cost, err := astar.TileMapPath(
-			tm,
-			tm.TileFromCoordinate(n1.GetTileCoordinate()),
-			tm.TileFromCoordinate(n2.GetTileCoordinate()),
-			utils.PB(tileBoundary),
-			utils.PB(tileDimension))
-		if err != nil {
-			return nil, err
-		}
+	p, cost, err := astar.TileMapPath(
+		tm,
+		tm.TileFromCoordinate(n1.GetTileCoordinate()),
+		tm.TileFromCoordinate(n2.GetTileCoordinate()),
+		utils.PB(tileBoundary),
+		utils.PB(tileDimension))
+	if err != nil {
+		return nil, err
+	}
 
-		if p != nil {
-			return &rtsspb.AbstractEdge{
-				Level:       level,
-				Source:      n1.GetTileCoordinate(),
-				Destination: n2.GetTileCoordinate(),
-				EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
-				Weight:      cost,
-			}, nil
-		}
+	if p != nil {
+		return &rtsspb.AbstractEdge{
+			Level:       cm.Val.GetLevel(),
+			Source:      n1.GetTileCoordinate(),
+			Destination: n2.GetTileCoordinate(),
+			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+			Weight:      cost,
+		}, nil
 	}
 	return nil, nil
 }

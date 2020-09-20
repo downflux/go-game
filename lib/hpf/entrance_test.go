@@ -98,7 +98,7 @@ var (
 	 *   X = 0
 	 */
 	longSemiOpenMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 4, Y: 4},
+		Dimension: &rtsspb.Coordinate{X: 2, Y: 3},
 		Tiles: []*rtsspb.Tile{
 			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},

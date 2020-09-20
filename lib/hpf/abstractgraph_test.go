@@ -7,7 +7,7 @@ import (
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/abstractedgemap"
-	// "github.com/cripplet/rts-pathing/lib/hpf/abstractnodemap"
+	"github.com/cripplet/rts-pathing/lib/hpf/abstractnodemap"
 	"github.com/cripplet/rts-pathing/lib/hpf/cluster"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
@@ -35,6 +35,27 @@ var (
 			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		},
+	}
+
+	/**
+	 *	 -
+	 *       X
+	 * Y = 0 -
+	 *   X = 0
+	 */
+	closedMapProto = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 1, Y: 3},
+		Tiles: []*rtsspb.Tile{
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
 		},
 	}
 
@@ -153,258 +174,6 @@ func abstractEdgeMapEqual(em1, em2 abstractedgemap.Map) bool {
 	return true
 }
 
-/*
-func TestBuildTieredClusterMapsError(t *testing.T) {
-	testConfigs := []struct {
-		name string
-		tm   *rtsspb.TileMap
-		l    int32
-		dim  *rtsspb.Coordinate
-	}{
-		{name: "NilMapError", tm: nil, l: 1, dim: &rtsspb.Coordinate{X: 2, Y: 2}},
-	}
-
-	for _, c := range testConfigs {
-		t.Run(c.name, func(t *testing.T) {
-			tm, err := tile.ImportTileMap(c.tm)
-			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
-			}
-
-			if _, err := buildTieredClusterMaps(tm, c.l, c.dim); err == nil {
-				t.Fatal("buildTieredClusterMaps() = _, nil, want a non-nil error")
-			}
-		})
-	}
-}
-
-func TestBuildTieredClusterMaps(t *testing.T) {
-	tm := &rtsspb.TileMap{Dimension: &rtsspb.Coordinate{X: 8, Y: 8}}
-	testConfigs := []struct {
-		name string
-		tm   *rtsspb.TileMap
-		l    int32
-		dim  *rtsspb.Coordinate
-		want map[int32]*rtsspb.ClusterMap
-	}{
-		{
-			name: "SingleTier",
-			tm:   tm,
-			l:    1,
-			dim:  &rtsspb.Coordinate{X: 4, Y: 4},
-			want: map[int32]*rtsspb.ClusterMap{
-				1: {
-					Level:     1,
-					Dimension: &rtsspb.Coordinate{X: 2, Y: 2},
-					Clusters: []*rtsspb.Cluster{
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 4},
-							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 4},
-							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "ImperfectBorderScaling",
-			tm:   tm,
-			l:    1,
-			dim:  &rtsspb.Coordinate{X: 5, Y: 5},
-			want: map[int32]*rtsspb.ClusterMap{
-				1: {
-					Level:     1,
-					Dimension: &rtsspb.Coordinate{X: 2, Y: 2},
-					Clusters: []*rtsspb.Cluster{
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 5, Y: 5},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 5},
-							TileDimension: &rtsspb.Coordinate{X: 5, Y: 3},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 5, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 3, Y: 5},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 5, Y: 5},
-							TileDimension: &rtsspb.Coordinate{X: 3, Y: 3},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "DoubleTier",
-			tm:   tm,
-			l:    2,
-			dim:  &rtsspb.Coordinate{X: 2, Y: 2},
-			want: map[int32]*rtsspb.ClusterMap{
-				1: {
-					Level:     1,
-					Dimension: &rtsspb.Coordinate{X: 4, Y: 4},
-					Clusters: []*rtsspb.Cluster{
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 2},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 4},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 3},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 6},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 2},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 2},
-							TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 4},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 3},
-							TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 6},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 2, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 2, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 2},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 2, Y: 2},
-							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 4},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 2, Y: 3},
-							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 6},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 3, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 6, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 3, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 6, Y: 2},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 3, Y: 2},
-							TileBoundary:  &rtsspb.Coordinate{X: 6, Y: 4},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 3, Y: 3},
-							TileBoundary:  &rtsspb.Coordinate{X: 6, Y: 6},
-							TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-					},
-				},
-				2: {
-					Level:     2,
-					Dimension: &rtsspb.Coordinate{X: 2, Y: 2},
-					Clusters: []*rtsspb.Cluster{
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 4},
-							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 0},
-							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
-						},
-						{
-							Coordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
-							TileBoundary:  &rtsspb.Coordinate{X: 4, Y: 4},
-							TileDimension: &rtsspb.Coordinate{X: 4, Y: 4},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	for _, c := range testConfigs {
-		t.Run(c.name, func(t *testing.T) {
-			tm, err := tile.ImportTileMap(c.tm)
-			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
-			}
-
-			want := map[int32]*cluster.ClusterMap{}
-			for l, clPB := range c.want {
-				cl, err := cluster.ImportClusterMap(clPB)
-				if err != nil {
-					t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
-				}
-				want[l] = cl
-			}
-
-			got, err := buildTieredClusterMaps(tm, c.l, c.dim)
-			if err != nil {
-				t.Fatalf("buildTieredClusterMaps() = _, %v, want = _, nil", err)
-			}
-
-			if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
-				t.Errorf("buildTieredClusterMaps() mismatch (-want +got):\n%s", diff)
-			}
-		})
-	}
-}
-*/
 func TestBuildTransitions(t *testing.T) {
 	testConfigs := []struct {
 		name string
@@ -501,79 +270,29 @@ func TestBuildTransitions(t *testing.T) {
 	}
 }
 
-/*
-func TestBuildBaseIntraEdges(t *testing.T) {
+func TestBuildIntraEdgeError(t *testing.T) {
 	testConfigs := []struct {
-		name string
-		cm   *rtsspb.ClusterMap
-		tm   *rtsspb.TileMap
-		nm   Map
-		want []*rtsspb.AbstractEdge
+		name   string
+		tm     *rtsspb.TileMap
+		cm     *rtsspb.ClusterMap
+		n1, n2 *rtsspb.AbstractNode
 	}{
-		{name: "NilCase", cm: nil, nm: nil, tm: nil, want: nil},
+		{name: "NilCaseError", tm: nil, cm: nil, n1: nil, n2: nil},
 		{
-			name: "SingleAbstractNode",
-			cm: &rtsspb.ClusterMap{
-				Level:     1,
-				Dimension: &rtsspb.Coordinate{X: 1, Y: 1},
-				Clusters: []*rtsspb.Cluster{
-					{
-						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-						TileDimension: &rtsspb.Coordinate{X: 3, Y: 3},
-					},
-				},
-			},
-			nm: map[utils.MapCoordinate]*rtsspb.AbstractNode{
-				{X: 0, Y: 0}: {
-					Level:             1,
-					ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-					TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				},
-			},
+			name: "NonAdjacentClusters",
 			tm:   simpleMapProto,
-			want: nil,
-		},
-		{
-			name: "MultiAbstractNode",
 			cm: &rtsspb.ClusterMap{
-				Level:     1,
-				Dimension: &rtsspb.Coordinate{X: 1, Y: 1},
-				Clusters: []*rtsspb.Cluster{
-					{
-						Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-						TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-						TileDimension: &rtsspb.Coordinate{X: 3, Y: 3},
-					},
-				},
+				Level:            1,
+				TileDimension:    &rtsspb.Coordinate{X: 1, Y: 2},
+				TileMapDimension: simpleMapProto.GetDimension(),
 			},
-			nm: map[utils.MapCoordinate]*rtsspb.AbstractNode{
-				{X: 0, Y: 0}: {
-					Level:             1,
-					ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-					TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				},
-
-				{X: 0, Y: 1}: {
-					Level:             1,
-					ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-					TileCoordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
-				},
+			n1: &rtsspb.AbstractNode{
+				Level:          1,
+				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
 			},
-			tm: simpleMapProto,
-			want: []*rtsspb.AbstractEdge{
-				{
-					Level:       1,
-					Source:      &rtsspb.Coordinate{X: 0, Y: 0},
-					Destination: &rtsspb.Coordinate{X: 0, Y: 1},
-					EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
-				},
-				{
-					Level:       1,
-					Source:      &rtsspb.Coordinate{X: 0, Y: 1},
-					Destination: &rtsspb.Coordinate{X: 0, Y: 0},
-					EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
-				},
+			n2: &rtsspb.AbstractNode{
+				Level:          1,
+				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 3},
 			},
 		},
 	}
@@ -590,7 +309,102 @@ func TestBuildBaseIntraEdges(t *testing.T) {
 				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
 			}
 
-			got, err := buildBaseIntraEdges(cm, tm, c.nm)
+			if got, err := buildIntraEdge(tm, cm, c.n1, c.n2); err == nil {
+				t.Fatalf("buildBaseIntraEdges() = %v, nil, want a non-nil error", got)
+			}
+		})
+	}
+}
+
+func TestBuildIntraEdge(t *testing.T) {
+	testConfigs := []struct {
+		name   string
+		tm     *rtsspb.TileMap
+		cm     *rtsspb.ClusterMap
+		n1, n2 *rtsspb.AbstractNode
+		want   *rtsspb.AbstractEdge
+	}{
+		{
+			name: "ZeroLengthEdge",
+			tm:   simpleMapProto,
+			cm: &rtsspb.ClusterMap{
+				Level:            1,
+				TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
+				TileMapDimension: simpleMapProto.GetDimension(),
+			},
+			n1: &rtsspb.AbstractNode{
+				Level:          1,
+				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+			},
+			n2: &rtsspb.AbstractNode{
+				Level:          1,
+				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+			},
+			want: &rtsspb.AbstractEdge{
+				Level:       1,
+				Source:      &rtsspb.Coordinate{X: 0, Y: 0},
+				Destination: &rtsspb.Coordinate{X: 0, Y: 0},
+				Weight:      0,
+				EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+			},
+		},
+		{
+			name: "AdjacentNode",
+			tm:   simpleMapProto,
+			cm: &rtsspb.ClusterMap{
+				Level:            1,
+				TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
+				TileMapDimension: simpleMapProto.GetDimension(),
+			},
+			n1: &rtsspb.AbstractNode{
+				Level:          1,
+				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+			},
+			n2: &rtsspb.AbstractNode{
+				Level:          1,
+				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
+			},
+			want: &rtsspb.AbstractEdge{
+				Level:       1,
+				Source:      &rtsspb.Coordinate{X: 0, Y: 0},
+				Destination: &rtsspb.Coordinate{X: 0, Y: 1},
+				Weight:      1,
+				EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+			},
+		},
+		{
+			name: "BlockedNodes",
+			tm:   closedMapProto,
+			cm: &rtsspb.ClusterMap{
+				Level:            1,
+				TileDimension:    &rtsspb.Coordinate{X: 1, Y: 3},
+				TileMapDimension: closedMapProto.GetDimension(),
+			},
+			n1: &rtsspb.AbstractNode{
+				Level:          1,
+				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+			},
+			n2: &rtsspb.AbstractNode{
+				Level:          1,
+				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 2},
+			},
+			want: nil,
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			cm, err := cluster.ImportClusterMap(c.cm)
+			if err != nil {
+				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+			}
+
+			tm, err := tile.ImportTileMap(c.tm)
+			if err != nil {
+				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+			}
+
+			got, err := buildIntraEdge(tm, cm, c.n1, c.n2)
 			if err != nil {
 				t.Fatalf("buildBaseIntraEdges() = _, %v, want = _, nil", err)
 			}
@@ -636,39 +450,38 @@ func TestBuildAbstractGraphError(t *testing.T) {
 				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
 			}
 
-			if _, err := BuildAbstractGraph(tm, c.level, c.clusterDimension); err == nil {
+			if _, err := BuildAbstractGraph(tm, c.clusterDimension, c.level); err == nil {
 				t.Error("BuildAbstractGraph() = _, nil, want a non-nil error")
 			}
 		})
 	}
 }
 
+func newAbstractNodeMap(cm *cluster.ClusterMap, nodes []*rtsspb.AbstractNode) *abstractnodemap.Map {
+	nm := &abstractnodemap.Map{
+		ClusterMap: cm,
+	}
+	for _, n := range nodes {
+		nm.Add(n)
+	}
+
+	return nm
+}
+
+func newAbstractEdgeMap(edges []*rtsspb.AbstractEdge) *abstractedgemap.Map {
+	em := &abstractedgemap.Map{}
+	for _, e := range edges {
+		em.Add(e)
+	}
+
+	return em
+}
+
 func TestBuildAbstractGraph(t *testing.T) {
 	simpleMapClusterMapProto := &rtsspb.ClusterMap{
-		Level:     1,
-		Dimension: &rtsspb.Coordinate{X: 2, Y: 2},
-		Clusters: []*rtsspb.Cluster{
-			{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-			},
-			{
-				Coordinate:    &rtsspb.Coordinate{X: 0, Y: 1},
-				TileBoundary:  &rtsspb.Coordinate{X: 0, Y: 2},
-				TileDimension: &rtsspb.Coordinate{X: 2, Y: 1},
-			},
-			{
-				Coordinate:    &rtsspb.Coordinate{X: 1, Y: 0},
-				TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 0},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 2},
-			},
-			{
-				Coordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
-				TileBoundary:  &rtsspb.Coordinate{X: 2, Y: 2},
-				TileDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-			},
-		},
+		Level:            1,
+		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
+		TileMapDimension: simpleMapProto.GetDimension(),
 	}
 	simpleMapClusterMap, err := cluster.ImportClusterMap(simpleMapClusterMapProto)
 	if err != nil {
@@ -686,103 +499,69 @@ func TestBuildAbstractGraph(t *testing.T) {
 			name:             "SimpleMap",
 			tm:               simpleMapProto,
 			level:            1,
-			clusterDimension: simpleMapClusterMap.D,
+			clusterDimension: simpleMapClusterMap.Val.GetTileDimension(),
 			want: &AbstractGraph{
 				Level: 1,
-				ClusterMap: map[int32]*cluster.ClusterMap{
-					1: simpleMapClusterMap,
+				NodeMap: []*abstractnodemap.Map{
+					newAbstractNodeMap(simpleMapClusterMap, []*rtsspb.AbstractNode{
+						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
+						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
+						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 1}},
+						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 2}},
+					}),
 				},
-				NodeMap: map[int32]Map{
-					1: {
-						utils.MapCoordinate{X: 1, Y: 1}: &rtsspb.AbstractNode{
-							Level:             1,
-							ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-							TileCoordinate:    &rtsspb.Coordinate{X: 1, Y: 1},
+				EdgeMap: []*abstractedgemap.Map{
+					newAbstractEdgeMap([]*rtsspb.AbstractEdge{
+						{
+							Level:       1,
+							Source:      &rtsspb.Coordinate{X: 1, Y: 1},
+							Destination: &rtsspb.Coordinate{X: 1, Y: 2},
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+							Weight:      1,
+						}, {
+							Level:       1,
+							Source:      &rtsspb.Coordinate{X: 1, Y: 1},
+							Destination: &rtsspb.Coordinate{X: 2, Y: 1},
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+							Weight:      1,
+						}, {
+							Level:       1,
+							Source:      &rtsspb.Coordinate{X: 1, Y: 2},
+							Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+							Weight:      1,
+						}, {
+							Level:       1,
+							Source:      &rtsspb.Coordinate{X: 1, Y: 2},
+							Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+							Weight:      1,
+						}, {
+							Level:       1,
+							Source:      &rtsspb.Coordinate{X: 2, Y: 1},
+							Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+							Weight:      1,
+						}, {
+							Level:       1,
+							Source:      &rtsspb.Coordinate{X: 2, Y: 1},
+							Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+							Weight:      1,
+						}, {
+							Level:       1,
+							Source:      &rtsspb.Coordinate{X: 2, Y: 2},
+							Destination: &rtsspb.Coordinate{X: 2, Y: 1},
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+							Weight:      1,
+						}, {
+							Level:       1,
+							Source:      &rtsspb.Coordinate{X: 2, Y: 2},
+							Destination: &rtsspb.Coordinate{X: 1, Y: 2},
+							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+							Weight:      1,
 						},
-						utils.MapCoordinate{X: 1, Y: 2}: &rtsspb.AbstractNode{
-							Level:             1,
-							ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
-							TileCoordinate:    &rtsspb.Coordinate{X: 1, Y: 2},
-						},
-						utils.MapCoordinate{X: 2, Y: 1}: &rtsspb.AbstractNode{
-							Level:             1,
-							ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
-							TileCoordinate:    &rtsspb.Coordinate{X: 2, Y: 1},
-						},
-						utils.MapCoordinate{X: 2, Y: 2}: &rtsspb.AbstractNode{
-							Level:             1,
-							ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 1},
-							TileCoordinate:    &rtsspb.Coordinate{X: 2, Y: 2},
-						},
-					},
-				},
-				EdgeMap: map[int32]Map{
-					1: {
-						utils.MapCoordinate{X: 1, Y: 1}: map[utils.MapCoordinate]*rtsspb.AbstractEdge{
-							{X: 1, Y: 2}: {
-								Level:       1,
-								Source:      &rtsspb.Coordinate{X: 1, Y: 1},
-								Destination: &rtsspb.Coordinate{X: 1, Y: 2},
-								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-								Weight:      1,
-							},
-							{X: 2, Y: 1}: {
-								Level:       1,
-								Source:      &rtsspb.Coordinate{X: 1, Y: 1},
-								Destination: &rtsspb.Coordinate{X: 2, Y: 1},
-								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-								Weight:      1,
-							},
-						},
-						utils.MapCoordinate{X: 1, Y: 2}: map[utils.MapCoordinate]*rtsspb.AbstractEdge{
-							{X: 2, Y: 2}: {
-								Level:       1,
-								Source:      &rtsspb.Coordinate{X: 1, Y: 2},
-								Destination: &rtsspb.Coordinate{X: 2, Y: 2},
-								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-								Weight:      1,
-							},
-							{X: 1, Y: 1}: {
-								Level:       1,
-								Source:      &rtsspb.Coordinate{X: 1, Y: 2},
-								Destination: &rtsspb.Coordinate{X: 1, Y: 1},
-								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-								Weight:      1,
-							},
-						},
-						utils.MapCoordinate{X: 2, Y: 1}: map[utils.MapCoordinate]*rtsspb.AbstractEdge{
-							{X: 2, Y: 2}: {
-								Level:       1,
-								Source:      &rtsspb.Coordinate{X: 2, Y: 1},
-								Destination: &rtsspb.Coordinate{X: 2, Y: 2},
-								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-								Weight:      1,
-							},
-							{X: 1, Y: 1}: {
-								Level:       1,
-								Source:      &rtsspb.Coordinate{X: 2, Y: 1},
-								Destination: &rtsspb.Coordinate{X: 1, Y: 1},
-								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-								Weight:      1,
-							},
-						},
-						utils.MapCoordinate{X: 2, Y: 2}: map[utils.MapCoordinate]*rtsspb.AbstractEdge{
-							{X: 2, Y: 1}: {
-								Level:       1,
-								Source:      &rtsspb.Coordinate{X: 2, Y: 2},
-								Destination: &rtsspb.Coordinate{X: 2, Y: 1},
-								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-								Weight:      1,
-							},
-							{X: 1, Y: 2}: {
-								Level:       1,
-								Source:      &rtsspb.Coordinate{X: 2, Y: 2},
-								Destination: &rtsspb.Coordinate{X: 1, Y: 2},
-								EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-								Weight:      1,
-							},
-						},
-					},
+					}),
 				},
 			},
 		},
@@ -795,7 +574,7 @@ func TestBuildAbstractGraph(t *testing.T) {
 				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
 			}
 
-			got, err := BuildAbstractGraph(tm, c.level, c.clusterDimension)
+			got, err := BuildAbstractGraph(tm, c.clusterDimension, c.level)
 			if err != nil {
 				t.Fatalf("BuildAbstractGraph() = _, %v, want = _, nil", err)
 			}
@@ -804,6 +583,7 @@ func TestBuildAbstractGraph(t *testing.T) {
 				c.want,
 				got,
 				cmp.Comparer(abstractEdgeMapEqual),
+				cmp.AllowUnexported(abstractedgemap.Map{}, abstractnodemap.Map{}),
 				protocmp.Transform(),
 			); diff != "" {
 				t.Errorf("BuildAbstractGraph() mismatch (-want +got):\n%s", diff)
@@ -812,38 +592,7 @@ func TestBuildAbstractGraph(t *testing.T) {
 	}
 }
 
-func TestAbstractEdgeGraphGetBySource(t *testing.T) {
-	source := &rtsspb.Coordinate{X: 0, Y: 0}
-	want := []*rtsspb.AbstractEdge{
-		{
-			Source:      source,
-			Destination: &rtsspb.Coordinate{X: 1, Y: 1},
-		},
-		{
-			Source:      source,
-			Destination: &rtsspb.Coordinate{X: 2, Y: 2},
-		},
-	}
-
-	em := Map{}
-	for _, e := range want {
-		em.Add(e)
-	}
-	em.Add(&rtsspb.AbstractEdge{
-		Source:      &rtsspb.Coordinate{X: 1, Y: 1},
-		Destination: &rtsspb.Coordinate{X: 2, Y: 2},
-	})
-
-	got, err := em.GetBySource(utils.MC(source))
-	if err != nil {
-		t.Fatalf("GetBySource() = _, %v, want = _, nil", err)
-	}
-
-	if diff := cmp.Diff(want, got, cmp.Comparer(abstractEdgeEqual), cmpopts.SortSlices(edgeLess)); diff != "" {
-		t.Errorf("GetBySource() mismatch (-want +got):\n%s", diff)
-	}
-}
-
+/*
 func TestAbstractGraphGetNeighbors(t *testing.T) {
 	const level = 1
 	clusterDimension := &rtsspb.Coordinate{X: 3, Y: 3}
