@@ -592,21 +592,18 @@ func TestBuildAbstractGraph(t *testing.T) {
 	}
 }
 
-/*
 func TestAbstractGraphGetNeighbors(t *testing.T) {
 	const level = 1
 	clusterDimension := &rtsspb.Coordinate{X: 3, Y: 3}
 	nodeCoordinate := &rtsspb.Coordinate{X: 2, Y: 1}
 	want := []*rtsspb.AbstractNode{
 		{
-			Level:             1,
-			ClusterCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-			TileCoordinate:    &rtsspb.Coordinate{X: 1, Y: 2},
+			Level:          level,
+			TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2},
 		},
 		{
-			Level:             1,
-			ClusterCoordinate: &rtsspb.Coordinate{X: 1, Y: 0},
-			TileCoordinate:    &rtsspb.Coordinate{X: 3, Y: 1},
+			Level:          level,
+			TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 1},
 		},
 	}
 
@@ -615,12 +612,12 @@ func TestAbstractGraphGetNeighbors(t *testing.T) {
 		t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
 	}
 
-	g, err := BuildAbstractGraph(tm, level, clusterDimension)
+	g, err := BuildAbstractGraph(tm, clusterDimension, level)
 	if err != nil {
 		t.Fatalf("BuildAbstractGraph() = _, %v, want = _, nil", err)
 	}
 
-	n, err := g.NodeMap[level].Get(utils.MC(nodeCoordinate))
+	n, err := g.NodeMap[listIndex(level)].Get(utils.MC(nodeCoordinate))
 	if err != nil {
 		t.Fatalf("Get() = _, %v, want = _, nil", err)
 	}
@@ -641,4 +638,3 @@ func TestAbstractGraphGetNeighbors(t *testing.T) {
 		t.Errorf("Neighbors() mismatch (-want +got):\n%s", diff)
 	}
 }
-*/

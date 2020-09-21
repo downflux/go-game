@@ -15,7 +15,7 @@ import (
 	"github.com/cripplet/rts-pathing/lib/hpf/entrance"
 	"github.com/cripplet/rts-pathing/lib/hpf/tile"
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
-	// "github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -235,4 +235,54 @@ func buildTransitions(tm *tile.TileMap, cm *cluster.ClusterMap) ([]*rtsspb.Trans
 		t.GetN2().Level = cm.Val.GetLevel()
 	}
 	return ts, nil
+}
+
+// Neighbors returns all adjacent AbstractNode instances of the same hierarchy
+// level of the input. Two AbstractNode instances are considered adjacent if
+// there exists an edge defined between the two instances. Note that the
+// instances returned here also include ephemeral AbstractNodes
+// (n.GetEphemeralKey() > 0) -- DFS should take care not to expand these
+// secondary neighbors.
+func (g *AbstractGraph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error) {
+	i := listIndex(n.GetLevel())
+	if i < 0 || i > int32(len(g.NodeMap)) || i > int32(len(g.EdgeMap)) {
+		return nil, status.Error(codes.FailedPrecondition, "invalid level specified for input")
+	}
+
+	nm := g.NodeMap[i]
+
+	node, err := nm.Get(utils.MC(n.GetTileCoordinate()))
+	if err != nil {
+		return nil, err
+	}
+	if node == nil {
+		return nil, status.Error(codes.FailedPrecondition, "cannot find specified node")
+	}
+
+	em := g.EdgeMap[i]
+	edges, err := em.GetBySource(utils.MC(node.GetTileCoordinate()))
+	if err != nil {
+		return nil, err
+	}
+
+	var neighbors []*rtsspb.AbstractNode
+	for _, e := range edges {
+		var d *rtsspb.Coordinate
+		if proto.Equal(node.GetTileCoordinate(), e.GetSource()) {
+			d = e.GetDestination()
+		} else {
+			d = e.GetSource()
+		}
+
+		t, err := nm.Get(utils.MC(d))
+		if err != nil {
+			return nil, err
+		}
+		if t == nil {
+			return nil, status.Errorf(codes.NotFound, "invalid node coordinate %v specified for edge %v", d, e)
+		}
+
+		neighbors = append(neighbors, t)
+	}
+	return neighbors, nil
 }
