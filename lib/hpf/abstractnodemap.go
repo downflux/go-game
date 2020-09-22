@@ -16,7 +16,7 @@ import (
 //
 // AbstractNodes are indexed by cluster coordinate and then Tile coordinate.
 type Map struct {
-	ClusterMap *cluster.ClusterMap
+	ClusterMap *cluster.Map
 	nodes      map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractNode
 }
 
@@ -69,7 +69,7 @@ func (nm *Map) Pop(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 
 func (nm *Map) Add(n *rtsspb.AbstractNode) error {
 	if n.GetLevel() != nm.ClusterMap.Val.GetLevel() {
-		return status.Error(codes.FailedPrecondition, "input mismatch, given AbstractNode does not have the same hierarchy level as the ClusterMap bound to the Map")
+		return status.Error(codes.FailedPrecondition, "input mismatch, given AbstractNode does not have the same hierarchy level as the cluster.Map bound to the tile.Map")
 	}
 
 	t := utils.MC(n.GetTileCoordinate())

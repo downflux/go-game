@@ -129,9 +129,9 @@ func TestH(t *testing.T) {
 }
 
 func TestGetTile(t *testing.T) {
-	simpleMap, err := ImportTileMap(simpleMapProto)
+	simpleMap, err := ImportMap(simpleMapProto)
 	if err != nil {
-		t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
 
 	testConfigs := []struct {
@@ -157,19 +157,19 @@ func tileLess(t1, t2 *Tile) bool {
 }
 
 func TestGetNeighbors(t *testing.T) {
-	simpleMap, err := ImportTileMap(simpleMapProto)
+	simpleMap, err := ImportMap(simpleMapProto)
 	if err != nil {
-		t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
 
 	testConfigs := []struct {
 		name       string
-		m          *TileMap
+		m          *Map
 		coordinate *rtsspb.Coordinate
 		want       []*Tile
 		err        error
 	}{
-		{name: "NullMapNeighbors", m: &TileMap{}, coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: nil, err: status.Errorf(codes.NotFound, "")},
+		{name: "NullMapNeighbors", m: &Map{}, coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: nil, err: status.Errorf(codes.NotFound, "")},
 		{name: "DNETileNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 100, Y: 100}, want: nil, err: status.Errorf(codes.NotFound, "")},
 		{name: "FullNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, want: []*Tile{
 			simpleMap.Tile(0, 1),

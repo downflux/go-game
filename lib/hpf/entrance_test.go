@@ -156,9 +156,9 @@ func TestBuildClusterEdgeCoordinateSliceError(t *testing.T) {
 	}
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			m, err := cluster.ImportClusterMap(c.m)
+			m, err := cluster.ImportMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			if got, err := buildClusterEdgeCoordinateSlice(m, c.c, c.d); err == nil {
@@ -228,9 +228,9 @@ func TestBuildClusterEdgeCoordinateSlice(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			m, err := cluster.ImportClusterMap(c.m)
+			m, err := cluster.ImportMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			if got, err := buildClusterEdgeCoordinateSlice(m, c.c, c.d); err != nil || !proto.Equal(got, c.want) {
@@ -499,13 +499,13 @@ func TestBuildTransitionsError(t *testing.T) {
 	}
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			m, err := tile.ImportTileMap(c.m)
+			m, err := tile.ImportMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil")
+				t.Fatalf("ImportMap() = _, %v, want = _, nil")
 			}
-			cm, err := cluster.ImportClusterMap(c.cm)
+			cm, err := cluster.ImportMap(c.cm)
 			if err != nil {
-				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil")
+				t.Fatalf("ImportMap() = _, %v, want = _, nil")
 			}
 
 			if got, err := BuildTransitions(m, cm, c.c1, c.c2); err == nil {
@@ -588,9 +588,9 @@ func TestBuildTransitionsAux(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			tileMap, err := tile.ImportTileMap(c.m)
+			tileMap, err := tile.ImportMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			if got, err := buildTransitionsAux(tileMap, c.s1, c.s2); err != nil || !cmp.Equal(got, c.want, protocmp.Transform()) {
@@ -662,13 +662,13 @@ func TestBuildTransitions(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			m, err := tile.ImportTileMap(c.m)
+			m, err := tile.ImportMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
-			cm, err := cluster.ImportClusterMap(c.cm)
+			cm, err := cluster.ImportMap(c.cm)
 			if err != nil {
-				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			if got, err := BuildTransitions(m, cm, utils.MC(c.c1), utils.MC(c.c2)); err != nil || !cmp.Equal(got, c.want, protocmp.Transform()) {
@@ -771,9 +771,9 @@ func TestOnClusterEdge(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			m, err := cluster.ImportClusterMap(c.m)
+			m, err := cluster.ImportMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			if got := OnClusterEdge(m, utils.MC(c.c), utils.MC(c.t)); got != c.want {

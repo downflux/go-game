@@ -1,4 +1,4 @@
-// Package abstractgraph constructs and manages the abstract node space corresponding to a TileMap object.
+// Package abstractgraph constructs and manages the abstract node space corresponding to a tile.Map object.
 // This package will be used ast he underlying topology for hiearchical A* searching.
 package abstractgraph
 
@@ -65,12 +65,12 @@ func abstractHierarchyLevel(i int32) int32 {
 	return i + 1
 }
 
-// BuildAbstractGraph build a higher-level representation of a TileMap
+// BuildAbstractGraph build a higher-level representation of a tile.Map
 // populated with information about how to travel between different subsections
 // between tiles. The level specified in input represents the number of
 // abstractions that should be built for this map (l > 1 is useful for very,
 // very large maps), and the tileDimension represents a subsection size.
-func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, level int32) (*AbstractGraph, error) {
+func BuildAbstractGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*AbstractGraph, error) {
 	if level < 1 {
 		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
 	}
@@ -80,11 +80,11 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 		return nil, notImplemented
 	}
 
-	// Highest level ClusterMap should still have more than one Cluster,
+	// Highest level cluster.Map should still have more than one Cluster,
 	// otherwise we'll be routing units to the edge first before going back
 	// inwards.
 	if (int32(math.Pow(float64(tileDimension.GetX()), float64(level))) >= tm.D.GetX()) || (int32(math.Pow(float64(tileDimension.GetY()), float64(level))) >= tm.D.GetY()) {
-		return nil, status.Error(codes.FailedPrecondition, "given tileDimension and level will result in too large a ClusterMap")
+		return nil, status.Error(codes.FailedPrecondition, "given tileDimension and level will result in too large a cluster.Map")
 	}
 
 	// This does not add any value for an AbstractGraph.
@@ -100,7 +100,7 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 	// mutated later on by passing the AbstractGraph object as a function
 	// arg.
 	for i := int32(0); i < level; i++ {
-		cm, err := cluster.BuildClusterMap(tm.D, &rtsspb.Coordinate{
+		cm, err := cluster.BuildMap(tm.D, &rtsspb.Coordinate{
 			X: int32(math.Pow(float64(tileDimension.GetX()), float64(abstractHierarchyLevel(i)))),
 			Y: int32(math.Pow(float64(tileDimension.GetY()), float64(abstractHierarchyLevel(i)))),
 		}, abstractHierarchyLevel(i))
@@ -115,7 +115,7 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 	}
 
 	// Build the Tile-Tile edges which connect between two adjacent
-	// clusters in the L-1 ClusterMap object and store this data into the
+	// clusters in the L-1 cluster.Map object and store this data into the
 	// AbstractGraph.
 	transitions, err := buildTransitions(tm, g.NodeMap[listIndex(1)].ClusterMap)
 	if err != nil {
@@ -133,7 +133,7 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 		})
 	}
 
-	// Build Tile-Tile edges within a cluster of an L-1 ClusterMap.
+	// Build Tile-Tile edges within a cluster of an L-1 cluster.Map.
 	for _, c := range cluster.Iterator(g.NodeMap[listIndex(1)].ClusterMap) {
 		nodes, err := g.NodeMap[listIndex(1)].GetByCluster(c)
 		if err != nil {
@@ -164,9 +164,9 @@ func BuildAbstractGraph(tm *tile.TileMap, tileDimension *rtsspb.Coordinate, leve
 
 // buildIntraEdge constructs a single AbstractEdge instance with the correct
 // traversal cost between two underlying AbstractNode objects. The cost
-// function is calculated from the TileMap entity, which holds information
+// function is calculated from the tile.Map entity, which holds information
 // on e.g. the terrain information of the map.
-func buildIntraEdge(tm *tile.TileMap, cm *cluster.ClusterMap, n1, n2 *rtsspb.AbstractNode) (*rtsspb.AbstractEdge, error) {
+func buildIntraEdge(tm *tile.Map, cm *cluster.Map, n1, n2 *rtsspb.AbstractNode) (*rtsspb.AbstractEdge, error) {
 	c1, err := cluster.ClusterCoordinateFromTileCoordinate(cm, utils.MC(n1.GetTileCoordinate()))
 	if err != nil {
 		return nil, err
@@ -210,9 +210,9 @@ func buildIntraEdge(tm *tile.TileMap, cm *cluster.ClusterMap, n1, n2 *rtsspb.Abs
 	return nil, nil
 }
 
-// buildTransitions iterates over the TileMap for the input ClusterMap overlay
+// buildTransitions iterates over the tile.Map for the input cluster.Map overlay
 // and look for adjacent, open nodes along cluster-cluster borders.
-func buildTransitions(tm *tile.TileMap, cm *cluster.ClusterMap) ([]*rtsspb.Transition, error) {
+func buildTransitions(tm *tile.Map, cm *cluster.Map) ([]*rtsspb.Transition, error) {
 	var ts []*rtsspb.Transition
 	for _, c1 := range cluster.Iterator(cm) {
 		neighbors, err := cluster.Neighbors(cm, c1)

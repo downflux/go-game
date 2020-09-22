@@ -162,9 +162,9 @@ func TestAStarSearchError(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			tm, err := tile.ImportTileMap(c.m)
+			tm, err := tile.ImportMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = %v, want = nil", err)
+				t.Fatalf("ImportMap() = %v, want = nil", err)
 			}
 
 			if _, _, err = TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest), c.boundary, c.dimension); err == nil {
@@ -250,9 +250,9 @@ func TestAStarSearch(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			tm, err := tile.ImportTileMap(c.m)
+			tm, err := tile.ImportMap(c.m)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = %v, want = nil", err)
+				t.Fatalf("ImportMap() = %v, want = nil", err)
 			}
 
 			tiles, cost, err := TileMapPath(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest), c.boundary, c.dimension)

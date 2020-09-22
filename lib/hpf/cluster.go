@@ -30,15 +30,15 @@ var (
 	}
 )
 
-// ClusterMap is a logical abstraction of an underlying TileMap. A TileMap may
+// Map is a logical abstraction of an underlying tile.Map. A tile.Map may
 // be broken up into separate rectangular partitions, where the cost of a
 // partition-partition move is known. This will save cycles when iterating over
 // large maps.
-type ClusterMap struct {
+type Map struct {
 	Val *rtsspb.ClusterMap
 }
 
-func Dimension(m *ClusterMap) *rtsspb.Coordinate {
+func Dimension(m *Map) *rtsspb.Coordinate {
 	return &rtsspb.Coordinate{
 		X: int32(math.Ceil(
 			float64(m.Val.GetTileMapDimension().GetX()) / float64(m.Val.GetTileDimension().GetX()))),
@@ -47,15 +47,15 @@ func Dimension(m *ClusterMap) *rtsspb.Coordinate {
 	}
 }
 
-func ValidateClusterInRange(m *ClusterMap, c utils.MapCoordinate) error {
+func ValidateClusterInRange(m *Map, c utils.MapCoordinate) error {
 	dim := utils.MC(Dimension(m))
 	if 0 > c.X || c.X >= dim.X || 0 > c.Y || c.Y >= dim.Y {
-		return status.Errorf(codes.OutOfRange, "invalid cluster coordinate %v for ClusterMap", c)
+		return status.Errorf(codes.OutOfRange, "invalid cluster coordinate %v for Map", c)
 	}
 	return nil
 }
 
-func ClusterCoordinateFromTileCoordinate(m *ClusterMap, t utils.MapCoordinate) (utils.MapCoordinate, error) {
+func ClusterCoordinateFromTileCoordinate(m *Map, t utils.MapCoordinate) (utils.MapCoordinate, error) {
 	if t.X >= m.Val.GetTileMapDimension().GetX() || t.Y >= m.Val.GetTileMapDimension().GetY() {
 		return utils.MapCoordinate{}, status.Errorf(codes.OutOfRange, "input Tile coordinate %v is outside the map boundary %v", t, m.Val.GetTileMapDimension())
 	}
@@ -66,27 +66,27 @@ func ClusterCoordinateFromTileCoordinate(m *ClusterMap, t utils.MapCoordinate) (
 	}, nil
 }
 
-// ImportClusterMap constructs a ClusterMap object from the given protobuf.
-func ImportClusterMap(pb *rtsspb.ClusterMap) (*ClusterMap, error) {
-	return &ClusterMap{
+// ImportMap constructs a Map object from the given protobuf.
+func ImportMap(pb *rtsspb.ClusterMap) (*Map, error) {
+	return &Map{
 		Val: pb,
 	}, nil
 }
 
-// ExportClusterMap constructs a protobuf from the given ClusterMap object.
-func ExportClusterMap(m *ClusterMap) (*rtsspb.ClusterMap, error) {
+// ExportMap constructs a protobuf from the given Map object.
+func ExportMap(m *Map) (*rtsspb.ClusterMap, error) {
 	return nil, notImplemented
 }
 
 // IsAdjacent checks if two clusters are next to each other in the same
-// ClusterMap.
-func IsAdjacent(m *ClusterMap, c1, c2 utils.MapCoordinate) bool {
+// Map.
+func IsAdjacent(m *Map, c1, c2 utils.MapCoordinate) bool {
 	return math.Abs(float64(c2.X-c1.X))+math.Abs(float64(c2.Y-c1.Y)) == 1
 }
 
 // TileBoundary returns the starting X, Y coordinates of the specified
 // cluster coordinate.
-func TileBoundary(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, error) {
+func TileBoundary(m *Map, c utils.MapCoordinate) (utils.MapCoordinate, error) {
 	if err := ValidateClusterInRange(m, c); err != nil {
 		return utils.MapCoordinate{}, err
 	}
@@ -97,7 +97,7 @@ func TileBoundary(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, er
 }
 
 // TileDimension calculates the length of the specified cluster coordinate.
-func TileDimension(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, error) {
+func TileDimension(m *Map, c utils.MapCoordinate) (utils.MapCoordinate, error) {
 	if err := ValidateClusterInRange(m, c); err != nil {
 		return utils.MapCoordinate{}, err
 	}
@@ -111,7 +111,7 @@ func TileDimension(m *ClusterMap, c utils.MapCoordinate) (utils.MapCoordinate, e
 	}, nil
 }
 
-func Iterator(m *ClusterMap) []utils.MapCoordinate {
+func Iterator(m *Map) []utils.MapCoordinate {
 	var cs []utils.MapCoordinate
 	for x := int32(0); x < Dimension(m).GetX(); x++ {
 		for y := int32(0); y < Dimension(m).GetY(); y++ {
@@ -123,7 +123,7 @@ func Iterator(m *ClusterMap) []utils.MapCoordinate {
 
 // CoordinateInCluster checks if the given coordinate is bounded by the input
 // cluster coordinate c.
-func CoordinateInCluster(m *ClusterMap, c, t utils.MapCoordinate) bool {
+func CoordinateInCluster(m *Map, c, t utils.MapCoordinate) bool {
 	tileBoundary, err := TileBoundary(m, c)
 	if err != nil {
 		return false
@@ -139,7 +139,7 @@ func CoordinateInCluster(m *ClusterMap, c, t utils.MapCoordinate) bool {
 
 // Neighbors returns the adjacent cluster coordinates given a cluster
 // coordinate.
-func Neighbors(m *ClusterMap, c utils.MapCoordinate) ([]utils.MapCoordinate, error) {
+func Neighbors(m *Map, c utils.MapCoordinate) ([]utils.MapCoordinate, error) {
 	if err := ValidateClusterInRange(m, c); err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func Neighbors(m *ClusterMap, c utils.MapCoordinate) ([]utils.MapCoordinate, err
 
 // GetRelativeDirection will return the direction of travel from c to other.
 // c and other must be immediately adjacent to one another.
-func GetRelativeDirection(m *ClusterMap, c, other utils.MapCoordinate) (rtscpb.Direction, error) {
+func GetRelativeDirection(m *Map, c, other utils.MapCoordinate) (rtscpb.Direction, error) {
 	if !IsAdjacent(m, c, other) {
 		return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "input clusters are not immediately adjacent to one another")
 	}
@@ -176,16 +176,16 @@ func GetRelativeDirection(m *ClusterMap, c, other utils.MapCoordinate) (rtscpb.D
 	return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "clusters which are immediately adjacent are somehow not traversible via cardinal directions")
 }
 
-// BuildClusterMap constructs a ClusterMap instance which will be used to
-// organize and group Tile objects in the underlying TileMap. ClusterMap does
-// not link to the actual Tile -- we need to manually pass the TileMap object
+// BuildMap constructs a Map instance which will be used to
+// organize and group Tile objects in the underlying tile.Map. Map does
+// not link to the actual Tile -- we need to manually pass the tile.Map object
 // along when looking up the Tile by a given coordinate.
-func BuildClusterMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate, level int32) (*ClusterMap, error) {
+func BuildMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate, level int32) (*Map, error) {
 	if level < 1 {
 		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
 	}
 
-	return &ClusterMap{
+	return &Map{
 		Val: &rtsspb.ClusterMap{
 			Level:            level,
 			TileDimension:    tileDimension,

@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	trivialClusterMap, _ = cluster.ImportClusterMap(
+	trivialClusterMap, _ = cluster.ImportMap(
 		&rtsspb.ClusterMap{
 			TileDimension:    &rtsspb.Coordinate{X: 1, Y: 1},
 			TileMapDimension: &rtsspb.Coordinate{X: 1, Y: 1},
@@ -52,12 +52,12 @@ func TestMapGet(t *testing.T) {
 }
 
 func TestMapGetByCluster(t *testing.T) {
-	cm, err := cluster.ImportClusterMap(&rtsspb.ClusterMap{
+	cm, err := cluster.ImportMap(&rtsspb.ClusterMap{
 		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
 		TileMapDimension: &rtsspb.Coordinate{X: 4, Y: 4},
 	})
 	if err != nil {
-		t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
 
 	m := Map{ClusterMap: cm}

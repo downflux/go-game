@@ -52,12 +52,12 @@ func H(src, dst *Tile) (float64, error) {
 	return math.Pow(float64(dst.X()-src.X()), 2) + math.Pow(float64(dst.Y()-src.Y()), 2), nil
 }
 
-// TileMap is a 2D hashmap of the terrain map file.
+// Map is a 2D hashmap of the terrain map file.
 // Coordinates are expected to be accessed in (x, y) order.
 //
-// TileMap implements astar.Graph.
-type TileMap struct {
-	// D is the dimension of the TileMap, i.e. the number of Tile objects
+// Map implements astar.Graph.
+type Map struct {
+	// D is the dimension of the Map, i.e. the number of Tile objects
 	// in each direction.
 	D *rtsspb.Coordinate
 
@@ -69,16 +69,16 @@ type TileMap struct {
 	C map[rtscpb.TerrainType]float64
 }
 
-// ImportTileMap constructs a new TileMap object from the input protobuf.
-// List of TileMap.Tiles may be sparse.
-func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
+// ImportMap constructs a new Map object from the input protobuf.
+// List of Map.Tiles may be sparse.
+func ImportMap(pb *rtsspb.TileMap) (*Map, error) {
 	m := make(map[utils.MapCoordinate]*Tile)
 	tc := make(map[rtscpb.TerrainType]float64)
 
 	for _, c := range pb.GetTerrainCosts() {
 		tc[c.GetTerrainType()] = c.GetCost()
 	}
-	tm := &TileMap{
+	tm := &Map{
 		D: pb.GetDimension(),
 		M: m,
 		C: tc,
@@ -95,7 +95,7 @@ func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
 	for x := int32(0); x < tm.D.GetX(); x++ {
 		for y := int32(0); y < tm.D.GetY(); y++ {
 			if tm.Tile(x, y) == nil {
-				return nil, status.Errorf(codes.InvalidArgument, "TileMap does not fully specify all tiles within the given map dimensions")
+				return nil, status.Errorf(codes.InvalidArgument, "Map does not fully specify all tiles within the given map dimensions")
 			}
 		}
 	}
@@ -103,25 +103,25 @@ func ImportTileMap(pb *rtsspb.TileMap) (*TileMap, error) {
 	return tm, nil
 }
 
-// ExportTileMap converts an internal TileMap object into an exportable
+// ExportMap converts an internal Map object into an exportable
 // protobuf. Certain tiles may be ignored to be reconstructed later.
-func ExportTileMap(m *TileMap) (*rtsspb.TileMap, error) {
+func ExportMap(m *Map) (*rtsspb.TileMap, error) {
 	return nil, notImplemented
 }
 
 // Tile returns the Tile object from the input coordinates.
-func (m *TileMap) Tile(x, y int32) *Tile {
+func (m *Map) Tile(x, y int32) *Tile {
 	return m.M[utils.MapCoordinate{X: x, Y: y}]
 }
 
 // TileFromCoordinate returns the Tile object from the input Coordinate
 // protobuf.
-func (m *TileMap) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
+func (m *Map) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
 	return m.Tile(c.GetX(), c.GetY())
 }
 
 // Neighbors returns the adjacent Tiles of an input Tile object.
-func (m *TileMap) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
+func (m *Map) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 	src := m.TileFromCoordinate(coordinate)
 	if src == nil {
 		return nil, status.Error(

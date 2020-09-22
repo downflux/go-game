@@ -252,14 +252,14 @@ func TestBuildTransitions(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			cm, err := cluster.ImportClusterMap(c.cm)
+			cm, err := cluster.ImportMap(c.cm)
 			if err != nil {
-				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
-			tm, err := tile.ImportTileMap(c.tm)
+			tm, err := tile.ImportMap(c.tm)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			got, err := buildTransitions(tm, cm)
@@ -299,14 +299,14 @@ func TestBuildIntraEdgeError(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			cm, err := cluster.ImportClusterMap(c.cm)
+			cm, err := cluster.ImportMap(c.cm)
 			if err != nil {
-				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
-			tm, err := tile.ImportTileMap(c.tm)
+			tm, err := tile.ImportMap(c.tm)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			if got, err := buildIntraEdge(tm, cm, c.n1, c.n2); err == nil {
@@ -394,14 +394,14 @@ func TestBuildIntraEdge(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			cm, err := cluster.ImportClusterMap(c.cm)
+			cm, err := cluster.ImportMap(c.cm)
 			if err != nil {
-				t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
-			tm, err := tile.ImportTileMap(c.tm)
+			tm, err := tile.ImportMap(c.tm)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			got, err := buildIntraEdge(tm, cm, c.n1, c.n2)
@@ -445,9 +445,9 @@ func TestBuildAbstractGraphError(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			tm, err := tile.ImportTileMap(c.tm)
+			tm, err := tile.ImportMap(c.tm)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			if _, err := BuildAbstractGraph(tm, c.clusterDimension, c.level); err == nil {
@@ -457,7 +457,7 @@ func TestBuildAbstractGraphError(t *testing.T) {
 	}
 }
 
-func newAbstractNodeMap(cm *cluster.ClusterMap, nodes []*rtsspb.AbstractNode) *abstractnodemap.Map {
+func newAbstractNodeMap(cm *cluster.Map, nodes []*rtsspb.AbstractNode) *abstractnodemap.Map {
 	nm := &abstractnodemap.Map{
 		ClusterMap: cm,
 	}
@@ -483,9 +483,9 @@ func TestBuildAbstractGraph(t *testing.T) {
 		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
 		TileMapDimension: simpleMapProto.GetDimension(),
 	}
-	simpleMapClusterMap, err := cluster.ImportClusterMap(simpleMapClusterMapProto)
+	simpleMapClusterMap, err := cluster.ImportMap(simpleMapClusterMapProto)
 	if err != nil {
-		t.Fatalf("ImportClusterMap() = _, %v, want = _, nil", err)
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
 
 	testConfigs := []struct {
@@ -569,9 +569,9 @@ func TestBuildAbstractGraph(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			tm, err := tile.ImportTileMap(c.tm)
+			tm, err := tile.ImportMap(c.tm)
 			if err != nil {
-				t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
 			got, err := BuildAbstractGraph(tm, c.clusterDimension, c.level)
@@ -607,9 +607,9 @@ func TestAbstractGraphGetNeighbors(t *testing.T) {
 		},
 	}
 
-	tm, err := tile.ImportTileMap(largeMapProto)
+	tm, err := tile.ImportMap(largeMapProto)
 	if err != nil {
-		t.Fatalf("ImportTileMap() = _, %v, want = _, nil", err)
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
 
 	g, err := BuildAbstractGraph(tm, clusterDimension, level)

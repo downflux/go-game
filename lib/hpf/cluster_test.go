@@ -7,12 +7,10 @@ import (
 	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/cripplet/rts-pathing/lib/hpf/utils"
-	//	"github.com/google/go-cmp/cmp"
-	//	"google.golang.org/protobuf/testing/protocmp"
 )
 
 var (
-	largeClusterMap = &ClusterMap{
+	largeClusterMap = &Map{
 		Val: &rtsspb.ClusterMap{
 			Level:            1,
 			TileDimension:    &rtsspb.Coordinate{X: 10, Y: 10},

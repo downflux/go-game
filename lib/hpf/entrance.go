@@ -50,18 +50,18 @@ var (
 //   1. immediately adjacent to one another, and
 //   2. are in different Clusters.
 // See Botea 2004 for more information.
-func BuildTransitions(tm *tile.TileMap, cm *cluster.ClusterMap, c1, c2 utils.MapCoordinate) ([]*rtsspb.Transition, error) {
+func BuildTransitions(tm *tile.Map, cm *cluster.Map, c1, c2 utils.MapCoordinate) ([]*rtsspb.Transition, error) {
 	if tm == nil {
-		return nil, status.Error(codes.FailedPrecondition, "input TileMap reference must be non-nil")
+		return nil, status.Error(codes.FailedPrecondition, "input tile.Map reference must be non-nil")
 	}
 	if cm == nil || cm.Val == nil {
-		return nil, status.Error(codes.FailedPrecondition, "input ClusterMap reference must be non-nil")
+		return nil, status.Error(codes.FailedPrecondition, "input cluster.Map reference must be non-nil")
 	}
 	if !cluster.IsAdjacent(cm, c1, c2) {
 		return nil, status.Errorf(codes.FailedPrecondition, "clusters must be immediately adjacent to one another")
 	}
 	if !proto.Equal(tm.D, cm.Val.GetTileMapDimension()) {
-		return nil, status.Errorf(codes.FailedPrecondition, "TileMap and ClusterMap dimensions do not agree")
+		return nil, status.Errorf(codes.FailedPrecondition, "tile.Map and cluster.Map dimensions do not agree")
 	}
 	for _, clusterCoord := range []utils.MapCoordinate{c1, c2} {
 		if err := cluster.ValidateClusterInRange(cm, clusterCoord); err != nil {
@@ -123,7 +123,7 @@ func sliceContains(s *rtsspb.CoordinateSlice, t utils.MapCoordinate) (bool, erro
 
 // OnClusterEdge checks if the given coordinate coord falls on the edge of a
 // cluster coordinate.
-func OnClusterEdge(m *cluster.ClusterMap, clusterCoord utils.MapCoordinate, coord utils.MapCoordinate) bool {
+func OnClusterEdge(m *cluster.Map, clusterCoord utils.MapCoordinate, coord utils.MapCoordinate) bool {
 	if err := cluster.ValidateClusterInRange(m, clusterCoord); err != nil {
 		return false
 	}
@@ -158,7 +158,7 @@ func OnClusterEdge(m *cluster.ClusterMap, clusterCoord utils.MapCoordinate, coor
 // representing the contiguous edge of a Cluster in the specified direction.
 // All Tile t on the edge are between the start and end coordinates,
 // i.e. start <= t <= end with usual 2D coordinate comparison.
-func buildClusterEdgeCoordinateSlice(m *cluster.ClusterMap, c utils.MapCoordinate, d rtscpb.Direction) (*rtsspb.CoordinateSlice, error) {
+func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rtscpb.Direction) (*rtsspb.CoordinateSlice, error) {
 	var start *rtsspb.Coordinate
 	var length int32
 
@@ -260,7 +260,7 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]
 
 // buildTransitionsAux constructs the list of Transition nodes given the
 // corresponding edges of two adjacent Cluster objects.
-func buildTransitionsAux(m *tile.TileMap, s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb.Transition, error) {
+func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb.Transition, error) {
 	if err := verifyCoordinateSlices(s1, s2); err != nil {
 		return nil, err
 	}
