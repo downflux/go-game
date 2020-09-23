@@ -10,7 +10,7 @@ import (
 
 	"github.com/minkezhang/rts-pathing/lib/hpf/abstractedgemap"
 	"github.com/minkezhang/rts-pathing/lib/hpf/abstractnodemap"
-	"github.com/minkezhang/rts-pathing/lib/hpf/astar"
+	"github.com/minkezhang/rts-pathing/lib/hpf/tileastar"
 	"github.com/minkezhang/rts-pathing/lib/hpf/cluster"
 	"github.com/minkezhang/rts-pathing/lib/hpf/entrance"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
@@ -188,7 +188,7 @@ func buildIntraEdge(tm *tile.Map, cm *cluster.Map, n1, n2 *rtsspb.AbstractNode) 
 		return nil, err
 	}
 
-	p, cost, err := astar.TileMapPath(
+	p, cost, err := tileastar.Path(
 		tm,
 		tm.TileFromCoordinate(n1.GetTileCoordinate()),
 		tm.TileFromCoordinate(n2.GetTileCoordinate()),

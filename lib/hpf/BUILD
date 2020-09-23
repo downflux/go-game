@@ -2,9 +2,9 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test", "go_binary")
 
 go_library(
-    name = "astar",
-    srcs = ["astar.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/astar",
+    name = "tileastar",
+    srcs = ["tileastar.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/tileastar",
     deps = [
         ":tile",
         "//lib/proto:constants_go_proto",
@@ -16,10 +16,10 @@ go_library(
 )
 
 go_test(
-    name = "astar_test",
-    srcs = ["astar_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/astar_test",
-    embed = [":astar"],
+    name = "tileastar_test",
+    srcs = ["tileastar_test.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/tileastar_test",
+    embed = [":tileastar"],
     deps = [
 	":tile",
 	"//lib/proto:constants_go_proto",
@@ -188,7 +188,7 @@ go_library(
     deps = [
         ":abstractedgemap",
 	":abstractnodemap",
-	":astar",
+	":tileastar",
 	":cluster",
 	":entrance",
         ":utils",

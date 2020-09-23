@@ -1,6 +1,5 @@
-// Package astar defines fzipp.astar.Graph implementations for tile.Map and
-// AbstractGraph A* search.
-package astar
+// Package tileastar defines fzipp.astar.Graph implementations for tile.Map.
+package tileastar
 
 import (
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
@@ -12,20 +11,20 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// tileMapD provides a shim for the tile.Map neighbor distance function.
-func tileMapD(c map[rtscpb.TerrainType]float64, src, dest fastar.Node) float64 {
+// dFunc provides a shim for the tile.Map neighbor distance function.
+func dFunc(c map[rtscpb.TerrainType]float64, src, dest fastar.Node) float64 {
 	cost, _ := tile.D(c, src.(*tile.Tile), dest.(*tile.Tile))
 	return cost
 }
 
-// tileMapH provides a shim for the tile.Map heuristic function.
-func tileMapH(src, dest fastar.Node) float64 {
+// hFunc provides a shim for the tile.Map heuristic function.
+func hFunc(src, dest fastar.Node) float64 {
 	cost, _ := tile.H(src.(*tile.Tile), dest.(*tile.Tile))
 	return cost
 }
 
-// tileMapGraph implements fzipp.astar.Graph for the tile.Map struct.
-type tileMapGraph struct {
+// graph implements fzipp.astar.Graph for the tile.Map struct.
+type graph struct {
 	m                   *tile.Map
 	boundary, dimension *rtsspb.Coordinate
 }
@@ -38,7 +37,7 @@ func boundedBy(a, b, c *rtsspb.Coordinate) bool {
 }
 
 // Neighbours returns neighboring Tile objects from a tile.Map.
-func (t tileMapGraph) Neighbours(n fastar.Node) []fastar.Node {
+func (t graph) Neighbours(n fastar.Node) []fastar.Node {
 	neighbors, _ := t.m.Neighbors(n.(*tile.Tile).Val.GetCoordinate())
 	var res []fastar.Node
 	for _, n := range neighbors {
@@ -53,7 +52,7 @@ func (t tileMapGraph) Neighbours(n fastar.Node) []fastar.Node {
 	return res
 }
 
-// TileMapPath returns pathing information for two Tile objects embedded in a
+// Path returns pathing information for two Tile objects embedded in a
 // tile.Map. This function returns a (path, cost, error) tuple, where path is a
 // list of Tile objects and cost is the actual cost as calculated by calling D
 // over the returned path. An empty path indicates there is no path found
@@ -64,7 +63,7 @@ func (t tileMapGraph) Neighbours(n fastar.Node) []fastar.Node {
 // bounding box as defined by the tile.Map should be used here. The lower bound
 // of the bounding box is defined as the boundary Coordinate, and the size of
 // the box is specified by the dimension Coordinate.
-func TileMapPath(m *tile.Map, src, dest *tile.Tile, boundary, dimension *rtsspb.Coordinate) ([]*tile.Tile, float64, error) {
+func Path(m *tile.Map, src, dest *tile.Tile, boundary, dimension *rtsspb.Coordinate) ([]*tile.Tile, float64, error) {
 	if m == nil {
 		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil Map input")
 	}
@@ -76,9 +75,9 @@ func TileMapPath(m *tile.Map, src, dest *tile.Tile, boundary, dimension *rtsspb.
 	}
 
 	d := func(a, b fastar.Node) float64 {
-		return tileMapD(m.C, a, b)
+		return dFunc(m.C, a, b)
 	}
-	nodes := fastar.FindPath(tileMapGraph{m: m, boundary: boundary, dimension: dimension}, src, dest, d, tileMapH)
+	nodes := fastar.FindPath(graph{m: m, boundary: boundary, dimension: dimension}, src, dest, d, hFunc)
 
 	var tiles []*tile.Tile
 	for _, node := range nodes {
