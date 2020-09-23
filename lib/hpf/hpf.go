@@ -5,5 +5,5 @@ package hpf
 import (
 // "math"
 // astar "github.com/beefsack/go-astar"
-//	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
+//	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
 )

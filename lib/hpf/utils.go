@@ -2,7 +2,7 @@
 package utils
 
 import (
-	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
+	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 )
 
 // MapCoordinate is a hashable convenience struct used as map keys.

@@ -1,4 +1,4 @@
-workspace(name = "cripplet_rts_pathing")
+workspace(name = "minkezhang_rts_pathing")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -71,7 +71,7 @@ go_repository(
 go_repository(
     name = "org_golang_google_protobuf",
     importpath = "google.golang.org/protobuf",
-    # TODO(cripplet): Monitor this repo for when we can move away from ptypes.
+    # TODO(minkezhang): Monitor this repo for when we can move away from ptypes.
     commit = "5c3dd7024aed895adfe053f26b5a479e991cbca9",  # v1.24.0
 )
 

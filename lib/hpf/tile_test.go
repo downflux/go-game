@@ -3,10 +3,10 @@ package tile
 import (
 	"testing"
 
-	rtscpb "github.com/cripplet/rts-pathing/lib/proto/constants_go_proto"
-	rtsspb "github.com/cripplet/rts-pathing/lib/proto/structs_go_proto"
+	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
+	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 
-	"github.com/cripplet/rts-pathing/lib/hpf/utils"
+	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/grpc/codes"
