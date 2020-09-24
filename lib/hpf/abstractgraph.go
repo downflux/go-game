@@ -25,17 +25,17 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-// AbstractGraph contains the necessary state information to make an efficient
+// Graph contains the necessary state information to make an efficient
 // path planning call on very large maps via hierarchical A* search, as
 // described in Botea 2004.
-type AbstractGraph struct {
+type Graph struct {
 	// Level is the maximum hierarchy of AbstractNodes in this graph;
 	// this is a positive, non-zero integer. The 0th level here loosely
 	// refers to the underlying base map.
 	Level int32
 
 	// NodeMap contains a Level: abstractnodemap.Map dict representing the
-	// AbstractNodes per Level. As per AbstractGraph.ClusterMap, there
+	// AbstractNodes per Level. As per Graph.ClusterMap, there
 	// is a corresponding abstractnodemap.Map object per level. Nodes
 	// within a specific abstractnodemap.Map may move between levels, and
 	// may be deleted when the underlying terrain changes.
@@ -54,23 +54,23 @@ type AbstractGraph struct {
 }
 
 // listIndex transforms a proto abstract hierarchy L into the appropriate
-// addressable index for an AbstractGraph.
+// addressable index for an Graph.
 func listIndex(l int32) int32 {
 	return l - 1
 }
 
-// abstractHierarchyLevel transforms an AbstractGraph object index into a proto
+// abstractHierarchyLevel transforms an Graph object index into a proto
 // abstract hierarchy L.
 func abstractHierarchyLevel(i int32) int32 {
 	return i + 1
 }
 
-// BuildAbstractGraph build a higher-level representation of a tile.Map
+// BuildGraph build a higher-level representation of a tile.Map
 // populated with information about how to travel between different subsections
 // between tiles. The level specified in input represents the number of
 // abstractions that should be built for this map (l > 1 is useful for very,
 // very large maps), and the tileDimension represents a subsection size.
-func BuildAbstractGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*AbstractGraph, error) {
+func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*Graph, error) {
 	if level < 1 {
 		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
 	}
@@ -87,17 +87,17 @@ func BuildAbstractGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level in
 		return nil, status.Error(codes.FailedPrecondition, "given tileDimension and level will result in too large a cluster.Map")
 	}
 
-	// This does not add any value for an AbstractGraph.
+	// This does not add any value for an Graph.
 	if tileDimension.GetX() <= 1 && tileDimension.GetY() <= 1 {
 		return nil, status.Error(codes.FailedPrecondition, "invalid tileDimension")
 	}
 
-	g := &AbstractGraph{
+	g := &Graph{
 		Level: level,
 	}
 
 	// Create all node and edge map instances. These will be referenced and
-	// mutated later on by passing the AbstractGraph object as a function
+	// mutated later on by passing the Graph object as a function
 	// arg.
 	for i := int32(0); i < level; i++ {
 		cm, err := cluster.BuildMap(tm.D, &rtsspb.Coordinate{
@@ -116,7 +116,7 @@ func BuildAbstractGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level in
 
 	// Build the Tile-Tile edges which connect between two adjacent
 	// clusters in the L-1 cluster.Map object and store this data into the
-	// AbstractGraph.
+	// Graph.
 	transitions, err := buildTransitions(tm, g.NodeMap[listIndex(1)].ClusterMap)
 	if err != nil {
 		return nil, err
@@ -243,7 +243,7 @@ func buildTransitions(tm *tile.Map, cm *cluster.Map) ([]*rtsspb.Transition, erro
 // instances returned here also include ephemeral AbstractNodes
 // (n.GetEphemeralKey() > 0) -- DFS should take care not to expand these
 // secondary neighbors.
-func (g *AbstractGraph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error) {
+func (g *Graph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error) {
 	i := listIndex(n.GetLevel())
 	if i < 0 || i > int32(len(g.NodeMap)) || i > int32(len(g.EdgeMap)) {
 		return nil, status.Error(codes.FailedPrecondition, "invalid level specified for input")

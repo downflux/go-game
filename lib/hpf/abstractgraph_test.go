@@ -416,7 +416,7 @@ func TestBuildIntraEdge(t *testing.T) {
 	}
 }
 
-func TestBuildAbstractGraphError(t *testing.T) {
+func TestBuildGraphError(t *testing.T) {
 	testConfigs := []struct {
 		name             string
 		tm               *rtsspb.TileMap
@@ -450,8 +450,8 @@ func TestBuildAbstractGraphError(t *testing.T) {
 				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
-			if _, err := BuildAbstractGraph(tm, c.clusterDimension, c.level); err == nil {
-				t.Error("BuildAbstractGraph() = _, nil, want a non-nil error")
+			if _, err := BuildGraph(tm, c.clusterDimension, c.level); err == nil {
+				t.Error("BuildGraph() = _, nil, want a non-nil error")
 			}
 		})
 	}
@@ -477,7 +477,7 @@ func newAbstractEdgeMap(edges []*rtsspb.AbstractEdge) *abstractedgemap.Map {
 	return em
 }
 
-func TestBuildAbstractGraph(t *testing.T) {
+func TestBuildGraph(t *testing.T) {
 	simpleMapClusterMapProto := &rtsspb.ClusterMap{
 		Level:            1,
 		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
@@ -493,14 +493,14 @@ func TestBuildAbstractGraph(t *testing.T) {
 		tm               *rtsspb.TileMap
 		level            int32
 		clusterDimension *rtsspb.Coordinate
-		want             *AbstractGraph
+		want             *Graph
 	}{
 		{
 			name:             "SimpleMap",
 			tm:               simpleMapProto,
 			level:            1,
 			clusterDimension: simpleMapClusterMap.Val.GetTileDimension(),
-			want: &AbstractGraph{
+			want: &Graph{
 				Level: 1,
 				NodeMap: []*abstractnodemap.Map{
 					newAbstractNodeMap(simpleMapClusterMap, []*rtsspb.AbstractNode{
@@ -574,9 +574,9 @@ func TestBuildAbstractGraph(t *testing.T) {
 				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
-			got, err := BuildAbstractGraph(tm, c.clusterDimension, c.level)
+			got, err := BuildGraph(tm, c.clusterDimension, c.level)
 			if err != nil {
-				t.Fatalf("BuildAbstractGraph() = _, %v, want = _, nil", err)
+				t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 			}
 
 			if diff := cmp.Diff(
@@ -586,13 +586,13 @@ func TestBuildAbstractGraph(t *testing.T) {
 				cmp.AllowUnexported(abstractedgemap.Map{}, abstractnodemap.Map{}),
 				protocmp.Transform(),
 			); diff != "" {
-				t.Errorf("BuildAbstractGraph() mismatch (-want +got):\n%s", diff)
+				t.Errorf("BuildGraph() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}
 }
 
-func TestAbstractGraphGetNeighbors(t *testing.T) {
+func TestGraphGetNeighbors(t *testing.T) {
 	const level = 1
 	clusterDimension := &rtsspb.Coordinate{X: 3, Y: 3}
 	nodeCoordinate := &rtsspb.Coordinate{X: 2, Y: 1}
@@ -612,9 +612,9 @@ func TestAbstractGraphGetNeighbors(t *testing.T) {
 		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
 
-	g, err := BuildAbstractGraph(tm, clusterDimension, level)
+	g, err := BuildGraph(tm, clusterDimension, level)
 	if err != nil {
-		t.Fatalf("BuildAbstractGraph() = _, %v, want = _, nil", err)
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
 
 	n, err := g.NodeMap[listIndex(level)].Get(utils.MC(nodeCoordinate))
