@@ -144,9 +144,9 @@ go_test(
 )
 
 go_library(
-    name = "abstractedgemap",
-    srcs = ["abstractedgemap.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractedgemap",
+    name = "abstractedge",
+    srcs = ["abstractedge.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractedge",
     deps = [
         ":utils",
 	"//lib/proto:structs_go_proto",
@@ -156,10 +156,10 @@ go_library(
 )
 
 go_test(
-    name = "abstractedgemap_test",
-    srcs = ["abstractedgemap_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractedgemap_test",
-    embed = [":abstractedgemap"],
+    name = "abstractedge_test",
+    srcs = ["abstractedge_test.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractedge_test",
+    embed = [":abstractedge"],
     deps = [
 	":utils",
 	"//lib/proto:structs_go_proto",
@@ -170,9 +170,9 @@ go_test(
 )
 
 go_library(
-    name = "abstractnodemap",
-    srcs = ["abstractnodemap.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractnodemap",
+    name = "abstractnode",
+    srcs = ["abstractnode.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractnode",
     deps = [
         ":cluster",
         ":utils",
@@ -183,10 +183,10 @@ go_library(
 )
 
 go_test(
-    name = "abstractnodemap_test",
-    srcs = ["abstractnodemap_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractnodemap_test",
-    embed = [":abstractnodemap"],
+    name = "abstractnode_test",
+    srcs = ["abstractnode_test.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractnode_test",
+    embed = [":abstractnode"],
     deps = [
         ":cluster",
         ":utils",
@@ -202,8 +202,8 @@ go_library(
     srcs = ["abstractgraph.go"],
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractgraph",
     deps = [
-        ":abstractedgemap",
-	":abstractnodemap",
+        ":abstractedge",
+	":abstractnode",
 	":tileastar",
 	":cluster",
 	":entrance",
@@ -223,8 +223,8 @@ go_test(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractgraph_test",
     embed = [":abstractgraph"],
     deps = [
-        ":abstractedgemap",
-        ":abstractnodemap",
+        ":abstractedge",
+        ":abstractnode",
         ":cluster",
 	":tile",
         ":utils",

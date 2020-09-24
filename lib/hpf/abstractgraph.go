@@ -9,8 +9,8 @@ import (
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/minkezhang/rts-pathing/lib/hpf/abstractedgemap"
-	"github.com/minkezhang/rts-pathing/lib/hpf/abstractnodemap"
+	"github.com/minkezhang/rts-pathing/lib/hpf/abstractedge"
+	"github.com/minkezhang/rts-pathing/lib/hpf/abstractnode"
 	"github.com/minkezhang/rts-pathing/lib/hpf/cluster"
 	"github.com/minkezhang/rts-pathing/lib/hpf/entrance"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
@@ -58,23 +58,23 @@ type Graph struct {
 	// refers to the underlying base map.
 	Level int32
 
-	// NodeMap contains a Level: abstractnodemap.Map dict representing the
+	// NodeMap contains a Level: abstractnode.Map dict representing the
 	// AbstractNodes per Level. As per Graph.ClusterMap, there
-	// is a corresponding abstractnodemap.Map object per level. Nodes
-	// within a specific abstractnodemap.Map may move between levels, and
+	// is a corresponding abstractnode.Map object per level. Nodes
+	// within a specific abstractnode.Map may move between levels, and
 	// may be deleted when the underlying terrain changes.
 	//
 	// The index of the map is L - 1 -- that is, the first element
 	// of the list is the first level of abstraction.
-	NodeMap []*abstractnodemap.Map
+	NodeMap []*abstractnode.Map
 
-	// EdgeMap contains a Level: abstractedgemap.Map dict representing the
+	// EdgeMap contains a Level: abstractedge.Map dict representing the
 	// AbstractEdges per Level. Edges may move between levels and may
 	// be deleted when the underlying terrain changes.
 	//
 	// The index of the map is L - 1 -- that is, the first element
 	// of the list is the first level of abstraction.
-	EdgeMap []*abstractedgemap.Map
+	EdgeMap []*abstractedge.Map
 }
 
 // listIndex transforms a proto abstract hierarchy L into the appropriate
@@ -132,10 +132,10 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*G
 			return nil, err
 		}
 
-		g.NodeMap = append(g.NodeMap, &abstractnodemap.Map{
+		g.NodeMap = append(g.NodeMap, &abstractnode.Map{
 			ClusterMap: cm,
 		})
-		g.EdgeMap = append(g.EdgeMap, &abstractedgemap.Map{})
+		g.EdgeMap = append(g.EdgeMap, &abstractedge.Map{})
 	}
 
 	// Build the Tile-Tile edges which connect between two adjacent

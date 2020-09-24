@@ -1,4 +1,4 @@
-package abstractnodemap
+package abstractnode
 
 import (
 	"testing"

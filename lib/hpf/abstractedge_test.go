@@ -1,4 +1,4 @@
-package abstractedgemap
+package abstractedge
 
 import (
 	"testing"
