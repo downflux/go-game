@@ -1,4 +1,4 @@
-package abstractedge
+package edge
 
 import (
 	"testing"

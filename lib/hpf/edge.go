@@ -1,4 +1,4 @@
-package abstractedge
+package edge
 
 import (
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"

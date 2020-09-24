@@ -1,6 +1,6 @@
-// Package abstractgraph constructs and manages the abstract node space corresponding to a tile.Map object.
+// Package graph constructs and manages the abstract node space corresponding to a tile.Map object.
 // This package will be used ast he underlying topology for hiearchical A* searching.
-package abstractgraph
+package graph
 
 import (
 	"math"
@@ -9,10 +9,10 @@ import (
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/minkezhang/rts-pathing/lib/hpf/abstractedge"
-	"github.com/minkezhang/rts-pathing/lib/hpf/abstractnode"
 	"github.com/minkezhang/rts-pathing/lib/hpf/cluster"
+	"github.com/minkezhang/rts-pathing/lib/hpf/edge"
 	"github.com/minkezhang/rts-pathing/lib/hpf/entrance"
+	"github.com/minkezhang/rts-pathing/lib/hpf/node"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tileastar"
 	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
@@ -58,23 +58,23 @@ type Graph struct {
 	// refers to the underlying base map.
 	Level int32
 
-	// NodeMap contains a Level: abstractnode.Map dict representing the
+	// NodeMap contains a Level: node.Map dict representing the
 	// AbstractNodes per Level. As per Graph.ClusterMap, there
-	// is a corresponding abstractnode.Map object per level. Nodes
-	// within a specific abstractnode.Map may move between levels, and
+	// is a corresponding node.Map object per level. Nodes
+	// within a specific node.Map may move between levels, and
 	// may be deleted when the underlying terrain changes.
 	//
 	// The index of the map is L - 1 -- that is, the first element
 	// of the list is the first level of abstraction.
-	NodeMap []*abstractnode.Map
+	NodeMap []*node.Map
 
-	// EdgeMap contains a Level: abstractedge.Map dict representing the
+	// EdgeMap contains a Level: edge.Map dict representing the
 	// AbstractEdges per Level. Edges may move between levels and may
 	// be deleted when the underlying terrain changes.
 	//
 	// The index of the map is L - 1 -- that is, the first element
 	// of the list is the first level of abstraction.
-	EdgeMap []*abstractedge.Map
+	EdgeMap []*edge.Map
 }
 
 // listIndex transforms a proto abstract hierarchy L into the appropriate
@@ -132,10 +132,10 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*G
 			return nil, err
 		}
 
-		g.NodeMap = append(g.NodeMap, &abstractnode.Map{
+		g.NodeMap = append(g.NodeMap, &node.Map{
 			ClusterMap: cm,
 		})
-		g.EdgeMap = append(g.EdgeMap, &abstractedge.Map{})
+		g.EdgeMap = append(g.EdgeMap, &edge.Map{})
 	}
 
 	// Build the Tile-Tile edges which connect between two adjacent

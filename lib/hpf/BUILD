@@ -2,11 +2,11 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test", "go_binary")
 
 go_library(
-    name = "abstractgraphastar",
-    srcs = ["abstractgraphastar.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractgraphastar",
+    name = "graphastar",
+    srcs = ["graphastar.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graphastar",
     deps = [
-        ":abstractgraph",
+        ":graph",
         ":tile",
         ":tileastar",
         "//lib/proto:constants_go_proto",
@@ -144,9 +144,9 @@ go_test(
 )
 
 go_library(
-    name = "abstractedge",
-    srcs = ["abstractedge.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractedge",
+    name = "edge",
+    srcs = ["edge.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/edge",
     deps = [
         ":utils",
 	"//lib/proto:structs_go_proto",
@@ -156,10 +156,10 @@ go_library(
 )
 
 go_test(
-    name = "abstractedge_test",
-    srcs = ["abstractedge_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractedge_test",
-    embed = [":abstractedge"],
+    name = "edge_test",
+    srcs = ["edge_test.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/edge_test",
+    embed = [":edge"],
     deps = [
 	":utils",
 	"//lib/proto:structs_go_proto",
@@ -170,9 +170,9 @@ go_test(
 )
 
 go_library(
-    name = "abstractnode",
-    srcs = ["abstractnode.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractnode",
+    name = "node",
+    srcs = ["node.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/node",
     deps = [
         ":cluster",
         ":utils",
@@ -183,10 +183,10 @@ go_library(
 )
 
 go_test(
-    name = "abstractnode_test",
-    srcs = ["abstractnode_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractnode_test",
-    embed = [":abstractnode"],
+    name = "node_test",
+    srcs = ["node_test.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/node_test",
+    embed = [":node"],
     deps = [
         ":cluster",
         ":utils",
@@ -198,12 +198,12 @@ go_test(
 )
 
 go_library(
-    name = "abstractgraph",
-    srcs = ["abstractgraph.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractgraph",
+    name = "graph",
+    srcs = ["graph.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graph",
     deps = [
-        ":abstractedge",
-	":abstractnode",
+        ":edge",
+	":node",
 	":tileastar",
 	":cluster",
 	":entrance",
@@ -218,13 +218,13 @@ go_library(
 )
 
 go_test(
-    name = "abstractgraph_test",
-    srcs = ["abstractgraph_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/abstractgraph_test",
-    embed = [":abstractgraph"],
+    name = "graph_test",
+    srcs = ["graph_test.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graph_test",
+    embed = [":graph"],
     deps = [
-        ":abstractedge",
-        ":abstractnode",
+        ":edge",
+        ":node",
         ":cluster",
 	":tile",
         ":utils",

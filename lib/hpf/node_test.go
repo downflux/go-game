@@ -1,4 +1,4 @@
-package abstractnode
+package node
 
 import (
 	"testing"

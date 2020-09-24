@@ -1,6 +1,6 @@
-// Package abstractnode constructs and manages the abstract node space
+// Package node constructs and manages the abstract node space
 // corresponding to a TileMap object.
-package abstractnode
+package node
 
 import (
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"

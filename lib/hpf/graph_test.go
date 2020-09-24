@@ -1,4 +1,4 @@
-package abstractgraph
+package graph
 
 import (
 	"testing"
@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/minkezhang/rts-pathing/lib/hpf/abstractedge"
-	"github.com/minkezhang/rts-pathing/lib/hpf/abstractnode"
 	"github.com/minkezhang/rts-pathing/lib/hpf/cluster"
+	"github.com/minkezhang/rts-pathing/lib/hpf/edge"
+	"github.com/minkezhang/rts-pathing/lib/hpf/node"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
 	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -151,7 +151,7 @@ func abstractEdgeEqual(e1, e2 *rtsspb.AbstractEdge) bool {
 	)
 }
 
-func abstractedgeEqual(em1, em2 abstractedge.Map) bool {
+func abstractedgeEqual(em1, em2 edge.Map) bool {
 	for _, e1 := range em1.Iterator() {
 		e2, err := em2.Get(utils.MC(e1.GetSource()), utils.MC(e1.GetDestination()))
 		if err != nil || e2 == nil {
@@ -457,8 +457,8 @@ func TestBuildGraphError(t *testing.T) {
 	}
 }
 
-func newabstractnode(cm *cluster.Map, nodes []*rtsspb.AbstractNode) *abstractnode.Map {
-	nm := &abstractnode.Map{
+func newabstractnode(cm *cluster.Map, nodes []*rtsspb.AbstractNode) *node.Map {
+	nm := &node.Map{
 		ClusterMap: cm,
 	}
 	for _, n := range nodes {
@@ -468,8 +468,8 @@ func newabstractnode(cm *cluster.Map, nodes []*rtsspb.AbstractNode) *abstractnod
 	return nm
 }
 
-func newabstractedge(edges []*rtsspb.AbstractEdge) *abstractedge.Map {
-	em := &abstractedge.Map{}
+func newabstractedge(edges []*rtsspb.AbstractEdge) *edge.Map {
+	em := &edge.Map{}
 	for _, e := range edges {
 		em.Add(e)
 	}
@@ -502,7 +502,7 @@ func TestBuildGraph(t *testing.T) {
 			clusterDimension: simpleMapClusterMap.Val.GetTileDimension(),
 			want: &Graph{
 				Level: 1,
-				NodeMap: []*abstractnode.Map{
+				NodeMap: []*node.Map{
 					newabstractnode(simpleMapClusterMap, []*rtsspb.AbstractNode{
 						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
 						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
@@ -510,7 +510,7 @@ func TestBuildGraph(t *testing.T) {
 						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 2}},
 					}),
 				},
-				EdgeMap: []*abstractedge.Map{
+				EdgeMap: []*edge.Map{
 					newabstractedge([]*rtsspb.AbstractEdge{
 						{
 							Level:       1,
@@ -583,7 +583,7 @@ func TestBuildGraph(t *testing.T) {
 				c.want,
 				got,
 				cmp.Comparer(abstractedgeEqual),
-				cmp.AllowUnexported(abstractedge.Map{}, abstractnode.Map{}),
+				cmp.AllowUnexported(edge.Map{}, node.Map{}),
 				protocmp.Transform(),
 			); diff != "" {
 				t.Errorf("BuildGraph() mismatch (-want +got):\n%s", diff)

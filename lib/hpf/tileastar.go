@@ -31,8 +31,8 @@ func hFunc(src, dest fastar.Node) float64 {
 	return cost
 }
 
-// graph implements fzipp.astar.Graph for the tile.Map struct.
-type graph struct {
+// graphImpl implements fzipp.astar.Graph for the tile.Map struct.
+type graphImpl struct {
 	m                   *tile.Map
 	boundary, dimension *rtsspb.Coordinate
 }
@@ -45,7 +45,7 @@ func boundedBy(a, b, c *rtsspb.Coordinate) bool {
 }
 
 // Neighbours returns neighboring Tile objects from a tile.Map.
-func (t graph) Neighbours(n fastar.Node) []fastar.Node {
+func (t graphImpl) Neighbours(n fastar.Node) []fastar.Node {
 	neighbors, _ := t.m.Neighbors(n.(*tile.Tile).Val.GetCoordinate())
 	var res []fastar.Node
 	for _, n := range neighbors {
@@ -85,7 +85,7 @@ func Path(m *tile.Map, src, dest *tile.Tile, boundary, dimension *rtsspb.Coordin
 	d := func(a, b fastar.Node) float64 {
 		return dFunc(m.C, a, b)
 	}
-	nodes := fastar.FindPath(graph{m: m, boundary: boundary, dimension: dimension}, src, dest, d, hFunc)
+	nodes := fastar.FindPath(graphImpl{m: m, boundary: boundary, dimension: dimension}, src, dest, d, hFunc)
 
 	var tiles []*tile.Tile
 	for _, node := range nodes {
