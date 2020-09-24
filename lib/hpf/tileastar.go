@@ -2,24 +2,32 @@
 package tileastar
 
 import (
+	"math"
+
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 
-	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
 	fastar "github.com/fzipp/astar"
+	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // dFunc provides a shim for the tile.Map neighbor distance function.
 func dFunc(c map[rtscpb.TerrainType]float64, src, dest fastar.Node) float64 {
-	cost, _ := tile.D(c, src.(*tile.Tile), dest.(*tile.Tile))
+	cost, err := tile.D(c, src.(*tile.Tile), dest.(*tile.Tile))
+	if err != nil {
+		return math.Inf(0)
+	}
 	return cost
 }
 
 // hFunc provides a shim for the tile.Map heuristic function.
 func hFunc(src, dest fastar.Node) float64 {
-	cost, _ := tile.H(src.(*tile.Tile), dest.(*tile.Tile))
+	cost, err := tile.H(src.(*tile.Tile), dest.(*tile.Tile))
+	if err != nil {
+		return math.Inf(0)
+	}
 	return cost
 }
 
@@ -65,7 +73,7 @@ func (t graph) Neighbours(n fastar.Node) []fastar.Node {
 // the box is specified by the dimension Coordinate.
 func Path(m *tile.Map, src, dest *tile.Tile, boundary, dimension *rtsspb.Coordinate) ([]*tile.Tile, float64, error) {
 	if m == nil {
-		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil Map input")
+		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil tile.Map input")
 	}
 	if src == nil || dest == nil {
 		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil Tile inputs")

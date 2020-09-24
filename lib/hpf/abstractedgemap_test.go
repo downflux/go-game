@@ -5,9 +5,9 @@ import (
 
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 
-	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 

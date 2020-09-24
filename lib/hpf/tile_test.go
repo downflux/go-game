@@ -6,9 +6,9 @@ import (
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 
-	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"

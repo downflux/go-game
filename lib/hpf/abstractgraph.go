@@ -8,14 +8,14 @@ import (
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/minkezhang/rts-pathing/lib/hpf/abstractedgemap"
 	"github.com/minkezhang/rts-pathing/lib/hpf/abstractnodemap"
-	"github.com/minkezhang/rts-pathing/lib/hpf/tileastar"
 	"github.com/minkezhang/rts-pathing/lib/hpf/cluster"
 	"github.com/minkezhang/rts-pathing/lib/hpf/entrance"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
+	"github.com/minkezhang/rts-pathing/lib/hpf/tileastar"
 	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
-	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,6 +24,30 @@ var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
 )
+
+func D(g *Graph, src, dst *rtsspb.AbstractNode) (float64, error) {
+	i := listIndex(src.GetLevel())
+	if listIndex(dst.GetLevel()) != i {
+		return 0, status.Error(codes.FailedPrecondition, "input AbstractNode levels do not match")
+	}
+	if i < 0 || i >= int32(len(g.EdgeMap)) {
+		return 0, status.Error(codes.OutOfRange, "input AbstractNode level does not exist in Graph")
+	}
+
+	edge, err := g.EdgeMap[i].Get(utils.MC(src.GetTileCoordinate()), utils.MC(dst.GetTileCoordinate()))
+	if err != nil {
+		return 0, err
+	}
+	if edge == nil {
+		return 0, status.Error(codes.NotFound, "an AbstractEdge does not exist with the given AbstractNode endpoints in the Graph")
+	}
+
+	return edge.GetWeight(), nil
+}
+
+func H(src, dst *rtsspb.AbstractNode) (float64, error) {
+	return math.Pow(float64(dst.GetTileCoordinate().GetX()-src.GetTileCoordinate().GetX()), 2) + math.Pow(float64(dst.GetTileCoordinate().GetY()-src.GetTileCoordinate().GetY()), 2), nil
+}
 
 // Graph contains the necessary state information to make an efficient
 // path planning call on very large maps via hierarchical A* search, as

@@ -6,11 +6,11 @@ import (
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/google/go-cmp/cmp"
 	"github.com/minkezhang/rts-pathing/lib/hpf/cluster"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
 	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
-	"github.com/golang/protobuf/proto"
-	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
