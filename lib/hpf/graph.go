@@ -25,6 +25,7 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
+// D gets exact cost between two neighboring AbstractNodes.
 func D(g *Graph, src, dst *rtsspb.AbstractNode) (float64, error) {
 	i := listIndex(src.GetLevel())
 	if listIndex(dst.GetLevel()) != i {
@@ -45,6 +46,7 @@ func D(g *Graph, src, dst *rtsspb.AbstractNode) (float64, error) {
 	return edge.GetWeight(), nil
 }
 
+// H gets the estimated cost of moving between two arbitrary AbstractNodes.
 func H(src, dst *rtsspb.AbstractNode) (float64, error) {
 	return math.Pow(float64(dst.GetTileCoordinate().GetX()-src.GetTileCoordinate().GetX()), 2) + math.Pow(float64(dst.GetTileCoordinate().GetY()-src.GetTileCoordinate().GetY()), 2), nil
 }

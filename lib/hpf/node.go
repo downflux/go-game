@@ -1,5 +1,5 @@
 // Package node constructs and manages the abstract node space
-// corresponding to a TileMap object.
+// corresponding to a tile.Map object.
 package node
 
 import (
@@ -14,10 +14,16 @@ import (
 // Map contains a collection of AbstractNode instances, which
 // represent an AbstractGraph node used for hierarchical A* search.
 //
-// AbstractNodes are indexed by cluster coordinate and then Tile coordinate.
+// AbstractNodes are indexed by the (cluster, Tile) coordinate tuple.
 type Map struct {
+	// ClusterMap holds a reference to a pre-existing cluster.Map instance.
+	// This instance defines the binning of Tiles into 2D chunks, a.k.a.
+	// "clusters".
 	ClusterMap *cluster.Map
-	nodes      map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractNode
+
+	// nodes hold the (cluster, Tile) indexed list of AbstractNode
+	// instances.
+	nodes map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractNode
 }
 
 // GetByCluster filters the Map by the input cluster coordinate
@@ -40,6 +46,8 @@ func (nm Map) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error
 	return nodes, nil
 }
 
+// Get queries the Map for an AbstractNode instance with the given Tile
+// coordinates.
 func (nm *Map) Get(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 	c, err := cluster.ClusterCoordinateFromTileCoordinate(nm.ClusterMap, t)
 	if err != nil {
@@ -53,6 +61,7 @@ func (nm *Map) Get(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 	return nm.nodes[c][t], nil
 }
 
+// Pop deletes the specified AbstractNode from the Map.
 func (nm *Map) Pop(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 	n, err := nm.Get(t)
 	if err != nil {
@@ -67,6 +76,7 @@ func (nm *Map) Pop(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 	return n, nil
 }
 
+// Add appends an AbstractNode instance into the Map collection.
 func (nm *Map) Add(n *rtsspb.AbstractNode) error {
 	if n.GetLevel() != nm.ClusterMap.Val.GetLevel() {
 		return status.Error(codes.FailedPrecondition, "input mismatch, given AbstractNode does not have the same hierarchy level as the cluster.Map bound to the tile.Map")

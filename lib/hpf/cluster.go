@@ -1,5 +1,5 @@
 // Package cluster implements the clustering logic necessary to build and
-// operate on logical MapTile subsets.
+// operate on logical tile.Map subsets.
 //
 // See Botea 2004 for more details.
 package cluster
@@ -38,6 +38,7 @@ type Map struct {
 	Val *rtsspb.ClusterMap
 }
 
+// Dimension returns the X, Y dimension of a given Map.
 func Dimension(m *Map) *rtsspb.Coordinate {
 	return &rtsspb.Coordinate{
 		X: int32(math.Ceil(
@@ -47,6 +48,8 @@ func Dimension(m *Map) *rtsspb.Coordinate {
 	}
 }
 
+// ValidateClusterInRange checks if the given MapCoordinate is a valid cluster
+// coordinate for the given Map.
 func ValidateClusterInRange(m *Map, c utils.MapCoordinate) error {
 	dim := utils.MC(Dimension(m))
 	if 0 > c.X || c.X >= dim.X || 0 > c.Y || c.Y >= dim.Y {
@@ -55,6 +58,8 @@ func ValidateClusterInRange(m *Map, c utils.MapCoordinate) error {
 	return nil
 }
 
+// ClusterCoordinateFromTileCoordinate gets the corresponding cluster to which
+// an input Tile coordinate belongs.
 func ClusterCoordinateFromTileCoordinate(m *Map, t utils.MapCoordinate) (utils.MapCoordinate, error) {
 	if t.X >= m.Val.GetTileMapDimension().GetX() || t.Y >= m.Val.GetTileMapDimension().GetY() {
 		return utils.MapCoordinate{}, status.Errorf(codes.OutOfRange, "input Tile coordinate %v is outside the map boundary %v", t, m.Val.GetTileMapDimension())
@@ -111,6 +116,8 @@ func TileDimension(m *Map, c utils.MapCoordinate) (utils.MapCoordinate, error) {
 	}, nil
 }
 
+// Iterator provides a flattened list of MapCoordinate instances representing
+// cluster coordinates.
 func Iterator(m *Map) []utils.MapCoordinate {
 	var cs []utils.MapCoordinate
 	for x := int32(0); x < Dimension(m).GetX(); x++ {

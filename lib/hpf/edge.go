@@ -1,3 +1,5 @@
+// Package edge constructs and manages the abstract edge space
+// corresponding to a TileMap object.
 package edge
 
 import (
@@ -12,10 +14,16 @@ import (
 // represent an AbstractGraph edge; these edges represent the cost to move
 // between different AbstractNode instances.
 type Map struct {
+	// edges contain a (Tile, Tile) coordinate tuple-indexed list of
+	// AbstractEdges, where the coordinates represent WLOG the source and
+	// destination Tile instances in the tile.Map.
+	//
 	// We want to explicitly disallow direct access.
 	edges map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractEdge
 }
 
+// Iterator provides a flattened list of AbstractEdge instances constructed
+// from the 2D map Map.edges object.
 func (em *Map) Iterator() []*rtsspb.AbstractEdge {
 	var edges []*rtsspb.AbstractEdge
 	for _, row := range em.edges {
@@ -26,6 +34,8 @@ func (em *Map) Iterator() []*rtsspb.AbstractEdge {
 	return edges
 }
 
+// GetBySource returns a list of AbstractEdge instances which WLOG originate
+// from the specified Tile coordinate.
 func (em *Map) GetBySource(t utils.MapCoordinate) ([]*rtsspb.AbstractEdge, error) {
 	if em.edges == nil {
 		return nil, nil
@@ -75,7 +85,7 @@ func (em *Map) Add(e *rtsspb.AbstractEdge) error {
 }
 
 // Get queries the Map for an AbstractEdge instance which connects
-// two TileMap Coordinate instances.
+// two Tile coordinates.
 func (em *Map) Get(t1, t2 utils.MapCoordinate) (*rtsspb.AbstractEdge, error) {
 	if em.edges == nil {
 		return nil, nil

@@ -33,8 +33,16 @@ func hFunc(src, dest fastar.Node) float64 {
 
 // graphImpl implements fzipp.astar.Graph for the tile.Map struct.
 type graphImpl struct {
-	m                   *tile.Map
-	boundary, dimension *rtsspb.Coordinate
+	// m holds a reference to the underlying terrain map.
+	m *tile.Map
+
+	// boundary represents the (inclusive) lower-bound of the bounding box
+	// used to constrain the path search.
+	boundary *rtsspb.Coordinate
+
+	// dimension represents the (exclusive) upper-bound of the bounding box
+	// used to constrain the path search.
+	dimension *rtsspb.Coordinate
 }
 
 // boundedBy returns true if points a <= b < c. Here, a < b is true in a 2D

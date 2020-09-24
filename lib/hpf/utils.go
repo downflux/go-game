@@ -18,6 +18,7 @@ func MC(c *rtsspb.Coordinate) MapCoordinate {
 	}
 }
 
+// PB constructs a protobuf from the associated MapCoordinate struct.
 func PB(c MapCoordinate) *rtsspb.Coordinate {
 	return &rtsspb.Coordinate{
 		X: c.X,
@@ -25,6 +26,7 @@ func PB(c MapCoordinate) *rtsspb.Coordinate {
 	}
 }
 
+// AddMapCoordinate computes the pair-wise sum of two MapCoordinate instances.
 func AddMapCoordinate(a, b MapCoordinate) MapCoordinate {
 	return MapCoordinate{
 		X: a.X + b.X,
@@ -32,6 +34,8 @@ func AddMapCoordinate(a, b MapCoordinate) MapCoordinate {
 	}
 }
 
+// LessThan applies the canonical lexicographical ordering to the input
+// MapCoordinates.
 func LessThan(a, b MapCoordinate) bool {
 	return a.X < b.X || a.X == b.X && a.Y < b.Y
 }

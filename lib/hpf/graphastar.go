@@ -42,6 +42,8 @@ func hFunc(src, dest fastar.Node) float64 {
 
 // graphImpl implements fzipp.astar.Graph for the graph.Graph struct.
 type graphImpl struct {
+	// g holds information on how different AbstractNode objects are
+	// connected via AbstractEdge links.
 	g *graph.Graph
 }
 
