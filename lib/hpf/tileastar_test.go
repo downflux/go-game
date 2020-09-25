@@ -269,8 +269,8 @@ func TestAStarSearch(t *testing.T) {
 				path: path,
 				cost: cost,
 			}
-			if !cmp.Equal(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()) {
-				t.Errorf("Path() mismatch (-want +got): %v", cmp.Diff(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()))
+			if diff := cmp.Diff(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()); diff != "" {
+				t.Errorf("Path() mismatch (-want +got):\n%v", diff)
 			}
 		})
 	}
