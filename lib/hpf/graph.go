@@ -106,18 +106,6 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*G
 		return nil, notImplemented
 	}
 
-	// Highest level cluster.Map should still have more than one Cluster,
-	// otherwise we'll be routing units to the edge first before going back
-	// inwards.
-	if (int32(math.Pow(float64(tileDimension.GetX()), float64(level))) >= tm.D.GetX()) || (int32(math.Pow(float64(tileDimension.GetY()), float64(level))) >= tm.D.GetY()) {
-		return nil, status.Error(codes.FailedPrecondition, "given tileDimension and level will result in too large a cluster.Map")
-	}
-
-	// This does not add any value for an Graph.
-	if tileDimension.GetX() <= 1 && tileDimension.GetY() <= 1 {
-		return nil, status.Error(codes.FailedPrecondition, "invalid tileDimension")
-	}
-
 	g := &Graph{
 		Level: level,
 	}

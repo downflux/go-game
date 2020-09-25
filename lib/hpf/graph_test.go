@@ -429,18 +429,6 @@ func TestBuildGraphError(t *testing.T) {
 			level:            2,
 			clusterDimension: &rtsspb.Coordinate{X: 2, Y: 2},
 		},
-		{
-			name:             "ClusterDimensionTooLargeError",
-			tm:               simpleMapProto,
-			level:            1,
-			clusterDimension: &rtsspb.Coordinate{X: 100, Y: 100},
-		},
-		{
-			name:             "ClusterDimensionTooSmall",
-			tm:               simpleMapProto,
-			level:            1,
-			clusterDimension: &rtsspb.Coordinate{X: 1, Y: 1},
-		},
 	}
 
 	for _, c := range testConfigs {

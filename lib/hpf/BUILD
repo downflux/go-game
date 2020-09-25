@@ -9,6 +9,7 @@ go_library(
         ":graph",
         ":tile",
         ":tileastar",
+	":utils",
         "//lib/proto:constants_go_proto",
 	"//lib/proto:structs_go_proto",
 	"@com_github_fzipp_astar//:go_default_library",
