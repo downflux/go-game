@@ -27,8 +27,8 @@ var (
 
 // D gets exact cost between two neighboring AbstractNodes.
 func D(g *Graph, src, dst *rtsspb.AbstractNode) (float64, error) {
-	i := listIndex(src.GetLevel())
-	if listIndex(dst.GetLevel()) != i {
+	i := ListIndex(src.GetLevel())
+	if ListIndex(dst.GetLevel()) != i {
 		return 0, status.Error(codes.FailedPrecondition, "input AbstractNode levels do not match")
 	}
 	if i < 0 || i >= int32(len(g.EdgeMap)) {
@@ -79,15 +79,15 @@ type Graph struct {
 	EdgeMap []*edge.Map
 }
 
-// listIndex transforms a proto abstract hierarchy L into the appropriate
+// ListIndex transforms a proto abstract hierarchy L into the appropriate
 // addressable index for an Graph.
-func listIndex(l int32) int32 {
+func ListIndex(l int32) int32 {
 	return l - 1
 }
 
-// abstractHierarchyLevel transforms an Graph object index into a proto
+// AbstractHierarchyLevel transforms an Graph object index into a proto
 // abstract hierarchy L.
-func abstractHierarchyLevel(i int32) int32 {
+func AbstractHierarchyLevel(i int32) int32 {
 	return i + 1
 }
 
@@ -115,9 +115,9 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*G
 	// arg.
 	for i := int32(0); i < level; i++ {
 		cm, err := cluster.BuildMap(tm.D, &rtsspb.Coordinate{
-			X: int32(math.Pow(float64(tileDimension.GetX()), float64(abstractHierarchyLevel(i)))),
-			Y: int32(math.Pow(float64(tileDimension.GetY()), float64(abstractHierarchyLevel(i)))),
-		}, abstractHierarchyLevel(i))
+			X: int32(math.Pow(float64(tileDimension.GetX()), float64(AbstractHierarchyLevel(i)))),
+			Y: int32(math.Pow(float64(tileDimension.GetY()), float64(AbstractHierarchyLevel(i)))),
+		}, AbstractHierarchyLevel(i))
 		if err != nil {
 			return nil, err
 		}
@@ -131,14 +131,14 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*G
 	// Build the Tile-Tile edges which connect between two adjacent
 	// clusters in the L-1 cluster.Map object and store this data into the
 	// Graph.
-	transitions, err := buildTransitions(tm, g.NodeMap[listIndex(1)].ClusterMap)
+	transitions, err := buildTransitions(tm, g.NodeMap[ListIndex(1)].ClusterMap)
 	if err != nil {
 		return nil, err
 	}
 	for _, t := range transitions {
-		g.NodeMap[listIndex(1)].Add(t.GetN1())
-		g.NodeMap[listIndex(1)].Add(t.GetN2())
-		g.EdgeMap[listIndex(1)].Add(&rtsspb.AbstractEdge{
+		g.NodeMap[ListIndex(1)].Add(t.GetN1())
+		g.NodeMap[ListIndex(1)].Add(t.GetN2())
+		g.EdgeMap[ListIndex(1)].Add(&rtsspb.AbstractEdge{
 			Level:       1,
 			Source:      t.GetN1().GetTileCoordinate(),
 			Destination: t.GetN2().GetTileCoordinate(),
@@ -148,21 +148,21 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*G
 	}
 
 	// Build Tile-Tile edges within a cluster of an L-1 cluster.Map.
-	for _, c := range cluster.Iterator(g.NodeMap[listIndex(1)].ClusterMap) {
-		nodes, err := g.NodeMap[listIndex(1)].GetByCluster(c)
+	for _, c := range cluster.Iterator(g.NodeMap[ListIndex(1)].ClusterMap) {
+		nodes, err := g.NodeMap[ListIndex(1)].GetByCluster(c)
 		if err != nil {
 			return nil, err
 		}
 		for _, n1 := range nodes {
 			for _, n2 := range nodes {
 				if n1 != n2 {
-					e, err := buildIntraEdge(tm, g.NodeMap[listIndex(1)].ClusterMap, n1, n2)
+					e, err := buildIntraEdge(tm, g.NodeMap[ListIndex(1)].ClusterMap, n1, n2)
 					if err != nil {
 						return nil, err
 					}
 
 					if e != nil {
-						g.EdgeMap[listIndex(1)].Add(e)
+						g.EdgeMap[ListIndex(1)].Add(e)
 					}
 				}
 			}
@@ -258,7 +258,7 @@ func buildTransitions(tm *tile.Map, cm *cluster.Map) ([]*rtsspb.Transition, erro
 // (n.GetEphemeralKey() > 0) -- DFS should take care not to expand these
 // secondary neighbors.
 func (g *Graph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error) {
-	i := listIndex(n.GetLevel())
+	i := ListIndex(n.GetLevel())
 	if i < 0 || i > int32(len(g.NodeMap)) || i > int32(len(g.EdgeMap)) {
 		return nil, status.Error(codes.FailedPrecondition, "invalid level specified for input")
 	}

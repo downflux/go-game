@@ -55,12 +55,6 @@ func TestFoo(t *testing.T) {
 		want      aStarResult
 	}{
 		{
-			// TODO(minkezhang): Decide if src and dest should
-			// be passed in by reference instead (i.e. by
-			// referencing an actual underlying AbstractNode)
-			// instead of constructing a new reference.
-			//
-			// We probably should.
 			name: "TrivialReachablePath",
 			tm:   trivialOpenMap,
 			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},

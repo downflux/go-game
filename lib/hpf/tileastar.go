@@ -87,7 +87,7 @@ func Path(m *tile.Map, src, dest *tile.Tile, boundary, dimension *rtsspb.Coordin
 		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil Tile inputs")
 	}
 	if src.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED || dest.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
-		return nil, 0, nil
+		return nil, math.Inf(0), nil
 	}
 
 	d := func(a, b fastar.Node) float64 {
@@ -99,5 +99,12 @@ func Path(m *tile.Map, src, dest *tile.Tile, boundary, dimension *rtsspb.Coordin
 	for _, node := range nodes {
 		tiles = append(tiles, node.(*tile.Tile))
 	}
-	return tiles, nodes.Cost(d), nil
+
+	var cost float64
+	if tiles == nil {
+		cost = math.Inf(0)
+	} else {
+		cost = nodes.Cost(d)
+	}
+	return tiles, cost, nil
 }
