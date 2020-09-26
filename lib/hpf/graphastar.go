@@ -10,6 +10,7 @@ import (
 	fastar "github.com/fzipp/astar"
 	"github.com/minkezhang/rts-pathing/lib/hpf/graph"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
+	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -19,10 +20,35 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
+// We cannot do direct protobuf equality checking because of unexported
+// field differences. We need to export the public fields into a controllable
+// data struct.
+type nodeImpl struct {
+	Level          int32
+	EphemeralKey   int32
+	TileCoordinate utils.MapCoordinate
+}
+
+func importNodeImpl(n *rtsspb.AbstractNode) nodeImpl {
+	return nodeImpl{
+		Level:          n.GetLevel(),
+		EphemeralKey:   n.GetEphemeralKey(),
+		TileCoordinate: utils.MC(n.GetTileCoordinate()),
+	}
+}
+
+func exportNodeImpl(n nodeImpl) *rtsspb.AbstractNode {
+	return &rtsspb.AbstractNode{
+		Level:          n.Level,
+		EphemeralKey:   n.EphemeralKey,
+		TileCoordinate: utils.PB(n.TileCoordinate),
+	}
+}
+
 // dFunc provides a shim for the graph.Graph neighbor distance
 // function.
 func dFunc(g *graph.Graph, src, dest fastar.Node) float64 {
-	cost, err := graph.D(g, src.(*rtsspb.AbstractNode), dest.(*rtsspb.AbstractNode))
+	cost, err := graph.D(g, exportNodeImpl(src.(nodeImpl)), exportNodeImpl(dest.(nodeImpl)))
 	if err != nil {
 		return math.Inf(0)
 	}
@@ -32,7 +58,7 @@ func dFunc(g *graph.Graph, src, dest fastar.Node) float64 {
 
 // hFunc provides a shim for the graph.Graph heuristic function.
 func hFunc(src, dest fastar.Node) float64 {
-	cost, err := graph.H(src.(*rtsspb.AbstractNode), dest.(*rtsspb.AbstractNode))
+	cost, err := graph.H(exportNodeImpl(src.(nodeImpl)), exportNodeImpl(dest.(nodeImpl)))
 	if err != nil {
 		return math.Inf(0)
 	}
@@ -50,10 +76,10 @@ type graphImpl struct {
 // Neighbours returns neighboring AbstractNode objects from a
 // graph.Graph.
 func (g graphImpl) Neighbours(n fastar.Node) []fastar.Node {
-	neighbors, _ := g.g.Neighbors(n.(*rtsspb.AbstractNode))
+	neighbors, _ := g.g.Neighbors(exportNodeImpl(n.(nodeImpl)))
 	var res []fastar.Node
 	for _, n := range neighbors {
-		res = append(res, n)
+		res = append(res, importNodeImpl(n))
 	}
 	return res
 }
@@ -80,11 +106,11 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest *rtsspb.AbstractNode) ([]*rtss
 	d := func(a, b fastar.Node) float64 {
 		return dFunc(g, a, b)
 	}
-	nodes := fastar.FindPath(graphImpl{g: g}, src, dest, d, hFunc)
+	nodes := fastar.FindPath(graphImpl{g: g}, importNodeImpl(src), importNodeImpl(dest), d, hFunc)
 
 	var res []*rtsspb.AbstractNode
 	for _, node := range nodes {
-		res = append(res, node.(*rtsspb.AbstractNode))
+		res = append(res, exportNodeImpl(node.(nodeImpl)))
 	}
 
 	return res, nodes.Cost(d), nil
