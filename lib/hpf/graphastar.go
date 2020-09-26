@@ -51,6 +51,9 @@ type graphImpl struct {
 
 // Neighbours returns neighboring AbstractNode objects from a
 // graph.Graph.
+//
+// TODO(minkezhang): Filter out AbstractNode instances which have an
+// EphemeralKey set and are not cached in graphImpl.(src|dest).
 func (g graphImpl) Neighbours(n fastar.Node) []fastar.Node {
 	neighbors, _ := g.g.Neighbors(n.(*rtsspb.AbstractNode))
 	var res []fastar.Node
@@ -89,13 +92,13 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest *rtsspb.AbstractNode) ([]*rtss
 	if err != nil {
 		return nil, 0, err
 	}
-	destRef, err := g.NodeMap[graph.ListIndex(src.GetLevel())].Get(utils.MC(src.GetTileCoordinate()))
+	destRef, err := g.NodeMap[graph.ListIndex(dest.GetLevel())].Get(utils.MC(dest.GetTileCoordinate()))
 	if err != nil {
 		return nil, 0, err
 	}
 
 	if !proto.Equal(src, srcRef) || !proto.Equal(dest, destRef) {
-		return nil, 0, status.Errorf(codes.NotFound, "input AbstractNode instance not found in the underyling graph.Graph")
+		return nil, math.Inf(0), nil
 	}
 
 	d := func(a, b fastar.Node) float64 {
