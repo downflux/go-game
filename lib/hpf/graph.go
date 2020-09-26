@@ -176,6 +176,15 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*G
 	return g, nil
 }
 
+func AddEphemeralNode(g *Graph, t utils.MapCoordinate) error {
+	for l := 0; l < g.Level; l++ {
+		
+	}
+}
+
+func RemoveEphemeralNode(g *Graph, t utils.MapCoordinate) error {
+}
+
 // buildIntraEdge constructs a single AbstractEdge instance with the correct
 // traversal cost between two underlying AbstractNode objects. The cost
 // function is calculated from the tile.Map entity, which holds information
