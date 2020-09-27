@@ -374,8 +374,7 @@ func TestBuildGraphError(t *testing.T) {
 		name             string
 		tm               *rtsspb.TileMap
 		clusterDimension *rtsspb.Coordinate
-	}{
-	}
+	}{}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
@@ -433,54 +432,54 @@ func TestBuildGraph(t *testing.T) {
 			clusterDimension: simpleMapClusterMap.Val.GetTileDimension(),
 			want: &Graph{
 				NodeMap: newAbstractNode(simpleMapClusterMap, []*rtsspb.AbstractNode{
-						{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
-						{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
-						{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 1}},
-						{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 2}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 1}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 2}},
 				}),
 				EdgeMap: newAbstractEdge([]*rtsspb.AbstractEdge{
-						{
-							Source:      &rtsspb.Coordinate{X: 1, Y: 1},
-							Destination: &rtsspb.Coordinate{X: 1, Y: 2},
-							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-							Weight:      1,
-						}, {
-							Source:      &rtsspb.Coordinate{X: 1, Y: 1},
-							Destination: &rtsspb.Coordinate{X: 2, Y: 1},
-							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-							Weight:      1,
-						}, {
-							Source:      &rtsspb.Coordinate{X: 1, Y: 2},
-							Destination: &rtsspb.Coordinate{X: 2, Y: 2},
-							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-							Weight:      1,
-						}, {
-							Source:      &rtsspb.Coordinate{X: 1, Y: 2},
-							Destination: &rtsspb.Coordinate{X: 1, Y: 1},
-							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-							Weight:      1,
-						}, {
-							Source:      &rtsspb.Coordinate{X: 2, Y: 1},
-							Destination: &rtsspb.Coordinate{X: 2, Y: 2},
-							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-							Weight:      1,
-						}, {
-							Source:      &rtsspb.Coordinate{X: 2, Y: 1},
-							Destination: &rtsspb.Coordinate{X: 1, Y: 1},
-							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-							Weight:      1,
-						}, {
-							Source:      &rtsspb.Coordinate{X: 2, Y: 2},
-							Destination: &rtsspb.Coordinate{X: 2, Y: 1},
-							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-							Weight:      1,
-						}, {
-							Source:      &rtsspb.Coordinate{X: 2, Y: 2},
-							Destination: &rtsspb.Coordinate{X: 1, Y: 2},
-							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
-							Weight:      1,
-						},
-					}),
+					{
+						Source:      &rtsspb.Coordinate{X: 1, Y: 1},
+						Destination: &rtsspb.Coordinate{X: 1, Y: 2},
+						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+						Weight:      1,
+					}, {
+						Source:      &rtsspb.Coordinate{X: 1, Y: 1},
+						Destination: &rtsspb.Coordinate{X: 2, Y: 1},
+						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+						Weight:      1,
+					}, {
+						Source:      &rtsspb.Coordinate{X: 1, Y: 2},
+						Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+						Weight:      1,
+					}, {
+						Source:      &rtsspb.Coordinate{X: 1, Y: 2},
+						Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+						Weight:      1,
+					}, {
+						Source:      &rtsspb.Coordinate{X: 2, Y: 1},
+						Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+						Weight:      1,
+					}, {
+						Source:      &rtsspb.Coordinate{X: 2, Y: 1},
+						Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+						Weight:      1,
+					}, {
+						Source:      &rtsspb.Coordinate{X: 2, Y: 2},
+						Destination: &rtsspb.Coordinate{X: 2, Y: 1},
+						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+						Weight:      1,
+					}, {
+						Source:      &rtsspb.Coordinate{X: 2, Y: 2},
+						Destination: &rtsspb.Coordinate{X: 1, Y: 2},
+						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+						Weight:      1,
+					},
+				}),
 			},
 		},
 	}
