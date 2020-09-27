@@ -12,7 +12,6 @@ import (
 var (
 	largeClusterMap = &Map{
 		Val: &rtsspb.ClusterMap{
-			Level:            1,
 			TileDimension:    &rtsspb.Coordinate{X: 10, Y: 10},
 			TileMapDimension: &rtsspb.Coordinate{X: 10000, Y: 10000},
 		},

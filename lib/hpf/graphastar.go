@@ -89,17 +89,11 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest *rtsspb.AbstractNode) ([]*rtss
 		return nil, 0, status.Error(codes.FailedPrecondition, "cannot have nil graph.Graph input")
 	}
 
-	// TODO(minkezhang): Implement logic when multi-level AbstractGraph
-	// objects are a thing.
-	if src.GetLevel() != 1 || dest.GetLevel() != 1 {
-		return nil, 0, notImplemented
-	}
-
-	srcRef, err := g.NodeMap[graph.ListIndex(src.GetLevel())].Get(utils.MC(src.GetTileCoordinate()))
+	srcRef, err := g.NodeMap.Get(utils.MC(src.GetTileCoordinate()))
 	if err != nil {
 		return nil, 0, err
 	}
-	destRef, err := g.NodeMap[graph.ListIndex(dest.GetLevel())].Get(utils.MC(dest.GetTileCoordinate()))
+	destRef, err := g.NodeMap.Get(utils.MC(dest.GetTileCoordinate()))
 	if err != nil {
 		return nil, 0, err
 	}

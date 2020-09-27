@@ -1,6 +1,4 @@
-// Package tile implements the TileInterface for the underlying map,
-// i.e. for l = 0. Higher l-levels abstract the map away into logical nodes
-// instead.
+// Package tile implements the TileInterface for the underlying map.
 package tile
 
 import (
