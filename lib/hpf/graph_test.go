@@ -605,7 +605,7 @@ func TestGraphGetNeighbors(t *testing.T) {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
 
-	n, err := g.NodeMap[listIndex(level)].Get(utils.MC(nodeCoordinate))
+	n, err := g.NodeMap[ListIndex(level)].Get(utils.MC(nodeCoordinate))
 	if err != nil {
 		t.Fatalf("Get() = _, %v, want = _, nil", err)
 	}

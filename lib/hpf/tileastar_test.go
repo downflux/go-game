@@ -1,6 +1,7 @@
 package tileastar
 
 import (
+	"math"
 	"testing"
 
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
@@ -194,15 +195,19 @@ func TestAStarSearch(t *testing.T) {
 		},
 		{name: "TrivialClosedMap", m: trivialClosedMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, dimension: trivialClosedMap.GetDimension(), want: aStarResult{
 			path: nil,
+			cost: math.Inf(0),
 		}},
 		{name: "BlockedSource", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 1}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, dimension: trivialSemiOpenMap.GetDimension(), want: aStarResult{
 			path: nil,
+			cost: math.Inf(0),
 		}},
 		{name: "BlockedDestination", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 1}, dimension: trivialSemiOpenMap.GetDimension(), want: aStarResult{
 			path: nil,
+			cost: math.Inf(0),
 		}},
 		{name: "ImpassableMap", m: impassableMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 2}, dimension: impassableMap.GetDimension(), want: aStarResult{
 			path: nil,
+			cost: math.Inf(0),
 		}},
 		{
 			name:      "SimpleSearch",
@@ -227,6 +232,7 @@ func TestAStarSearch(t *testing.T) {
 			dimension: &rtsspb.Coordinate{X: 3, Y: 1},
 			want: aStarResult{
 				path: nil,
+				cost: math.Inf(0),
 			},
 		},
 		{

@@ -1,6 +1,7 @@
 package graphastar
 
 import (
+	"math"
 	"testing"
 
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
@@ -23,16 +24,77 @@ var (
 	trivialOpenMap = &rtsspb.TileMap{
 		Dimension: &rtsspb.Coordinate{X: 2, Y: 1},
 		Tiles: []*rtsspb.Tile{
-			{
-				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
-				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
-			},
-			{
-				Coordinate:  &rtsspb.Coordinate{X: 1, Y: 0},
-				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
-			},
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
-		TerrainCosts: []*rtsspb.TerrainCost{},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		},
+	}
+
+	/*
+	 * Y = 0 W W
+	 *   X = 0
+	 */
+	trivialClosedMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 2, Y: 1},
+		Tiles: []*rtsspb.Tile{
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		},
+	}
+
+	/*
+	 * Y = 0 W -
+	 *   X = 0
+	 */
+	trivialSemiOpenMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 2, Y: 1},
+		Tiles: []*rtsspb.Tile{
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		},
+	}
+
+	/*
+	 * Y = 0 - W -
+	 *   X = 0
+	 */
+	simpleBlockedMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 3, Y: 1},
+		Tiles: []*rtsspb.Tile{
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		},
+	}
+
+	/*
+	 * Y = 0 - - - - - -
+	 *   X = 0
+	 */
+	simpleLongOpenMap = &rtsspb.TileMap{
+		Dimension: &rtsspb.Coordinate{X: 6, Y: 1},
+		Tiles: []*rtsspb.Tile{
+			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		},
 	}
 )
 
@@ -46,7 +108,7 @@ type aStarResult struct {
 	cost float64
 }
 
-func TestFoo(t *testing.T) {
+func TestPath(t *testing.T) {
 	testConfigs := []struct {
 		name      string
 		tm        *rtsspb.TileMap
@@ -55,12 +117,6 @@ func TestFoo(t *testing.T) {
 		want      aStarResult
 	}{
 		{
-			// TODO(minkezhang): Decide if src and dest should
-			// be passed in by reference instead (i.e. by
-			// referencing an actual underlying AbstractNode)
-			// instead of constructing a new reference.
-			//
-			// We probably should.
 			name: "TrivialReachablePath",
 			tm:   trivialOpenMap,
 			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
@@ -70,6 +126,67 @@ func TestFoo(t *testing.T) {
 				path: []*rtsspb.AbstractNode{
 					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
 				},
+			},
+		},
+		{
+			name: "TrivialIntraClusterPath",
+			tm:   simpleLongOpenMap,
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 2, Y: 1}, level: 1},
+			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
+			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 0}},
+			want: aStarResult{
+				path: []*rtsspb.AbstractNode{
+					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
+					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 0}},
+				},
+				cost: 1,
+			},
+		},
+		{
+			name: "TrivialInterClusterPath",
+			tm:   trivialOpenMap,
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
+			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+			want: aStarResult{
+				path: []*rtsspb.AbstractNode{
+					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+				},
+				cost: 1,
+			},
+		},
+		{
+			name: "TrivialClosedPath",
+			tm:   trivialClosedMap,
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
+			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+			want: aStarResult{
+				path: nil,
+				cost: math.Inf(0),
+			},
+		},
+		{
+			name: "TrivialSemiOpenPath",
+			tm:   trivialClosedMap,
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
+			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+			want: aStarResult{
+				path: nil,
+				cost: math.Inf(0),
+			},
+		},
+		{
+			name: "SimpleBlockedPath",
+			tm:   simpleBlockedMap,
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
+			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
+			want: aStarResult{
+				path: nil,
+				cost: math.Inf(0),
 			},
 		},
 	}
