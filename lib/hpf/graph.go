@@ -4,6 +4,7 @@ package graph
 
 import (
 	"math"
+	"math/rand"
 
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
@@ -114,12 +115,100 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate) (*Graph, error) 
 	return g, nil
 }
 
-func AddEphemeralNode(g *Graph, t utils.MapCoordinate) error {
-	return notImplemented
+// AddEphemeralNode adds a temporary AbstractNode to the Graph and connects it
+// to the rest of the cluster via AbstractEdge instances.
+//
+// Function returns a UUID which needs to be tracked by the caller to be passed
+// into RemoveEphemeralNode. This function is a no-op if the input coordinates
+// match a non-ephemeral AbstractNode.
+//
+// TODO(minkezhang): Support rollback in case errors happen so that
+// AddEphemeralNode is idempotent.
+func AddEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, error) {
+	n, err := g.NodeMap.Get(t)
+	if err != nil {
+		return 0, err
+	}
+
+	if n == nil {
+		n = &rtsspb.AbstractNode{IsEphemeral: true, TileCoordinate: utils.PB(t)}
+		g.NodeMap.Add(n)
+	}
+
+	var ephemeralKey int64
+	if n.GetIsEphemeral() {
+		for _, found := n.GetEphemeralKeys()[ephemeralKey]; found || ephemeralKey == 0; ephemeralKey = rand.Int63() {}
+		n.GetEphemeralKeys()[ephemeralKey] = true
+	}
+
+	c, err := cluster.ClusterCoordinateFromTileCoordinate(g.NodeMap.ClusterMap, t)
+	if err != nil {
+		return 0, err
+	}
+
+	borderNodes, err := g.NodeMap.GetByCluster(c)
+	if err != nil {
+		return 0, err
+	}
+
+	for _, borderNode := range borderNodes {
+		boundary, err := cluster.TileBoundary(g.NodeMap.ClusterMap, c)
+		if err != nil {
+			return 0, err
+		}
+		dimension, err := cluster.TileDimension(g.NodeMap.ClusterMap, c)
+		if err != nil {
+			return 0, err
+		}
+
+		_, cost, err := tileastar.Path(
+			tm,
+			tm.TileFromCoordinate(n.GetTileCoordinate()),
+			tm.TileFromCoordinate(borderNode.GetTileCoordinate()),
+			utils.PB(boundary),
+			utils.PB(dimension))
+		if err != nil {
+			return 0, err
+		}
+		if err := g.EdgeMap.Add(&rtsspb.AbstractEdge{
+			Source: n.GetTileCoordinate(),
+			Destination: borderNode.GetTileCoordinate(),
+			EdgeType: rtscpb.EdgeType_EDGE_TYPE_INTRA,
+			Weight: cost,
+		}); err != nil {
+			return 0, err
+		}
+	}
+
+	return ephemeralKey, nil
 }
 
-func RemoveEphemeralNode(g *Graph, t utils.MapCoordinate) error {
-	return notImplemented
+// RemoveEphemeralNode drops a temporary AbstractNode from the Graph. This is
+// a no-op if the input coordinate is a non-ephemeral AbstractNode instance.
+//
+// TODO(minkezhang): Support rollback in case errors happen so that
+// RemoveEphemeralNode is idempotent.
+func RemoveEphemeralNode(g *Graph, t utils.MapCoordinate, ephemeralKey int64) error {
+	n, err := g.NodeMap.Get(t)
+	if err != nil {
+		return err
+	}
+
+	delete(n.GetEphemeralKeys(), ephemeralKey)
+	if n.GetIsEphemeral() && len(n.GetEphemeralKeys()) == 0 {
+		g.NodeMap.Pop(t)
+		edges, err := g.EdgeMap.GetBySource(t)
+		if err != nil {
+			return err
+		}
+
+		for _, e := range edges {
+			if _, err := g.EdgeMap.Pop(utils.MC(e.GetSource()), utils.MC(e.GetDestination())); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // buildIntraEdge constructs a single AbstractEdge instance with the correct

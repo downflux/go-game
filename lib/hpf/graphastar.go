@@ -81,6 +81,8 @@ func (g graphImpl) Neighbours(n fastar.Node) []fastar.Node {
 //
 // The returned path object returns a reference to the internal AbstractNode
 // instances. They should be treated as read-only objects.
+//
+// TODO(minkezhang): Convert src, dest to be *rtsspb.Coordinate instead.
 func Path(tm *tile.Map, g *graph.Graph, src, dest *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, float64, error) {
 	if tm == nil {
 		return nil, 0, status.Error(codes.FailedPrecondition, "cannot have nil tile.Map input")

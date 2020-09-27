@@ -79,6 +79,8 @@ func (t graphImpl) Neighbours(n fastar.Node) []fastar.Node {
 // bounding box as defined by the tile.Map should be used here. The lower bound
 // of the bounding box is defined as the boundary Coordinate, and the size of
 // the box is specified by the dimension Coordinate.
+//
+// TODO(minkezhang): Convert src, dest to be *rtsspb.Coordinate instead.
 func Path(m *tile.Map, src, dest *tile.Tile, boundary, dimension *rtsspb.Coordinate) ([]*tile.Tile, float64, error) {
 	if m == nil {
 		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil tile.Map input")
