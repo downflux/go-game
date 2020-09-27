@@ -100,7 +100,6 @@ var (
 
 type buildGraphInput struct {
 	tileDimension *rtsspb.Coordinate
-	level         int32
 }
 
 type aStarResult struct {
@@ -119,25 +118,25 @@ func TestPath(t *testing.T) {
 		{
 			name: "TrivialReachablePath",
 			tm:   trivialOpenMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
-			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			src:  &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			dest: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
 			want: aStarResult{
 				path: []*rtsspb.AbstractNode{
-					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
 				},
 			},
 		},
 		{
 			name: "TrivialIntraClusterPath",
 			tm:   simpleLongOpenMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 2, Y: 1}, level: 1},
-			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
-			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 0}},
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 2, Y: 1}},
+			src:  &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
+			dest: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 0}},
 			want: aStarResult{
 				path: []*rtsspb.AbstractNode{
-					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
-					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 0}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 0}},
 				},
 				cost: 1,
 			},
@@ -145,13 +144,13 @@ func TestPath(t *testing.T) {
 		{
 			name: "TrivialInterClusterPath",
 			tm:   trivialOpenMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
-			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			src:  &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			dest: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
 			want: aStarResult{
 				path: []*rtsspb.AbstractNode{
-					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
 				},
 				cost: 1,
 			},
@@ -159,9 +158,9 @@ func TestPath(t *testing.T) {
 		{
 			name: "TrivialClosedPath",
 			tm:   trivialClosedMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
-			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			src:  &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			dest: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),
@@ -170,9 +169,9 @@ func TestPath(t *testing.T) {
 		{
 			name: "TrivialSemiOpenPath",
 			tm:   trivialClosedMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
-			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			src:  &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			dest: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),
@@ -181,9 +180,9 @@ func TestPath(t *testing.T) {
 		{
 			name: "SimpleBlockedPath",
 			tm:   simpleBlockedMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}, level: 1},
-			src:  &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-			dest: &rtsspb.AbstractNode{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
+			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
+			src:  &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			dest: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),
@@ -198,7 +197,7 @@ func TestPath(t *testing.T) {
 				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
-			g, err := graph.BuildGraph(tm, c.g.tileDimension, c.g.level)
+			g, err := graph.BuildGraph(tm, c.g.tileDimension)
 			if err != nil {
 				t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 			}

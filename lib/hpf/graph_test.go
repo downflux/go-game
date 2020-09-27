@@ -184,7 +184,6 @@ func TestBuildTransitions(t *testing.T) {
 		{
 			name: "TrivialOpenMap",
 			cm: &rtsspb.ClusterMap{
-				Level:            1,
 				TileDimension:    &rtsspb.Coordinate{X: 1, Y: 3},
 				TileMapDimension: &rtsspb.Coordinate{X: 2, Y: 6},
 			},
@@ -207,44 +206,20 @@ func TestBuildTransitions(t *testing.T) {
 			},
 			want: []*rtsspb.Transition{
 				{
-					N1: &rtsspb.AbstractNode{
-						Level:          1,
-						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
-					},
-					N2: &rtsspb.AbstractNode{
-						Level:          1,
-						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1},
-					},
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{
-						Level:          1,
-						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 2},
-					},
-					N2: &rtsspb.AbstractNode{
-						Level:          1,
-						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 3},
-					},
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 2}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 3}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{
-						Level:          1,
-						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2},
-					},
-					N2: &rtsspb.AbstractNode{
-						Level:          1,
-						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 3},
-					},
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 3}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{
-						Level:          1,
-						TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 4},
-					},
-					N2: &rtsspb.AbstractNode{
-						Level:          1,
-						TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 4},
-					},
+					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 4}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 4}},
 				},
 			},
 		},
@@ -282,18 +257,11 @@ func TestBuildIntraEdgeError(t *testing.T) {
 			name: "NonAdjacentClusters",
 			tm:   simpleMapProto,
 			cm: &rtsspb.ClusterMap{
-				Level:            1,
 				TileDimension:    &rtsspb.Coordinate{X: 1, Y: 2},
 				TileMapDimension: simpleMapProto.GetDimension(),
 			},
-			n1: &rtsspb.AbstractNode{
-				Level:          1,
-				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-			},
-			n2: &rtsspb.AbstractNode{
-				Level:          1,
-				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 3},
-			},
+			n1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			n2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 3}},
 		},
 	}
 
@@ -328,20 +296,12 @@ func TestBuildIntraEdge(t *testing.T) {
 			name: "ZeroLengthEdge",
 			tm:   simpleMapProto,
 			cm: &rtsspb.ClusterMap{
-				Level:            1,
 				TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
 				TileMapDimension: simpleMapProto.GetDimension(),
 			},
-			n1: &rtsspb.AbstractNode{
-				Level:          1,
-				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-			},
-			n2: &rtsspb.AbstractNode{
-				Level:          1,
-				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
-			},
+			n1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+			n2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
 			want: &rtsspb.AbstractEdge{
-				Level:       1,
 				Source:      &rtsspb.Coordinate{X: 0, Y: 0},
 				Destination: &rtsspb.Coordinate{X: 0, Y: 0},
 				Weight:      0,
@@ -352,20 +312,16 @@ func TestBuildIntraEdge(t *testing.T) {
 			name: "AdjacentNode",
 			tm:   simpleMapProto,
 			cm: &rtsspb.ClusterMap{
-				Level:            1,
 				TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
 				TileMapDimension: simpleMapProto.GetDimension(),
 			},
 			n1: &rtsspb.AbstractNode{
-				Level:          1,
 				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
 			},
 			n2: &rtsspb.AbstractNode{
-				Level:          1,
 				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1},
 			},
 			want: &rtsspb.AbstractEdge{
-				Level:       1,
 				Source:      &rtsspb.Coordinate{X: 0, Y: 0},
 				Destination: &rtsspb.Coordinate{X: 0, Y: 1},
 				Weight:      1,
@@ -376,16 +332,13 @@ func TestBuildIntraEdge(t *testing.T) {
 			name: "BlockedNodes",
 			tm:   closedMapProto,
 			cm: &rtsspb.ClusterMap{
-				Level:            1,
 				TileDimension:    &rtsspb.Coordinate{X: 1, Y: 3},
 				TileMapDimension: closedMapProto.GetDimension(),
 			},
 			n1: &rtsspb.AbstractNode{
-				Level:          1,
 				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0},
 			},
 			n2: &rtsspb.AbstractNode{
-				Level:          1,
 				TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 2},
 			},
 			want: nil,
@@ -420,15 +373,8 @@ func TestBuildGraphError(t *testing.T) {
 	testConfigs := []struct {
 		name             string
 		tm               *rtsspb.TileMap
-		level            int32
 		clusterDimension *rtsspb.Coordinate
 	}{
-		{
-			name:             "UnimplementedHigherLevelError",
-			tm:               simpleMapProto,
-			level:            2,
-			clusterDimension: &rtsspb.Coordinate{X: 2, Y: 2},
-		},
 	}
 
 	for _, c := range testConfigs {
@@ -438,14 +384,14 @@ func TestBuildGraphError(t *testing.T) {
 				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
-			if _, err := BuildGraph(tm, c.clusterDimension, c.level); err == nil {
+			if _, err := BuildGraph(tm, c.clusterDimension); err == nil {
 				t.Error("BuildGraph() = _, nil, want a non-nil error")
 			}
 		})
 	}
 }
 
-func newabstractnode(cm *cluster.Map, nodes []*rtsspb.AbstractNode) *node.Map {
+func newAbstractNode(cm *cluster.Map, nodes []*rtsspb.AbstractNode) *node.Map {
 	nm := &node.Map{
 		ClusterMap: cm,
 	}
@@ -456,7 +402,7 @@ func newabstractnode(cm *cluster.Map, nodes []*rtsspb.AbstractNode) *node.Map {
 	return nm
 }
 
-func newabstractedge(edges []*rtsspb.AbstractEdge) *edge.Map {
+func newAbstractEdge(edges []*rtsspb.AbstractEdge) *edge.Map {
 	em := &edge.Map{}
 	for _, e := range edges {
 		em.Add(e)
@@ -467,7 +413,6 @@ func newabstractedge(edges []*rtsspb.AbstractEdge) *edge.Map {
 
 func TestBuildGraph(t *testing.T) {
 	simpleMapClusterMapProto := &rtsspb.ClusterMap{
-		Level:            1,
 		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
 		TileMapDimension: simpleMapProto.GetDimension(),
 	}
@@ -479,78 +424,63 @@ func TestBuildGraph(t *testing.T) {
 	testConfigs := []struct {
 		name             string
 		tm               *rtsspb.TileMap
-		level            int32
 		clusterDimension *rtsspb.Coordinate
 		want             *Graph
 	}{
 		{
 			name:             "SimpleMap",
 			tm:               simpleMapProto,
-			level:            1,
 			clusterDimension: simpleMapClusterMap.Val.GetTileDimension(),
 			want: &Graph{
-				Level: 1,
-				NodeMap: []*node.Map{
-					newabstractnode(simpleMapClusterMap, []*rtsspb.AbstractNode{
-						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
-						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
-						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 1}},
-						{Level: 1, TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 2}},
-					}),
-				},
-				EdgeMap: []*edge.Map{
-					newabstractedge([]*rtsspb.AbstractEdge{
+				NodeMap: newAbstractNode(simpleMapClusterMap, []*rtsspb.AbstractNode{
+						{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
+						{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
+						{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 1}},
+						{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 2}},
+				}),
+				EdgeMap: newAbstractEdge([]*rtsspb.AbstractEdge{
 						{
-							Level:       1,
 							Source:      &rtsspb.Coordinate{X: 1, Y: 1},
 							Destination: &rtsspb.Coordinate{X: 1, Y: 2},
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 							Weight:      1,
 						}, {
-							Level:       1,
 							Source:      &rtsspb.Coordinate{X: 1, Y: 1},
 							Destination: &rtsspb.Coordinate{X: 2, Y: 1},
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 							Weight:      1,
 						}, {
-							Level:       1,
 							Source:      &rtsspb.Coordinate{X: 1, Y: 2},
 							Destination: &rtsspb.Coordinate{X: 2, Y: 2},
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 							Weight:      1,
 						}, {
-							Level:       1,
 							Source:      &rtsspb.Coordinate{X: 1, Y: 2},
 							Destination: &rtsspb.Coordinate{X: 1, Y: 1},
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 							Weight:      1,
 						}, {
-							Level:       1,
 							Source:      &rtsspb.Coordinate{X: 2, Y: 1},
 							Destination: &rtsspb.Coordinate{X: 2, Y: 2},
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 							Weight:      1,
 						}, {
-							Level:       1,
 							Source:      &rtsspb.Coordinate{X: 2, Y: 1},
 							Destination: &rtsspb.Coordinate{X: 1, Y: 1},
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 							Weight:      1,
 						}, {
-							Level:       1,
 							Source:      &rtsspb.Coordinate{X: 2, Y: 2},
 							Destination: &rtsspb.Coordinate{X: 2, Y: 1},
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 							Weight:      1,
 						}, {
-							Level:       1,
 							Source:      &rtsspb.Coordinate{X: 2, Y: 2},
 							Destination: &rtsspb.Coordinate{X: 1, Y: 2},
 							EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 							Weight:      1,
 						},
 					}),
-				},
 			},
 		},
 	}
@@ -562,7 +492,7 @@ func TestBuildGraph(t *testing.T) {
 				t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 			}
 
-			got, err := BuildGraph(tm, c.clusterDimension, c.level)
+			got, err := BuildGraph(tm, c.clusterDimension)
 			if err != nil {
 				t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 			}
@@ -581,16 +511,13 @@ func TestBuildGraph(t *testing.T) {
 }
 
 func TestGraphGetNeighbors(t *testing.T) {
-	const level = 1
 	clusterDimension := &rtsspb.Coordinate{X: 3, Y: 3}
 	nodeCoordinate := &rtsspb.Coordinate{X: 2, Y: 1}
 	want := []*rtsspb.AbstractNode{
 		{
-			Level:          level,
 			TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2},
 		},
 		{
-			Level:          level,
 			TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 1},
 		},
 	}
@@ -600,12 +527,12 @@ func TestGraphGetNeighbors(t *testing.T) {
 		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
 
-	g, err := BuildGraph(tm, clusterDimension, level)
+	g, err := BuildGraph(tm, clusterDimension)
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
 
-	n, err := g.NodeMap[ListIndex(level)].Get(utils.MC(nodeCoordinate))
+	n, err := g.NodeMap.Get(utils.MC(nodeCoordinate))
 	if err != nil {
 		t.Fatalf("Get() = _, %v, want = _, nil", err)
 	}
