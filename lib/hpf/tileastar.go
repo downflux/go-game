@@ -90,7 +90,7 @@ func Path(m *tile.Map, src, dest utils.MapCoordinate, boundary, dimension *rtssp
 	if tSrc == nil || tDest == nil {
 		return nil, 0, status.Errorf(codes.NotFound, "a Tile cannot be found with the input coordinates")
 	}
-	if tSrc.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED || tDest.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
+	if math.IsInf(m.C[tSrc.TerrainType()], 0) || math.IsInf(m.C[tDest.TerrainType()], 0) {
 		return nil, math.Inf(0), nil
 	}
 

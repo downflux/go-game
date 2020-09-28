@@ -137,7 +137,8 @@ func AddEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, err
 
 	var ephemeralKey int64
 	if n.GetIsEphemeral() {
-		for _, found := n.GetEphemeralKeys()[ephemeralKey]; found || ephemeralKey == 0; ephemeralKey = rand.Int63() {}
+		for _, found := n.GetEphemeralKeys()[ephemeralKey]; found || ephemeralKey == 0; ephemeralKey = rand.Int63() {
+		}
 		n.GetEphemeralKeys()[ephemeralKey] = true
 	}
 
@@ -171,10 +172,10 @@ func AddEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, err
 			return 0, err
 		}
 		if err := g.EdgeMap.Add(&rtsspb.AbstractEdge{
-			Source: n.GetTileCoordinate(),
+			Source:      n.GetTileCoordinate(),
 			Destination: borderNode.GetTileCoordinate(),
-			EdgeType: rtscpb.EdgeType_EDGE_TYPE_INTRA,
-			Weight: cost,
+			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+			Weight:      cost,
 		}); err != nil {
 			return 0, err
 		}

@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"math"
 	"testing"
 
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
@@ -56,6 +57,7 @@ var (
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 
