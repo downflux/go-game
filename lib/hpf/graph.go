@@ -163,8 +163,8 @@ func AddEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, err
 
 		_, cost, err := tileastar.Path(
 			tm,
-			tm.TileFromCoordinate(n.GetTileCoordinate()),
-			tm.TileFromCoordinate(borderNode.GetTileCoordinate()),
+			utils.MC(n.GetTileCoordinate()),
+			utils.MC(borderNode.GetTileCoordinate()),
 			utils.PB(boundary),
 			utils.PB(dimension))
 		if err != nil {
@@ -239,8 +239,8 @@ func buildIntraEdge(tm *tile.Map, cm *cluster.Map, n1, n2 *rtsspb.AbstractNode) 
 
 	p, cost, err := tileastar.Path(
 		tm,
-		tm.TileFromCoordinate(n1.GetTileCoordinate()),
-		tm.TileFromCoordinate(n2.GetTileCoordinate()),
+		utils.MC(n1.GetTileCoordinate()),
+		utils.MC(n2.GetTileCoordinate()),
 		utils.PB(tileBoundary),
 		utils.PB(tileDimension))
 	if err != nil {
