@@ -95,7 +95,6 @@ func TestMapAddError(t *testing.T) {
 		m    Map
 		n    *rtsspb.AbstractNode
 	}{
-		{name: "LevelMismatch", m: Map{ClusterMap: trivialClusterMap}, n: &rtsspb.AbstractNode{Level: 1, TileCoordinate: tileCoordinate}},
 		{
 			name: "AlreadyExist",
 			m: Map{
@@ -107,8 +106,7 @@ func TestMapAddError(t *testing.T) {
 						},
 					},
 				},
-			}, n: &rtsspb.AbstractNode{
-				Level: 1, TileCoordinate: tileCoordinate},
+			}, n: &rtsspb.AbstractNode{TileCoordinate: tileCoordinate},
 		},
 	}
 	for _, c := range testConfigs {
