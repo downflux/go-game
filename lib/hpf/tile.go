@@ -119,6 +119,8 @@ func (m *Map) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
 }
 
 // Neighbors returns the adjacent Tiles of an input Tile object.
+//
+// TODO(minkezhang): Filter by explicit Cost, not by TerrainType.
 func (m *Map) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 	src := m.TileFromCoordinate(coordinate)
 	if src == nil {
