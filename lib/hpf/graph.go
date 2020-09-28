@@ -4,6 +4,7 @@ package graph
 
 import (
 	"math"
+	"math/rand"
 
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
@@ -27,15 +28,7 @@ var (
 
 // D gets exact cost between two neighboring AbstractNodes.
 func D(g *Graph, src, dst *rtsspb.AbstractNode) (float64, error) {
-	i := ListIndex(src.GetLevel())
-	if ListIndex(dst.GetLevel()) != i {
-		return 0, status.Error(codes.FailedPrecondition, "input AbstractNode levels do not match")
-	}
-	if i < 0 || i >= int32(len(g.EdgeMap)) {
-		return 0, status.Error(codes.OutOfRange, "input AbstractNode level does not exist in Graph")
-	}
-
-	edge, err := g.EdgeMap[i].Get(utils.MC(src.GetTileCoordinate()), utils.MC(dst.GetTileCoordinate()))
+	edge, err := g.EdgeMap.Get(utils.MC(src.GetTileCoordinate()), utils.MC(dst.GetTileCoordinate()))
 	if err != nil {
 		return 0, err
 	}
@@ -55,91 +48,41 @@ func H(src, dst *rtsspb.AbstractNode) (float64, error) {
 // path planning call on very large maps via hierarchical A* search, as
 // described in Botea 2004.
 type Graph struct {
-	// Level is the maximum hierarchy of AbstractNodes in this graph;
-	// this is a positive, non-zero integer. The 0th level here loosely
-	// refers to the underlying base map.
-	Level int32
+	// NodeMap is a hash of AbstractNodes.
+	NodeMap *node.Map
 
-	// NodeMap contains a Level: node.Map dict representing the
-	// AbstractNodes per Level. As per Graph.ClusterMap, there
-	// is a corresponding node.Map object per level. Nodes
-	// within a specific node.Map may move between levels, and
-	// may be deleted when the underlying terrain changes.
-	//
-	// The index of the map is L - 1 -- that is, the first element
-	// of the list is the first level of abstraction.
-	NodeMap []*node.Map
-
-	// EdgeMap contains a Level: edge.Map dict representing the
-	// AbstractEdges per Level. Edges may move between levels and may
-	// be deleted when the underlying terrain changes.
-	//
-	// The index of the map is L - 1 -- that is, the first element
-	// of the list is the first level of abstraction.
-	EdgeMap []*edge.Map
-}
-
-// ListIndex transforms a proto abstract hierarchy L into the appropriate
-// addressable index for an Graph.
-func ListIndex(l int32) int32 {
-	return l - 1
-}
-
-// AbstractHierarchyLevel transforms an Graph object index into a proto
-// abstract hierarchy L.
-func AbstractHierarchyLevel(i int32) int32 {
-	return i + 1
+	// EdgeMap is a hash of AbstractEdges.
+	EdgeMap *edge.Map
 }
 
 // BuildGraph build a higher-level representation of a tile.Map
 // populated with information about how to travel between different subsections
-// between tiles. The level specified in input represents the number of
-// abstractions that should be built for this map (l > 1 is useful for very,
-// very large maps), and the tileDimension represents a subsection size.
-func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*Graph, error) {
-	if level < 1 {
-		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
-	}
-
-	// TODO(minkezhang): Add higher-level node generation.
-	if level > 1 {
-		return nil, notImplemented
-	}
-
-	g := &Graph{
-		Level: level,
-	}
-
+// between tiles. tileDimension represents a subsection ("cluster") size.
+func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate) (*Graph, error) {
 	// Create all node and edge map instances. These will be referenced and
 	// mutated later on by passing the Graph object as a function
 	// arg.
-	for i := int32(0); i < level; i++ {
-		cm, err := cluster.BuildMap(tm.D, &rtsspb.Coordinate{
-			X: int32(math.Pow(float64(tileDimension.GetX()), float64(AbstractHierarchyLevel(i)))),
-			Y: int32(math.Pow(float64(tileDimension.GetY()), float64(AbstractHierarchyLevel(i)))),
-		}, AbstractHierarchyLevel(i))
-		if err != nil {
-			return nil, err
-		}
+	cm, err := cluster.BuildMap(tm.D, tileDimension)
+	if err != nil {
+		return nil, err
+	}
 
-		g.NodeMap = append(g.NodeMap, &node.Map{
-			ClusterMap: cm,
-		})
-		g.EdgeMap = append(g.EdgeMap, &edge.Map{})
+	g := &Graph{
+		NodeMap: &node.Map{ClusterMap: cm},
+		EdgeMap: &edge.Map{},
 	}
 
 	// Build the Tile-Tile edges which connect between two adjacent
-	// clusters in the L-1 cluster.Map object and store this data into the
+	// clusters in the cluster.Map object and store this data into the
 	// Graph.
-	transitions, err := buildTransitions(tm, g.NodeMap[ListIndex(1)].ClusterMap)
+	transitions, err := buildTransitions(tm, g.NodeMap.ClusterMap)
 	if err != nil {
 		return nil, err
 	}
 	for _, t := range transitions {
-		g.NodeMap[ListIndex(1)].Add(t.GetN1())
-		g.NodeMap[ListIndex(1)].Add(t.GetN2())
-		g.EdgeMap[ListIndex(1)].Add(&rtsspb.AbstractEdge{
-			Level:       1,
+		g.NodeMap.Add(t.GetN1())
+		g.NodeMap.Add(t.GetN2())
+		g.EdgeMap.Add(&rtsspb.AbstractEdge{
 			Source:      t.GetN1().GetTileCoordinate(),
 			Destination: t.GetN2().GetTileCoordinate(),
 			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
@@ -147,33 +90,125 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate, level int32) (*G
 		})
 	}
 
-	// Build Tile-Tile edges within a cluster of an L-1 cluster.Map.
-	for _, c := range cluster.Iterator(g.NodeMap[ListIndex(1)].ClusterMap) {
-		nodes, err := g.NodeMap[ListIndex(1)].GetByCluster(c)
+	// Build Tile-Tile edges within a cluster of a cluster.Map.
+	for _, c := range cluster.Iterator(g.NodeMap.ClusterMap) {
+		nodes, err := g.NodeMap.GetByCluster(c)
 		if err != nil {
 			return nil, err
 		}
 		for _, n1 := range nodes {
 			for _, n2 := range nodes {
 				if n1 != n2 {
-					e, err := buildIntraEdge(tm, g.NodeMap[ListIndex(1)].ClusterMap, n1, n2)
+					e, err := buildIntraEdge(tm, g.NodeMap.ClusterMap, n1, n2)
 					if err != nil {
 						return nil, err
 					}
 
 					if e != nil {
-						g.EdgeMap[ListIndex(1)].Add(e)
+						g.EdgeMap.Add(e)
 					}
 				}
 			}
 		}
 	}
 
-	for i := int32(1); i < level; i++ {
-		// TODO(minkezhang): Implement for L > 1.
+	return g, nil
+}
+
+// AddEphemeralNode adds a temporary AbstractNode to the Graph and connects it
+// to the rest of the cluster via AbstractEdge instances.
+//
+// Function returns a UUID which needs to be tracked by the caller to be passed
+// into RemoveEphemeralNode. This function is a no-op if the input coordinates
+// match a non-ephemeral AbstractNode.
+//
+// TODO(minkezhang): Support rollback in case errors happen so that
+// AddEphemeralNode is idempotent.
+func AddEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, error) {
+	n, err := g.NodeMap.Get(t)
+	if err != nil {
+		return 0, err
 	}
 
-	return g, nil
+	if n == nil {
+		n = &rtsspb.AbstractNode{IsEphemeral: true, TileCoordinate: utils.PB(t)}
+		g.NodeMap.Add(n)
+	}
+
+	var ephemeralKey int64
+	if n.GetIsEphemeral() {
+		for _, found := n.GetEphemeralKeys()[ephemeralKey]; found || ephemeralKey == 0; ephemeralKey = rand.Int63() {}
+		n.GetEphemeralKeys()[ephemeralKey] = true
+	}
+
+	c, err := cluster.ClusterCoordinateFromTileCoordinate(g.NodeMap.ClusterMap, t)
+	if err != nil {
+		return 0, err
+	}
+
+	borderNodes, err := g.NodeMap.GetByCluster(c)
+	if err != nil {
+		return 0, err
+	}
+
+	for _, borderNode := range borderNodes {
+		boundary, err := cluster.TileBoundary(g.NodeMap.ClusterMap, c)
+		if err != nil {
+			return 0, err
+		}
+		dimension, err := cluster.TileDimension(g.NodeMap.ClusterMap, c)
+		if err != nil {
+			return 0, err
+		}
+
+		_, cost, err := tileastar.Path(
+			tm,
+			tm.TileFromCoordinate(n.GetTileCoordinate()),
+			tm.TileFromCoordinate(borderNode.GetTileCoordinate()),
+			utils.PB(boundary),
+			utils.PB(dimension))
+		if err != nil {
+			return 0, err
+		}
+		if err := g.EdgeMap.Add(&rtsspb.AbstractEdge{
+			Source: n.GetTileCoordinate(),
+			Destination: borderNode.GetTileCoordinate(),
+			EdgeType: rtscpb.EdgeType_EDGE_TYPE_INTRA,
+			Weight: cost,
+		}); err != nil {
+			return 0, err
+		}
+	}
+
+	return ephemeralKey, nil
+}
+
+// RemoveEphemeralNode drops a temporary AbstractNode from the Graph. This is
+// a no-op if the input coordinate is a non-ephemeral AbstractNode instance.
+//
+// TODO(minkezhang): Support rollback in case errors happen so that
+// RemoveEphemeralNode is idempotent.
+func RemoveEphemeralNode(g *Graph, t utils.MapCoordinate, ephemeralKey int64) error {
+	n, err := g.NodeMap.Get(t)
+	if err != nil {
+		return err
+	}
+
+	delete(n.GetEphemeralKeys(), ephemeralKey)
+	if n.GetIsEphemeral() && len(n.GetEphemeralKeys()) == 0 {
+		g.NodeMap.Pop(t)
+		edges, err := g.EdgeMap.GetBySource(t)
+		if err != nil {
+			return err
+		}
+
+		for _, e := range edges {
+			if _, err := g.EdgeMap.Pop(utils.MC(e.GetSource()), utils.MC(e.GetDestination())); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // buildIntraEdge constructs a single AbstractEdge instance with the correct
@@ -214,7 +249,6 @@ func buildIntraEdge(tm *tile.Map, cm *cluster.Map, n1, n2 *rtsspb.AbstractNode) 
 
 	if p != nil {
 		return &rtsspb.AbstractEdge{
-			Level:       cm.Val.GetLevel(),
 			Source:      n1.GetTileCoordinate(),
 			Destination: n2.GetTileCoordinate(),
 			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
@@ -244,28 +278,16 @@ func buildTransitions(tm *tile.Map, cm *cluster.Map) ([]*rtsspb.Transition, erro
 			}
 		}
 	}
-	for _, t := range ts {
-		t.GetN1().Level = cm.Val.GetLevel()
-		t.GetN2().Level = cm.Val.GetLevel()
-	}
 	return ts, nil
 }
 
-// Neighbors returns all adjacent AbstractNode instances of the same hierarchy
-// level of the input. Two AbstractNode instances are considered adjacent if
-// there exists an edge defined between the two instances. Note that the
-// instances returned here also include ephemeral AbstractNodes
-// (n.GetEphemeralKey() > 0) -- DFS should take care not to expand these
-// secondary neighbors.
+// Neighbors returns all adjacent AbstractNode instances in the AbstractGraph.
+// Two AbstractNode instances are considered adjacent if there exists an edge
+// defined between the two instances. Note that the instances returned here
+// also include ephemeral AbstractNodes (n.GetIsEphemeral() == true) -- DFS
+// should take care not to expand these second-order nodes.
 func (g *Graph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error) {
-	i := ListIndex(n.GetLevel())
-	if i < 0 || i > int32(len(g.NodeMap)) || i > int32(len(g.EdgeMap)) {
-		return nil, status.Error(codes.FailedPrecondition, "invalid level specified for input")
-	}
-
-	nm := g.NodeMap[i]
-
-	node, err := nm.Get(utils.MC(n.GetTileCoordinate()))
+	node, err := g.NodeMap.Get(utils.MC(n.GetTileCoordinate()))
 	if err != nil {
 		return nil, err
 	}
@@ -273,8 +295,7 @@ func (g *Graph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error
 		return nil, status.Error(codes.FailedPrecondition, "cannot find specified node")
 	}
 
-	em := g.EdgeMap[i]
-	edges, err := em.GetBySource(utils.MC(node.GetTileCoordinate()))
+	edges, err := g.EdgeMap.GetBySource(utils.MC(node.GetTileCoordinate()))
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +309,7 @@ func (g *Graph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error
 			d = e.GetSource()
 		}
 
-		t, err := nm.Get(utils.MC(d))
+		t, err := g.NodeMap.Get(utils.MC(d))
 		if err != nil {
 			return nil, err
 		}

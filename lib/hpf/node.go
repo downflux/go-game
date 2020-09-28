@@ -28,7 +28,7 @@ type Map struct {
 
 // GetByCluster filters the Map by the input cluster coordinate
 // and returns all AbstractNode objects that are bounded by the input.
-func (nm Map) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error) {
+func (nm *Map) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error) {
 	if err := cluster.ValidateClusterInRange(nm.ClusterMap, c); err != nil {
 		return nil, err
 	}
@@ -78,10 +78,6 @@ func (nm *Map) Pop(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 
 // Add appends an AbstractNode instance into the Map collection.
 func (nm *Map) Add(n *rtsspb.AbstractNode) error {
-	if n.GetLevel() != nm.ClusterMap.Val.GetLevel() {
-		return status.Error(codes.FailedPrecondition, "input mismatch, given AbstractNode does not have the same hierarchy level as the cluster.Map bound to the tile.Map")
-	}
-
 	t := utils.MC(n.GetTileCoordinate())
 
 	existingNode, err := nm.Get(t)

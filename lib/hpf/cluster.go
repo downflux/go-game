@@ -187,14 +187,9 @@ func GetRelativeDirection(m *Map, c, other utils.MapCoordinate) (rtscpb.Directio
 // organize and group Tile objects in the underlying tile.Map. Map does
 // not link to the actual Tile -- we need to manually pass the tile.Map object
 // along when looking up the Tile by a given coordinate.
-func BuildMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate, level int32) (*Map, error) {
-	if level < 1 {
-		return nil, status.Error(codes.FailedPrecondition, "level must be a positive non-zero integer")
-	}
-
+func BuildMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate) (*Map, error) {
 	return &Map{
 		Val: &rtsspb.ClusterMap{
-			Level:            level,
 			TileDimension:    tileDimension,
 			TileMapDimension: tileMapDimension,
 		},

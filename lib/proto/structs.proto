@@ -27,13 +27,11 @@ message TileMap {
 }
 
 message ClusterMap {
-	int32 level = 1;
-
 	// Base dimension per cluster.
-	Coordinate tile_dimension = 2;
+	Coordinate tile_dimension = 1;
 
 	// Underlying TileMap dimension.
-	Coordinate tile_map_dimension = 3;
+	Coordinate tile_map_dimension = 2;
 }
 
 message CoordinateSlice {
@@ -48,22 +46,20 @@ message Transition {
 }
 
 message AbstractGraph {
-	int32 level = 1;
-	repeated ClusterMap cluster_maps = 2;
-	repeated AbstractNode nodes = 3;
-	repeated AbstractEdge edges = 4;
+	repeated ClusterMap cluster_maps = 1;
+	repeated AbstractNode nodes = 2;
+	repeated AbstractEdge edges = 3;
 }
 
 message AbstractNode {
-	int32 level = 1;
-	int32 ephemeral_key = 2;
+	bool is_ephemeral = 1;
+	map<int64, bool> ephemeral_keys = 2;
 	Coordinate tile_coordinate = 3;
 }
 
 message AbstractEdge {
-	int32 level = 1;
-	Coordinate source = 2;
-	Coordinate destination = 3;
-	rts_pathing.lib.proto.constants.EdgeType edge_type = 4;
-	double weight = 5;
+	Coordinate source = 1;
+	Coordinate destination = 2;
+	rts_pathing.lib.proto.constants.EdgeType edge_type = 3;
+	double weight = 4;
 }
