@@ -152,6 +152,10 @@ func AddEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, err
 	}
 
 	for _, borderNode := range borderNodes {
+		if borderNode.GetIsEphemeral() {
+			continue
+		}
+
 		boundary, err := cluster.TileBoundary(g.NodeMap.ClusterMap, c)
 		if err != nil {
 			return 0, err
