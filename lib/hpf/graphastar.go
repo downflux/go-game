@@ -108,8 +108,8 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest *rtsspb.AbstractNode) ([]*rtss
 		return dFunc(g, a, b)
 	}
 	nodes := fastar.FindPath(graphImpl{
-		g: g,
-		src: src,
+		g:    g,
+		src:  src,
 		dest: dest,
 	}, srcRef, destRef, d, hFunc)
 
