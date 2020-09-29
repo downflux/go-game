@@ -97,7 +97,7 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate) (*Graph, error) 
 			return nil, err
 		}
 		for _, n := range nodes {
-			if err := connect(tm, g, n); err != nil {
+			if err := connect(tm, g, utils.MC(n.GetTileCoordinate())); err != nil {
 				return nil, err
 			}
 		}
@@ -112,8 +112,13 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate) (*Graph, error) 
 //
 // connect does not rebuild edges if they already exist between two nodes, and
 // does not create an edge between two ephemeral AbstractNode instances.
-func connect(tm *tile.Map, g *Graph, n1 *rtsspb.AbstractNode) error {
-	c, err := cluster.ClusterCoordinateFromTileCoordinate(g.NodeMap.ClusterMap, utils.MC(n1.GetTileCoordinate()))
+func connect(tm *tile.Map, g *Graph, t utils.MapCoordinate) error {
+	n1, err := g.NodeMap.Get(t)
+	if err != nil {
+		return err
+	}
+
+	c, err := cluster.ClusterCoordinateFromTileCoordinate(g.NodeMap.ClusterMap, t)
 	if err != nil {
 		return err
 	}
@@ -196,7 +201,7 @@ func InsertEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, 
 		n.GetEphemeralKeys()[ephemeralKey] = true
 	}
 
-	if err := connect(tm, g, n); err != nil {
+	if err := connect(tm, g, t); err != nil {
 		return 0, err
 	}
 	return ephemeralKey, nil

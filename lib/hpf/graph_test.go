@@ -151,7 +151,7 @@ func abstractEdgeEqual(e1, e2 *rtsspb.AbstractEdge) bool {
 	)
 }
 
-func abstractedgeEqual(em1, em2 edge.Map) bool {
+func edgeMapEqual(em1, em2 edge.Map) bool {
 	for _, e1 := range em1.Iterator() {
 		e2, err := em2.Get(utils.MC(e1.GetSource()), utils.MC(e1.GetDestination()))
 		if err != nil || e2 == nil {
@@ -375,7 +375,7 @@ func TestBuildGraph(t *testing.T) {
 			if diff := cmp.Diff(
 				c.want,
 				got,
-				cmp.Comparer(abstractedgeEqual),
+				cmp.Comparer(edgeMapEqual),
 				cmp.AllowUnexported(edge.Map{}, node.Map{}),
 				protocmp.Transform(),
 			); diff != "" {
@@ -426,5 +426,124 @@ func TestGraphGetNeighbors(t *testing.T) {
 		protocmp.Transform(),
 		cmpopts.SortSlices(nodeLess)); diff != "" {
 		t.Errorf("Neighbors() mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestConnect(t *testing.T) {
+	connectEdgeNodeCoordinate := &rtsspb.Coordinate{X: 0, Y: 0}
+	connectEdgeNodeMap, err := tile.ImportMap(simpleMapProto)
+	if err != nil {
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
+	}
+	connectEdgeNodeGraph, err := BuildGraph(connectEdgeNodeMap, simpleMapProto.GetDimension())
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+	for _, tc := range []*rtsspb.Coordinate{
+		{X: 0, Y: 1},
+		connectEdgeNodeCoordinate,
+	} {
+		if err := connectEdgeNodeGraph.NodeMap.Add(&rtsspb.AbstractNode{TileCoordinate: tc}); err != nil {
+			t.Fatalf("Add() = %v, want = nil", err)
+		}
+	}
+
+	connectEphemeralNodeCoordinate := &rtsspb.Coordinate{X: 0, Y: 0}
+	connectEphemeralNodeMap, err := tile.ImportMap(simpleMapProto)
+	if err != nil {
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
+	}
+	connectEphemeralNodeGraph, err := BuildGraph(connectEphemeralNodeMap, simpleMapProto.GetDimension())
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+	if err := connectEphemeralNodeGraph.NodeMap.Add(&rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}, IsEphemeral: true}); err != nil {
+		t.Fatalf("Add() = %v, want = nil", err)
+	}
+	if err := connectEphemeralNodeGraph.NodeMap.Add(&rtsspb.AbstractNode{TileCoordinate: connectEphemeralNodeCoordinate}); err != nil {
+		t.Fatalf("Add() = %v, want = nil", err)
+	}
+
+	noConnectEphemeralNodeCoordinate := &rtsspb.Coordinate{X: 0, Y: 0}
+	noConnectEphemeralNodeMap, err := tile.ImportMap(simpleMapProto)
+	if err != nil {
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
+	}
+	noConnectEphemeralNodeGraph, err := BuildGraph(noConnectEphemeralNodeMap, simpleMapProto.GetDimension())
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+	for _, tc := range []*rtsspb.Coordinate{
+		{X: 0, Y: 1},
+		noConnectEphemeralNodeCoordinate,
+	} {
+		if err := noConnectEphemeralNodeGraph.NodeMap.Add(&rtsspb.AbstractNode{TileCoordinate: tc, IsEphemeral: true}); err != nil {
+			t.Fatalf("Add() = %v, want = nil", err)
+		}
+	}
+
+	testConfigs := []struct {
+		name string
+		tm   *tile.Map
+		g    *Graph
+		t    *rtsspb.Coordinate
+		want []*rtsspb.AbstractEdge
+	}{
+		{
+			name: "ConnectEdgeNode",
+			tm:   connectEdgeNodeMap,
+			g:    connectEdgeNodeGraph,
+			t:    connectEdgeNodeCoordinate,
+			want: []*rtsspb.AbstractEdge{
+				{
+					Source:      connectEdgeNodeCoordinate,
+					Destination: &rtsspb.Coordinate{X: 0, Y: 1},
+					EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+					Weight:      1,
+				},
+			},
+		},
+		{
+			name: "ConnectEphemeralNode",
+			tm:   connectEphemeralNodeMap,
+			g:    connectEphemeralNodeGraph,
+			t:    connectEphemeralNodeCoordinate,
+			want: []*rtsspb.AbstractEdge{
+				{
+					Source:      connectEphemeralNodeCoordinate,
+					Destination: &rtsspb.Coordinate{X: 0, Y: 1},
+					EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+					Weight:      1,
+				},
+			},
+		},
+		{
+			name: "NoConnectEphemeralNode",
+			tm:   noConnectEphemeralNodeMap,
+			g:    noConnectEphemeralNodeGraph,
+			t:    noConnectEphemeralNodeCoordinate,
+			want: nil,
+		},
+	}
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			if err := connect(c.tm, c.g, utils.MC(c.t)); err != nil {
+				t.Fatalf("connect() = %v, want = nil", err)
+			}
+
+			got, err := c.g.EdgeMap.GetBySource(utils.MC(c.t))
+			if err != nil {
+				t.Fatalf("GetBySource() = _, %v, want = _, nil", err)
+			}
+
+			if diff := cmp.Diff(
+				c.want,
+				got,
+				cmpopts.SortSlices(edgeLess),
+				cmp.Comparer(abstractEdgeEqual),
+			); diff != "" {
+				t.Errorf("GetBySource() mismatch (-want, +got):\n%s", diff)
+			}
+		})
 	}
 }
