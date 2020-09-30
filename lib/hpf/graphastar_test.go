@@ -145,7 +145,7 @@ func TestPath(t *testing.T) {
 			tm:   trivialOpenMap,
 			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
 			src:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
-			dest:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
+			dest: utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
 			want: aStarResult{
 				path: []*rtsspb.AbstractNode{
 					{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
@@ -207,7 +207,7 @@ func TestPath(t *testing.T) {
 			tm:   simpleBlockedMap,
 			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
 			src:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
-			dest:  utils.MC(&rtsspb.Coordinate{X: 2, Y: 0}),
+			dest: utils.MC(&rtsspb.Coordinate{X: 2, Y: 0}),
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),
@@ -218,7 +218,7 @@ func TestPath(t *testing.T) {
 			tm:   segmentedBlockedMap,
 			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
 			src:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
-			dest:  utils.MC(&rtsspb.Coordinate{X: 2, Y: 0}),
+			dest: utils.MC(&rtsspb.Coordinate{X: 2, Y: 0}),
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),
