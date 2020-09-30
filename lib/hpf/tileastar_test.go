@@ -42,7 +42,7 @@ var (
 			},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
-			&rtsspb.TerrainCost{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 
@@ -64,7 +64,7 @@ var (
 			},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
-			&rtsspb.TerrainCost{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 
@@ -91,7 +91,7 @@ var (
 			},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
-			&rtsspb.TerrainCost{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 
@@ -136,7 +136,7 @@ var (
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
-			&rtsspb.TerrainCost{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 )
