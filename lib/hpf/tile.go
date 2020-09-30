@@ -129,7 +129,7 @@ func (m *Map) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
 
 	var neighbors []*Tile
 	for _, c := range neighborCoordinates {
-		if t := m.Tile(coordinate.GetX()+c.GetX(), coordinate.GetY()+c.GetY()); src.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED && t != nil && t.TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
+		if t := m.Tile(coordinate.GetX()+c.GetX(), coordinate.GetY()+c.GetY()); m.C[src.TerrainType()] < math.Inf(0) && t != nil && m.C[t.TerrainType()] < math.Inf(0) {
 			neighbors = append(neighbors, t)
 		}
 	}

@@ -34,12 +34,16 @@ message ClusterMap {
 	Coordinate tile_map_dimension = 2;
 }
 
+// TODO(minkezhang): Remove this proto. We don't need to save this intermediate
+// state and therefore do not need to export this.
 message CoordinateSlice {
 	rts_pathing.lib.proto.constants.Orientation orientation = 1;
 	Coordinate start = 2;
 	int32 length = 3;
 }
 
+// TODO(minkezhang): Remove this proto. We don't need to save this intermediate
+// state and therefore do not need to export this.
 message Transition {
 	AbstractNode n1 = 1;
 	AbstractNode n2 = 2;

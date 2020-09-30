@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
+	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
@@ -40,7 +41,9 @@ var (
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED,
 			},
 		},
-		TerrainCosts: []*rtsspb.TerrainCost{},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		},
 	}
 
 	/**
@@ -60,7 +63,9 @@ var (
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED,
 			},
 		},
-		TerrainCosts: []*rtsspb.TerrainCost{},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		},
 	}
 
 	/**
@@ -85,7 +90,9 @@ var (
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			},
 		},
-		TerrainCosts: []*rtsspb.TerrainCost{},
+		TerrainCosts: []*rtsspb.TerrainCost{
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		},
 	}
 
 	/**
@@ -129,6 +136,7 @@ var (
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 )
@@ -168,7 +176,7 @@ func TestAStarSearchError(t *testing.T) {
 				t.Fatalf("ImportMap() = %v, want = nil", err)
 			}
 
-			if _, _, err = Path(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest), c.boundary, c.dimension); err == nil {
+			if _, _, err = Path(tm, utils.MC(c.src), utils.MC(c.dest), c.boundary, c.dimension); err == nil {
 				t.Fatal("Path() = nil, want a non-nil error")
 			}
 		})
@@ -261,7 +269,7 @@ func TestAStarSearch(t *testing.T) {
 				t.Fatalf("ImportMap() = %v, want = nil", err)
 			}
 
-			tiles, cost, err := Path(tm, tm.TileFromCoordinate(c.src), tm.TileFromCoordinate(c.dest), c.boundary, c.dimension)
+			tiles, cost, err := Path(tm, utils.MC(c.src), utils.MC(c.dest), c.boundary, c.dimension)
 			if err != nil {
 				t.Fatalf("Path() = %v, want = nil", err)
 			}

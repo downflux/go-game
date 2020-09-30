@@ -279,7 +279,7 @@ func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb
 			return nil, err
 		}
 
-		if (m.TileFromCoordinate(t1).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) && (m.TileFromCoordinate(t2).TerrainType() != rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+		if m.C[m.TileFromCoordinate(t1).TerrainType()] < math.Inf(0) && m.C[m.TileFromCoordinate(t2).TerrainType()] < math.Inf(0) {
 			if tSegment1 == nil {
 				tSegment1 = &rtsspb.CoordinateSlice{
 					Orientation: orientation,
@@ -295,7 +295,7 @@ func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb
 			tSegment1.Length += 1
 			tSegment2.Length += 1
 		}
-		if (m.TileFromCoordinate(t1).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) || (m.TileFromCoordinate(t2).TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED) {
+		if math.IsInf(m.C[m.TileFromCoordinate(t1).TerrainType()], 0) || math.IsInf(m.C[m.TileFromCoordinate(t2).TerrainType()], 0) {
 			if tSegment1 != nil && tSegment2 != nil {
 				transitions, err := buildTransitionsFromOpenCoordinateSlice(tSegment1, tSegment2)
 				if err != nil {

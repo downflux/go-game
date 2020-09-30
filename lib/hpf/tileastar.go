@@ -9,6 +9,7 @@ import (
 
 	fastar "github.com/fzipp/astar"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
+	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -79,23 +80,24 @@ func (t graphImpl) Neighbours(n fastar.Node) []fastar.Node {
 // bounding box as defined by the tile.Map should be used here. The lower bound
 // of the bounding box is defined as the boundary Coordinate, and the size of
 // the box is specified by the dimension Coordinate.
-//
-// TODO(minkezhang): Convert src, dest to be *rtsspb.Coordinate instead.
-func Path(m *tile.Map, src, dest *tile.Tile, boundary, dimension *rtsspb.Coordinate) ([]*tile.Tile, float64, error) {
+func Path(m *tile.Map, src, dest utils.MapCoordinate, boundary, dimension *rtsspb.Coordinate) ([]*tile.Tile, float64, error) {
 	if m == nil {
 		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil tile.Map input")
 	}
-	if src == nil || dest == nil {
-		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil Tile inputs")
+
+	tSrc := m.Tile(src.X, src.Y)
+	tDest := m.Tile(dest.X, dest.Y)
+	if tSrc == nil || tDest == nil {
+		return nil, 0, status.Errorf(codes.NotFound, "a Tile cannot be found with the input coordinates")
 	}
-	if src.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED || dest.TerrainType() == rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED {
+	if math.IsInf(m.C[tSrc.TerrainType()], 0) || math.IsInf(m.C[tDest.TerrainType()], 0) {
 		return nil, math.Inf(0), nil
 	}
 
 	d := func(a, b fastar.Node) float64 {
 		return dFunc(m.C, a, b)
 	}
-	nodes := fastar.FindPath(graphImpl{m: m, boundary: boundary, dimension: dimension}, src, dest, d, hFunc)
+	nodes := fastar.FindPath(graphImpl{m: m, boundary: boundary, dimension: dimension}, tSrc, tDest, d, hFunc)
 
 	var tiles []*tile.Tile
 	for _, node := range nodes {

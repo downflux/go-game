@@ -153,8 +153,8 @@ func connect(tm *tile.Map, g *Graph, t utils.MapCoordinate) error {
 
 		p, cost, err := tileastar.Path(
 			tm,
-			tm.TileFromCoordinate(n1.GetTileCoordinate()),
-			tm.TileFromCoordinate(n2.GetTileCoordinate()),
+			utils.MC(n1.GetTileCoordinate()),
+			utils.MC(n2.GetTileCoordinate()),
 			utils.PB(tileBoundary),
 			utils.PB(tileDimension))
 		if err != nil {
