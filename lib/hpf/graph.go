@@ -96,23 +96,82 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate) (*Graph, error) 
 		if err != nil {
 			return nil, err
 		}
-		for _, n1 := range nodes {
-			for _, n2 := range nodes {
-				if n1 != n2 {
-					e, err := buildIntraEdge(tm, g.NodeMap.ClusterMap, n1, n2)
-					if err != nil {
-						return nil, err
-					}
-
-					if e != nil {
-						g.EdgeMap.Add(e)
-					}
-				}
+		for _, n := range nodes {
+			if err := connect(tm, g, utils.MC(n.GetTileCoordinate())); err != nil {
+				return nil, err
 			}
 		}
 	}
 
 	return g, nil
+}
+
+// connect takes as input an AbstractNode, builds all possible INTRA_EDGE
+// AbstractEdge instances within the same cluster, and inserts them into
+// the Graph.
+//
+// connect does not rebuild edges if they already exist between two nodes, and
+// does not create an edge between two ephemeral AbstractNode instances.
+func connect(tm *tile.Map, g *Graph, t utils.MapCoordinate) error {
+	n1, err := g.NodeMap.Get(t)
+	if err != nil {
+		return err
+	}
+
+	c, err := cluster.ClusterCoordinateFromTileCoordinate(g.NodeMap.ClusterMap, t)
+	if err != nil {
+		return err
+	}
+
+	borderNodes, err := g.NodeMap.GetByCluster(c)
+	if err != nil {
+		return err
+	}
+
+	for _, n2 := range borderNodes {
+		e, err := g.EdgeMap.Get(utils.MC(n1.GetTileCoordinate()), utils.MC(n2.GetTileCoordinate()))
+		if err != nil {
+			return err
+		}
+		// Ephemeral nodes are invisible to one another and should not be
+		// considered neighbors.
+		//
+		// Also don't re-run pathing if we don't have to -- we're
+		// assuming the TileMap at this point is static.
+		if e != nil || (n1.GetIsEphemeral() && n2.GetIsEphemeral()) {
+			continue
+		}
+
+		tileBoundary, err := cluster.TileBoundary(g.NodeMap.ClusterMap, c)
+		if err != nil {
+			return err
+		}
+		tileDimension, err := cluster.TileDimension(g.NodeMap.ClusterMap, c)
+		if err != nil {
+			return err
+		}
+
+		p, cost, err := tileastar.Path(
+			tm,
+			tm.TileFromCoordinate(n1.GetTileCoordinate()),
+			tm.TileFromCoordinate(n2.GetTileCoordinate()),
+			utils.PB(tileBoundary),
+			utils.PB(tileDimension))
+		if err != nil {
+			return err
+		}
+
+		if p != nil {
+			g.EdgeMap.Add(&rtsspb.AbstractEdge{
+				Source:      n1.GetTileCoordinate(),
+				Destination: n2.GetTileCoordinate(),
+				EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+				Weight:      cost,
+			})
+		}
+	}
+
+	return nil
 }
 
 // AddEphemeralNode adds a temporary AbstractNode to the Graph and connects it
@@ -123,8 +182,8 @@ func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate) (*Graph, error) 
 // match a non-ephemeral AbstractNode.
 //
 // TODO(minkezhang): Support rollback in case errors happen so that
-// AddEphemeralNode is idempotent.
-func AddEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, error) {
+// InsertEphemeralNode is idempotent.
+func InsertEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, error) {
 	n, err := g.NodeMap.Get(t)
 	if err != nil {
 		return 0, err
@@ -142,45 +201,9 @@ func AddEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, err
 		n.GetEphemeralKeys()[ephemeralKey] = true
 	}
 
-	c, err := cluster.ClusterCoordinateFromTileCoordinate(g.NodeMap.ClusterMap, t)
-	if err != nil {
+	if err := connect(tm, g, t); err != nil {
 		return 0, err
 	}
-
-	borderNodes, err := g.NodeMap.GetByCluster(c)
-	if err != nil {
-		return 0, err
-	}
-
-	for _, borderNode := range borderNodes {
-		boundary, err := cluster.TileBoundary(g.NodeMap.ClusterMap, c)
-		if err != nil {
-			return 0, err
-		}
-		dimension, err := cluster.TileDimension(g.NodeMap.ClusterMap, c)
-		if err != nil {
-			return 0, err
-		}
-
-		_, cost, err := tileastar.Path(
-			tm,
-			utils.MC(n.GetTileCoordinate()),
-			utils.MC(borderNode.GetTileCoordinate()),
-			utils.PB(boundary),
-			utils.PB(dimension))
-		if err != nil {
-			return 0, err
-		}
-		if err := g.EdgeMap.Add(&rtsspb.AbstractEdge{
-			Source:      n.GetTileCoordinate(),
-			Destination: borderNode.GetTileCoordinate(),
-			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
-			Weight:      cost,
-		}); err != nil {
-			return 0, err
-		}
-	}
-
 	return ephemeralKey, nil
 }
 
@@ -210,53 +233,6 @@ func RemoveEphemeralNode(g *Graph, t utils.MapCoordinate, ephemeralKey int64) er
 		}
 	}
 	return nil
-}
-
-// buildIntraEdge constructs a single AbstractEdge instance with the correct
-// traversal cost between two underlying AbstractNode objects. The cost
-// function is calculated from the tile.Map entity, which holds information
-// on e.g. the terrain information of the map.
-func buildIntraEdge(tm *tile.Map, cm *cluster.Map, n1, n2 *rtsspb.AbstractNode) (*rtsspb.AbstractEdge, error) {
-	c1, err := cluster.ClusterCoordinateFromTileCoordinate(cm, utils.MC(n1.GetTileCoordinate()))
-	if err != nil {
-		return nil, err
-	}
-	c2, err := cluster.ClusterCoordinateFromTileCoordinate(cm, utils.MC(n2.GetTileCoordinate()))
-	if err != nil {
-		return nil, err
-	}
-	if c1 != c2 {
-		return nil, status.Errorf(codes.FailedPrecondition, "input AbstractNode instances are not bounded by the same cluster")
-	}
-
-	tileBoundary, err := cluster.TileBoundary(cm, c1)
-	if err != nil {
-		return nil, err
-	}
-	tileDimension, err := cluster.TileDimension(cm, c1)
-	if err != nil {
-		return nil, err
-	}
-
-	p, cost, err := tileastar.Path(
-		tm,
-		utils.MC(n1.GetTileCoordinate()),
-		utils.MC(n2.GetTileCoordinate()),
-		utils.PB(tileBoundary),
-		utils.PB(tileDimension))
-	if err != nil {
-		return nil, err
-	}
-
-	if p != nil {
-		return &rtsspb.AbstractEdge{
-			Source:      n1.GetTileCoordinate(),
-			Destination: n2.GetTileCoordinate(),
-			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
-			Weight:      cost,
-		}, nil
-	}
-	return nil, nil
 }
 
 // buildTransitions iterates over the tile.Map for the input cluster.Map overlay
