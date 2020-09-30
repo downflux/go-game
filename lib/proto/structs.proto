@@ -52,8 +52,9 @@ message AbstractGraph {
 }
 
 message AbstractNode {
-	int32 ephemeral_key = 1;
-	Coordinate tile_coordinate = 2;
+	bool is_ephemeral = 1;
+	map<int64, bool> ephemeral_keys = 2;
+	Coordinate tile_coordinate = 3;
 }
 
 message AbstractEdge {

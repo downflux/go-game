@@ -28,7 +28,7 @@ type Map struct {
 
 // GetByCluster filters the Map by the input cluster coordinate
 // and returns all AbstractNode objects that are bounded by the input.
-func (nm Map) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error) {
+func (nm *Map) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error) {
 	if err := cluster.ValidateClusterInRange(nm.ClusterMap, c); err != nil {
 		return nil, err
 	}
