@@ -602,7 +602,6 @@ func TestSimpleAddEphemeralNode(t *testing.T) {
 		uuids[u] = true
 	}
 
-
 	n, err := g.NodeMap.Get(tileCoordinate)
 	if err != nil || n == nil {
 		t.Fatalf("Get() = %v, %v, want = _, nil", n, err)
@@ -612,7 +611,7 @@ func TestSimpleAddEphemeralNode(t *testing.T) {
 		t.Fatalf("GetIsEphemeral() = %v, want = true", n.GetIsEphemeral())
 	}
 
-	for u, _ := range uuids {
+	for u := range uuids {
 		if got, found := n.GetEphemeralKeys()[u]; !found || got != true {
 			t.Errorf("GetEphemeralKeys()[u] = %v, %v, want = true, true", got, found)
 		}
@@ -665,7 +664,7 @@ func TestDeleteEphemeralNode(t *testing.T) {
 		uuids[u] = true
 	}
 
-	for u, _ := range uuids {
+	for u := range uuids {
 		// The node returned by Get is a reference; we don't need to keep
 		// querying for this.
 		//
