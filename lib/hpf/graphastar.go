@@ -81,9 +81,7 @@ func (g graphImpl) Neighbours(n fastar.Node) []fastar.Node {
 //
 // The returned path object returns a reference to the internal AbstractNode
 // instances. They should be treated as read-only objects.
-//
-// TODO(minkezhang): Convert src, dest to be *rtsspb.Coordinate instead.
-func Path(tm *tile.Map, g *graph.Graph, src, dest *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, float64, error) {
+func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate) ([]*rtsspb.AbstractNode, float64, error) {
 	if tm == nil {
 		return nil, 0, status.Error(codes.FailedPrecondition, "cannot have nil tile.Map input")
 	}
@@ -91,16 +89,15 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest *rtsspb.AbstractNode) ([]*rtss
 		return nil, 0, status.Error(codes.FailedPrecondition, "cannot have nil graph.Graph input")
 	}
 
-	srcRef, err := g.NodeMap.Get(utils.MC(src.GetTileCoordinate()))
+	srcNode, err := g.NodeMap.Get(src)
 	if err != nil {
 		return nil, 0, err
 	}
-	destRef, err := g.NodeMap.Get(utils.MC(dest.GetTileCoordinate()))
+	destNode, err := g.NodeMap.Get(dest)
 	if err != nil {
 		return nil, 0, err
 	}
-
-	if !proto.Equal(src, srcRef) || !proto.Equal(dest, destRef) {
+	if srcNode == nil || destNode == nil {
 		return nil, math.Inf(0), nil
 	}
 
@@ -109,9 +106,9 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest *rtsspb.AbstractNode) ([]*rtss
 	}
 	nodes := fastar.FindPath(graphImpl{
 		g:    g,
-		src:  src,
-		dest: dest,
-	}, srcRef, destRef, d, hFunc)
+		src:  proto.Clone(srcNode).(*rtsspb.AbstractNode),
+		dest: proto.Clone(destNode).(*rtsspb.AbstractNode),
+	}, srcNode, destNode, d, hFunc)
 
 	var res []*rtsspb.AbstractNode
 	for _, node := range nodes {
