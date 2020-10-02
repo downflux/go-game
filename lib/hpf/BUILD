@@ -2,22 +2,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test", "go_binary")
 
 go_library(
-    name = "astar",
-    srcs = ["astar.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/astar",
-    deps = [
-        ":cluster",
-        ":graph",
-        ":graphastar",
-        ":tile",
-        ":tileastar",
-        ":utils",
-        "@org_golang_google_grpc//status:go_default_library",
-        "@org_golang_google_grpc//codes:go_default_library",
-    ],
-)
-
-go_library(
     name = "graphastar",
     srcs = ["graphastar.go"],
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graphastar",
