@@ -11,11 +11,11 @@ go_library(
         ":tileastar",
         ":utils",
         "//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@com_github_fzipp_astar//:go_default_library",
-	"@com_github_golang_protobuf//proto:go_default_library",
-	"@org_golang_google_grpc//status:go_default_library",
-	"@org_golang_google_grpc//codes:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@com_github_fzipp_astar//:go_default_library",
+        "@com_github_golang_protobuf//proto:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
     ],
 )
 
@@ -25,16 +25,16 @@ go_test(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graphastar_test",
     embed = [":graphastar"],
     deps = [
-	":graph",
-	":tile",
+        ":graph",
+        ":tile",
         ":utils",
-	"//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@com_github_google_go_cmp//cmp:go_default_library",
-	# "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-	# "@org_golang_google_grpc//status:go_default_library",
-	# "@org_golang_google_grpc//codes:go_default_library",
-	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
+        "//lib/proto:constants_go_proto",
+        "//lib/proto:structs_go_proto",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        # "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
+        # "@org_golang_google_grpc//status:go_default_library",
+        # "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
@@ -46,10 +46,10 @@ go_library(
         ":tile",
         ":utils",
         "//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@com_github_fzipp_astar//:go_default_library",
-	"@org_golang_google_grpc//status:go_default_library",
-	"@org_golang_google_grpc//codes:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@com_github_fzipp_astar//:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
     ],
 )
 
@@ -59,12 +59,12 @@ go_test(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/tileastar_test",
     embed = [":tileastar"],
     deps = [
-	":tile",
+        ":tile",
         ":utils",
-	"//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@com_github_google_go_cmp//cmp:go_default_library",
-	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
+        "//lib/proto:constants_go_proto",
+        "//lib/proto:structs_go_proto",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
@@ -73,7 +73,7 @@ go_library(
     srcs = ["hpf.go"],
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/hpf",
     deps = [
-	"//lib/proto:constants_go_proto",
+        "//lib/proto:constants_go_proto",
     ],
 )
 
@@ -82,12 +82,12 @@ go_library(
     srcs = ["tile.go"],
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/tile",
     deps = [
-	":utils",
-	"//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@com_github_fzipp_astar//:go_default_library",
-	"@org_golang_google_grpc//status:go_default_library",
-	"@org_golang_google_grpc//codes:go_default_library",
+        ":utils",
+        "//lib/proto:constants_go_proto",
+        "//lib/proto:structs_go_proto",
+        "@com_github_fzipp_astar//:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
     ],
 )
 
@@ -97,14 +97,14 @@ go_test(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/tile_test",
     embed = [":tile"],
     deps = [
-	":utils",
-	"//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@com_github_google_go_cmp//cmp:go_default_library",
-	"@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-	"@org_golang_google_grpc//status:go_default_library",
-	"@org_golang_google_grpc//codes:go_default_library",
-	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
+        ":utils",
+        "//lib/proto:constants_go_proto",
+        "//lib/proto:structs_go_proto",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
@@ -114,11 +114,11 @@ go_library(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/cluster",
     deps = [
         ":tile",
-	":utils",
+        ":utils",
         "//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@org_golang_google_grpc//status:go_default_library",
-	"@org_golang_google_grpc//codes:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
     ],
 )
 
@@ -128,7 +128,7 @@ go_test(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/cluster_test",
     embed = [":cluster"],
     deps = [
-	":utils",
+        ":utils",
         "//lib/proto:constants_go_proto",
         "//lib/proto:structs_go_proto",
     ],
@@ -139,14 +139,14 @@ go_library(
     srcs = ["entrance.go"],
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/entrance",
     deps = [
-	":cluster",
+        ":cluster",
         ":tile",
-	":utils",
+        ":utils",
         "//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@com_github_golang_protobuf//proto:go_default_library",
-	"@org_golang_google_grpc//status:go_default_library",
-	"@org_golang_google_grpc//codes:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@com_github_golang_protobuf//proto:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
     ],
 )
 
@@ -156,13 +156,13 @@ go_test(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/entrance_test",
     embed = [":entrance"],
     deps = [
-	":cluster",
-	":tile",
+        ":cluster",
+        ":tile",
         "//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
         "@com_github_golang_protobuf//proto:go_default_library",
-	"@com_github_google_go_cmp//cmp:go_default_library",
+        "@com_github_google_go_cmp//cmp:go_default_library",
     ],
 )
 
@@ -172,9 +172,9 @@ go_library(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/edge",
     deps = [
         ":utils",
-	"//lib/proto:structs_go_proto",
-	"@org_golang_google_grpc//codes:go_default_library",
-	"@org_golang_google_grpc//status:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
     ],
 )
 
@@ -184,11 +184,11 @@ go_test(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/edge_test",
     embed = [":edge"],
     deps = [
-	":utils",
-	"//lib/proto:structs_go_proto",
-	"@com_github_google_go_cmp//cmp:go_default_library",
-	"@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
+        ":utils",
+        "//lib/proto:structs_go_proto",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
@@ -199,9 +199,9 @@ go_library(
     deps = [
         ":cluster",
         ":utils",
-	"//lib/proto:structs_go_proto",
-	"@org_golang_google_grpc//codes:go_default_library",
-	"@org_golang_google_grpc//status:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
     ],
 )
 
@@ -213,10 +213,10 @@ go_test(
     deps = [
         ":cluster",
         ":utils",
-	"//lib/proto:structs_go_proto",
-	"@com_github_google_go_cmp//cmp:go_default_library",
-	"@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
@@ -226,17 +226,17 @@ go_library(
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graph",
     deps = [
         ":edge",
-	":node",
-	":tileastar",
-	":cluster",
-	":entrance",
+        ":node",
+        ":tileastar",
+        ":cluster",
+        ":entrance",
         ":utils",
-	":tile",
+        ":tile",
         "//lib/proto:constants_go_proto",
-	"//lib/proto:structs_go_proto",
-	"@com_github_golang_protobuf//proto:go_default_library",
-	"@org_golang_google_grpc//codes:go_default_library",
-	"@org_golang_google_grpc//status:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@com_github_golang_protobuf//proto:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
     ],
 )
 
@@ -249,12 +249,12 @@ go_test(
         ":edge",
         ":node",
         ":cluster",
-	":tile",
+        ":tile",
         ":utils",
-	"//lib/proto:structs_go_proto",
-	"@com_github_google_go_cmp//cmp:go_default_library",
-	"@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-	"@org_golang_google_protobuf//testing/protocmp:go_default_library",
+        "//lib/proto:structs_go_proto",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
@@ -263,6 +263,6 @@ go_library(
     srcs = ["utils.go"],
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/utils",
     deps = [
-	"//lib/proto:structs_go_proto",
+        "//lib/proto:structs_go_proto",
     ],
 )

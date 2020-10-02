@@ -549,3 +549,141 @@ func TestConnect(t *testing.T) {
 		})
 	}
 }
+
+func TestAddNonEphemeralNodeNoOp(t *testing.T) {
+	tileCoordinate := utils.MapCoordinate{X: 1, Y: 1}
+
+	tm, err := tile.ImportMap(simpleMapProto)
+	if err != nil {
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
+	}
+	g, err := BuildGraph(tm, &rtsspb.Coordinate{X: 2, Y: 2})
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+
+	uuid, err := InsertEphemeralNode(tm, g, tileCoordinate)
+	if err != nil || uuid != 0 {
+		t.Fatalf("InsertEphemeralNode() = %v, %v, want = 0, nil", uuid, err)
+	}
+
+	n, err := g.NodeMap.Get(tileCoordinate)
+	if err != nil || n == nil {
+		t.Fatalf("Get() = %v, %v, want = _, nil", n, err)
+	}
+
+	if n.GetIsEphemeral() {
+		t.Fatalf("GetIsEphemeral() = %v, want = false", n.GetIsEphemeral())
+	}
+}
+
+func TestSimpleAddEphemeralNode(t *testing.T) {
+	const nInserts = 1000
+	tileCoordinate := utils.MapCoordinate{X: 0, Y: 0}
+
+	tm, err := tile.ImportMap(simpleMapProto)
+	if err != nil {
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
+	}
+	g, err := BuildGraph(tm, &rtsspb.Coordinate{X: 2, Y: 2})
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+
+	uuids := map[int64]bool{}
+	for len(uuids) < nInserts {
+		u, err := InsertEphemeralNode(tm, g, tileCoordinate)
+		if err != nil || u == 0 {
+			t.Fatalf("InsertEphemeralNode() = %v, %v, want = _, nil", u, err)
+		}
+		if _, found := uuids[u]; found {
+			t.Fatalf("uuids[u] = %v, want = false", found)
+		}
+		uuids[u] = true
+	}
+
+	n, err := g.NodeMap.Get(tileCoordinate)
+	if err != nil || n == nil {
+		t.Fatalf("Get() = %v, %v, want = _, nil", n, err)
+	}
+
+	if !n.GetIsEphemeral() {
+		t.Fatalf("GetIsEphemeral() = %v, want = true", n.GetIsEphemeral())
+	}
+
+	for u := range uuids {
+		if got, found := n.GetEphemeralKeys()[u]; !found || got != true {
+			t.Errorf("GetEphemeralKeys()[u] = %v, %v, want = true, true", got, found)
+		}
+	}
+}
+
+func TestDeleteNonEphemeralNodeNoOp(t *testing.T) {
+	tileCoordinate := utils.MapCoordinate{X: 1, Y: 1}
+
+	tm, err := tile.ImportMap(simpleMapProto)
+	if err != nil {
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
+	}
+	g, err := BuildGraph(tm, &rtsspb.Coordinate{X: 2, Y: 2})
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+
+	if err := RemoveEphemeralNode(g, tileCoordinate, 0); err != nil {
+		t.Errorf("RemoveEphemeralNode() = %v, want = nil", err)
+	}
+
+	if n, err := g.NodeMap.Get(tileCoordinate); err != nil || n == nil {
+		t.Errorf("Get() = %v, %v, want = _, nil", n, err)
+	}
+}
+
+func TestDeleteEphemeralNode(t *testing.T) {
+	const nInserts = 1000
+	tileCoordinate := utils.MapCoordinate{X: 0, Y: 0}
+
+	tm, err := tile.ImportMap(simpleMapProto)
+	if err != nil {
+		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
+	}
+	g, err := BuildGraph(tm, &rtsspb.Coordinate{X: 2, Y: 2})
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+
+	uuids := map[int64]bool{}
+	for len(uuids) < nInserts {
+		u, err := InsertEphemeralNode(tm, g, tileCoordinate)
+		if err != nil || u == 0 {
+			t.Fatalf("InsertEphemeralNode() = %v, %v, want = _, nil", u, err)
+		}
+		if _, found := uuids[u]; found {
+			t.Fatalf("uuids[u] = %v, want = false", found)
+		}
+		uuids[u] = true
+	}
+
+	for u := range uuids {
+		// The node returned by Get is a reference; we don't need to keep
+		// querying for this.
+		//
+		// TODO(minkezhang): Decide if this is what we actually want.
+		n, err := g.NodeMap.Get(tileCoordinate)
+		if err != nil || n == nil {
+			t.Fatalf("Get() = %v, %v, want = _, nil", n, err)
+		}
+
+		if err := RemoveEphemeralNode(g, tileCoordinate, u); err != nil {
+			t.Errorf("RemoveEphemeralNode() = %v, want = nil", err)
+		}
+
+		if _, found := n.GetEphemeralKeys()[u]; found {
+			t.Fatalf("GetEphemeralKeys()[u] = _, %v, want = _, false", found)
+		}
+	}
+
+	if n, err := g.NodeMap.Get(tileCoordinate); err != nil || n != nil {
+		t.Errorf("Get() = %v, %v, want = nil, nil", n, err)
+	}
+}

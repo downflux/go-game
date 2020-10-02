@@ -198,6 +198,9 @@ func InsertEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, 
 	if n.GetIsEphemeral() {
 		for _, found := n.GetEphemeralKeys()[ephemeralKey]; found || ephemeralKey == 0; ephemeralKey = rand.Int63() {
 		}
+		if n.GetEphemeralKeys() == nil {
+			n.EphemeralKeys = map[int64]bool{}
+		}
 		n.GetEphemeralKeys()[ephemeralKey] = true
 	}
 
@@ -207,8 +210,27 @@ func InsertEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, 
 	return ephemeralKey, nil
 }
 
+// disconnect takes as input an AbstractNode and removes all edges connected
+// to it, as well as remove the node itself from the Graph.
+func disconnect(g *Graph, t utils.MapCoordinate) error {
+	g.NodeMap.Pop(t)
+	edges, err := g.EdgeMap.GetBySource(t)
+	if err != nil {
+		return err
+	}
+
+	for _, e := range edges {
+		if _, err := g.EdgeMap.Pop(utils.MC(e.GetSource()), utils.MC(e.GetDestination())); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // RemoveEphemeralNode drops a temporary AbstractNode from the Graph. This is
 // a no-op if the input coordinate is a non-ephemeral AbstractNode instance.
+//
+// No error will be raised if the input key is non-existent.
 //
 // TODO(minkezhang): Support rollback in case errors happen so that
 // RemoveEphemeralNode is idempotent.
@@ -220,17 +242,7 @@ func RemoveEphemeralNode(g *Graph, t utils.MapCoordinate, ephemeralKey int64) er
 
 	delete(n.GetEphemeralKeys(), ephemeralKey)
 	if n.GetIsEphemeral() && len(n.GetEphemeralKeys()) == 0 {
-		g.NodeMap.Pop(t)
-		edges, err := g.EdgeMap.GetBySource(t)
-		if err != nil {
-			return err
-		}
-
-		for _, e := range edges {
-			if _, err := g.EdgeMap.Pop(utils.MC(e.GetSource()), utils.MC(e.GetDestination())); err != nil {
-				return err
-			}
-		}
+		return disconnect(g, t)
 	}
 	return nil
 }
