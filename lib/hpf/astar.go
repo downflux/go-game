@@ -51,13 +51,16 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate, l int) ([
 			return nil, 0, err
 		}
 
+		// The implementations of astar returns both the source and
+		// destination Tile instances; we want to avoid duplicates and
+		// will strip the source from all path results. This is to help
+		// initialize the path by adding the global source Tile.
+		if i == 0 {
+			path = append(path, tm.TileFromCoordinate(utils.PB(t1)))
+		}
 		// Last element in an AbstractNode list do not have a
-		// corresponding "target" to move to. We just append it
-		// directly to the Tile list and return.
-		if i + 1 == len(nPath) {
-			if l == 0 || len(path) < l {
-				path = append(path, tm.TileFromCoordinate(utils.PB(t1)))
-			}
+		// corresponding "target" to move to.
+		if i+1 == len(nPath) {
 			break
 		}
 
@@ -83,15 +86,15 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate, l int) ([
 			if err != nil {
 				return nil, 0, err
 			}
+			_, p = p[0], p[1:]
 		} else {
-			p, _, err = tileastar.Path(tm, t1, t2, utils.PB(t1), utils.PB(t2))
-			if err != nil {
-				return nil, 0, err
-			}
+			// Inter-cluster nodes are always immediately adjacent
+			// and unblocked.
+			p = append(p, tm.TileFromCoordinate(utils.PB(t2)))
 		}
 
 		for _, n := range p {
-			if len(p) < l || l == 0 {
+			if l == 0 || len(p) < l {
 				path = append(path, n)
 			}
 		}

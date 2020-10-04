@@ -1,6 +1,7 @@
 package astar
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -31,7 +32,7 @@ func buildTileMap(d utils.MapCoordinate, walls []utils.MapCoordinate) (*tile.Map
 				t = rtscpb.TerrainType_TERRAIN_TYPE_PLAINS
 			}
 			tiles = append(tiles, &rtsspb.Tile{
-				Coordinate: utils.PB(c),
+				Coordinate:  utils.PB(c),
 				TerrainType: t,
 			})
 		}
@@ -39,10 +40,10 @@ func buildTileMap(d utils.MapCoordinate, walls []utils.MapCoordinate) (*tile.Map
 
 	return tile.ImportMap(&rtsspb.TileMap{
 		Dimension: utils.PB(d),
-		Tiles: tiles,
+		Tiles:     tiles,
 		TerrainCosts: []*rtsspb.TerrainCost{
-			&rtsspb.TerrainCost{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
-			&rtsspb.TerrainCost{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	})
 }
@@ -53,11 +54,25 @@ type aStarResult struct {
 }
 
 func TestPath(t *testing.T) {
-	sourceDestinationMap, err := buildTileMap(utils.MC(&rtsspb.Coordinate{X: 1, Y: 2}), nil)
+	trivialMap, err := buildTileMap(utils.MC(&rtsspb.Coordinate{X: 2, Y: 1}), nil)
 	if err != nil {
 		t.Fatalf("buildTileMap() = _, %v, want = _, nil", err)
 	}
-	sourceDestinationGraph, err := graph.BuildGraph(sourceDestinationMap, &rtsspb.Coordinate{X: 1, Y: 1})
+	sourceDestinationGraph, err := graph.BuildGraph(trivialMap, &rtsspb.Coordinate{X: 1, Y: 1})
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+	trivialInterClusterGraph, err := graph.BuildGraph(trivialMap, &rtsspb.Coordinate{X: 1, Y: 1})
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+
+	intraClusterMap, err := buildTileMap(utils.MC(&rtsspb.Coordinate{X: 6, Y: 1}), nil)
+	if err != nil {
+		t.Fatalf("buildTileMap() = _, %v, want = _, nil", err)
+	}
+
+	trivialIntraClusterGraph, err := graph.BuildGraph(intraClusterMap, &rtsspb.Coordinate{X: 2, Y: 1})
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
@@ -73,21 +88,71 @@ func TestPath(t *testing.T) {
 	}{
 		{
 			name: "SameSourceDestination",
-			tm: sourceDestinationMap,
-			g: sourceDestinationGraph,
-			src: &rtsspb.Coordinate{X: 0, Y: 0},
+			tm:   trivialMap,
+			g:    sourceDestinationGraph,
+			src:  &rtsspb.Coordinate{X: 0, Y: 0},
 			dest: &rtsspb.Coordinate{X: 0, Y: 0},
-			l: 10,
+			l:    10,
 			want: aStarResult{
 				path: []*tile.Tile{
-					&tile.Tile{
+					{
 						Val: &rtsspb.Tile{
-							Coordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+							Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
 							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
 				cost: 0,
+			},
+		},
+		{
+			name: "TrivialInterClusterPath",
+			tm:   trivialMap,
+			g:    trivialInterClusterGraph,
+			src:  &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 1, Y: 0},
+			l:    10,
+			want: aStarResult{
+				path: []*tile.Tile{
+					{
+						Val: &rtsspb.Tile{
+							Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+					{
+						Val: &rtsspb.Tile{
+							Coordinate:  &rtsspb.Coordinate{X: 1, Y: 0},
+							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+				},
+				cost: 1,
+			},
+		},
+		{
+			name: "TrivialIntraClusterPath",
+			tm:   intraClusterMap,
+			g:    trivialIntraClusterGraph,
+			src:  &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 1, Y: 0},
+			l:    10,
+			want: aStarResult{
+				path: []*tile.Tile{
+					{
+						Val: &rtsspb.Tile{
+							Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+					{
+						Val: &rtsspb.Tile{
+							Coordinate:  &rtsspb.Coordinate{X: 1, Y: 0},
+							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+				},
+				cost: 1,
 			},
 		},
 	}
@@ -104,6 +169,7 @@ func TestPath(t *testing.T) {
 				cost: cost,
 			}
 
+			fmt.Println(got)
 			if diff := cmp.Diff(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()); diff != "" {
 				t.Errorf("Path() mismatch (-want +got):\n%v", diff)
 			}

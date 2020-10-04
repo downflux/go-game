@@ -85,8 +85,8 @@ func Path(m *tile.Map, src, dest utils.MapCoordinate, boundary, dimension *rtssp
 		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil tile.Map input")
 	}
 
-	tSrc := m.Tile(src.X, src.Y)
-	tDest := m.Tile(dest.X, dest.Y)
+	tSrc := m.TileFromCoordinate(utils.PB(src))
+	tDest := m.TileFromCoordinate(utils.PB(dest))
 	if tSrc == nil || tDest == nil {
 		return nil, 0, status.Errorf(codes.NotFound, "a Tile cannot be found with the input coordinates")
 	}
