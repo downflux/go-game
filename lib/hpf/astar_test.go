@@ -1,16 +1,17 @@
 package astar
 
 import (
-	"fmt"
 	"math"
 	"testing"
 
 	rtscpb "github.com/minkezhang/rts-pathing/lib/proto/constants_go_proto"
 	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/minkezhang/rts-pathing/lib/hpf/graph"
 	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
 	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
+	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func buildTileMap(d utils.MapCoordinate, walls []utils.MapCoordinate) (*tile.Map, error) {
@@ -46,13 +47,66 @@ func buildTileMap(d utils.MapCoordinate, walls []utils.MapCoordinate) (*tile.Map
 	})
 }
 
+type aStarResult struct {
+	path []*tile.Tile
+	cost float64
+}
+
 func TestPath(t *testing.T) {
-	tm, err := buildTileMap(utils.MC(&rtsspb.Coordinate{X: 1, Y: 2}), nil)
+	sourceDestinationMap, err := buildTileMap(utils.MC(&rtsspb.Coordinate{X: 1, Y: 2}), nil)
 	if err != nil {
 		t.Fatalf("buildTileMap() = _, %v, want = _, nil", err)
 	}
+	sourceDestinationGraph, err := graph.BuildGraph(sourceDestinationMap, &rtsspb.Coordinate{X: 1, Y: 1})
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
 
-	g, err := graph.BuildGraph(tm, &rtsspb.Coordinate{X: 1, Y: 1})
-	path, cost, err := Path(tm, g, utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}), utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}), 10)
-	fmt.Println(path, cost, err)
+	testConfigs := []struct {
+		name string
+		tm   *tile.Map
+		g    *graph.Graph
+		src  *rtsspb.Coordinate
+		dest *rtsspb.Coordinate
+		l    int
+		want aStarResult
+	}{
+		{
+			name: "SameSourceDestination",
+			tm: sourceDestinationMap,
+			g: sourceDestinationGraph,
+			src: &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 0, Y: 0},
+			l: 10,
+			want: aStarResult{
+				path: []*tile.Tile{
+					&tile.Tile{
+						Val: &rtsspb.Tile{
+							Coordinate: &rtsspb.Coordinate{X: 0, Y: 0},
+							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+				},
+				cost: 0,
+			},
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			path, cost, err := Path(c.tm, c.g, utils.MC(c.src), utils.MC(c.dest), c.l)
+			if err != nil {
+				t.Fatalf("Path() = _, _, %v, want = _, _, nil", err)
+			}
+
+			got := aStarResult{
+				path: path,
+				cost: cost,
+			}
+
+			if diff := cmp.Diff(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()); diff != "" {
+				t.Errorf("Path() mismatch (-want +got):\n%v", diff)
+			}
+		})
+	}
 }

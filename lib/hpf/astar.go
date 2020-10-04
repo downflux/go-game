@@ -19,6 +19,10 @@ var (
 )
 
 func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate, l int) ([]*tile.Tile, float64, error) {
+	if l < 0 {
+		return nil, 0, status.Error(codes.FailedPrecondition, "cannot specify a negative path length")
+	}
+
 	srcID, err := graph.InsertEphemeralNode(tm, g, src)
 	if err != nil {
 		return nil, 0, err
@@ -40,16 +44,25 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate, l int) ([
 	}
 
 	var path []*tile.Tile
-	for i, n1 := range nPath[:len(nPath)-1] {
-		n2 := nPath[i+1]
-
+	for i, n1 := range nPath {
 		t1 := utils.MC(n1.GetTileCoordinate())
-		t2 := utils.MC(n2.GetTileCoordinate())
-
 		c1, err := cluster.ClusterCoordinateFromTileCoordinate(g.NodeMap.ClusterMap, t1)
 		if err != nil {
 			return nil, 0, err
 		}
+
+		// Last element in an AbstractNode list do not have a
+		// corresponding "target" to move to. We just append it
+		// directly to the Tile list and return.
+		if i + 1 == len(nPath) {
+			if l == 0 || len(path) < l {
+				path = append(path, tm.TileFromCoordinate(utils.PB(t1)))
+			}
+			break
+		}
+
+		n2 := nPath[i+1]
+		t2 := utils.MC(n2.GetTileCoordinate())
 		c2, err := cluster.ClusterCoordinateFromTileCoordinate(g.NodeMap.ClusterMap, t2)
 		if err != nil {
 			return nil, 0, err
