@@ -1,3 +1,6 @@
+// Package astar is an optimized pathing algorithm for large RTS maps.
+// The optimization implemented here is the hierarchical pathing algorithm
+// specified in Botea 2004.
 package astar
 
 import (
@@ -18,6 +21,8 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
+// clusterBoundedTilePath constructs a path between two tile.Tile objects
+// co-located in the same cluster.
 func clusterBoundedTilePath(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate) ([]*tile.Tile, float64, error) {
 	c1, err := cluster.ClusterCoordinateFromTileCoordinate(g.NodeMap.ClusterMap, src)
 	if err != nil {
@@ -44,6 +49,11 @@ func clusterBoundedTilePath(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoo
 	return tileastar.Path(tm, src, dest, utils.PB(tileBoundary), utils.PB(tileDimension))
 }
 
+// Path takes as input the source and destination coordinates from the
+// underlying tile.Map object and produces a path of at most n tile.Tile
+// objects originating from the start location. The length of the returned
+// path may be specified; if the length is set to 0, then the entire path
+// is returned.
 func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate, l int) ([]*tile.Tile, float64, error) {
 	if l < 0 {
 		return nil, 0, status.Error(codes.FailedPrecondition, "cannot specify a negative path length")
