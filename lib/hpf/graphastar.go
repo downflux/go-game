@@ -5,13 +5,13 @@ package graphastar
 import (
 	"math"
 
-	rtsspb "github.com/minkezhang/rts-pathing/lib/proto/structs_go_proto"
+	rtsspb "github.com/downflux/pathing/lib/proto/structs_go_proto"
 
 	fastar "github.com/fzipp/astar"
 	"github.com/golang/protobuf/proto"
-	"github.com/minkezhang/rts-pathing/lib/hpf/graph"
-	"github.com/minkezhang/rts-pathing/lib/hpf/tile"
-	"github.com/minkezhang/rts-pathing/lib/hpf/utils"
+	"github.com/downflux/pathing/lib/hpf/graph"
+	"github.com/downflux/pathing/lib/hpf/tile"
+	"github.com/downflux/pathing/lib/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
