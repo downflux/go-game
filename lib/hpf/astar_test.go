@@ -1,7 +1,6 @@
 package astar
 
 import (
-	"fmt"
 	"math"
 	"testing"
 
@@ -54,6 +53,15 @@ type aStarResult struct {
 }
 
 func TestPath(t *testing.T) {
+	singleTileMap, err := buildTileMap(utils.MC(&rtsspb.Coordinate{X: 1, Y: 1}), nil)
+	if err != nil {
+		t.Fatalf("buildTileMap() = _, %v, want = _, nil", err)
+	}
+	singleTileGraph, err := graph.BuildGraph(singleTileMap, &rtsspb.Coordinate{X: 1, Y: 1})
+	if err != nil {
+		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
+	}
+
 	trivialMap, err := buildTileMap(utils.MC(&rtsspb.Coordinate{X: 2, Y: 1}), nil)
 	if err != nil {
 		t.Fatalf("buildTileMap() = _, %v, want = _, nil", err)
@@ -71,11 +79,11 @@ func TestPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("buildTileMap() = _, %v, want = _, nil", err)
 	}
-
 	trivialIntraClusterGraph, err := graph.BuildGraph(intraClusterMap, &rtsspb.Coordinate{X: 2, Y: 1})
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
+	emptyIntraClusterGraph, err := graph.BuildGraph(intraClusterMap, intraClusterMap.D)
 
 	testConfigs := []struct {
 		name string
@@ -86,6 +94,25 @@ func TestPath(t *testing.T) {
 		l    int
 		want aStarResult
 	}{
+		{
+			name: "SingleTileAStar",
+			tm:   singleTileMap,
+			g:    singleTileGraph,
+			src:  &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 0, Y: 0},
+			l:    10,
+			want: aStarResult{
+				path: []*tile.Tile{
+					{
+						Val: &rtsspb.Tile{
+							Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+				},
+				cost: 0,
+			},
+		},
 		{
 			name: "SameSourceDestination",
 			tm:   trivialMap,
@@ -109,6 +136,50 @@ func TestPath(t *testing.T) {
 			name: "TrivialInterClusterPath",
 			tm:   trivialMap,
 			g:    trivialInterClusterGraph,
+			src:  &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 1, Y: 0},
+			l:    10,
+			want: aStarResult{
+				path: []*tile.Tile{
+					{
+						Val: &rtsspb.Tile{
+							Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+					{
+						Val: &rtsspb.Tile{
+							Coordinate:  &rtsspb.Coordinate{X: 1, Y: 0},
+							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+				},
+				cost: 1,
+			},
+		},
+		{
+			name: "PartialPath",
+			tm:   trivialMap,
+			g:    trivialInterClusterGraph,
+			src:  &rtsspb.Coordinate{X: 0, Y: 0},
+			dest: &rtsspb.Coordinate{X: 1, Y: 0},
+			l:    1,
+			want: aStarResult{
+				path: []*tile.Tile{
+					{
+						Val: &rtsspb.Tile{
+							Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+				},
+				cost: 1,
+			},
+		},
+		{
+			name: "EmptyIntraClusterGraph",
+			tm:   intraClusterMap,
+			g:    emptyIntraClusterGraph,
 			src:  &rtsspb.Coordinate{X: 0, Y: 0},
 			dest: &rtsspb.Coordinate{X: 1, Y: 0},
 			l:    10,
@@ -169,7 +240,6 @@ func TestPath(t *testing.T) {
 				cost: cost,
 			}
 
-			fmt.Println(got)
 			if diff := cmp.Diff(c.want, got, cmp.AllowUnexported(aStarResult{}), protocmp.Transform()); diff != "" {
 				t.Errorf("Path() mismatch (-want +got):\n%v", diff)
 			}
