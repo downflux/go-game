@@ -233,6 +233,19 @@ func TestAStarSearch(t *testing.T) {
 			},
 		},
 		{
+			name:      "SameSourceDestination",
+			m:         passableMap,
+			src:       &rtsspb.Coordinate{X: 0, Y: 0},
+			dest:      &rtsspb.Coordinate{X: 0, Y: 0},
+			dimension: passableMap.GetDimension(),
+			want: aStarResult{
+				path: []*rtsspb.Coordinate{
+					{X: 0, Y: 0},
+				},
+				cost: 0,
+			},
+		},
+		{
 			name:      "BlockedScopeSearch",
 			m:         blockedRowMap,
 			src:       &rtsspb.Coordinate{X: 0, Y: 0},

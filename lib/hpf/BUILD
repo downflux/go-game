@@ -2,6 +2,37 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test", "go_binary")
 
 go_library(
+    name = "astar",
+    srcs = ["astar.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/astar",
+    deps = [
+        ":cluster",
+        ":graph",
+        ":graphastar",
+        ":tile",
+        ":tileastar",
+        ":utils",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
+    ],
+)
+
+go_test(
+    name = "astar_test",
+    srcs = ["astar_test.go"],
+    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/astar_test",
+    embed = [":astar"],
+    deps = [
+        ":tile",
+        ":utils",
+        "//lib/proto:constants_go_proto",
+        "//lib/proto:structs_go_proto",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
+    ],
+)
+
+go_library(
     name = "graphastar",
     srcs = ["graphastar.go"],
     importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graphastar",
@@ -31,9 +62,6 @@ go_test(
         "//lib/proto:constants_go_proto",
         "//lib/proto:structs_go_proto",
         "@com_github_google_go_cmp//cmp:go_default_library",
-        # "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-        # "@org_golang_google_grpc//status:go_default_library",
-        # "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
