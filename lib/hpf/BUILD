@@ -4,7 +4,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test", "go_binary")
 go_library(
     name = "astar",
     srcs = ["astar.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/astar",
+    importpath = "github.com/downflux/pathing/lib/hpf/astar",
     deps = [
         ":cluster",
         ":graph",
@@ -20,7 +20,7 @@ go_library(
 go_test(
     name = "astar_test",
     srcs = ["astar_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/astar_test",
+    importpath = "github.com/downflux/pathing/lib/hpf/astar_test",
     embed = [":astar"],
     deps = [
         ":tile",
@@ -35,7 +35,7 @@ go_test(
 go_library(
     name = "graphastar",
     srcs = ["graphastar.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graphastar",
+    importpath = "github.com/downflux/pathing/lib/hpf/graphastar",
     deps = [
         ":graph",
         ":tile",
@@ -53,7 +53,7 @@ go_library(
 go_test(
     name = "graphastar_test",
     srcs = ["graphastar_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graphastar_test",
+    importpath = "github.com/downflux/pathing/lib/hpf/graphastar_test",
     embed = [":graphastar"],
     deps = [
         ":graph",
@@ -69,7 +69,7 @@ go_test(
 go_library(
     name = "tileastar",
     srcs = ["tileastar.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/tileastar",
+    importpath = "github.com/downflux/pathing/lib/hpf/tileastar",
     deps = [
         ":tile",
         ":utils",
@@ -84,7 +84,7 @@ go_library(
 go_test(
     name = "tileastar_test",
     srcs = ["tileastar_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/tileastar_test",
+    importpath = "github.com/downflux/pathing/lib/hpf/tileastar_test",
     embed = [":tileastar"],
     deps = [
         ":tile",
@@ -97,18 +97,9 @@ go_test(
 )
 
 go_library(
-    name = "hpf",
-    srcs = ["hpf.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/hpf",
-    deps = [
-        "//lib/proto:constants_go_proto",
-    ],
-)
-
-go_library(
     name = "tile",
     srcs = ["tile.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/tile",
+    importpath = "github.com/downflux/pathing/lib/hpf/tile",
     deps = [
         ":utils",
         "//lib/proto:constants_go_proto",
@@ -122,7 +113,7 @@ go_library(
 go_test(
     name = "tile_test",
     srcs = ["tile_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/tile_test",
+    importpath = "github.com/downflux/pathing/lib/hpf/tile_test",
     embed = [":tile"],
     deps = [
         ":utils",
@@ -139,7 +130,7 @@ go_test(
 go_library(
     name = "cluster",
     srcs = ["cluster.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/cluster",
+    importpath = "github.com/downflux/pathing/lib/hpf/cluster",
     deps = [
         ":tile",
         ":utils",
@@ -153,7 +144,7 @@ go_library(
 go_test(
     name ="cluster_test",
     srcs = ["cluster_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/cluster_test",
+    importpath = "github.com/downflux/pathing/lib/hpf/cluster_test",
     embed = [":cluster"],
     deps = [
         ":utils",
@@ -165,7 +156,7 @@ go_test(
 go_library(
     name = "entrance",
     srcs = ["entrance.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/entrance",
+    importpath = "github.com/downflux/pathing/lib/hpf/entrance",
     deps = [
         ":cluster",
         ":tile",
@@ -181,7 +172,7 @@ go_library(
 go_test(
     name = "entrance_test",
     srcs = ["entrance_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/entrance_test",
+    importpath = "github.com/downflux/pathing/lib/hpf/entrance_test",
     embed = [":entrance"],
     deps = [
         ":cluster",
@@ -197,7 +188,7 @@ go_test(
 go_library(
     name = "edge",
     srcs = ["edge.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/edge",
+    importpath = "github.com/downflux/pathing/lib/hpf/edge",
     deps = [
         ":utils",
         "//lib/proto:structs_go_proto",
@@ -209,7 +200,7 @@ go_library(
 go_test(
     name = "edge_test",
     srcs = ["edge_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/edge_test",
+    importpath = "github.com/downflux/pathing/lib/hpf/edge_test",
     embed = [":edge"],
     deps = [
         ":utils",
@@ -223,7 +214,7 @@ go_test(
 go_library(
     name = "node",
     srcs = ["node.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/node",
+    importpath = "github.com/downflux/pathing/lib/hpf/node",
     deps = [
         ":cluster",
         ":utils",
@@ -236,7 +227,7 @@ go_library(
 go_test(
     name = "node_test",
     srcs = ["node_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/node_test",
+    importpath = "github.com/downflux/pathing/lib/hpf/node_test",
     embed = [":node"],
     deps = [
         ":cluster",
@@ -251,7 +242,7 @@ go_test(
 go_library(
     name = "graph",
     srcs = ["graph.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graph",
+    importpath = "github.com/downflux/pathing/lib/hpf/graph",
     deps = [
         ":edge",
         ":node",
@@ -271,7 +262,7 @@ go_library(
 go_test(
     name = "graph_test",
     srcs = ["graph_test.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/graph_test",
+    importpath = "github.com/downflux/pathing/lib/hpf/graph_test",
     embed = [":graph"],
     deps = [
         ":edge",
@@ -289,7 +280,7 @@ go_test(
 go_library(
     name = "utils",
     srcs = ["utils.go"],
-    importpath = "github.com/minkezhang/rts-pathing/lib/hpf/utils",
+    importpath = "github.com/downflux/pathing/lib/hpf/utils",
     deps = [
         "//lib/proto:structs_go_proto",
     ],
