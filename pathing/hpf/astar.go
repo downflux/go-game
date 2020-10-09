@@ -6,12 +6,12 @@ package astar
 import (
 	"math"
 
-	"github.com/downflux/pathing/lib/hpf/cluster"
-	"github.com/downflux/pathing/lib/hpf/graph"
-	"github.com/downflux/pathing/lib/hpf/graphastar"
-	"github.com/downflux/pathing/lib/hpf/tile"
-	"github.com/downflux/pathing/lib/hpf/tileastar"
-	"github.com/downflux/pathing/lib/hpf/utils"
+	"github.com/downflux/game/pathing/hpf/cluster"
+	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/pathing/hpf/graphastar"
+	"github.com/downflux/game/pathing/hpf/tile"
+	"github.com/downflux/game/pathing/hpf/tileastar"
+	"github.com/downflux/game/pathing/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

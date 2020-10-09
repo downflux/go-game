@@ -3,10 +3,10 @@ package cluster
 import (
 	"testing"
 
-	rtscpb "github.com/downflux/pathing/lib/proto/constants_go_proto"
-	rtsspb "github.com/downflux/pathing/lib/proto/structs_go_proto"
+	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
+	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
-	"github.com/downflux/pathing/lib/hpf/utils"
+	"github.com/downflux/game/pathing/hpf/utils"
 )
 
 var (

@@ -3,10 +3,10 @@
 package node
 
 import (
-	rtsspb "github.com/downflux/pathing/lib/proto/structs_go_proto"
+	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
-	"github.com/downflux/pathing/lib/hpf/cluster"
-	"github.com/downflux/pathing/lib/hpf/utils"
+	"github.com/downflux/game/pathing/hpf/cluster"
+	"github.com/downflux/game/pathing/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

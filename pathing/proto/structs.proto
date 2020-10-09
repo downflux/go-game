@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package rts_pathing.lib.proto.structs;
-option go_package = "rts_pathing.lib.proto.structs";
+package game.pathing.proto.structs;
+option go_package = "game.pathing.proto.structs";
 
-import "lib/proto/constants.proto";
+import "pathing/proto/constants.proto";
 
 message Coordinate {
 	int32 X = 1;
@@ -12,11 +12,11 @@ message Coordinate {
 
 message Tile {
 	Coordinate coordinate = 1;
-	rts_pathing.lib.proto.constants.TerrainType terrain_type = 2;
+	game.pathing.proto.constants.TerrainType terrain_type = 2;
 }
 
 message TerrainCost {
-	rts_pathing.lib.proto.constants.TerrainType terrain_type = 1;
+	game.pathing.proto.constants.TerrainType terrain_type = 1;
 	double cost = 2;
 }
 
@@ -37,7 +37,7 @@ message ClusterMap {
 // TODO(minkezhang): Remove this proto. We don't need to save this intermediate
 // state and therefore do not need to export this.
 message CoordinateSlice {
-	rts_pathing.lib.proto.constants.Orientation orientation = 1;
+	game.pathing.proto.constants.Orientation orientation = 1;
 	Coordinate start = 2;
 	int32 length = 3;
 }
@@ -64,6 +64,6 @@ message AbstractNode {
 message AbstractEdge {
 	Coordinate source = 1;
 	Coordinate destination = 2;
-	rts_pathing.lib.proto.constants.EdgeType edge_type = 3;
+	game.pathing.proto.constants.EdgeType edge_type = 3;
 	double weight = 4;
 }

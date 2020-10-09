@@ -3,12 +3,12 @@ package node
 import (
 	"testing"
 
-	rtsspb "github.com/downflux/pathing/lib/proto/structs_go_proto"
+	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/downflux/pathing/lib/hpf/cluster"
-	"github.com/downflux/pathing/lib/hpf/utils"
+	"github.com/downflux/game/pathing/hpf/cluster"
+	"github.com/downflux/game/pathing/hpf/utils"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 

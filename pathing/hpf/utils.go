@@ -2,7 +2,7 @@
 package utils
 
 import (
-	rtsspb "github.com/downflux/pathing/lib/proto/structs_go_proto"
+	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 )
 
 // MapCoordinate is a hashable convenience struct used as map keys.

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package rts_pathing.lib.proto.constants;
-option go_package = "rts_pathing.lib.proto.constants";
+package game.pathing.proto.constants;
+option go_package = "game.pathing.proto.constants";
 
 enum Direction {
 	DIRECTION_UNKNOWN = 0;

@@ -10,7 +10,7 @@ proto_library(
 
 go_proto_library(
     name = "constants_go_proto",
-    importpath = "github.com/downflux/pathing/lib/proto/constants_go_proto",
+    importpath = "github.com/downflux/game/pathing/proto/constants_go_proto",
     proto = ":constants_proto",
 )
 
@@ -24,7 +24,7 @@ proto_library(
 
 go_proto_library(
     name = "structs_go_proto",
-    importpath = "github.com/downflux/pathing/lib/proto/structs_go_proto",
+    importpath = "github.com/downflux/game/pathing/proto/structs_go_proto",
     proto = ":structs_proto",
     deps = [
         ":constants_go_proto",
