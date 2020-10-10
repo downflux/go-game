@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package game.api.constants;
+option go_package = "game.api.constants";
+
+enum MoveType {
+  MOVE_TYPE_UNKNOWN = 0;
+  MOVE_TYPE_FORWARD = 1;
+  MOVE_TYPE_RETREAT = 2;
+}
