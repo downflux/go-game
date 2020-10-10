@@ -14,7 +14,7 @@ service DownFluxService {
 
 message MoveRequest {
   string ClientID = 1;
-  string EpochID = 2;
+  string TickID = 2;
   string EntityID = 3;
   game.api.data.Coordinate Destination = 4;
   game.api.constants.MoveType MoveType = 5;
