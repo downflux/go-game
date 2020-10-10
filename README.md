@@ -1,5 +1,5 @@
-# rts-pathing
-Implement an RTS-centric pathfinding algorithm.
+# game
+Implementation of DownFlux, a collaborative RTS.
 
 ## Bazel
 

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package game.api.api;
+option go_package = "game.api.api";
+
+import "api/constants.proto";
+import "api/data.proto";
+
+service DownFluxService {
+  rpc Move(MoveRequest) returns (MoveResponse) {
+    option idempotency_level = IDEMPOTENT;
+  };
+}
+
+message MoveRequest {
+  string ClientID = 1;
+  string TickID = 2;
+  string EntityID = 3;
+  game.api.data.Coordinate Destination = 4;
+  game.api.constants.MoveType MoveType = 5;
+}
+
+message MoveResponse {}
+
