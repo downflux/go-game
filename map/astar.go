@@ -7,8 +7,8 @@ import (
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	mcpb "github.com/downflux/game/map/api/constants_go_proto"
 
-	"github.com/downflux/game/pathing/hpf/tile"
-	"github.com/downflux/game/pathing/hpf/utils"
+	tile "github.com/downflux/game/map/map"
+	"github.com/downflux/game/map/utils"
 	fastar "github.com/fzipp/astar"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

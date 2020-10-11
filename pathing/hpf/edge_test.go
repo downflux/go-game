@@ -6,7 +6,7 @@ import (
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
-	"github.com/downflux/game/pathing/hpf/utils"
+	"github.com/downflux/game/map/utils"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"

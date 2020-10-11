@@ -5,8 +5,8 @@ package node
 import (
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/cluster"
-	"github.com/downflux/game/pathing/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

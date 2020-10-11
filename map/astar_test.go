@@ -8,8 +8,8 @@ import (
 	mcpb "github.com/downflux/game/map/api/constants_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 
-	"github.com/downflux/game/pathing/hpf/tile"
-	"github.com/downflux/game/pathing/hpf/utils"
+	tile "github.com/downflux/game/map/map"
+	"github.com/downflux/game/map/utils"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 )

@@ -1,5 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test", "go_binary")
 
+package(default_visibility=["//pathing:__subpackages__"])
+
 go_library(
     name = "map",
     srcs = ["map.go"],
@@ -44,9 +46,9 @@ go_library(
 go_library(
     name = "astar",
     srcs = ["astar.go"],
-    importpath = "github.com/downflux/game/map//astar",
+    importpath = "github.com/downflux/game/map/astar",
     deps = [
-        ":tile",
+        ":map",
         ":utils",
         "//api:data_go_proto",
         "//map/api:constants_go_proto",
@@ -59,10 +61,10 @@ go_library(
 go_test(
     name = "astar_test",
     srcs = ["astar_test.go"],
-    importpath = "github.com/downflux/game/map//astar_test",
+    importpath = "github.com/downflux/game/map/astar_test",
     embed = [":astar"],
     deps = [
-        ":tile",
+        ":map",
         ":utils",
         "//map/api:constants_go_proto",
         "//map/api:data_go_proto",

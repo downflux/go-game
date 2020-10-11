@@ -10,9 +10,9 @@ import (
 	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
+	tile "github.com/downflux/game/map/map"
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/cluster"
-	"github.com/downflux/game/pathing/hpf/tile"
-	"github.com/downflux/game/pathing/hpf/utils"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"

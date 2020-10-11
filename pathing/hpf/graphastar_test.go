@@ -9,9 +9,9 @@ import (
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
+	tile "github.com/downflux/game/map/map"
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/pathing/hpf/tile"
-	"github.com/downflux/game/pathing/hpf/utils"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 )
