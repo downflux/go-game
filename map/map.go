@@ -8,7 +8,7 @@ import (
 	mcpb "github.com/downflux/game/map/api/constants_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 
-	"github.com/downflux/game/pathing/hpf/utils"
+	"github.com/downflux/game/map/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

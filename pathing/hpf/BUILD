@@ -1,4 +1,3 @@
-
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test", "go_binary")
 
 go_library(
@@ -65,68 +64,6 @@ go_test(
         "//map/api:data_go_proto",
         "//pathing/api:data_go_proto",
         "@com_github_google_go_cmp//cmp:go_default_library",
-        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
-    ],
-)
-
-go_library(
-    name = "tileastar",
-    srcs = ["tileastar.go"],
-    importpath = "github.com/downflux/game/pathing/hpf/tileastar",
-    deps = [
-        ":tile",
-        ":utils",
-        "//api:data_go_proto",
-        "//map/api:constants_go_proto",
-        "@com_github_fzipp_astar//:go_default_library",
-        "@org_golang_google_grpc//status:go_default_library",
-        "@org_golang_google_grpc//codes:go_default_library",
-    ],
-)
-
-go_test(
-    name = "tileastar_test",
-    srcs = ["tileastar_test.go"],
-    importpath = "github.com/downflux/game/pathing/hpf/tileastar_test",
-    embed = [":tileastar"],
-    deps = [
-        ":tile",
-        ":utils",
-        "//map/api:constants_go_proto",
-        "//map/api:data_go_proto",
-        "@com_github_google_go_cmp//cmp:go_default_library",
-        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
-    ],
-)
-
-go_library(
-    name = "tile",
-    srcs = ["tile.go"],
-    importpath = "github.com/downflux/game/pathing/hpf/tile",
-    deps = [
-        ":utils",
-        "//api:data_go_proto",
-        "//map/api:constants_go_proto",
-        "//map/api:data_go_proto",
-        "@com_github_fzipp_astar//:go_default_library",
-        "@org_golang_google_grpc//status:go_default_library",
-        "@org_golang_google_grpc//codes:go_default_library",
-    ],
-)
-
-go_test(
-    name = "tile_test",
-    srcs = ["tile_test.go"],
-    importpath = "github.com/downflux/game/pathing/hpf/tile_test",
-    embed = [":tile"],
-    deps = [
-        ":utils",
-        "//map/api:constants_go_proto",
-        "//map/api:data_go_proto",
-        "@com_github_google_go_cmp//cmp:go_default_library",
-        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-        "@org_golang_google_grpc//status:go_default_library",
-        "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
@@ -289,14 +226,5 @@ go_test(
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
         "@org_golang_google_protobuf//testing/protocmp:go_default_library",
-    ],
-)
-
-go_library(
-    name = "utils",
-    srcs = ["utils.go"],
-    importpath = "github.com/downflux/game/pathing/hpf/utils",
-    deps = [
-        "//api:data_go_proto",
     ],
 )
