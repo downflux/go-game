@@ -3,9 +3,13 @@ package executor
 import (
 	"sync"
 
+	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/service/commands/move"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	tile "github.com/downflux/game/map/map"
+	apipb "github.com/downflux/game/api/api_go_proto"
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
@@ -26,6 +30,9 @@ func New() *Executor {
 }
 
 type Executor struct {
+	tileMap *tile.Map
+	abstractGraph *graph.Graph
+
 	commandQueueMux sync.RWMutex
 	commandQueue    []Command
 }
@@ -42,4 +49,8 @@ func AddCommand(e *Executor, c Command) error {
 
 func Tick(e *Executor) error {
 	return notImplemented
+}
+
+func NewMoveCommand(e *Executor, req *apipb.MoveRequest) *move.Command {
+	return move.New(req, e.tileMap, e.abstractGraph)
 }

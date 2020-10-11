@@ -1,6 +1,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
-package(default_visibility=["//server/grpc:__pkg__"])
+package(default_visibility=["//server/service:__pkg__"])
 
 go_library(
     name = "move",
@@ -8,6 +8,8 @@ go_library(
     importpath = "github.com/downflux/game/server/service/commands/move",
     deps = [
         "//api:api_go_proto",
+	"//map:map",
+	"//pathing/hpf:graph",
         "//server/service/api:constants_go_proto",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",

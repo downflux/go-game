@@ -6,7 +6,11 @@ go_library(
     importpath = "github.com/downflux/game/server/service/executor",
     visibility = ["//server/grpc:__pkg__"],
     deps = [
+	"//api:api_go_proto",
+	"//map:map",
+	"//pathing/hpf:graph",
         "//server/service/api:constants_go_proto",
+        "//server/service/commands:move",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
     ],

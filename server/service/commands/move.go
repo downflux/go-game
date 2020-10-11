@@ -1,10 +1,12 @@
 package move
 
 import (
+	"github.com/downflux/game/pathing/hpf/graph"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
+	tile "github.com/downflux/game/map/map"
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
@@ -15,14 +17,18 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-func Import(pb *apipb.MoveRequest) *Command {
+func New(pb *apipb.MoveRequest, m *tile.Map, g *graph.Graph) *Command {
 	return &Command{
+		tileMap: m,
+		abstractGraph: g,
 		clientID: pb.GetClientID(),
 		tickID:   pb.GetTickID(),
 	}
 }
 
 type Command struct {
+	tileMap *tile.Map
+	abstractGraph *graph.Graph
 	clientID string
 	tickID   string
 }

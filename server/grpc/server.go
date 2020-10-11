@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 
-	"github.com/downflux/game/server/service/commands/move"
 	"github.com/downflux/game/server/service/executor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,5 +26,5 @@ type DownFluxService struct {
 }
 
 func (s *DownFluxService) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
-	return nil, executor.AddCommand(s.ex, move.Import(req))
+	return nil, executor.AddCommand(s.ex, executor.NewMoveCommand(s.ex, req))
 }
