@@ -8,9 +8,9 @@ import (
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/downflux/game/pathing/hpf/tile"
 	"github.com/downflux/game/pathing/hpf/utils"
+	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 

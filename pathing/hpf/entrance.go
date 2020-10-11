@@ -4,15 +4,16 @@ package entrance
 
 import (
 	"math"
+	"reflect"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/tile"
 	"github.com/downflux/game/pathing/hpf/utils"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -46,7 +47,13 @@ var (
 )
 
 type Transition struct {
-  N1, N2 *rtsspb.AbstractNode
+	N1, N2 *rtsspb.AbstractNode
+}
+
+type coordinateSlice struct {
+	Orientation rtscpb.Orientation
+	Start       *gdpb.Coordinate
+	Length      int32
 }
 
 // BuildTransitions takes in two adjacent map Cluster objects and returns the
@@ -94,20 +101,20 @@ func BuildTransitions(tm *tile.Map, cm *cluster.Map, c1, c2 utils.MapCoordinate)
 
 // buildCoordinateWithCoordinateSlice reconstructs the Coordinate object back
 // from the given slice info.
-func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32) (*gdpb.Coordinate, error) {
-	if offset < 0 || offset >= s.GetLength() {
+func buildCoordinateWithCoordinateSlice(s coordinateSlice, offset int32) (*gdpb.Coordinate, error) {
+	if offset < 0 || offset >= s.Length {
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid offset specified, end coordinate must be contained within the slice")
 	}
-	switch s.GetOrientation() {
+	switch s.Orientation {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
 		return &gdpb.Coordinate{
-			X: s.GetStart().GetX() + offset,
-			Y: s.GetStart().GetY(),
+			X: s.Start.GetX() + offset,
+			Y: s.Start.GetY(),
 		}, nil
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
 		return &gdpb.Coordinate{
-			X: s.GetStart().GetX(),
-			Y: s.GetStart().GetY() + offset,
+			X: s.Start.GetX(),
+			Y: s.Start.GetY() + offset,
 		}, nil
 	default:
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid orientation specified")
@@ -115,14 +122,14 @@ func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32)
 }
 
 // sliceContains checks if the given Coordinate falls within the slice.
-func sliceContains(s *rtsspb.CoordinateSlice, t utils.MapCoordinate) (bool, error) {
-	switch s.GetOrientation() {
+func sliceContains(s coordinateSlice, t utils.MapCoordinate) (bool, error) {
+	switch s.Orientation {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-		return (t.Y == s.GetStart().GetY()) && (s.GetStart().GetX() <= t.X) && (t.X < s.GetStart().GetX()+s.GetLength()), nil
+		return (t.Y == s.Start.GetY()) && (s.Start.GetX() <= t.X) && (t.X < s.Start.GetX()+s.Length), nil
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
-		return (t.X == s.GetStart().GetX()) && (s.GetStart().GetY() <= t.Y) && (t.Y < s.GetStart().GetY()+s.GetLength()), nil
+		return (t.X == s.Start.GetX()) && (s.Start.GetY() <= t.Y) && (t.Y < s.Start.GetY()+s.Length), nil
 	default:
-		return false, status.Errorf(codes.FailedPrecondition, "invalid slice orientation %v", s.GetOrientation())
+		return false, status.Errorf(codes.FailedPrecondition, "invalid slice orientation %v", s.Orientation)
 	}
 }
 
@@ -163,17 +170,17 @@ func OnClusterEdge(m *cluster.Map, clusterCoord utils.MapCoordinate, coord utils
 // representing the contiguous edge of a Cluster in the specified direction.
 // All Tile t on the edge are between the start and end coordinates,
 // i.e. start <= t <= end with usual 2D coordinate comparison.
-func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rtscpb.Direction) (*rtsspb.CoordinateSlice, error) {
+func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rtscpb.Direction) (coordinateSlice, error) {
 	var start *gdpb.Coordinate
 	var length int32
 
 	tileBoundary, err := cluster.TileBoundary(m, c)
 	if err != nil {
-		return nil, err
+		return coordinateSlice{}, err
 	}
 	tileDimension, err := cluster.TileDimension(m, c)
 	if err != nil {
-		return nil, err
+		return coordinateSlice{}, err
 	}
 
 	switch d {
@@ -198,7 +205,7 @@ func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rt
 			Y: tileBoundary.Y,
 		}
 	default:
-		return nil, status.Errorf(codes.FailedPrecondition, "invalid direction specified %v", d)
+		return coordinateSlice{}, status.Errorf(codes.FailedPrecondition, "invalid direction specified %v", d)
 	}
 
 	orientation := edgeDirectionToOrientation[d]
@@ -208,10 +215,10 @@ func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rt
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
 		length = tileDimension.Y
 	default:
-		return nil, status.Errorf(codes.FailedPrecondition, "invalid orientation specified %v", orientation)
+		return coordinateSlice{}, status.Errorf(codes.FailedPrecondition, "invalid orientation specified %v", orientation)
 	}
 
-	return &rtsspb.CoordinateSlice{
+	return coordinateSlice{
 		Orientation: orientation,
 		Start:       start,
 		Length:      length,
@@ -228,17 +235,17 @@ func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rt
 // MaxSingleGapWidth. We may also consider a more contextual reworking
 // of this function and take into consideration the nearest transition node
 // from adjacent slices, e.g. "transition nodes must be N tiles apart".
-func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]Transition, error) {
+func buildTransitionsFromOpenCoordinateSlice(s1, s2 coordinateSlice) ([]Transition, error) {
 	if err := verifyCoordinateSlices(s1, s2); err != nil {
 		return nil, err
 	}
 
 	var transitions []Transition
 	var offsets []int32
-	if s1.GetLength() <= MaxSingleGapWidth {
-		offsets = append(offsets, s1.GetLength()/2)
+	if s1.Length <= MaxSingleGapWidth {
+		offsets = append(offsets, s1.Length/2)
 	} else {
-		offsets = append(offsets, 0, s1.GetLength()-1)
+		offsets = append(offsets, 0, s1.Length-1)
 	}
 
 	for _, o := range offsets {
@@ -265,16 +272,16 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]
 
 // buildTransitionsAux constructs the list of Transition nodes given the
 // corresponding edges of two adjacent Cluster objects.
-func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]Transition, error) {
+func buildTransitionsAux(m *tile.Map, s1, s2 coordinateSlice) ([]Transition, error) {
 	if err := verifyCoordinateSlices(s1, s2); err != nil {
 		return nil, err
 	}
 
-	orientation := s1.GetOrientation()
+	orientation := s1.Orientation
 	var res []Transition
 
-	var tSegment1, tSegment2 *rtsspb.CoordinateSlice
-	for o := int32(0); o < s1.GetLength(); o++ {
+	var tSegment1, tSegment2 coordinateSlice
+	for o := int32(0); o < s1.Length; o++ {
 		t1, err := buildCoordinateWithCoordinateSlice(s1, o)
 		if err != nil {
 			return nil, err
@@ -285,14 +292,14 @@ func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]Transit
 		}
 
 		if m.C[m.TileFromCoordinate(t1).TerrainType()] < math.Inf(0) && m.C[m.TileFromCoordinate(t2).TerrainType()] < math.Inf(0) {
-			if tSegment1 == nil {
-				tSegment1 = &rtsspb.CoordinateSlice{
+			if reflect.ValueOf(tSegment1).IsZero() {
+				tSegment1 = coordinateSlice{
 					Orientation: orientation,
 					Start:       t1,
 				}
 			}
-			if tSegment2 == nil {
-				tSegment2 = &rtsspb.CoordinateSlice{
+			if reflect.ValueOf(tSegment2).IsZero() {
+				tSegment2 = coordinateSlice{
 					Orientation: orientation,
 					Start:       t2,
 				}
@@ -301,7 +308,7 @@ func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]Transit
 			tSegment2.Length += 1
 		}
 		if math.IsInf(m.C[m.TileFromCoordinate(t1).TerrainType()], 0) || math.IsInf(m.C[m.TileFromCoordinate(t2).TerrainType()], 0) {
-			if tSegment1 != nil && tSegment2 != nil {
+			if !reflect.ValueOf(tSegment1).IsZero() && !reflect.ValueOf(tSegment2).IsZero() {
 				transitions, err := buildTransitionsFromOpenCoordinateSlice(tSegment1, tSegment2)
 				if err != nil {
 					return nil, err
@@ -309,11 +316,11 @@ func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]Transit
 				res = append(res, transitions...)
 			}
 
-			tSegment1 = nil
-			tSegment2 = nil
+			tSegment1 = coordinateSlice{}
+			tSegment2 = coordinateSlice{}
 		}
 	}
-	if tSegment1 != nil && tSegment2 != nil {
+	if !reflect.ValueOf(tSegment1).IsZero() && !reflect.ValueOf(tSegment2).IsZero() {
 		transitions, err := buildTransitionsFromOpenCoordinateSlice(tSegment1, tSegment2)
 		if err != nil {
 			return nil, err
@@ -328,18 +335,18 @@ func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]Transit
 // e.g. adjacent, same orientation, etc. If we need to optimize, we can skip
 // this step, as it's only called in internal functions that are not exposed to
 // the end user.
-func verifyCoordinateSlices(s1, s2 *rtsspb.CoordinateSlice) error {
-	if s1.GetOrientation() != s2.GetOrientation() || s1.GetLength() != s2.GetLength() {
+func verifyCoordinateSlices(s1, s2 coordinateSlice) error {
+	if s1.Orientation != s2.Orientation || s1.Length != s2.Length {
 		return status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
 	}
 
-	switch s1.GetOrientation() {
+	switch s1.Orientation {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-		if s1.GetStart().GetX() != s2.GetStart().GetX() || math.Abs(float64(s2.GetStart().GetY()-s1.GetStart().GetY())) != 1 {
+		if s1.Start.GetX() != s2.Start.GetX() || math.Abs(float64(s2.Start.GetY()-s1.Start.GetY())) != 1 {
 			return status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
 		}
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
-		if s1.GetStart().GetY() != s2.GetStart().GetY() || math.Abs(float64(s2.GetStart().GetX()-s1.GetStart().GetX())) != 1 {
+		if s1.Start.GetY() != s2.Start.GetY() || math.Abs(float64(s2.Start.GetX()-s1.Start.GetX())) != 1 {
 			return status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
 		}
 	}

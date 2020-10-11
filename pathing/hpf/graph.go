@@ -10,7 +10,6 @@ import (
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/edge"
 	"github.com/downflux/game/pathing/hpf/entrance"
@@ -18,6 +17,7 @@ import (
 	"github.com/downflux/game/pathing/hpf/tile"
 	"github.com/downflux/game/pathing/hpf/tileastar"
 	"github.com/downflux/game/pathing/hpf/utils"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

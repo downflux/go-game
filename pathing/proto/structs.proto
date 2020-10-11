@@ -30,14 +30,6 @@ message ClusterMap {
   game.api.data.Coordinate tile_map_dimension = 2;
 }
 
-// TODO(minkezhang): Remove this proto. We don't need to save this intermediate
-// state and therefore do not need to export this.
-message CoordinateSlice {
-  game.pathing.proto.constants.Orientation orientation = 1;
-  game.api.data.Coordinate start = 2;
-  int32 length = 3;
-}
-
 message AbstractGraph {
   repeated ClusterMap cluster_maps = 1;
   repeated AbstractNode nodes = 2;
