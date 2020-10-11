@@ -3,12 +3,12 @@
 package node
 
 import (
-	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
-
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/cluster"
-	"github.com/downflux/game/pathing/hpf/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 )
 
 // Map contains a collection of AbstractNode instances, which
@@ -23,12 +23,12 @@ type Map struct {
 
 	// nodes hold the (cluster, Tile) indexed list of AbstractNode
 	// instances.
-	nodes map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractNode
+	nodes map[utils.MapCoordinate]map[utils.MapCoordinate]*pdpb.AbstractNode
 }
 
 // GetByCluster filters the Map by the input cluster coordinate
 // and returns all AbstractNode objects that are bounded by the input.
-func (nm *Map) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, error) {
+func (nm *Map) GetByCluster(c utils.MapCoordinate) ([]*pdpb.AbstractNode, error) {
 	if err := cluster.ValidateClusterInRange(nm.ClusterMap, c); err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (nm *Map) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, erro
 		return nil, nil
 	}
 
-	var nodes []*rtsspb.AbstractNode
+	var nodes []*pdpb.AbstractNode
 	for _, n := range nm.nodes[c] {
 		if cluster.CoordinateInCluster(nm.ClusterMap, c, utils.MC(n.GetTileCoordinate())) {
 			nodes = append(nodes, n)
@@ -48,7 +48,7 @@ func (nm *Map) GetByCluster(c utils.MapCoordinate) ([]*rtsspb.AbstractNode, erro
 
 // Get queries the Map for an AbstractNode instance with the given Tile
 // coordinates.
-func (nm *Map) Get(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
+func (nm *Map) Get(t utils.MapCoordinate) (*pdpb.AbstractNode, error) {
 	c, err := cluster.ClusterCoordinateFromTileCoordinate(nm.ClusterMap, t)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (nm *Map) Get(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 }
 
 // Pop deletes the specified AbstractNode from the Map.
-func (nm *Map) Pop(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
+func (nm *Map) Pop(t utils.MapCoordinate) (*pdpb.AbstractNode, error) {
 	n, err := nm.Get(t)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (nm *Map) Pop(t utils.MapCoordinate) (*rtsspb.AbstractNode, error) {
 }
 
 // Add appends an AbstractNode instance into the Map collection.
-func (nm *Map) Add(n *rtsspb.AbstractNode) error {
+func (nm *Map) Add(n *pdpb.AbstractNode) error {
 	t := utils.MC(n.GetTileCoordinate())
 
 	existingNode, err := nm.Get(t)
@@ -95,10 +95,10 @@ func (nm *Map) Add(n *rtsspb.AbstractNode) error {
 	}
 
 	if nm.nodes == nil {
-		nm.nodes = map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractNode{}
+		nm.nodes = map[utils.MapCoordinate]map[utils.MapCoordinate]*pdpb.AbstractNode{}
 	}
 	if nm.nodes[c] == nil {
-		nm.nodes[c] = map[utils.MapCoordinate]*rtsspb.AbstractNode{}
+		nm.nodes[c] = map[utils.MapCoordinate]*pdpb.AbstractNode{}
 	}
 
 	nm.nodes[c][t] = n

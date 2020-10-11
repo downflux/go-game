@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package game.pathing.api.data;
+option go_package = "game.pathing.api.data";
+
+import "api/data.proto";
+import "pathing/api/constants.proto";
+
+message ClusterMap {
+  // Base dimension per cluster.
+  game.api.data.Coordinate tile_dimension = 1;
+
+  // Underlying TileMap dimension.
+  game.api.data.Coordinate tile_map_dimension = 2;
+}
+
+message AbstractGraph {
+  repeated ClusterMap cluster_maps = 1;
+  repeated AbstractNode nodes = 2;
+  repeated AbstractEdge edges = 3;
+}
+
+message AbstractNode {
+  bool is_ephemeral = 1;
+  map<int64, bool> ephemeral_keys = 2;
+  game.api.data.Coordinate tile_coordinate = 3;
+}
+
+message AbstractEdge {
+  game.api.data.Coordinate source = 1;
+  game.api.data.Coordinate destination = 2;
+  game.pathing.api.constants.EdgeType edge_type = 3;
+  double weight = 4;
+}

@@ -6,20 +6,20 @@ import (
 	"math"
 	"math/rand"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
-
-	"github.com/golang/protobuf/proto"
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/edge"
 	"github.com/downflux/game/pathing/hpf/entrance"
 	"github.com/downflux/game/pathing/hpf/node"
-	"github.com/downflux/game/pathing/hpf/tile"
-	"github.com/downflux/game/pathing/hpf/tileastar"
-	"github.com/downflux/game/pathing/hpf/utils"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	tileastar "github.com/downflux/game/map/astar"
+	tile "github.com/downflux/game/map/map"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 )
 
 var (
@@ -28,7 +28,7 @@ var (
 )
 
 // D gets exact cost between two neighboring AbstractNodes.
-func D(g *Graph, src, dst *rtsspb.AbstractNode) (float64, error) {
+func D(g *Graph, src, dst *pdpb.AbstractNode) (float64, error) {
 	edge, err := g.EdgeMap.Get(utils.MC(src.GetTileCoordinate()), utils.MC(dst.GetTileCoordinate()))
 	if err != nil {
 		return 0, err
@@ -41,7 +41,7 @@ func D(g *Graph, src, dst *rtsspb.AbstractNode) (float64, error) {
 }
 
 // H gets the estimated cost of moving between two arbitrary AbstractNodes.
-func H(src, dst *rtsspb.AbstractNode) (float64, error) {
+func H(src, dst *pdpb.AbstractNode) (float64, error) {
 	return math.Pow(float64(dst.GetTileCoordinate().GetX()-src.GetTileCoordinate().GetX()), 2) + math.Pow(float64(dst.GetTileCoordinate().GetY()-src.GetTileCoordinate().GetY()), 2), nil
 }
 
@@ -81,12 +81,12 @@ func BuildGraph(tm *tile.Map, tileDimension *gdpb.Coordinate) (*Graph, error) {
 		return nil, err
 	}
 	for _, t := range transitions {
-		g.NodeMap.Add(t.GetN1())
-		g.NodeMap.Add(t.GetN2())
-		g.EdgeMap.Add(&rtsspb.AbstractEdge{
-			Source:      t.GetN1().GetTileCoordinate(),
-			Destination: t.GetN2().GetTileCoordinate(),
-			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+		g.NodeMap.Add(t.N1)
+		g.NodeMap.Add(t.N2)
+		g.EdgeMap.Add(&pdpb.AbstractEdge{
+			Source:      t.N1.GetTileCoordinate(),
+			Destination: t.N2.GetTileCoordinate(),
+			EdgeType:    pcpb.EdgeType_EDGE_TYPE_INTER,
 			Weight:      1, // Inter-edges are always of cost 1, per Botea.
 		})
 	}
@@ -163,10 +163,10 @@ func connect(tm *tile.Map, g *Graph, t utils.MapCoordinate) error {
 		}
 
 		if p != nil {
-			g.EdgeMap.Add(&rtsspb.AbstractEdge{
+			g.EdgeMap.Add(&pdpb.AbstractEdge{
 				Source:      n1.GetTileCoordinate(),
 				Destination: n2.GetTileCoordinate(),
-				EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+				EdgeType:    pcpb.EdgeType_EDGE_TYPE_INTRA,
 				Weight:      cost,
 			})
 		}
@@ -191,7 +191,7 @@ func InsertEphemeralNode(tm *tile.Map, g *Graph, t utils.MapCoordinate) (int64, 
 	}
 
 	if n == nil {
-		n = &rtsspb.AbstractNode{IsEphemeral: true, TileCoordinate: utils.PB(t)}
+		n = &pdpb.AbstractNode{IsEphemeral: true, TileCoordinate: utils.PB(t)}
 		g.NodeMap.Add(n)
 	}
 
@@ -250,8 +250,8 @@ func RemoveEphemeralNode(g *Graph, t utils.MapCoordinate, ephemeralKey int64) er
 
 // buildTransitions iterates over the tile.Map for the input cluster.Map overlay
 // and look for adjacent, open nodes along cluster-cluster borders.
-func buildTransitions(tm *tile.Map, cm *cluster.Map) ([]*rtsspb.Transition, error) {
-	var ts []*rtsspb.Transition
+func buildTransitions(tm *tile.Map, cm *cluster.Map) ([]entrance.Transition, error) {
+	var ts []entrance.Transition
 	for _, c1 := range cluster.Iterator(cm) {
 		neighbors, err := cluster.Neighbors(cm, c1)
 		if err != nil {
@@ -276,7 +276,7 @@ func buildTransitions(tm *tile.Map, cm *cluster.Map) ([]*rtsspb.Transition, erro
 // defined between the two instances. Note that the instances returned here
 // also include ephemeral AbstractNodes (n.GetIsEphemeral() == true) -- DFS
 // should take care not to expand these second-order nodes.
-func (g *Graph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error) {
+func (g *Graph) Neighbors(n *pdpb.AbstractNode) ([]*pdpb.AbstractNode, error) {
 	node, err := g.NodeMap.Get(utils.MC(n.GetTileCoordinate()))
 	if err != nil {
 		return nil, err
@@ -290,7 +290,7 @@ func (g *Graph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error
 		return nil, err
 	}
 
-	var neighbors []*rtsspb.AbstractNode
+	var neighbors []*pdpb.AbstractNode
 	for _, e := range edges {
 		var d *gdpb.Coordinate
 		if proto.Equal(node.GetTileCoordinate(), e.GetSource()) {

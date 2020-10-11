@@ -4,18 +4,18 @@ package tileastar
 import (
 	"math"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
-
-	fastar "github.com/fzipp/astar"
-	"github.com/downflux/game/pathing/hpf/tile"
-	"github.com/downflux/game/pathing/hpf/utils"
+	"github.com/downflux/game/map/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	mcpb "github.com/downflux/game/map/api/constants_go_proto"
+	tile "github.com/downflux/game/map/map"
+	fastar "github.com/fzipp/astar"
 )
 
 // dFunc provides a shim for the tile.Map neighbor distance function.
-func dFunc(c map[rtscpb.TerrainType]float64, src, dest fastar.Node) float64 {
+func dFunc(c map[mcpb.TerrainType]float64, src, dest fastar.Node) float64 {
 	cost, err := tile.D(c, src.(*tile.Tile), dest.(*tile.Tile))
 	if err != nil {
 		return math.Inf(0)

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package game.map.api.constants;
+option go_package = "game.map.api.constants";
+
+enum TerrainType {
+  TERRAIN_TYPE_UNKNOWN = 0;
+  TERRAIN_TYPE_BLOCKED = 1;
+  TERRAIN_TYPE_PLAINS = 2;
+}
+

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package game.map.api.data;
+option go_package = "game.map.api.data";
+
+import "api/data.proto";
+import "map/api/constants.proto";
+
+message Tile {
+  game.api.data.Coordinate coordinate = 1;
+  game.map.api.constants.TerrainType terrain_type = 2;
+}
+
+message TerrainCost {
+  game.map.api.constants.TerrainType terrain_type = 1;
+  double cost = 2;
+}
+
+message TileMap {
+  game.api.data.Coordinate dimension = 1;
+  repeated Tile tiles = 2;
+  repeated TerrainCost terrain_costs = 3;
+}
+

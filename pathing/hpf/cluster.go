@@ -7,13 +7,13 @@ package cluster
 import (
 	"math"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
-
-	"github.com/downflux/game/pathing/hpf/utils"
+	"github.com/downflux/game/map/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 )
 
 var (
@@ -36,7 +36,7 @@ var (
 // partition-partition move is known. This will save cycles when iterating over
 // large maps.
 type Map struct {
-	Val *rtsspb.ClusterMap
+	Val *pdpb.ClusterMap
 }
 
 // Dimension returns the X, Y dimension of a given Map.
@@ -73,14 +73,14 @@ func ClusterCoordinateFromTileCoordinate(m *Map, t utils.MapCoordinate) (utils.M
 }
 
 // ImportMap constructs a Map object from the given protobuf.
-func ImportMap(pb *rtsspb.ClusterMap) (*Map, error) {
+func ImportMap(pb *pdpb.ClusterMap) (*Map, error) {
 	return &Map{
 		Val: pb,
 	}, nil
 }
 
 // ExportMap constructs a protobuf from the given Map object.
-func ExportMap(m *Map) (*rtsspb.ClusterMap, error) {
+func ExportMap(m *Map) (*pdpb.ClusterMap, error) {
 	return nil, notImplemented
 }
 
@@ -164,24 +164,24 @@ func Neighbors(m *Map, c utils.MapCoordinate) ([]utils.MapCoordinate, error) {
 
 // GetRelativeDirection will return the direction of travel from c to other.
 // c and other must be immediately adjacent to one another.
-func GetRelativeDirection(m *Map, c, other utils.MapCoordinate) (rtscpb.Direction, error) {
+func GetRelativeDirection(m *Map, c, other utils.MapCoordinate) (pcpb.Direction, error) {
 	if !IsAdjacent(m, c, other) {
-		return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "input clusters are not immediately adjacent to one another")
+		return pcpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "input clusters are not immediately adjacent to one another")
 	}
 
 	if c.X == other.X && c.Y < other.Y {
-		return rtscpb.Direction_DIRECTION_NORTH, nil
+		return pcpb.Direction_DIRECTION_NORTH, nil
 	}
 	if c.X == other.X && c.Y > other.Y {
-		return rtscpb.Direction_DIRECTION_SOUTH, nil
+		return pcpb.Direction_DIRECTION_SOUTH, nil
 	}
 	if c.X < other.X && c.Y == other.Y {
-		return rtscpb.Direction_DIRECTION_EAST, nil
+		return pcpb.Direction_DIRECTION_EAST, nil
 	}
 	if c.X > other.X && c.Y == other.Y {
-		return rtscpb.Direction_DIRECTION_WEST, nil
+		return pcpb.Direction_DIRECTION_WEST, nil
 	}
-	return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "clusters which are immediately adjacent are somehow not traversible via cardinal directions")
+	return pcpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "clusters which are immediately adjacent are somehow not traversible via cardinal directions")
 }
 
 // BuildMap constructs a Map instance which will be used to
@@ -190,7 +190,7 @@ func GetRelativeDirection(m *Map, c, other utils.MapCoordinate) (rtscpb.Directio
 // along when looking up the Tile by a given coordinate.
 func BuildMap(tileMapDimension *gdpb.Coordinate, tileDimension *gdpb.Coordinate) (*Map, error) {
 	return &Map{
-		Val: &rtsspb.ClusterMap{
+		Val: &pdpb.ClusterMap{
 			TileDimension:    tileDimension,
 			TileMapDimension: tileMapDimension,
 		},

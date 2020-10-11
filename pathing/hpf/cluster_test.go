@@ -3,16 +3,16 @@ package cluster
 import (
 	"testing"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
+	"github.com/downflux/game/map/utils"
 
-	"github.com/downflux/game/pathing/hpf/utils"
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 )
 
 var (
 	largeClusterMap = &Map{
-		Val: &rtsspb.ClusterMap{
+		Val: &pdpb.ClusterMap{
 			TileDimension:    &gdpb.Coordinate{X: 10, Y: 10},
 			TileMapDimension: &gdpb.Coordinate{X: 10000, Y: 10000},
 		},
@@ -47,14 +47,14 @@ func TestAdjacentDirection(t *testing.T) {
 		name        string
 		c1          utils.MapCoordinate
 		c2          utils.MapCoordinate
-		want        rtscpb.Direction
+		want        pcpb.Direction
 		wantSuccess bool
 	}{
-		{name: "AdjacentDirectionNorth", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 0, Y: 1}, want: rtscpb.Direction_DIRECTION_NORTH, wantSuccess: true},
-		{name: "AdjacentDirectionSouth", c1: utils.MapCoordinate{X: 0, Y: 1}, c2: utils.MapCoordinate{X: 0, Y: 0}, want: rtscpb.Direction_DIRECTION_SOUTH, wantSuccess: true},
-		{name: "AdjacentDirectionEast", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 1, Y: 0}, want: rtscpb.Direction_DIRECTION_EAST, wantSuccess: true},
-		{name: "AdjacentDirectionWest", c1: utils.MapCoordinate{X: 1, Y: 0}, c2: utils.MapCoordinate{X: 0, Y: 0}, want: rtscpb.Direction_DIRECTION_WEST, wantSuccess: true},
-		{name: "NonAdjacentDirection", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 1, Y: 1}, want: rtscpb.Direction_DIRECTION_UNKNOWN, wantSuccess: false},
+		{name: "AdjacentDirectionNorth", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 0, Y: 1}, want: pcpb.Direction_DIRECTION_NORTH, wantSuccess: true},
+		{name: "AdjacentDirectionSouth", c1: utils.MapCoordinate{X: 0, Y: 1}, c2: utils.MapCoordinate{X: 0, Y: 0}, want: pcpb.Direction_DIRECTION_SOUTH, wantSuccess: true},
+		{name: "AdjacentDirectionEast", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 1, Y: 0}, want: pcpb.Direction_DIRECTION_EAST, wantSuccess: true},
+		{name: "AdjacentDirectionWest", c1: utils.MapCoordinate{X: 1, Y: 0}, c2: utils.MapCoordinate{X: 0, Y: 0}, want: pcpb.Direction_DIRECTION_WEST, wantSuccess: true},
+		{name: "NonAdjacentDirection", c1: utils.MapCoordinate{X: 0, Y: 0}, c2: utils.MapCoordinate{X: 1, Y: 1}, want: pcpb.Direction_DIRECTION_UNKNOWN, wantSuccess: false},
 	}
 
 	for _, c := range testConfigs {

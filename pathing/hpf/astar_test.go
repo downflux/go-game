@@ -4,15 +4,15 @@ import (
 	"math"
 	"testing"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
-
-	"github.com/google/go-cmp/cmp"
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/pathing/hpf/tile"
-	"github.com/downflux/game/pathing/hpf/utils"
+	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
+
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	mcpb "github.com/downflux/game/map/api/constants_go_proto"
+	mdpb "github.com/downflux/game/map/api/data_go_proto"
+	tile "github.com/downflux/game/map/map"
 )
 
 func buildTileMap(d utils.MapCoordinate, walls []utils.MapCoordinate) (*tile.Map, error) {
@@ -21,29 +21,29 @@ func buildTileMap(d utils.MapCoordinate, walls []utils.MapCoordinate) (*tile.Map
 		wallHash[w] = true
 	}
 
-	var tiles []*rtsspb.Tile
+	var tiles []*mdpb.Tile
 	for x := int32(0); x < d.X; x++ {
 		for y := int32(0); y < d.Y; y++ {
 			c := utils.MC(&gdpb.Coordinate{X: x, Y: y})
-			var t rtscpb.TerrainType
+			var t mcpb.TerrainType
 			if _, found := wallHash[c]; found {
-				t = rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED
+				t = mcpb.TerrainType_TERRAIN_TYPE_BLOCKED
 			} else {
-				t = rtscpb.TerrainType_TERRAIN_TYPE_PLAINS
+				t = mcpb.TerrainType_TERRAIN_TYPE_PLAINS
 			}
-			tiles = append(tiles, &rtsspb.Tile{
+			tiles = append(tiles, &mdpb.Tile{
 				Coordinate:  utils.PB(c),
 				TerrainType: t,
 			})
 		}
 	}
 
-	return tile.ImportMap(&rtsspb.TileMap{
+	return tile.ImportMap(&mdpb.TileMap{
 		Dimension: utils.PB(d),
 		Tiles:     tiles,
-		TerrainCosts: []*rtsspb.TerrainCost{
-			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
-			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		TerrainCosts: []*mdpb.TerrainCost{
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	})
 }
@@ -105,9 +105,9 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &rtsspb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -124,9 +124,9 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &rtsspb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -143,15 +143,15 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &rtsspb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 					{
-						Val: &rtsspb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 1, Y: 0},
-							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -168,9 +168,9 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &rtsspb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -187,15 +187,15 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &rtsspb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 					{
-						Val: &rtsspb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 1, Y: 0},
-							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -212,15 +212,15 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &rtsspb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 					{
-						Val: &rtsspb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 1, Y: 0},
-							TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
