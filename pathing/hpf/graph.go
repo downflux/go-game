@@ -7,7 +7,7 @@ import (
 	"math/rand"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/cluster"
@@ -86,7 +86,7 @@ func BuildGraph(tm *tile.Map, tileDimension *gdpb.Coordinate) (*Graph, error) {
 		g.EdgeMap.Add(&pdpb.AbstractEdge{
 			Source:      t.N1.GetTileCoordinate(),
 			Destination: t.N2.GetTileCoordinate(),
-			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
+			EdgeType:    pcpb.EdgeType_EDGE_TYPE_INTER,
 			Weight:      1, // Inter-edges are always of cost 1, per Botea.
 		})
 	}
@@ -166,7 +166,7 @@ func connect(tm *tile.Map, g *Graph, t utils.MapCoordinate) error {
 			g.EdgeMap.Add(&pdpb.AbstractEdge{
 				Source:      n1.GetTileCoordinate(),
 				Destination: n2.GetTileCoordinate(),
-				EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
+				EdgeType:    pcpb.EdgeType_EDGE_TYPE_INTRA,
 				Weight:      cost,
 			})
 		}

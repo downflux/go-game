@@ -8,7 +8,7 @@ import (
 	"math"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/utils"
@@ -164,24 +164,24 @@ func Neighbors(m *Map, c utils.MapCoordinate) ([]utils.MapCoordinate, error) {
 
 // GetRelativeDirection will return the direction of travel from c to other.
 // c and other must be immediately adjacent to one another.
-func GetRelativeDirection(m *Map, c, other utils.MapCoordinate) (rtscpb.Direction, error) {
+func GetRelativeDirection(m *Map, c, other utils.MapCoordinate) (pcpb.Direction, error) {
 	if !IsAdjacent(m, c, other) {
-		return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "input clusters are not immediately adjacent to one another")
+		return pcpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "input clusters are not immediately adjacent to one another")
 	}
 
 	if c.X == other.X && c.Y < other.Y {
-		return rtscpb.Direction_DIRECTION_NORTH, nil
+		return pcpb.Direction_DIRECTION_NORTH, nil
 	}
 	if c.X == other.X && c.Y > other.Y {
-		return rtscpb.Direction_DIRECTION_SOUTH, nil
+		return pcpb.Direction_DIRECTION_SOUTH, nil
 	}
 	if c.X < other.X && c.Y == other.Y {
-		return rtscpb.Direction_DIRECTION_EAST, nil
+		return pcpb.Direction_DIRECTION_EAST, nil
 	}
 	if c.X > other.X && c.Y == other.Y {
-		return rtscpb.Direction_DIRECTION_WEST, nil
+		return pcpb.Direction_DIRECTION_WEST, nil
 	}
-	return rtscpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "clusters which are immediately adjacent are somehow not traversible via cardinal directions")
+	return pcpb.Direction_DIRECTION_UNKNOWN, status.Errorf(codes.FailedPrecondition, "clusters which are immediately adjacent are somehow not traversible via cardinal directions")
 }
 
 // BuildMap constructs a Map instance which will be used to

@@ -7,7 +7,7 @@ import (
 	"reflect"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/cluster"
@@ -29,20 +29,20 @@ const (
 var (
 	// edgeDirectionToOrientation indicates the orientatino of a Cluster
 	// edge.
-	edgeDirectionToOrientation = map[rtscpb.Direction]rtscpb.Orientation{
-		rtscpb.Direction_DIRECTION_NORTH: rtscpb.Orientation_ORIENTATION_HORIZONTAL,
-		rtscpb.Direction_DIRECTION_SOUTH: rtscpb.Orientation_ORIENTATION_HORIZONTAL,
-		rtscpb.Direction_DIRECTION_EAST:  rtscpb.Orientation_ORIENTATION_VERTICAL,
-		rtscpb.Direction_DIRECTION_WEST:  rtscpb.Orientation_ORIENTATION_VERTICAL,
+	edgeDirectionToOrientation = map[pcpb.Direction]pcpb.Orientation{
+		pcpb.Direction_DIRECTION_NORTH: pcpb.Orientation_ORIENTATION_HORIZONTAL,
+		pcpb.Direction_DIRECTION_SOUTH: pcpb.Orientation_ORIENTATION_HORIZONTAL,
+		pcpb.Direction_DIRECTION_EAST:  pcpb.Orientation_ORIENTATION_VERTICAL,
+		pcpb.Direction_DIRECTION_WEST:  pcpb.Orientation_ORIENTATION_VERTICAL,
 	}
 
 	// reverseDirection transforms a cardinal direction into its
 	// complement.
-	reverseDirection = map[rtscpb.Direction]rtscpb.Direction{
-		rtscpb.Direction_DIRECTION_NORTH: rtscpb.Direction_DIRECTION_SOUTH,
-		rtscpb.Direction_DIRECTION_SOUTH: rtscpb.Direction_DIRECTION_NORTH,
-		rtscpb.Direction_DIRECTION_EAST:  rtscpb.Direction_DIRECTION_WEST,
-		rtscpb.Direction_DIRECTION_WEST:  rtscpb.Direction_DIRECTION_EAST,
+	reverseDirection = map[pcpb.Direction]pcpb.Direction{
+		pcpb.Direction_DIRECTION_NORTH: pcpb.Direction_DIRECTION_SOUTH,
+		pcpb.Direction_DIRECTION_SOUTH: pcpb.Direction_DIRECTION_NORTH,
+		pcpb.Direction_DIRECTION_EAST:  pcpb.Direction_DIRECTION_WEST,
+		pcpb.Direction_DIRECTION_WEST:  pcpb.Direction_DIRECTION_EAST,
 	}
 )
 
@@ -51,7 +51,7 @@ type Transition struct {
 }
 
 type coordinateSlice struct {
-	Orientation rtscpb.Orientation
+	Orientation pcpb.Orientation
 	Start       *gdpb.Coordinate
 	Length      int32
 }
@@ -106,12 +106,12 @@ func buildCoordinateWithCoordinateSlice(s coordinateSlice, offset int32) (*gdpb.
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid offset specified, end coordinate must be contained within the slice")
 	}
 	switch s.Orientation {
-	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+	case pcpb.Orientation_ORIENTATION_HORIZONTAL:
 		return &gdpb.Coordinate{
 			X: s.Start.GetX() + offset,
 			Y: s.Start.GetY(),
 		}, nil
-	case rtscpb.Orientation_ORIENTATION_VERTICAL:
+	case pcpb.Orientation_ORIENTATION_VERTICAL:
 		return &gdpb.Coordinate{
 			X: s.Start.GetX(),
 			Y: s.Start.GetY() + offset,
@@ -124,9 +124,9 @@ func buildCoordinateWithCoordinateSlice(s coordinateSlice, offset int32) (*gdpb.
 // sliceContains checks if the given Coordinate falls within the slice.
 func sliceContains(s coordinateSlice, t utils.MapCoordinate) (bool, error) {
 	switch s.Orientation {
-	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+	case pcpb.Orientation_ORIENTATION_HORIZONTAL:
 		return (t.Y == s.Start.GetY()) && (s.Start.GetX() <= t.X) && (t.X < s.Start.GetX()+s.Length), nil
-	case rtscpb.Orientation_ORIENTATION_VERTICAL:
+	case pcpb.Orientation_ORIENTATION_VERTICAL:
 		return (t.X == s.Start.GetX()) && (s.Start.GetY() <= t.Y) && (t.Y < s.Start.GetY()+s.Length), nil
 	default:
 		return false, status.Errorf(codes.FailedPrecondition, "invalid slice orientation %v", s.Orientation)
@@ -143,11 +143,11 @@ func OnClusterEdge(m *cluster.Map, clusterCoord utils.MapCoordinate, coord utils
 		return false
 	}
 
-	for _, d := range []rtscpb.Direction{
-		rtscpb.Direction_DIRECTION_NORTH,
-		rtscpb.Direction_DIRECTION_SOUTH,
-		rtscpb.Direction_DIRECTION_EAST,
-		rtscpb.Direction_DIRECTION_WEST,
+	for _, d := range []pcpb.Direction{
+		pcpb.Direction_DIRECTION_NORTH,
+		pcpb.Direction_DIRECTION_SOUTH,
+		pcpb.Direction_DIRECTION_EAST,
+		pcpb.Direction_DIRECTION_WEST,
 	} {
 		slice, err := buildClusterEdgeCoordinateSlice(m, clusterCoord, d)
 		if err != nil {
@@ -170,7 +170,7 @@ func OnClusterEdge(m *cluster.Map, clusterCoord utils.MapCoordinate, coord utils
 // representing the contiguous edge of a Cluster in the specified direction.
 // All Tile t on the edge are between the start and end coordinates,
 // i.e. start <= t <= end with usual 2D coordinate comparison.
-func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rtscpb.Direction) (coordinateSlice, error) {
+func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d pcpb.Direction) (coordinateSlice, error) {
 	var start *gdpb.Coordinate
 	var length int32
 
@@ -184,22 +184,22 @@ func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rt
 	}
 
 	switch d {
-	case rtscpb.Direction_DIRECTION_NORTH:
+	case pcpb.Direction_DIRECTION_NORTH:
 		start = &gdpb.Coordinate{
 			X: tileBoundary.X,
 			Y: tileBoundary.Y + tileDimension.Y - 1,
 		}
-	case rtscpb.Direction_DIRECTION_SOUTH:
+	case pcpb.Direction_DIRECTION_SOUTH:
 		start = &gdpb.Coordinate{
 			X: tileBoundary.X,
 			Y: tileBoundary.Y,
 		}
-	case rtscpb.Direction_DIRECTION_EAST:
+	case pcpb.Direction_DIRECTION_EAST:
 		start = &gdpb.Coordinate{
 			X: tileBoundary.X + tileDimension.X - 1,
 			Y: tileBoundary.Y,
 		}
-	case rtscpb.Direction_DIRECTION_WEST:
+	case pcpb.Direction_DIRECTION_WEST:
 		start = &gdpb.Coordinate{
 			X: tileBoundary.X,
 			Y: tileBoundary.Y,
@@ -210,9 +210,9 @@ func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rt
 
 	orientation := edgeDirectionToOrientation[d]
 	switch orientation {
-	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+	case pcpb.Orientation_ORIENTATION_HORIZONTAL:
 		length = tileDimension.X
-	case rtscpb.Orientation_ORIENTATION_VERTICAL:
+	case pcpb.Orientation_ORIENTATION_VERTICAL:
 		length = tileDimension.Y
 	default:
 		return coordinateSlice{}, status.Errorf(codes.FailedPrecondition, "invalid orientation specified %v", orientation)
@@ -341,11 +341,11 @@ func verifyCoordinateSlices(s1, s2 coordinateSlice) error {
 	}
 
 	switch s1.Orientation {
-	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
+	case pcpb.Orientation_ORIENTATION_HORIZONTAL:
 		if s1.Start.GetX() != s2.Start.GetX() || math.Abs(float64(s2.Start.GetY()-s1.Start.GetY())) != 1 {
 			return status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
 		}
-	case rtscpb.Orientation_ORIENTATION_VERTICAL:
+	case pcpb.Orientation_ORIENTATION_VERTICAL:
 		if s1.Start.GetY() != s2.Start.GetY() || math.Abs(float64(s2.Start.GetX()-s1.Start.GetX())) != 1 {
 			return status.Error(codes.FailedPrecondition, "input CoordinateSlice instances mismatch")
 		}

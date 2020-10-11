@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/utils"
@@ -25,15 +25,15 @@ var (
 	simpleMapProto = &pdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 3, Y: 3},
 		Tiles: []*pdpb.Tile{
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 	}
 )
@@ -71,22 +71,22 @@ func TestDNotAdjacent(t *testing.T) {
 }
 
 func TestD(t *testing.T) {
-	cost := map[rtscpb.TerrainType]float64{
-		rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED: 1000,
-		rtscpb.TerrainType_TERRAIN_TYPE_PLAINS:  1,
+	cost := map[pcpb.TerrainType]float64{
+		pcpb.TerrainType_TERRAIN_TYPE_BLOCKED: 1000,
+		pcpb.TerrainType_TERRAIN_TYPE_PLAINS:  1,
 	}
 	c1 := &gdpb.Coordinate{X: 0, Y: 0}
 	c2 := &gdpb.Coordinate{X: 0, Y: 1}
 	testConfigs := []struct {
 		name         string
-		terrainType1 rtscpb.TerrainType
-		terrainType2 rtscpb.TerrainType
+		terrainType1 pcpb.TerrainType
+		terrainType2 pcpb.TerrainType
 		want         float64
 	}{
 		{
 			name:         "SimpleD",
-			terrainType1: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
-			terrainType2: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
+			terrainType1: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+			terrainType2: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			want:         1,
 		},
 	}

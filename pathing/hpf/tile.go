@@ -5,7 +5,7 @@ import (
 	"math"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/utils"
@@ -39,7 +39,7 @@ func IsAdjacent(src, dst *Tile) bool {
 // into and out of a Tile will essentially just double its cost, and the cost
 // doesn't matter when the Tile is a source or target (since moving there is
 // mandatory).
-func D(c map[rtscpb.TerrainType]float64, src, dst *Tile) (float64, error) {
+func D(c map[pcpb.TerrainType]float64, src, dst *Tile) (float64, error) {
 	if !IsAdjacent(src, dst) {
 		return 0, status.Error(codes.InvalidArgument, "input tiles are not adjacent to one another")
 	}
@@ -65,14 +65,14 @@ type Map struct {
 	M map[utils.MapCoordinate]*Tile
 
 	// C is an embedded lookup table of terrain costs.
-	C map[rtscpb.TerrainType]float64
+	C map[pcpb.TerrainType]float64
 }
 
 // ImportMap constructs a new Map object from the input protobuf.
 // List of Map.Tiles may be sparse.
 func ImportMap(pb *pdpb.TileMap) (*Map, error) {
 	m := make(map[utils.MapCoordinate]*Tile)
-	tc := make(map[rtscpb.TerrainType]float64)
+	tc := make(map[pcpb.TerrainType]float64)
 
 	for _, c := range pb.GetTerrainCosts() {
 		tc[c.GetTerrainType()] = c.GetCost()
@@ -172,11 +172,11 @@ func (t *Tile) Y() int32 {
 }
 
 // TerrainType returns the TerrainType enum of the Tile.
-func (t *Tile) TerrainType() rtscpb.TerrainType {
+func (t *Tile) TerrainType() pcpb.TerrainType {
 	return t.Val.GetTerrainType()
 }
 
 // SetTerrainType sets the TerrainType enum of the Tile.
-func (t *Tile) SetTerrainType(terrainType rtscpb.TerrainType) {
+func (t *Tile) SetTerrainType(terrainType pcpb.TerrainType) {
 	t.Val.TerrainType = terrainType
 }
