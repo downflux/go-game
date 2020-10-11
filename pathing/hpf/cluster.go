@@ -7,6 +7,7 @@ package cluster
 import (
 	"math"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
@@ -22,7 +23,7 @@ var (
 	// neighborCoordinates provides the Coordinate deltas between a
 	// specific Coordinate and adjacent Coordinates to expand to in
 	// a graph search.
-	neighborCoordinates = []*rtsspb.Coordinate{
+	neighborCoordinates = []*gdpb.Coordinate{
 		{X: 0, Y: 1},
 		{X: 0, Y: -1},
 		{X: 1, Y: 0},
@@ -39,8 +40,8 @@ type Map struct {
 }
 
 // Dimension returns the X, Y dimension of a given Map.
-func Dimension(m *Map) *rtsspb.Coordinate {
-	return &rtsspb.Coordinate{
+func Dimension(m *Map) *gdpb.Coordinate {
+	return &gdpb.Coordinate{
 		X: int32(math.Ceil(
 			float64(m.Val.GetTileMapDimension().GetX()) / float64(m.Val.GetTileDimension().GetX()))),
 		Y: int32(math.Ceil(
@@ -122,7 +123,7 @@ func Iterator(m *Map) []utils.MapCoordinate {
 	var cs []utils.MapCoordinate
 	for x := int32(0); x < Dimension(m).GetX(); x++ {
 		for y := int32(0); y < Dimension(m).GetY(); y++ {
-			cs = append(cs, utils.MC(&rtsspb.Coordinate{X: x, Y: y}))
+			cs = append(cs, utils.MC(&gdpb.Coordinate{X: x, Y: y}))
 		}
 	}
 	return cs
@@ -187,7 +188,7 @@ func GetRelativeDirection(m *Map, c, other utils.MapCoordinate) (rtscpb.Directio
 // organize and group Tile objects in the underlying tile.Map. Map does
 // not link to the actual Tile -- we need to manually pass the tile.Map object
 // along when looking up the Tile by a given coordinate.
-func BuildMap(tileMapDimension *rtsspb.Coordinate, tileDimension *rtsspb.Coordinate) (*Map, error) {
+func BuildMap(tileMapDimension *gdpb.Coordinate, tileDimension *gdpb.Coordinate) (*Map, error) {
 	return &Map{
 		Val: &rtsspb.ClusterMap{
 			TileDimension:    tileDimension,

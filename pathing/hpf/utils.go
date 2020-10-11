@@ -2,7 +2,7 @@
 package utils
 
 import (
-	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
+	gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
 // MapCoordinate is a hashable convenience struct used as map keys.
@@ -11,7 +11,7 @@ type MapCoordinate struct {
 }
 
 // MC constructs a MapCoordinate struct from the associated protobuf.
-func MC(c *rtsspb.Coordinate) MapCoordinate {
+func MC(c *gdpb.Coordinate) MapCoordinate {
 	return MapCoordinate{
 		X: c.GetX(),
 		Y: c.GetY(),
@@ -19,8 +19,8 @@ func MC(c *rtsspb.Coordinate) MapCoordinate {
 }
 
 // PB constructs a protobuf from the associated MapCoordinate struct.
-func PB(c MapCoordinate) *rtsspb.Coordinate {
-	return &rtsspb.Coordinate{
+func PB(c MapCoordinate) *gdpb.Coordinate {
+	return &gdpb.Coordinate{
 		X: c.X,
 		Y: c.Y,
 	}

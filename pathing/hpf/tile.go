@@ -4,6 +4,7 @@ package tile
 import (
 	"math"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
@@ -19,7 +20,7 @@ var (
 	// neighborCoordinates provides the Coordinate deltas between a
 	// specific Coordinate and adjacent Coordinates to expand to in
 	// a graph search.
-	neighborCoordinates = []*rtsspb.Coordinate{
+	neighborCoordinates = []*gdpb.Coordinate{
 		{X: 0, Y: 1},
 		{X: 0, Y: -1},
 		{X: 1, Y: 0},
@@ -57,7 +58,7 @@ func H(src, dst *Tile) (float64, error) {
 type Map struct {
 	// D is the dimension of the Map, i.e. the number of Tile objects
 	// in each direction.
-	D *rtsspb.Coordinate
+	D *gdpb.Coordinate
 
 	// M is the actual list of Tile objects in the map; the MapCoordinate
 	// here is the Coordinate of the actual Tile.
@@ -114,12 +115,12 @@ func (m *Map) Tile(x, y int32) *Tile {
 
 // TileFromCoordinate returns the Tile object from the input Coordinate
 // protobuf.
-func (m *Map) TileFromCoordinate(c *rtsspb.Coordinate) *Tile {
+func (m *Map) TileFromCoordinate(c *gdpb.Coordinate) *Tile {
 	return m.Tile(c.GetX(), c.GetY())
 }
 
 // Neighbors returns the adjacent Tiles of an input Tile object.
-func (m *Map) Neighbors(coordinate *rtsspb.Coordinate) ([]*Tile, error) {
+func (m *Map) Neighbors(coordinate *gdpb.Coordinate) ([]*Tile, error) {
 	src := m.TileFromCoordinate(coordinate)
 	if src == nil {
 		return nil, status.Error(
@@ -156,7 +157,7 @@ func ExportTile(t *Tile) (*rtsspb.Tile, error) {
 }
 
 // Coordinate returns the Tile Coordinate.
-func (t *Tile) Coordinate() *rtsspb.Coordinate {
+func (t *Tile) Coordinate() *gdpb.Coordinate {
 	return t.Val.GetCoordinate()
 }
 

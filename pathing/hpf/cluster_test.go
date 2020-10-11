@@ -3,6 +3,7 @@ package cluster
 import (
 	"testing"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
@@ -12,8 +13,8 @@ import (
 var (
 	largeClusterMap = &Map{
 		Val: &rtsspb.ClusterMap{
-			TileDimension:    &rtsspb.Coordinate{X: 10, Y: 10},
-			TileMapDimension: &rtsspb.Coordinate{X: 10000, Y: 10000},
+			TileDimension:    &gdpb.Coordinate{X: 10, Y: 10},
+			TileMapDimension: &gdpb.Coordinate{X: 10000, Y: 10000},
 		},
 	}
 )

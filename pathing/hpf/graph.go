@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
@@ -58,7 +59,7 @@ type Graph struct {
 // BuildGraph build a higher-level representation of a tile.Map
 // populated with information about how to travel between different subsections
 // between tiles. tileDimension represents a subsection ("cluster") size.
-func BuildGraph(tm *tile.Map, tileDimension *rtsspb.Coordinate) (*Graph, error) {
+func BuildGraph(tm *tile.Map, tileDimension *gdpb.Coordinate) (*Graph, error) {
 	// Create all node and edge map instances. These will be referenced and
 	// mutated later on by passing the Graph object as a function
 	// arg.
@@ -291,7 +292,7 @@ func (g *Graph) Neighbors(n *rtsspb.AbstractNode) ([]*rtsspb.AbstractNode, error
 
 	var neighbors []*rtsspb.AbstractNode
 	for _, e := range edges {
-		var d *rtsspb.Coordinate
+		var d *gdpb.Coordinate
 		if proto.Equal(node.GetTileCoordinate(), e.GetSource()) {
 			d = e.GetDestination()
 		} else {

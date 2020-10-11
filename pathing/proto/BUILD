@@ -19,6 +19,7 @@ proto_library(
     srcs = ["structs.proto"],
     deps = [
         ":constants_proto",
+	"//api:data_proto",
     ],
 )
 
@@ -28,5 +29,6 @@ go_proto_library(
     proto = ":structs_proto",
     deps = [
         ":constants_go_proto",
+	"//api:data_go_proto",
     ],
 )

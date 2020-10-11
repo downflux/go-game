@@ -25,6 +25,7 @@ go_test(
     deps = [
         ":tile",
         ":utils",
+        "//api:data_go_proto",
         "//pathing/proto:constants_go_proto",
         "//pathing/proto:structs_go_proto",
         "@com_github_google_go_cmp//cmp:go_default_library",
@@ -59,6 +60,7 @@ go_test(
         ":graph",
         ":tile",
         ":utils",
+        "//api:data_go_proto",
         "//pathing/proto:constants_go_proto",
         "//pathing/proto:structs_go_proto",
         "@com_github_google_go_cmp//cmp:go_default_library",
@@ -73,8 +75,8 @@ go_library(
     deps = [
         ":tile",
         ":utils",
+        "//api:data_go_proto",
         "//pathing/proto:constants_go_proto",
-        "//pathing/proto:structs_go_proto",
         "@com_github_fzipp_astar//:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",
@@ -102,6 +104,7 @@ go_library(
     importpath = "github.com/downflux/game/pathing/hpf/tile",
     deps = [
         ":utils",
+        "//api:data_go_proto",
         "//pathing/proto:constants_go_proto",
         "//pathing/proto:structs_go_proto",
         "@com_github_fzipp_astar//:go_default_library",
@@ -134,6 +137,7 @@ go_library(
     deps = [
         ":tile",
         ":utils",
+        "//api:data_go_proto",
         "//pathing/proto:constants_go_proto",
         "//pathing/proto:structs_go_proto",
         "@org_golang_google_grpc//status:go_default_library",
@@ -161,6 +165,7 @@ go_library(
         ":cluster",
         ":tile",
         ":utils",
+        "//api:data_go_proto",
         "//pathing/proto:constants_go_proto",
         "//pathing/proto:structs_go_proto",
         "@com_github_golang_protobuf//proto:go_default_library",
@@ -204,6 +209,7 @@ go_test(
     embed = [":edge"],
     deps = [
         ":utils",
+        "//api:data_go_proto",
         "//pathing/proto:structs_go_proto",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
@@ -232,6 +238,7 @@ go_test(
     deps = [
         ":cluster",
         ":utils",
+        "//api:data_go_proto",
         "//pathing/proto:structs_go_proto",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
@@ -251,6 +258,7 @@ go_library(
         ":entrance",
         ":utils",
         ":tile",
+        "//api:data_go_proto",
         "//pathing/proto:constants_go_proto",
         "//pathing/proto:structs_go_proto",
         "@com_github_golang_protobuf//proto:go_default_library",
@@ -282,6 +290,6 @@ go_library(
     srcs = ["utils.go"],
     importpath = "github.com/downflux/game/pathing/hpf/utils",
     deps = [
-        "//pathing/proto:structs_go_proto",
+        "//api:data_go_proto",
     ],
 )
