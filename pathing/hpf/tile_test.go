@@ -3,6 +3,7 @@ package tile
 import (
 	"testing"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
@@ -22,17 +23,17 @@ var (
 	 *   X = 0
 	 */
 	simpleMapProto = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 3, Y: 3},
+		Dimension: &gdpb.Coordinate{X: 3, Y: 3},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 	}
 )
@@ -40,14 +41,14 @@ var (
 func TestIsAdjacent(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		c1   *rtsspb.Coordinate
-		c2   *rtsspb.Coordinate
+		c1   *gdpb.Coordinate
+		c2   *gdpb.Coordinate
 		want bool
 	}{
-		{name: "IsAdjacent", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 1}, want: true},
-		{name: "IsSame", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 0}, want: false},
-		{name: "IsDiagonal", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 1}, want: false},
-		{name: "IsNotAdjacent", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 100, Y: 100}, want: false},
+		{name: "IsAdjacent", c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 0, Y: 1}, want: true},
+		{name: "IsSame", c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 0, Y: 0}, want: false},
+		{name: "IsDiagonal", c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 1}, want: false},
+		{name: "IsNotAdjacent", c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 100, Y: 100}, want: false},
 	}
 
 	for _, c := range testConfigs {
@@ -62,8 +63,8 @@ func TestIsAdjacent(t *testing.T) {
 }
 
 func TestDNotAdjacent(t *testing.T) {
-	t1 := &Tile{Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}}}
-	t2 := &Tile{Val: &rtsspb.Tile{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}}}
+	t1 := &Tile{Val: &rtsspb.Tile{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}}}
+	t2 := &Tile{Val: &rtsspb.Tile{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}}}
 	if res, err := D(nil, t1, t2); err == nil {
 		t.Errorf("D(nil, (%v, %v), (%v, %v)) = (%v, nil), want a non-nil error", t1.X(), t1.Y(), t2.X(), t2.Y(), res)
 	}
@@ -74,8 +75,8 @@ func TestD(t *testing.T) {
 		rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED: 1000,
 		rtscpb.TerrainType_TERRAIN_TYPE_PLAINS:  1,
 	}
-	c1 := &rtsspb.Coordinate{X: 0, Y: 0}
-	c2 := &rtsspb.Coordinate{X: 0, Y: 1}
+	c1 := &gdpb.Coordinate{X: 0, Y: 0}
+	c2 := &gdpb.Coordinate{X: 0, Y: 1}
 	testConfigs := []struct {
 		name         string
 		terrainType1 rtscpb.TerrainType
@@ -108,13 +109,13 @@ func TestD(t *testing.T) {
 func TestH(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		c1   *rtsspb.Coordinate
-		c2   *rtsspb.Coordinate
+		c1   *gdpb.Coordinate
+		c2   *gdpb.Coordinate
 		want float64
 	}{
-		{name: "TrivialH", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 0, Y: 0}, want: 0},
-		{name: "SimpleH", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 1, Y: 1}, want: 2},
-		{name: "PythagorasH", c1: &rtsspb.Coordinate{X: 0, Y: 0}, c2: &rtsspb.Coordinate{X: 3, Y: 4}, want: 25},
+		{name: "TrivialH", c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 0, Y: 0}, want: 0},
+		{name: "SimpleH", c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 1}, want: 2},
+		{name: "PythagorasH", c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 3, Y: 4}, want: 25},
 	}
 
 	for _, c := range testConfigs {
@@ -136,11 +137,11 @@ func TestGetTile(t *testing.T) {
 
 	testConfigs := []struct {
 		name       string
-		coordinate *rtsspb.Coordinate
+		coordinate *gdpb.Coordinate
 		want       *Tile
 	}{
-		{name: "TrivialTile", coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: simpleMap.M[utils.MapCoordinate{X: 0, Y: 0}]},
-		{name: "DNETile", coordinate: &rtsspb.Coordinate{X: 100, Y: 100}, want: nil},
+		{name: "TrivialTile", coordinate: &gdpb.Coordinate{X: 0, Y: 0}, want: simpleMap.M[utils.MapCoordinate{X: 0, Y: 0}]},
+		{name: "DNETile", coordinate: &gdpb.Coordinate{X: 100, Y: 100}, want: nil},
 	}
 
 	for _, c := range testConfigs {
@@ -165,24 +166,24 @@ func TestGetNeighbors(t *testing.T) {
 	testConfigs := []struct {
 		name       string
 		m          *Map
-		coordinate *rtsspb.Coordinate
+		coordinate *gdpb.Coordinate
 		want       []*Tile
 		err        error
 	}{
-		{name: "NullMapNeighbors", m: &Map{}, coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: nil, err: status.Errorf(codes.NotFound, "")},
-		{name: "DNETileNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 100, Y: 100}, want: nil, err: status.Errorf(codes.NotFound, "")},
-		{name: "FullNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, want: []*Tile{
+		{name: "NullMapNeighbors", m: &Map{}, coordinate: &gdpb.Coordinate{X: 0, Y: 0}, want: nil, err: status.Errorf(codes.NotFound, "")},
+		{name: "DNETileNeighbors", m: simpleMap, coordinate: &gdpb.Coordinate{X: 100, Y: 100}, want: nil, err: status.Errorf(codes.NotFound, "")},
+		{name: "FullNeighbors", m: simpleMap, coordinate: &gdpb.Coordinate{X: 1, Y: 1}, want: []*Tile{
 			simpleMap.Tile(0, 1),
 			simpleMap.Tile(2, 1),
 			simpleMap.Tile(1, 0),
 			simpleMap.Tile(1, 2),
 		}, err: nil},
-		{name: "EdgeNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, want: []*Tile{
+		{name: "EdgeNeighbors", m: simpleMap, coordinate: &gdpb.Coordinate{X: 0, Y: 1}, want: []*Tile{
 			simpleMap.Tile(0, 2),
 			simpleMap.Tile(0, 0),
 			simpleMap.Tile(1, 1),
 		}, err: nil},
-		{name: "CornerNeighbors", m: simpleMap, coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, want: []*Tile{
+		{name: "CornerNeighbors", m: simpleMap, coordinate: &gdpb.Coordinate{X: 0, Y: 0}, want: []*Tile{
 			simpleMap.Tile(0, 1),
 			simpleMap.Tile(1, 0),
 		}, err: nil},

@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
@@ -25,17 +26,17 @@ var (
 	 *   X = 0
 	 */
 	simpleMapProto = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 3, Y: 3},
+		Dimension: &gdpb.Coordinate{X: 3, Y: 3},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -49,11 +50,11 @@ var (
 	 *   X = 0
 	 */
 	closedMapProto = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 1, Y: 3},
+		Dimension: &gdpb.Coordinate{X: 1, Y: 3},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -71,49 +72,49 @@ var (
 	 *   X = 0
 	 */
 	largeMapProto = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 6, Y: 6},
+		Dimension: &gdpb.Coordinate{X: 6, Y: 6},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 3}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 4}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 5}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 	}
 )
 
-func coordLess(c1, c2 *rtsspb.Coordinate) bool {
+func coordLess(c1, c2 *gdpb.Coordinate) bool {
 	return c1.GetX() < c2.GetX() || (c1.GetX() == c2.GetX() && c1.GetY() < c2.GetY())
 }
 
@@ -186,42 +187,42 @@ func TestBuildTransitions(t *testing.T) {
 		{
 			name: "TrivialOpenMap",
 			cm: &rtsspb.ClusterMap{
-				TileDimension:    &rtsspb.Coordinate{X: 1, Y: 3},
-				TileMapDimension: &rtsspb.Coordinate{X: 2, Y: 6},
+				TileDimension:    &gdpb.Coordinate{X: 1, Y: 3},
+				TileMapDimension: &gdpb.Coordinate{X: 2, Y: 6},
 			},
 			tm: &rtsspb.TileMap{
-				Dimension: &rtsspb.Coordinate{X: 2, Y: 6},
+				Dimension: &gdpb.Coordinate{X: 2, Y: 6},
 				Tiles: []*rtsspb.Tile{
-					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
-					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}},
-					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 3}},
-					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 4}},
-					{Coordinate: &rtsspb.Coordinate{X: 0, Y: 5}},
-					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
-					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
-					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
-					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 3}},
-					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 4}},
-					{Coordinate: &rtsspb.Coordinate{X: 1, Y: 5}},
+					{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}},
+					{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}},
+					{Coordinate: &gdpb.Coordinate{X: 0, Y: 3}},
+					{Coordinate: &gdpb.Coordinate{X: 0, Y: 4}},
+					{Coordinate: &gdpb.Coordinate{X: 0, Y: 5}},
+					{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}},
+					{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}},
+					{Coordinate: &gdpb.Coordinate{X: 1, Y: 3}},
+					{Coordinate: &gdpb.Coordinate{X: 1, Y: 4}},
+					{Coordinate: &gdpb.Coordinate{X: 1, Y: 5}},
 				},
 			},
 			want: []*rtsspb.Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
+					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 2}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 3}},
+					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 2}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 3}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 3}},
+					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 3}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 4}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 4}},
+					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 4}},
+					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 4}},
 				},
 			},
 		},
@@ -251,7 +252,7 @@ func TestBuildGraphError(t *testing.T) {
 	testConfigs := []struct {
 		name             string
 		tm               *rtsspb.TileMap
-		clusterDimension *rtsspb.Coordinate
+		clusterDimension *gdpb.Coordinate
 	}{}
 
 	for _, c := range testConfigs {
@@ -290,7 +291,7 @@ func newAbstractEdge(edges []*rtsspb.AbstractEdge) *edge.Map {
 
 func TestBuildGraph(t *testing.T) {
 	simpleMapClusterMapProto := &rtsspb.ClusterMap{
-		TileDimension:    &rtsspb.Coordinate{X: 2, Y: 2},
+		TileDimension:    &gdpb.Coordinate{X: 2, Y: 2},
 		TileMapDimension: simpleMapProto.GetDimension(),
 	}
 	simpleMapClusterMap, err := cluster.ImportMap(simpleMapClusterMapProto)
@@ -301,7 +302,7 @@ func TestBuildGraph(t *testing.T) {
 	testConfigs := []struct {
 		name             string
 		tm               *rtsspb.TileMap
-		clusterDimension *rtsspb.Coordinate
+		clusterDimension *gdpb.Coordinate
 		want             *Graph
 	}{
 		{
@@ -310,50 +311,50 @@ func TestBuildGraph(t *testing.T) {
 			clusterDimension: simpleMapClusterMap.Val.GetTileDimension(),
 			want: &Graph{
 				NodeMap: newAbstractNode(simpleMapClusterMap, []*rtsspb.AbstractNode{
-					{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 1}},
-					{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2}},
-					{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 1}},
-					{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 2}},
+					{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
+					{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2}},
+					{TileCoordinate: &gdpb.Coordinate{X: 2, Y: 1}},
+					{TileCoordinate: &gdpb.Coordinate{X: 2, Y: 2}},
 				}),
 				EdgeMap: newAbstractEdge([]*rtsspb.AbstractEdge{
 					{
-						Source:      &rtsspb.Coordinate{X: 1, Y: 1},
-						Destination: &rtsspb.Coordinate{X: 1, Y: 2},
+						Source:      &gdpb.Coordinate{X: 1, Y: 1},
+						Destination: &gdpb.Coordinate{X: 1, Y: 2},
 						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 						Weight:      1,
 					}, {
-						Source:      &rtsspb.Coordinate{X: 1, Y: 1},
-						Destination: &rtsspb.Coordinate{X: 2, Y: 1},
+						Source:      &gdpb.Coordinate{X: 1, Y: 1},
+						Destination: &gdpb.Coordinate{X: 2, Y: 1},
 						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 						Weight:      1,
 					}, {
-						Source:      &rtsspb.Coordinate{X: 1, Y: 2},
-						Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+						Source:      &gdpb.Coordinate{X: 1, Y: 2},
+						Destination: &gdpb.Coordinate{X: 2, Y: 2},
 						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 						Weight:      1,
 					}, {
-						Source:      &rtsspb.Coordinate{X: 1, Y: 2},
-						Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+						Source:      &gdpb.Coordinate{X: 1, Y: 2},
+						Destination: &gdpb.Coordinate{X: 1, Y: 1},
 						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 						Weight:      1,
 					}, {
-						Source:      &rtsspb.Coordinate{X: 2, Y: 1},
-						Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+						Source:      &gdpb.Coordinate{X: 2, Y: 1},
+						Destination: &gdpb.Coordinate{X: 2, Y: 2},
 						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 						Weight:      1,
 					}, {
-						Source:      &rtsspb.Coordinate{X: 2, Y: 1},
-						Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+						Source:      &gdpb.Coordinate{X: 2, Y: 1},
+						Destination: &gdpb.Coordinate{X: 1, Y: 1},
 						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 						Weight:      1,
 					}, {
-						Source:      &rtsspb.Coordinate{X: 2, Y: 2},
-						Destination: &rtsspb.Coordinate{X: 2, Y: 1},
+						Source:      &gdpb.Coordinate{X: 2, Y: 2},
+						Destination: &gdpb.Coordinate{X: 2, Y: 1},
 						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 						Weight:      1,
 					}, {
-						Source:      &rtsspb.Coordinate{X: 2, Y: 2},
-						Destination: &rtsspb.Coordinate{X: 1, Y: 2},
+						Source:      &gdpb.Coordinate{X: 2, Y: 2},
+						Destination: &gdpb.Coordinate{X: 1, Y: 2},
 						EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 						Weight:      1,
 					},
@@ -388,14 +389,14 @@ func TestBuildGraph(t *testing.T) {
 }
 
 func TestGraphGetNeighbors(t *testing.T) {
-	clusterDimension := &rtsspb.Coordinate{X: 3, Y: 3}
-	nodeCoordinate := &rtsspb.Coordinate{X: 2, Y: 1}
+	clusterDimension := &gdpb.Coordinate{X: 3, Y: 3}
+	nodeCoordinate := &gdpb.Coordinate{X: 2, Y: 1}
 	want := []*rtsspb.AbstractNode{
 		{
-			TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 2},
+			TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2},
 		},
 		{
-			TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 1},
+			TileCoordinate: &gdpb.Coordinate{X: 3, Y: 1},
 		},
 	}
 
@@ -432,7 +433,7 @@ func TestGraphGetNeighbors(t *testing.T) {
 }
 
 func TestConnect(t *testing.T) {
-	connectEdgeNodeCoordinate := &rtsspb.Coordinate{X: 0, Y: 0}
+	connectEdgeNodeCoordinate := &gdpb.Coordinate{X: 0, Y: 0}
 	connectEdgeNodeMap, err := tile.ImportMap(simpleMapProto)
 	if err != nil {
 		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
@@ -441,7 +442,7 @@ func TestConnect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
-	for _, tc := range []*rtsspb.Coordinate{
+	for _, tc := range []*gdpb.Coordinate{
 		{X: 0, Y: 1},
 		connectEdgeNodeCoordinate,
 	} {
@@ -450,7 +451,7 @@ func TestConnect(t *testing.T) {
 		}
 	}
 
-	connectEphemeralNodeCoordinate := &rtsspb.Coordinate{X: 0, Y: 0}
+	connectEphemeralNodeCoordinate := &gdpb.Coordinate{X: 0, Y: 0}
 	connectEphemeralNodeMap, err := tile.ImportMap(simpleMapProto)
 	if err != nil {
 		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
@@ -459,14 +460,14 @@ func TestConnect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
-	if err := connectEphemeralNodeGraph.NodeMap.Add(&rtsspb.AbstractNode{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 1}, IsEphemeral: true}); err != nil {
+	if err := connectEphemeralNodeGraph.NodeMap.Add(&rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}, IsEphemeral: true}); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 	if err := connectEphemeralNodeGraph.NodeMap.Add(&rtsspb.AbstractNode{TileCoordinate: connectEphemeralNodeCoordinate}); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 
-	noConnectEphemeralNodeCoordinate := &rtsspb.Coordinate{X: 0, Y: 0}
+	noConnectEphemeralNodeCoordinate := &gdpb.Coordinate{X: 0, Y: 0}
 	noConnectEphemeralNodeMap, err := tile.ImportMap(simpleMapProto)
 	if err != nil {
 		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
@@ -475,7 +476,7 @@ func TestConnect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
-	for _, tc := range []*rtsspb.Coordinate{
+	for _, tc := range []*gdpb.Coordinate{
 		{X: 0, Y: 1},
 		noConnectEphemeralNodeCoordinate,
 	} {
@@ -488,7 +489,7 @@ func TestConnect(t *testing.T) {
 		name string
 		tm   *tile.Map
 		g    *Graph
-		t    *rtsspb.Coordinate
+		t    *gdpb.Coordinate
 		want []*rtsspb.AbstractEdge
 	}{
 		{
@@ -499,7 +500,7 @@ func TestConnect(t *testing.T) {
 			want: []*rtsspb.AbstractEdge{
 				{
 					Source:      connectEdgeNodeCoordinate,
-					Destination: &rtsspb.Coordinate{X: 0, Y: 1},
+					Destination: &gdpb.Coordinate{X: 0, Y: 1},
 					EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
 					Weight:      1,
 				},
@@ -513,7 +514,7 @@ func TestConnect(t *testing.T) {
 			want: []*rtsspb.AbstractEdge{
 				{
 					Source:      connectEphemeralNodeCoordinate,
-					Destination: &rtsspb.Coordinate{X: 0, Y: 1},
+					Destination: &gdpb.Coordinate{X: 0, Y: 1},
 					EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTRA,
 					Weight:      1,
 				},
@@ -557,7 +558,7 @@ func TestAddNonEphemeralNodeNoOp(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
-	g, err := BuildGraph(tm, &rtsspb.Coordinate{X: 2, Y: 2})
+	g, err := BuildGraph(tm, &gdpb.Coordinate{X: 2, Y: 2})
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
@@ -585,7 +586,7 @@ func TestSimpleAddEphemeralNode(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
-	g, err := BuildGraph(tm, &rtsspb.Coordinate{X: 2, Y: 2})
+	g, err := BuildGraph(tm, &gdpb.Coordinate{X: 2, Y: 2})
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
@@ -625,7 +626,7 @@ func TestDeleteNonEphemeralNodeNoOp(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
-	g, err := BuildGraph(tm, &rtsspb.Coordinate{X: 2, Y: 2})
+	g, err := BuildGraph(tm, &gdpb.Coordinate{X: 2, Y: 2})
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}
@@ -647,7 +648,7 @@ func TestDeleteEphemeralNode(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ImportMap() = _, %v, want = _, nil", err)
 	}
-	g, err := BuildGraph(tm, &rtsspb.Coordinate{X: 2, Y: 2})
+	g, err := BuildGraph(tm, &gdpb.Coordinate{X: 2, Y: 2})
 	if err != nil {
 		t.Fatalf("BuildGraph() = _, %v, want = _, nil", err)
 	}

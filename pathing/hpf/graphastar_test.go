@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
@@ -23,10 +24,10 @@ var (
 	 *   X = 0
 	 */
 	trivialOpenMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 2, Y: 1},
+		Dimension: &gdpb.Coordinate{X: 2, Y: 1},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -38,10 +39,10 @@ var (
 	 *   X = 0
 	 */
 	trivialClosedMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 2, Y: 1},
+		Dimension: &gdpb.Coordinate{X: 2, Y: 1},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -54,10 +55,10 @@ var (
 	 *   X = 0
 	 */
 	trivialSemiOpenMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 2, Y: 1},
+		Dimension: &gdpb.Coordinate{X: 2, Y: 1},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -70,11 +71,11 @@ var (
 	 *   X = 0
 	 */
 	simpleBlockedMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 3, Y: 1},
+		Dimension: &gdpb.Coordinate{X: 3, Y: 1},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -88,14 +89,14 @@ var (
 	 *   X = 0
 	 */
 	segmentedBlockedMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 3, Y: 2},
+		Dimension: &gdpb.Coordinate{X: 3, Y: 2},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -108,14 +109,14 @@ var (
 	 *   X = 0
 	 */
 	simpleLongOpenMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 6, Y: 1},
+		Dimension: &gdpb.Coordinate{X: 6, Y: 1},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 3, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 4, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 5, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -124,7 +125,7 @@ var (
 )
 
 type buildGraphInput struct {
-	tileDimension *rtsspb.Coordinate
+	tileDimension *gdpb.Coordinate
 }
 
 type aStarResult struct {
@@ -143,25 +144,25 @@ func TestPath(t *testing.T) {
 		{
 			name: "TrivialReachablePath",
 			tm:   trivialOpenMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			src:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
-			dest: utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
+			g:    buildGraphInput{tileDimension: &gdpb.Coordinate{X: 1, Y: 1}},
+			src:  utils.MC(&gdpb.Coordinate{X: 0, Y: 0}),
+			dest: utils.MC(&gdpb.Coordinate{X: 0, Y: 0}),
 			want: aStarResult{
 				path: []*rtsspb.AbstractNode{
-					{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
+					{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 				},
 			},
 		},
 		{
 			name: "TrivialIntraClusterPath",
 			tm:   simpleLongOpenMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 2, Y: 1}},
-			src:  utils.MC(&rtsspb.Coordinate{X: 2, Y: 0}),
-			dest: utils.MC(&rtsspb.Coordinate{X: 3, Y: 0}),
+			g:    buildGraphInput{tileDimension: &gdpb.Coordinate{X: 2, Y: 1}},
+			src:  utils.MC(&gdpb.Coordinate{X: 2, Y: 0}),
+			dest: utils.MC(&gdpb.Coordinate{X: 3, Y: 0}),
 			want: aStarResult{
 				path: []*rtsspb.AbstractNode{
-					{TileCoordinate: &rtsspb.Coordinate{X: 2, Y: 0}},
-					{TileCoordinate: &rtsspb.Coordinate{X: 3, Y: 0}},
+					{TileCoordinate: &gdpb.Coordinate{X: 2, Y: 0}},
+					{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 0}},
 				},
 				cost: 1,
 			},
@@ -169,13 +170,13 @@ func TestPath(t *testing.T) {
 		{
 			name: "TrivialInterClusterPath",
 			tm:   trivialOpenMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			src:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
-			dest: utils.MC(&rtsspb.Coordinate{X: 1, Y: 0}),
+			g:    buildGraphInput{tileDimension: &gdpb.Coordinate{X: 1, Y: 1}},
+			src:  utils.MC(&gdpb.Coordinate{X: 0, Y: 0}),
+			dest: utils.MC(&gdpb.Coordinate{X: 1, Y: 0}),
 			want: aStarResult{
 				path: []*rtsspb.AbstractNode{
-					{TileCoordinate: &rtsspb.Coordinate{X: 0, Y: 0}},
-					{TileCoordinate: &rtsspb.Coordinate{X: 1, Y: 0}},
+					{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 				},
 				cost: 1,
 			},
@@ -183,9 +184,9 @@ func TestPath(t *testing.T) {
 		{
 			name: "TrivialClosedPath",
 			tm:   trivialClosedMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			src:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
-			dest: utils.MC(&rtsspb.Coordinate{X: 1, Y: 0}),
+			g:    buildGraphInput{tileDimension: &gdpb.Coordinate{X: 1, Y: 1}},
+			src:  utils.MC(&gdpb.Coordinate{X: 0, Y: 0}),
+			dest: utils.MC(&gdpb.Coordinate{X: 1, Y: 0}),
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),
@@ -194,9 +195,9 @@ func TestPath(t *testing.T) {
 		{
 			name: "TrivialSemiOpenPath",
 			tm:   trivialClosedMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			src:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
-			dest: utils.MC(&rtsspb.Coordinate{X: 1, Y: 0}),
+			g:    buildGraphInput{tileDimension: &gdpb.Coordinate{X: 1, Y: 1}},
+			src:  utils.MC(&gdpb.Coordinate{X: 0, Y: 0}),
+			dest: utils.MC(&gdpb.Coordinate{X: 1, Y: 0}),
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),
@@ -205,9 +206,9 @@ func TestPath(t *testing.T) {
 		{
 			name: "SimpleBlockedPath",
 			tm:   simpleBlockedMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			src:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
-			dest: utils.MC(&rtsspb.Coordinate{X: 2, Y: 0}),
+			g:    buildGraphInput{tileDimension: &gdpb.Coordinate{X: 1, Y: 1}},
+			src:  utils.MC(&gdpb.Coordinate{X: 0, Y: 0}),
+			dest: utils.MC(&gdpb.Coordinate{X: 2, Y: 0}),
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),
@@ -216,9 +217,9 @@ func TestPath(t *testing.T) {
 		{
 			name: "SegmentedBlockedPath",
 			tm:   segmentedBlockedMap,
-			g:    buildGraphInput{tileDimension: &rtsspb.Coordinate{X: 1, Y: 1}},
-			src:  utils.MC(&rtsspb.Coordinate{X: 0, Y: 0}),
-			dest: utils.MC(&rtsspb.Coordinate{X: 2, Y: 0}),
+			g:    buildGraphInput{tileDimension: &gdpb.Coordinate{X: 1, Y: 1}},
+			src:  utils.MC(&gdpb.Coordinate{X: 0, Y: 0}),
+			dest: utils.MC(&gdpb.Coordinate{X: 2, Y: 0}),
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),

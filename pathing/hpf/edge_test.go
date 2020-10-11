@@ -3,6 +3,7 @@ package edge
 import (
 	"testing"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
 	"github.com/google/go-cmp/cmp"
@@ -11,7 +12,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
-func coordinateLess(c1, c2 *rtsspb.Coordinate) bool {
+func coordinateLess(c1, c2 *gdpb.Coordinate) bool {
 	return c1.GetX() < c2.GetX() || c1.GetX() == c2.GetX() && c1.GetY() < c2.GetY()
 }
 
@@ -22,8 +23,8 @@ func abstractEdgeLess(e1, e2 *rtsspb.AbstractEdge) bool {
 func TestMapAddError(t *testing.T) {
 	addAlreadyExistMap := &Map{}
 	if err := addAlreadyExistMap.Add(&rtsspb.AbstractEdge{
-		Source:      &rtsspb.Coordinate{X: 0, Y: 0},
-		Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+		Source:      &gdpb.Coordinate{X: 0, Y: 0},
+		Destination: &gdpb.Coordinate{X: 1, Y: 1},
 	}); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
@@ -37,8 +38,8 @@ func TestMapAddError(t *testing.T) {
 			name: "AddAlreadyExist",
 			m:    addAlreadyExistMap,
 			n: &rtsspb.AbstractEdge{
-				Source:      &rtsspb.Coordinate{X: 0, Y: 0},
-				Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+				Source:      &gdpb.Coordinate{X: 0, Y: 0},
+				Destination: &gdpb.Coordinate{X: 1, Y: 1},
 				Weight:      1,
 			},
 		},
@@ -46,8 +47,8 @@ func TestMapAddError(t *testing.T) {
 			name: "AddSelfLoop",
 			m:    &Map{},
 			n: &rtsspb.AbstractEdge{
-				Source:      &rtsspb.Coordinate{X: 0, Y: 0},
-				Destination: &rtsspb.Coordinate{X: 0, Y: 0},
+				Source:      &gdpb.Coordinate{X: 0, Y: 0},
+				Destination: &gdpb.Coordinate{X: 0, Y: 0},
 				Weight:      1,
 			},
 		},
@@ -63,8 +64,8 @@ func TestMapAddError(t *testing.T) {
 
 func TestMapAdd(t *testing.T) {
 	want := &rtsspb.AbstractEdge{
-		Source:      &rtsspb.Coordinate{X: 0, Y: 0},
-		Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+		Source:      &gdpb.Coordinate{X: 0, Y: 0},
+		Destination: &gdpb.Coordinate{X: 1, Y: 1},
 		Weight:      1,
 	}
 
@@ -82,8 +83,8 @@ func TestMapAdd(t *testing.T) {
 
 func TestMapGet(t *testing.T) {
 	want := &rtsspb.AbstractEdge{
-		Source:      &rtsspb.Coordinate{X: 0, Y: 0},
-		Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+		Source:      &gdpb.Coordinate{X: 0, Y: 0},
+		Destination: &gdpb.Coordinate{X: 1, Y: 1},
 		Weight:      1,
 	}
 
@@ -112,8 +113,8 @@ func TestMapGet(t *testing.T) {
 
 func TestMapPop(t *testing.T) {
 	want := &rtsspb.AbstractEdge{
-		Source:      &rtsspb.Coordinate{X: 0, Y: 0},
-		Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+		Source:      &gdpb.Coordinate{X: 0, Y: 0},
+		Destination: &gdpb.Coordinate{X: 1, Y: 1},
 		Weight:      1,
 	}
 
@@ -130,15 +131,15 @@ func TestMapPop(t *testing.T) {
 }
 
 func TestMapGetBySource(t *testing.T) {
-	s := &rtsspb.Coordinate{X: 0, Y: 0}
+	s := &gdpb.Coordinate{X: 0, Y: 0}
 	want := []*rtsspb.AbstractEdge{
 		{
 			Source:      s,
-			Destination: &rtsspb.Coordinate{X: 1, Y: 1},
+			Destination: &gdpb.Coordinate{X: 1, Y: 1},
 			Weight:      1,
 		},
 		{
-			Source:      &rtsspb.Coordinate{X: 2, Y: 2},
+			Source:      &gdpb.Coordinate{X: 2, Y: 2},
 			Destination: s,
 			Weight:      1,
 		},
@@ -151,8 +152,8 @@ func TestMapGetBySource(t *testing.T) {
 		}
 	}
 	if err := em.Add(&rtsspb.AbstractEdge{
-		Source:      &rtsspb.Coordinate{X: 1, Y: 1},
-		Destination: &rtsspb.Coordinate{X: 2, Y: 2},
+		Source:      &gdpb.Coordinate{X: 1, Y: 1},
+		Destination: &gdpb.Coordinate{X: 2, Y: 2},
 		Weight:      1,
 	}); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)

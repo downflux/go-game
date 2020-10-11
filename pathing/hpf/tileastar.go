@@ -4,8 +4,8 @@ package tileastar
 import (
 	"math"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
 	fastar "github.com/fzipp/astar"
 	"github.com/downflux/game/pathing/hpf/tile"
@@ -39,17 +39,17 @@ type graphImpl struct {
 
 	// boundary represents the (inclusive) lower-bound of the bounding box
 	// used to constrain the path search.
-	boundary *rtsspb.Coordinate
+	boundary *gdpb.Coordinate
 
 	// dimension represents the (exclusive) upper-bound of the bounding box
 	// used to constrain the path search.
-	dimension *rtsspb.Coordinate
+	dimension *gdpb.Coordinate
 }
 
 // boundedBy returns true if points a <= b < c. Here, a < b is true in a 2D
 // graph if point a is down and to the left of b, and is only a partial
 // ordering. Specifically, it is not normal lexicographical order.
-func boundedBy(a, b, c *rtsspb.Coordinate) bool {
+func boundedBy(a, b, c *gdpb.Coordinate) bool {
 	return (a.GetX() <= b.GetX() && a.GetY() <= b.GetY()) && (b.GetX() < c.GetX() && b.GetY() < c.GetY())
 }
 
@@ -58,7 +58,7 @@ func (t graphImpl) Neighbours(n fastar.Node) []fastar.Node {
 	neighbors, _ := t.m.Neighbors(n.(*tile.Tile).Val.GetCoordinate())
 	var res []fastar.Node
 	for _, n := range neighbors {
-		if boundedBy(t.boundary, n.Val.GetCoordinate(), &rtsspb.Coordinate{
+		if boundedBy(t.boundary, n.Val.GetCoordinate(), &gdpb.Coordinate{
 			X: t.boundary.GetX() + t.dimension.GetX(),
 			Y: t.boundary.GetY() + t.dimension.GetY(),
 		},
@@ -80,7 +80,7 @@ func (t graphImpl) Neighbours(n fastar.Node) []fastar.Node {
 // bounding box as defined by the tile.Map should be used here. The lower bound
 // of the bounding box is defined as the boundary Coordinate, and the size of
 // the box is specified by the dimension Coordinate.
-func Path(m *tile.Map, src, dest utils.MapCoordinate, boundary, dimension *rtsspb.Coordinate) ([]*tile.Tile, float64, error) {
+func Path(m *tile.Map, src, dest utils.MapCoordinate, boundary, dimension *gdpb.Coordinate) ([]*tile.Tile, float64, error) {
 	if m == nil {
 		return nil, 0, status.Errorf(codes.FailedPrecondition, "cannot have nil tile.Map input")
 	}

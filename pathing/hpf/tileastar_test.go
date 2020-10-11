@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
@@ -19,10 +20,10 @@ var (
 	 *   X = 0
 	 */
 	trivialOpenMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 1, Y: 1},
+		Dimension: &gdpb.Coordinate{X: 1, Y: 1},
 		Tiles: []*rtsspb.Tile{
 			{
-				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+				Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			},
 		},
@@ -34,10 +35,10 @@ var (
 	 *   X = 0
 	 */
 	trivialClosedMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 1, Y: 1},
+		Dimension: &gdpb.Coordinate{X: 1, Y: 1},
 		Tiles: []*rtsspb.Tile{
 			{
-				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+				Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED,
 			},
 		},
@@ -52,14 +53,14 @@ var (
 	 *   X = 0
 	 */
 	trivialSemiOpenMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 1, Y: 2},
+		Dimension: &gdpb.Coordinate{X: 1, Y: 2},
 		Tiles: []*rtsspb.Tile{
 			{
-				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+				Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			},
 			{
-				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 1},
+				Coordinate:  &gdpb.Coordinate{X: 0, Y: 1},
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED,
 			},
 		},
@@ -75,18 +76,18 @@ var (
 	 *   X = 0
 	 */
 	impassableMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 1, Y: 3},
+		Dimension: &gdpb.Coordinate{X: 1, Y: 3},
 		Tiles: []*rtsspb.Tile{
 			{
-				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 0},
+				Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			},
 			{
-				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 1},
+				Coordinate:  &gdpb.Coordinate{X: 0, Y: 1},
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED,
 			},
 			{
-				Coordinate:  &rtsspb.Coordinate{X: 0, Y: 2},
+				Coordinate:  &gdpb.Coordinate{X: 0, Y: 2},
 				TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			},
 		},
@@ -102,17 +103,17 @@ var (
 	 *   X = 0
 	 */
 	passableMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 3, Y: 3},
+		Dimension: &gdpb.Coordinate{X: 3, Y: 3},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -125,14 +126,14 @@ var (
 	 *   X = 0
 	 */
 	blockedRowMap = &rtsspb.TileMap{
-		Dimension: &rtsspb.Coordinate{X: 3, Y: 2},
+		Dimension: &gdpb.Coordinate{X: 3, Y: 2},
 		Tiles: []*rtsspb.Tile{
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &rtsspb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 		TerrainCosts: []*rtsspb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
@@ -142,7 +143,7 @@ var (
 )
 
 type aStarResult struct {
-	path []*rtsspb.Coordinate
+	path []*gdpb.Coordinate
 	cost float64
 }
 
@@ -150,21 +151,21 @@ func TestAStarSearchError(t *testing.T) {
 	testConfigs := []struct {
 		name                string
 		m                   *rtsspb.TileMap
-		src, dest           *rtsspb.Coordinate
-		boundary, dimension *rtsspb.Coordinate
+		src, dest           *gdpb.Coordinate
+		boundary, dimension *gdpb.Coordinate
 	}{
 		{
 			name:      "SourceOutOfBounds",
 			m:         trivialOpenMap,
-			src:       &rtsspb.Coordinate{X: 1, Y: 1},
-			dest:      &rtsspb.Coordinate{X: 0, Y: 0},
+			src:       &gdpb.Coordinate{X: 1, Y: 1},
+			dest:      &gdpb.Coordinate{X: 0, Y: 0},
 			dimension: trivialOpenMap.GetDimension(),
 		},
 		{
 			name:      "DestinationOutOfBounds",
 			m:         trivialOpenMap,
-			src:       &rtsspb.Coordinate{X: 0, Y: 0},
-			dest:      &rtsspb.Coordinate{X: 1, Y: 1},
+			src:       &gdpb.Coordinate{X: 0, Y: 0},
+			dest:      &gdpb.Coordinate{X: 1, Y: 1},
 			dimension: trivialOpenMap.GetDimension(),
 		},
 	}
@@ -187,44 +188,44 @@ func TestAStarSearch(t *testing.T) {
 	testConfigs := []struct {
 		name                string
 		m                   *rtsspb.TileMap
-		src, dest           *rtsspb.Coordinate
-		boundary, dimension *rtsspb.Coordinate
+		src, dest           *gdpb.Coordinate
+		boundary, dimension *gdpb.Coordinate
 		want                aStarResult
 	}{
 		{
 			name:      "TrivialOpenMap",
 			m:         trivialOpenMap,
-			src:       &rtsspb.Coordinate{X: 0, Y: 0},
-			dest:      &rtsspb.Coordinate{X: 0, Y: 0},
+			src:       &gdpb.Coordinate{X: 0, Y: 0},
+			dest:      &gdpb.Coordinate{X: 0, Y: 0},
 			dimension: trivialOpenMap.GetDimension(),
 			want: aStarResult{
-				path: []*rtsspb.Coordinate{{X: 0, Y: 0}},
+				path: []*gdpb.Coordinate{{X: 0, Y: 0}},
 			},
 		},
-		{name: "TrivialClosedMap", m: trivialClosedMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, dimension: trivialClosedMap.GetDimension(), want: aStarResult{
+		{name: "TrivialClosedMap", m: trivialClosedMap, src: &gdpb.Coordinate{X: 0, Y: 0}, dest: &gdpb.Coordinate{X: 0, Y: 0}, dimension: trivialClosedMap.GetDimension(), want: aStarResult{
 			path: nil,
 			cost: math.Inf(0),
 		}},
-		{name: "BlockedSource", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 1}, dest: &rtsspb.Coordinate{X: 0, Y: 0}, dimension: trivialSemiOpenMap.GetDimension(), want: aStarResult{
+		{name: "BlockedSource", m: trivialSemiOpenMap, src: &gdpb.Coordinate{X: 0, Y: 1}, dest: &gdpb.Coordinate{X: 0, Y: 0}, dimension: trivialSemiOpenMap.GetDimension(), want: aStarResult{
 			path: nil,
 			cost: math.Inf(0),
 		}},
-		{name: "BlockedDestination", m: trivialSemiOpenMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 1}, dimension: trivialSemiOpenMap.GetDimension(), want: aStarResult{
+		{name: "BlockedDestination", m: trivialSemiOpenMap, src: &gdpb.Coordinate{X: 0, Y: 0}, dest: &gdpb.Coordinate{X: 0, Y: 1}, dimension: trivialSemiOpenMap.GetDimension(), want: aStarResult{
 			path: nil,
 			cost: math.Inf(0),
 		}},
-		{name: "ImpassableMap", m: impassableMap, src: &rtsspb.Coordinate{X: 0, Y: 0}, dest: &rtsspb.Coordinate{X: 0, Y: 2}, dimension: impassableMap.GetDimension(), want: aStarResult{
+		{name: "ImpassableMap", m: impassableMap, src: &gdpb.Coordinate{X: 0, Y: 0}, dest: &gdpb.Coordinate{X: 0, Y: 2}, dimension: impassableMap.GetDimension(), want: aStarResult{
 			path: nil,
 			cost: math.Inf(0),
 		}},
 		{
 			name:      "SimpleSearch",
 			m:         passableMap,
-			src:       &rtsspb.Coordinate{X: 0, Y: 0},
-			dest:      &rtsspb.Coordinate{X: 2, Y: 0},
+			src:       &gdpb.Coordinate{X: 0, Y: 0},
+			dest:      &gdpb.Coordinate{X: 2, Y: 0},
 			dimension: passableMap.GetDimension(),
 			want: aStarResult{
-				path: []*rtsspb.Coordinate{
+				path: []*gdpb.Coordinate{
 					{X: 0, Y: 0},
 					{X: 1, Y: 0},
 					{X: 2, Y: 0},
@@ -235,11 +236,11 @@ func TestAStarSearch(t *testing.T) {
 		{
 			name:      "SameSourceDestination",
 			m:         passableMap,
-			src:       &rtsspb.Coordinate{X: 0, Y: 0},
-			dest:      &rtsspb.Coordinate{X: 0, Y: 0},
+			src:       &gdpb.Coordinate{X: 0, Y: 0},
+			dest:      &gdpb.Coordinate{X: 0, Y: 0},
 			dimension: passableMap.GetDimension(),
 			want: aStarResult{
-				path: []*rtsspb.Coordinate{
+				path: []*gdpb.Coordinate{
 					{X: 0, Y: 0},
 				},
 				cost: 0,
@@ -248,9 +249,9 @@ func TestAStarSearch(t *testing.T) {
 		{
 			name:      "BlockedScopeSearch",
 			m:         blockedRowMap,
-			src:       &rtsspb.Coordinate{X: 0, Y: 0},
-			dest:      &rtsspb.Coordinate{X: 2, Y: 0},
-			dimension: &rtsspb.Coordinate{X: 3, Y: 1},
+			src:       &gdpb.Coordinate{X: 0, Y: 0},
+			dest:      &gdpb.Coordinate{X: 2, Y: 0},
+			dimension: &gdpb.Coordinate{X: 3, Y: 1},
 			want: aStarResult{
 				path: nil,
 				cost: math.Inf(0),
@@ -259,11 +260,11 @@ func TestAStarSearch(t *testing.T) {
 		{
 			name:      "ExpandedScopeSearch",
 			m:         blockedRowMap,
-			src:       &rtsspb.Coordinate{X: 0, Y: 0},
-			dest:      &rtsspb.Coordinate{X: 2, Y: 0},
+			src:       &gdpb.Coordinate{X: 0, Y: 0},
+			dest:      &gdpb.Coordinate{X: 2, Y: 0},
 			dimension: blockedRowMap.GetDimension(),
 			want: aStarResult{
-				path: []*rtsspb.Coordinate{
+				path: []*gdpb.Coordinate{
 					{X: 0, Y: 0},
 					{X: 0, Y: 1},
 					{X: 1, Y: 1},
@@ -287,7 +288,7 @@ func TestAStarSearch(t *testing.T) {
 				t.Fatalf("Path() = %v, want = nil", err)
 			}
 
-			var path []*rtsspb.Coordinate
+			var path []*gdpb.Coordinate
 			for _, t := range tiles {
 				path = append(path, t.Val.GetCoordinate())
 			}

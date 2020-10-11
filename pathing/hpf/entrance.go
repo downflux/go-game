@@ -5,6 +5,7 @@ package entrance
 import (
 	"math"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
 	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
 
@@ -89,18 +90,18 @@ func BuildTransitions(tm *tile.Map, cm *cluster.Map, c1, c2 utils.MapCoordinate)
 
 // buildCoordinateWithCoordinateSlice reconstructs the Coordinate object back
 // from the given slice info.
-func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32) (*rtsspb.Coordinate, error) {
+func buildCoordinateWithCoordinateSlice(s *rtsspb.CoordinateSlice, offset int32) (*gdpb.Coordinate, error) {
 	if offset < 0 || offset >= s.GetLength() {
 		return nil, status.Errorf(codes.FailedPrecondition, "invalid offset specified, end coordinate must be contained within the slice")
 	}
 	switch s.GetOrientation() {
 	case rtscpb.Orientation_ORIENTATION_HORIZONTAL:
-		return &rtsspb.Coordinate{
+		return &gdpb.Coordinate{
 			X: s.GetStart().GetX() + offset,
 			Y: s.GetStart().GetY(),
 		}, nil
 	case rtscpb.Orientation_ORIENTATION_VERTICAL:
-		return &rtsspb.Coordinate{
+		return &gdpb.Coordinate{
 			X: s.GetStart().GetX(),
 			Y: s.GetStart().GetY() + offset,
 		}, nil
@@ -159,7 +160,7 @@ func OnClusterEdge(m *cluster.Map, clusterCoord utils.MapCoordinate, coord utils
 // All Tile t on the edge are between the start and end coordinates,
 // i.e. start <= t <= end with usual 2D coordinate comparison.
 func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rtscpb.Direction) (*rtsspb.CoordinateSlice, error) {
-	var start *rtsspb.Coordinate
+	var start *gdpb.Coordinate
 	var length int32
 
 	tileBoundary, err := cluster.TileBoundary(m, c)
@@ -173,22 +174,22 @@ func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rt
 
 	switch d {
 	case rtscpb.Direction_DIRECTION_NORTH:
-		start = &rtsspb.Coordinate{
+		start = &gdpb.Coordinate{
 			X: tileBoundary.X,
 			Y: tileBoundary.Y + tileDimension.Y - 1,
 		}
 	case rtscpb.Direction_DIRECTION_SOUTH:
-		start = &rtsspb.Coordinate{
+		start = &gdpb.Coordinate{
 			X: tileBoundary.X,
 			Y: tileBoundary.Y,
 		}
 	case rtscpb.Direction_DIRECTION_EAST:
-		start = &rtsspb.Coordinate{
+		start = &gdpb.Coordinate{
 			X: tileBoundary.X + tileDimension.X - 1,
 			Y: tileBoundary.Y,
 		}
 	case rtscpb.Direction_DIRECTION_WEST:
-		start = &rtsspb.Coordinate{
+		start = &gdpb.Coordinate{
 			X: tileBoundary.X,
 			Y: tileBoundary.Y,
 		}
