@@ -8,7 +8,7 @@ import (
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/api/data_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/tile"
@@ -47,7 +47,7 @@ var (
 )
 
 type Transition struct {
-	N1, N2 *rtsspb.AbstractNode
+	N1, N2 *pdpb.AbstractNode
 }
 
 type coordinateSlice struct {
@@ -259,10 +259,10 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 coordinateSlice) ([]Transiti
 		}
 
 		transitions = append(transitions, Transition{
-			N1: &rtsspb.AbstractNode{
+			N1: &pdpb.AbstractNode{
 				TileCoordinate: c1,
 			},
-			N2: &rtsspb.AbstractNode{
+			N2: &pdpb.AbstractNode{
 				TileCoordinate: c2,
 			},
 		})

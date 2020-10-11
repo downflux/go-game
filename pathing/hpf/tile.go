@@ -6,7 +6,7 @@ import (
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/api/data_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/utils"
 	"google.golang.org/grpc/codes"
@@ -70,7 +70,7 @@ type Map struct {
 
 // ImportMap constructs a new Map object from the input protobuf.
 // List of Map.Tiles may be sparse.
-func ImportMap(pb *rtsspb.TileMap) (*Map, error) {
+func ImportMap(pb *pdpb.TileMap) (*Map, error) {
 	m := make(map[utils.MapCoordinate]*Tile)
 	tc := make(map[rtscpb.TerrainType]float64)
 
@@ -104,7 +104,7 @@ func ImportMap(pb *rtsspb.TileMap) (*Map, error) {
 
 // ExportMap converts an internal Map object into an exportable
 // protobuf. Certain tiles may be ignored to be reconstructed later.
-func ExportMap(m *Map) (*rtsspb.TileMap, error) {
+func ExportMap(m *Map) (*pdpb.TileMap, error) {
 	return nil, notImplemented
 }
 
@@ -141,18 +141,18 @@ func (m *Map) Neighbors(coordinate *gdpb.Coordinate) ([]*Tile, error) {
 type Tile struct {
 	// Val is the underlying representation of the map node. It may be
 	// mutated, e.g. changing TerrainType to / from TERRAIN_TYPE_BLOCKED
-	Val *rtsspb.Tile
+	Val *pdpb.Tile
 }
 
 // ImportTile constructs the Tile object from the specified protobuf.
-func ImportTile(pb *rtsspb.Tile) (*Tile, error) {
+func ImportTile(pb *pdpb.Tile) (*Tile, error) {
 	return &Tile{
 		Val: pb,
 	}, nil
 }
 
 // ExportTile constrcts a protobuf based on the specified Tile object.
-func ExportTile(t *Tile) (*rtsspb.Tile, error) {
+func ExportTile(t *Tile) (*pdpb.Tile, error) {
 	return nil, notImplemented
 }
 

@@ -9,7 +9,7 @@ import (
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/api/data_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/utils"
 	"google.golang.org/grpc/codes"
@@ -36,7 +36,7 @@ var (
 // partition-partition move is known. This will save cycles when iterating over
 // large maps.
 type Map struct {
-	Val *rtsspb.ClusterMap
+	Val *pdpb.ClusterMap
 }
 
 // Dimension returns the X, Y dimension of a given Map.
@@ -73,14 +73,14 @@ func ClusterCoordinateFromTileCoordinate(m *Map, t utils.MapCoordinate) (utils.M
 }
 
 // ImportMap constructs a Map object from the given protobuf.
-func ImportMap(pb *rtsspb.ClusterMap) (*Map, error) {
+func ImportMap(pb *pdpb.ClusterMap) (*Map, error) {
 	return &Map{
 		Val: pb,
 	}, nil
 }
 
 // ExportMap constructs a protobuf from the given Map object.
-func ExportMap(m *Map) (*rtsspb.ClusterMap, error) {
+func ExportMap(m *Map) (*pdpb.ClusterMap, error) {
 	return nil, notImplemented
 }
 
@@ -190,7 +190,7 @@ func GetRelativeDirection(m *Map, c, other utils.MapCoordinate) (rtscpb.Directio
 // along when looking up the Tile by a given coordinate.
 func BuildMap(tileMapDimension *gdpb.Coordinate, tileDimension *gdpb.Coordinate) (*Map, error) {
 	return &Map{
-		Val: &rtsspb.ClusterMap{
+		Val: &pdpb.ClusterMap{
 			TileDimension:    tileDimension,
 			TileMapDimension: tileMapDimension,
 		},

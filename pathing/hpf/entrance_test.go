@@ -6,7 +6,7 @@ import (
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/api/data_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/tile"
@@ -21,13 +21,13 @@ var (
 	 * Y = 0 W W
 	 *   X = 0
 	 */
-	trivialClosedMap = &rtsspb.TileMap{
+	trivialClosedMap = &pdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 2, Y: 1},
-		Tiles: []*rtsspb.Tile{
+		Tiles: []*pdpb.Tile{
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
 			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
 		},
-		TerrainCosts: []*rtsspb.TerrainCost{
+		TerrainCosts: []*pdpb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
@@ -36,9 +36,9 @@ var (
 	 * Y = 0 - -
 	 *   X = 0
 	 */
-	trivialOpenMap = &rtsspb.TileMap{
+	trivialOpenMap = &pdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 2, Y: 1},
-		Tiles: []*rtsspb.Tile{
+		Tiles: []*pdpb.Tile{
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
@@ -48,13 +48,13 @@ var (
 	 * Y = 0 - W
 	 *   X = 0
 	 */
-	trivialSemiOpenMap = &rtsspb.TileMap{
+	trivialSemiOpenMap = &pdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 2, Y: 1},
-		Tiles: []*rtsspb.Tile{
+		Tiles: []*pdpb.Tile{
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
 		},
-		TerrainCosts: []*rtsspb.TerrainCost{
+		TerrainCosts: []*pdpb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
@@ -66,9 +66,9 @@ var (
 	 * Y = 0 - -
 	 *   X = 0
 	 */
-	longVerticalOpenMap = &rtsspb.TileMap{
+	longVerticalOpenMap = &pdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 2, Y: 4},
-		Tiles: []*rtsspb.Tile{
+		Tiles: []*pdpb.Tile{
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
@@ -85,9 +85,9 @@ var (
 	 * Y = 0 - - - -
 	 *   X = 0
 	 */
-	longHorizontalOpenMap = &rtsspb.TileMap{
+	longHorizontalOpenMap = &pdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 4, Y: 2},
-		Tiles: []*rtsspb.Tile{
+		Tiles: []*pdpb.Tile{
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
@@ -105,9 +105,9 @@ var (
 	 * Y = 0 - -
 	 *   X = 0
 	 */
-	longSemiOpenMap = &rtsspb.TileMap{
+	longSemiOpenMap = &pdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 2, Y: 3},
-		Tiles: []*rtsspb.Tile{
+		Tiles: []*pdpb.Tile{
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
@@ -115,7 +115,7 @@ var (
 			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED},
 			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
-		TerrainCosts: []*rtsspb.TerrainCost{
+		TerrainCosts: []*pdpb.TerrainCost{
 			{TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
@@ -124,13 +124,13 @@ var (
 func TestBuildClusterEdgeCoordinateSliceError(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		m    *rtsspb.ClusterMap
+		m    *pdpb.ClusterMap
 		c    utils.MapCoordinate
 		d    rtscpb.Direction
 	}{
 		{
 			name: "NullClusterTest",
-			m: &rtsspb.ClusterMap{
+			m: &pdpb.ClusterMap{
 				TileDimension:    &gdpb.Coordinate{X: 0, Y: 0},
 				TileMapDimension: &gdpb.Coordinate{X: 0, Y: 0},
 			},
@@ -139,7 +139,7 @@ func TestBuildClusterEdgeCoordinateSliceError(t *testing.T) {
 		},
 		{
 			name: "NullXDimensionClusterTest",
-			m: &rtsspb.ClusterMap{
+			m: &pdpb.ClusterMap{
 				TileDimension:    &gdpb.Coordinate{X: 0, Y: 5},
 				TileMapDimension: &gdpb.Coordinate{X: 0, Y: 10},
 			},
@@ -148,7 +148,7 @@ func TestBuildClusterEdgeCoordinateSliceError(t *testing.T) {
 		},
 		{
 			name: "NullYDimensionClusterTest",
-			m: &rtsspb.ClusterMap{
+			m: &pdpb.ClusterMap{
 				TileDimension:    &gdpb.Coordinate{X: 5, Y: 0},
 				TileMapDimension: &gdpb.Coordinate{X: 10, Y: 0},
 			},
@@ -157,7 +157,7 @@ func TestBuildClusterEdgeCoordinateSliceError(t *testing.T) {
 		},
 		{
 			name: "InvalidDirectionTest",
-			m: &rtsspb.ClusterMap{
+			m: &pdpb.ClusterMap{
 				TileDimension:    &gdpb.Coordinate{X: 5, Y: 5},
 				TileMapDimension: &gdpb.Coordinate{X: 10, Y: 10},
 			},
@@ -180,25 +180,25 @@ func TestBuildClusterEdgeCoordinateSliceError(t *testing.T) {
 }
 
 func TestBuildClusterEdgeCoordinateSlice(t *testing.T) {
-	trivialClusterMap := &rtsspb.ClusterMap{
+	trivialClusterMap := &pdpb.ClusterMap{
 		TileDimension:    &gdpb.Coordinate{X: 1, Y: 1},
 		TileMapDimension: &gdpb.Coordinate{X: 1, Y: 1},
 	}
-	smallClusterMap := &rtsspb.ClusterMap{
+	smallClusterMap := &pdpb.ClusterMap{
 		TileDimension:    &gdpb.Coordinate{X: 2, Y: 2},
 		TileMapDimension: &gdpb.Coordinate{X: 2, Y: 2},
 	}
-	embeddedClusterMap := &rtsspb.ClusterMap{
+	embeddedClusterMap := &pdpb.ClusterMap{
 		TileDimension:    &gdpb.Coordinate{X: 2, Y: 2},
 		TileMapDimension: &gdpb.Coordinate{X: 4, Y: 4},
 	}
-	rectangularClusterMap := &rtsspb.ClusterMap{
+	rectangularClusterMap := &pdpb.ClusterMap{
 		TileDimension:    &gdpb.Coordinate{X: 1, Y: 2},
 		TileMapDimension: &gdpb.Coordinate{X: 2, Y: 4},
 	}
 	testConfigs := []struct {
 		name string
-		m    *rtsspb.ClusterMap
+		m    *pdpb.ClusterMap
 		c    utils.MapCoordinate
 		d    rtscpb.Direction
 		want coordinateSlice
@@ -326,8 +326,8 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			s2:   coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 1},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
 				},
 			},
 		},
@@ -337,8 +337,8 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			s2:   coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 1},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 				},
 			},
 		},
@@ -348,8 +348,8 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			s2:   coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 2},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
 				},
 			},
 		},
@@ -359,8 +359,8 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			s2:   coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 2},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
 				},
 			},
 		},
@@ -370,8 +370,8 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			s2:   coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 3},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
 				},
 			},
 		},
@@ -381,8 +381,8 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			s2:   coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 3},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
 				},
 			},
 		},
@@ -392,12 +392,12 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			s2:   coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 4},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 1}},
 				},
 			},
 		},
@@ -407,12 +407,12 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			s2:   coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 4},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 3}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 3}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 3}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 3}},
 				},
 			},
 		},
@@ -422,12 +422,12 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			s2:   coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 1, Y: 2}, Length: 4},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 4, Y: 1}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 4, Y: 2}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 4, Y: 1}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 4, Y: 2}},
 				},
 			},
 		},
@@ -489,19 +489,19 @@ func TestVerifyCoordinateSlicesError(t *testing.T) {
 }
 
 func TestBuildTransitionsError(t *testing.T) {
-	trivialOpenClusterMap := &rtsspb.ClusterMap{
+	trivialOpenClusterMap := &pdpb.ClusterMap{
 		TileDimension:    &gdpb.Coordinate{X: 1, Y: 1},
 		TileMapDimension: trivialOpenMap.GetDimension(),
 	}
-	longVerticalOpenClusterMap := &rtsspb.ClusterMap{
+	longVerticalOpenClusterMap := &pdpb.ClusterMap{
 		TileDimension:    &gdpb.Coordinate{X: 2, Y: 1},
 		TileMapDimension: longVerticalOpenMap.GetDimension(),
 	}
 
 	testConfigs := []struct {
 		name   string
-		m      *rtsspb.TileMap
-		cm     *rtsspb.ClusterMap
+		m      *pdpb.TileMap
+		cm     *pdpb.ClusterMap
 		c1, c2 utils.MapCoordinate
 	}{
 		{name: "NullCluster", m: trivialOpenMap, cm: nil, c1: utils.MapCoordinate{}, c2: utils.MapCoordinate{}},
@@ -529,7 +529,7 @@ func TestBuildTransitionsError(t *testing.T) {
 func TestBuildTransitionsAux(t *testing.T) {
 	testConfigs := []struct {
 		name   string
-		m      *rtsspb.TileMap
+		m      *pdpb.TileMap
 		s1, s2 coordinateSlice
 		want   []Transition
 	}{
@@ -548,8 +548,8 @@ func TestBuildTransitionsAux(t *testing.T) {
 			s2: coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 1},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 				},
 			},
 		},
@@ -558,12 +558,12 @@ func TestBuildTransitionsAux(t *testing.T) {
 			s2: coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 4},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 3}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 3}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 3}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 3}},
 				},
 			},
 		},
@@ -572,12 +572,12 @@ func TestBuildTransitionsAux(t *testing.T) {
 			s2: coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 4},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 1}},
 				},
 			},
 		},
@@ -586,12 +586,12 @@ func TestBuildTransitionsAux(t *testing.T) {
 			s2: coordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 3},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 2}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 2}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2}},
 				},
 			},
 		},
@@ -611,15 +611,15 @@ func TestBuildTransitionsAux(t *testing.T) {
 	}
 }
 func TestBuildTransitions(t *testing.T) {
-	trivialClusterMap := &rtsspb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 1}, TileMapDimension: trivialClosedMap.GetDimension()}
-	longVerticalClusterMap := &rtsspb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 4}, TileMapDimension: longVerticalOpenMap.GetDimension()}
-	longHorizontalClusterMap := &rtsspb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 4, Y: 1}, TileMapDimension: longHorizontalOpenMap.GetDimension()}
-	longSemiOpenClusterMap := &rtsspb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 3}, TileMapDimension: longSemiOpenMap.GetDimension()}
+	trivialClusterMap := &pdpb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 1}, TileMapDimension: trivialClosedMap.GetDimension()}
+	longVerticalClusterMap := &pdpb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 4}, TileMapDimension: longVerticalOpenMap.GetDimension()}
+	longHorizontalClusterMap := &pdpb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 4, Y: 1}, TileMapDimension: longHorizontalOpenMap.GetDimension()}
+	longSemiOpenClusterMap := &pdpb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 3}, TileMapDimension: longSemiOpenMap.GetDimension()}
 
 	testConfigs := []struct {
 		name   string
-		m      *rtsspb.TileMap
-		cm     *rtsspb.ClusterMap
+		m      *pdpb.TileMap
+		cm     *pdpb.ClusterMap
 		c1, c2 *gdpb.Coordinate
 		want   []Transition
 	}{
@@ -628,44 +628,44 @@ func TestBuildTransitions(t *testing.T) {
 		{name: "TrivialOpenMap", m: trivialOpenMap, cm: trivialClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 0},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 				},
 			},
 		},
 		{name: "LongVerticalOpenMap", m: longVerticalOpenMap, cm: longVerticalClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 0},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 3}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 3}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 3}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 3}},
 				},
 			},
 		},
 		{name: "LongHorizontalOpenMap", m: longHorizontalOpenMap, cm: longHorizontalClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 0, Y: 1},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 1}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 1}},
 				},
 			},
 		},
 		{name: "LongSemiOpenMap", m: longSemiOpenMap, cm: longSemiOpenClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 0},
 			want: []Transition{
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 				},
 				{
-					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 2}},
-					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2}},
+					N1: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 2}},
+					N2: &pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2}},
 				},
 			},
 		},
@@ -752,28 +752,28 @@ func TestSliceContains(t *testing.T) {
 func TestOnClusterEdge(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		m    *rtsspb.ClusterMap
+		m    *pdpb.ClusterMap
 		c    *gdpb.Coordinate
 		t    *gdpb.Coordinate
 		want bool
 	}{
 		{
 			name: "TrivialClusterContains",
-			m:    &rtsspb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 1}, TileMapDimension: &gdpb.Coordinate{X: 1, Y: 1}},
+			m:    &pdpb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 1}, TileMapDimension: &gdpb.Coordinate{X: 1, Y: 1}},
 			c:    &gdpb.Coordinate{X: 0, Y: 0},
 			t:    &gdpb.Coordinate{X: 0, Y: 0},
 			want: true,
 		},
 		{
 			name: "TrivialClusterNoContains",
-			m:    &rtsspb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 1}, TileMapDimension: &gdpb.Coordinate{X: 2, Y: 2}},
+			m:    &pdpb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 1, Y: 1}, TileMapDimension: &gdpb.Coordinate{X: 2, Y: 2}},
 			c:    &gdpb.Coordinate{X: 0, Y: 0},
 			t:    &gdpb.Coordinate{X: 0, Y: 1},
 			want: false,
 		},
 		{
 			name: "ClusterInternalNoContains",
-			m:    &rtsspb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 3, Y: 3}, TileMapDimension: &gdpb.Coordinate{X: 3, Y: 3}},
+			m:    &pdpb.ClusterMap{TileDimension: &gdpb.Coordinate{X: 3, Y: 3}, TileMapDimension: &gdpb.Coordinate{X: 3, Y: 3}},
 			c:    &gdpb.Coordinate{X: 0, Y: 0},
 			t:    &gdpb.Coordinate{X: 1, Y: 1},
 			want: false,

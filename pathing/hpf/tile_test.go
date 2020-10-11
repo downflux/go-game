@@ -5,7 +5,7 @@ import (
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/api/data_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/utils"
 	"github.com/google/go-cmp/cmp"
@@ -22,9 +22,9 @@ var (
 	 * Y = 0 - - -
 	 *   X = 0
 	 */
-	simpleMapProto = &rtsspb.TileMap{
+	simpleMapProto = &pdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 3, Y: 3},
-		Tiles: []*rtsspb.Tile{
+		Tiles: []*pdpb.Tile{
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
 			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: rtscpb.TerrainType_TERRAIN_TYPE_PLAINS},
@@ -54,8 +54,8 @@ func TestIsAdjacent(t *testing.T) {
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
 			if res := IsAdjacent(
-				&Tile{Val: &rtsspb.Tile{Coordinate: c.c1}},
-				&Tile{Val: &rtsspb.Tile{Coordinate: c.c2}}); res != c.want {
+				&Tile{Val: &pdpb.Tile{Coordinate: c.c1}},
+				&Tile{Val: &pdpb.Tile{Coordinate: c.c2}}); res != c.want {
 				t.Errorf("IsAdjacent((%v, %v), (%v, %v)) = %v, want = %v", c.c1.GetX(), c.c1.GetY(), c.c2.GetX(), c.c2.GetY(), res, c.want)
 			}
 		})
@@ -63,8 +63,8 @@ func TestIsAdjacent(t *testing.T) {
 }
 
 func TestDNotAdjacent(t *testing.T) {
-	t1 := &Tile{Val: &rtsspb.Tile{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}}}
-	t2 := &Tile{Val: &rtsspb.Tile{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}}}
+	t1 := &Tile{Val: &pdpb.Tile{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}}}
+	t2 := &Tile{Val: &pdpb.Tile{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}}}
 	if res, err := D(nil, t1, t2); err == nil {
 		t.Errorf("D(nil, (%v, %v), (%v, %v)) = (%v, nil), want a non-nil error", t1.X(), t1.Y(), t2.X(), t2.Y(), res)
 	}
@@ -95,8 +95,8 @@ func TestD(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			if res, _ := D(
 				cost,
-				&Tile{Val: &rtsspb.Tile{Coordinate: c1, TerrainType: c.terrainType1}},
-				&Tile{Val: &rtsspb.Tile{Coordinate: c2, TerrainType: c.terrainType2}}); res != c.want {
+				&Tile{Val: &pdpb.Tile{Coordinate: c1, TerrainType: c.terrainType1}},
+				&Tile{Val: &pdpb.Tile{Coordinate: c2, TerrainType: c.terrainType2}}); res != c.want {
 				t.Errorf(
 					"D((%v, %v, c=%v), (%v, %v, c=%v)) = %v, want = %v",
 					c1.GetX(), c1.GetY(), cost[c.terrainType1],
@@ -121,8 +121,8 @@ func TestH(t *testing.T) {
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
 			if res, _ := H(
-				&Tile{Val: &rtsspb.Tile{Coordinate: c.c1}},
-				&Tile{Val: &rtsspb.Tile{Coordinate: c.c2}}); res != c.want {
+				&Tile{Val: &pdpb.Tile{Coordinate: c.c1}},
+				&Tile{Val: &pdpb.Tile{Coordinate: c.c2}}); res != c.want {
 				t.Errorf("H((%v, %v), (%v, %v)) = %v, want = %v", c.c1.GetX(), c.c1.GetY(), c.c2.GetX(), c.c2.GetY(), res, c.want)
 			}
 		})

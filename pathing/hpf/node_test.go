@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtsspb "github.com/downflux/game/pathing/api/data_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/utils"
@@ -15,7 +15,7 @@ import (
 
 var (
 	trivialClusterMap, _ = cluster.ImportMap(
-		&rtsspb.ClusterMap{
+		&pdpb.ClusterMap{
 			TileDimension:    &gdpb.Coordinate{X: 1, Y: 1},
 			TileMapDimension: &gdpb.Coordinate{X: 1, Y: 1},
 		})
@@ -25,12 +25,12 @@ func coordinateLess(c1, c2 *gdpb.Coordinate) bool {
 	return c1.GetX() < c2.GetX() || (c1.GetX() == c2.GetX() && c1.GetY() < c2.GetY())
 }
 
-func abstractNodeLess(n1, n2 *rtsspb.AbstractNode) bool {
+func abstractNodeLess(n1, n2 *pdpb.AbstractNode) bool {
 	return coordinateLess(n1.GetTileCoordinate(), n2.GetTileCoordinate())
 }
 
 func TestMapAdd(t *testing.T) {
-	want := &rtsspb.AbstractNode{
+	want := &pdpb.AbstractNode{
 		TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0},
 	}
 
@@ -53,7 +53,7 @@ func TestMapGet(t *testing.T) {
 }
 
 func TestMapGetByCluster(t *testing.T) {
-	cm, err := cluster.ImportMap(&rtsspb.ClusterMap{
+	cm, err := cluster.ImportMap(&pdpb.ClusterMap{
 		TileDimension:    &gdpb.Coordinate{X: 2, Y: 2},
 		TileMapDimension: &gdpb.Coordinate{X: 4, Y: 4},
 	})
@@ -62,7 +62,7 @@ func TestMapGetByCluster(t *testing.T) {
 	}
 
 	m := Map{ClusterMap: cm}
-	want := []*rtsspb.AbstractNode{
+	want := []*pdpb.AbstractNode{
 		{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 		{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
 	}
@@ -74,7 +74,7 @@ func TestMapGetByCluster(t *testing.T) {
 	}
 
 	if err := m.Add(
-		&rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 3}}); err != nil {
+		&pdpb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 3, Y: 3}}); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 
@@ -94,20 +94,20 @@ func TestMapAddError(t *testing.T) {
 	testConfigs := []struct {
 		name string
 		m    Map
-		n    *rtsspb.AbstractNode
+		n    *pdpb.AbstractNode
 	}{
 		{
 			name: "AlreadyExist",
 			m: Map{
 				ClusterMap: trivialClusterMap,
-				nodes: map[utils.MapCoordinate]map[utils.MapCoordinate]*rtsspb.AbstractNode{
+				nodes: map[utils.MapCoordinate]map[utils.MapCoordinate]*pdpb.AbstractNode{
 					utils.MC(clusterCoordinate): {
 						utils.MC(tileCoordinate): {
 							TileCoordinate: tileCoordinate,
 						},
 					},
 				},
-			}, n: &rtsspb.AbstractNode{TileCoordinate: tileCoordinate},
+			}, n: &pdpb.AbstractNode{TileCoordinate: tileCoordinate},
 		},
 	}
 	for _, c := range testConfigs {
@@ -120,7 +120,7 @@ func TestMapAddError(t *testing.T) {
 }
 
 func TestMapRemove(t *testing.T) {
-	want := &rtsspb.AbstractNode{
+	want := &pdpb.AbstractNode{
 		TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0},
 	}
 

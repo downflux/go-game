@@ -5,14 +5,14 @@ import (
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/api/data_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/utils"
 )
 
 var (
 	largeClusterMap = &Map{
-		Val: &rtsspb.ClusterMap{
+		Val: &pdpb.ClusterMap{
 			TileDimension:    &gdpb.Coordinate{X: 10, Y: 10},
 			TileMapDimension: &gdpb.Coordinate{X: 10000, Y: 10000},
 		},
