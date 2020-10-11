@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package game.server.service.api.constants;
+option go_package = "game.server.service.api.constants";
+
+enum CommandType {
+  COMMAND_TYPE_UNKNOWN = 0;
+  COMMAND_TYPE_MOVE = 1;
+}
+
