@@ -15,30 +15,30 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-func Import(pb *apipb.MoveRequest) *MoveCommand {
-	return &MoveCommand{
+func Import(pb *apipb.MoveRequest) *Command {
+	return &Command{
 		clientID: pb.GetClientID(),
 		tickID:   pb.GetTickID(),
 	}
 }
 
-type MoveCommand struct {
+type Command struct {
 	clientID string
 	tickID   string
 }
 
-func (c *MoveCommand) Type() sscpb.CommandType {
+func (c *Command) Type() sscpb.CommandType {
 	return commandType
 }
 
-func (c *MoveCommand) ClientID() string {
+func (c *Command) ClientID() string {
 	return c.clientID
 }
 
-func (c *MoveCommand) TickID() string {
+func (c *Command) TickID() string {
 	return c.tickID
 }
 
-func (c *MoveCommand) Execute() error {
+func (c *Command) Execute() error {
 	return notImplemented
 }
