@@ -5,8 +5,8 @@ import (
 	"math"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
+	mcpb "github.com/downflux/game/map/api/constants_go_proto"
+	mdpb "github.com/downflux/game/map/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/utils"
 	"google.golang.org/grpc/codes"
@@ -39,7 +39,7 @@ func IsAdjacent(src, dst *Tile) bool {
 // into and out of a Tile will essentially just double its cost, and the cost
 // doesn't matter when the Tile is a source or target (since moving there is
 // mandatory).
-func D(c map[pcpb.TerrainType]float64, src, dst *Tile) (float64, error) {
+func D(c map[mcpb.TerrainType]float64, src, dst *Tile) (float64, error) {
 	if !IsAdjacent(src, dst) {
 		return 0, status.Error(codes.InvalidArgument, "input tiles are not adjacent to one another")
 	}
@@ -65,14 +65,14 @@ type Map struct {
 	M map[utils.MapCoordinate]*Tile
 
 	// C is an embedded lookup table of terrain costs.
-	C map[pcpb.TerrainType]float64
+	C map[mcpb.TerrainType]float64
 }
 
 // ImportMap constructs a new Map object from the input protobuf.
 // List of Map.Tiles may be sparse.
-func ImportMap(pb *pdpb.TileMap) (*Map, error) {
+func ImportMap(pb *mdpb.TileMap) (*Map, error) {
 	m := make(map[utils.MapCoordinate]*Tile)
-	tc := make(map[pcpb.TerrainType]float64)
+	tc := make(map[mcpb.TerrainType]float64)
 
 	for _, c := range pb.GetTerrainCosts() {
 		tc[c.GetTerrainType()] = c.GetCost()
@@ -104,7 +104,7 @@ func ImportMap(pb *pdpb.TileMap) (*Map, error) {
 
 // ExportMap converts an internal Map object into an exportable
 // protobuf. Certain tiles may be ignored to be reconstructed later.
-func ExportMap(m *Map) (*pdpb.TileMap, error) {
+func ExportMap(m *Map) (*mdpb.TileMap, error) {
 	return nil, notImplemented
 }
 
@@ -141,18 +141,18 @@ func (m *Map) Neighbors(coordinate *gdpb.Coordinate) ([]*Tile, error) {
 type Tile struct {
 	// Val is the underlying representation of the map node. It may be
 	// mutated, e.g. changing TerrainType to / from TERRAIN_TYPE_BLOCKED
-	Val *pdpb.Tile
+	Val *mdpb.Tile
 }
 
 // ImportTile constructs the Tile object from the specified protobuf.
-func ImportTile(pb *pdpb.Tile) (*Tile, error) {
+func ImportTile(pb *mdpb.Tile) (*Tile, error) {
 	return &Tile{
 		Val: pb,
 	}, nil
 }
 
 // ExportTile constrcts a protobuf based on the specified Tile object.
-func ExportTile(t *Tile) (*pdpb.Tile, error) {
+func ExportTile(t *Tile) (*mdpb.Tile, error) {
 	return nil, notImplemented
 }
 
@@ -172,11 +172,11 @@ func (t *Tile) Y() int32 {
 }
 
 // TerrainType returns the TerrainType enum of the Tile.
-func (t *Tile) TerrainType() pcpb.TerrainType {
+func (t *Tile) TerrainType() mcpb.TerrainType {
 	return t.Val.GetTerrainType()
 }
 
 // SetTerrainType sets the TerrainType enum of the Tile.
-func (t *Tile) SetTerrainType(terrainType pcpb.TerrainType) {
+func (t *Tile) SetTerrainType(terrainType mcpb.TerrainType) {
 	t.Val.TerrainType = terrainType
 }

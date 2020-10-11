@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
+	mcpb "github.com/downflux/game/map/api/constants_go_proto"
+	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 
@@ -26,21 +28,21 @@ var (
 	 * Y = 0 - - -
 	 *   X = 0
 	 */
-	simpleMapProto = &pdpb.TileMap{
+	simpleMapProto = &mdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 3, Y: 3},
-		Tiles: []*pdpb.Tile{
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		Tiles: []*mdpb.Tile{
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
-		TerrainCosts: []*pdpb.TerrainCost{
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		TerrainCosts: []*mdpb.TerrainCost{
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
 		},
 	}
 
@@ -50,16 +52,16 @@ var (
 	 * Y = 0 -
 	 *   X = 0
 	 */
-	closedMapProto = &pdpb.TileMap{
+	closedMapProto = &mdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 1, Y: 3},
-		Tiles: []*pdpb.Tile{
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		Tiles: []*mdpb.Tile{
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
-		TerrainCosts: []*pdpb.TerrainCost{
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		TerrainCosts: []*mdpb.TerrainCost{
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 
@@ -72,45 +74,45 @@ var (
 	 * Y = 0 - - - - - -
 	 *   X = 0
 	 */
-	largeMapProto = &pdpb.TileMap{
+	largeMapProto = &mdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 6, Y: 6},
-		Tiles: []*pdpb.Tile{
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 3}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 4}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 5}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 3}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 4}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 5}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 3}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 4}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 5}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 3, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 3, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 3, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 3, Y: 3}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 3, Y: 4}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 3, Y: 5}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 4, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 4, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 4, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 4, Y: 3}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 4, Y: 4}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 4, Y: 5}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 5, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 5, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 5, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 5, Y: 3}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 5, Y: 4}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 5, Y: 5}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		Tiles: []*mdpb.Tile{
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 3}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 4}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 5}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 3}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 4}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 5}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 3}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 4}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 5}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 3}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 4}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 3, Y: 5}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 3}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 4}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 4, Y: 5}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 3}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 4}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 5, Y: 5}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
 	}
 )
@@ -182,7 +184,7 @@ func TestBuildTransitions(t *testing.T) {
 	testConfigs := []struct {
 		name string
 		cm   *pdpb.ClusterMap
-		tm   *pdpb.TileMap
+		tm   *mdpb.TileMap
 		want []entrance.Transition
 	}{
 		{
@@ -191,9 +193,9 @@ func TestBuildTransitions(t *testing.T) {
 				TileDimension:    &gdpb.Coordinate{X: 1, Y: 3},
 				TileMapDimension: &gdpb.Coordinate{X: 2, Y: 6},
 			},
-			tm: &pdpb.TileMap{
+			tm: &mdpb.TileMap{
 				Dimension: &gdpb.Coordinate{X: 2, Y: 6},
-				Tiles: []*pdpb.Tile{
+				Tiles: []*mdpb.Tile{
 					{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}},
 					{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}},
@@ -252,7 +254,7 @@ func TestBuildTransitions(t *testing.T) {
 func TestBuildGraphError(t *testing.T) {
 	testConfigs := []struct {
 		name             string
-		tm               *pdpb.TileMap
+		tm               *mdpb.TileMap
 		clusterDimension *gdpb.Coordinate
 	}{}
 
@@ -302,7 +304,7 @@ func TestBuildGraph(t *testing.T) {
 
 	testConfigs := []struct {
 		name             string
-		tm               *pdpb.TileMap
+		tm               *mdpb.TileMap
 		clusterDimension *gdpb.Coordinate
 		want             *Graph
 	}{

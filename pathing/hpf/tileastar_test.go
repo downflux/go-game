@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
+	mcpb "github.com/downflux/game/map/api/constants_go_proto"
+	mdpb "github.com/downflux/game/map/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/tile"
 	"github.com/downflux/game/pathing/hpf/utils"
@@ -19,31 +19,31 @@ var (
 	 * Y = 0 -
 	 *   X = 0
 	 */
-	trivialOpenMap = &pdpb.TileMap{
+	trivialOpenMap = &mdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 1, Y: 1},
-		Tiles: []*pdpb.Tile{
+		Tiles: []*mdpb.Tile{
 			{
 				Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-				TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+				TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			},
 		},
-		TerrainCosts: []*pdpb.TerrainCost{},
+		TerrainCosts: []*mdpb.TerrainCost{},
 	}
 
 	/**
 	 * Y = 0 W
 	 *   X = 0
 	 */
-	trivialClosedMap = &pdpb.TileMap{
+	trivialClosedMap = &mdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 1, Y: 1},
-		Tiles: []*pdpb.Tile{
+		Tiles: []*mdpb.Tile{
 			{
 				Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-				TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED,
+				TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED,
 			},
 		},
-		TerrainCosts: []*pdpb.TerrainCost{
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		TerrainCosts: []*mdpb.TerrainCost{
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 
@@ -52,20 +52,20 @@ var (
 	 * Y = 0 -
 	 *   X = 0
 	 */
-	trivialSemiOpenMap = &pdpb.TileMap{
+	trivialSemiOpenMap = &mdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 1, Y: 2},
-		Tiles: []*pdpb.Tile{
+		Tiles: []*mdpb.Tile{
 			{
 				Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-				TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+				TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			},
 			{
 				Coordinate:  &gdpb.Coordinate{X: 0, Y: 1},
-				TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED,
+				TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED,
 			},
 		},
-		TerrainCosts: []*pdpb.TerrainCost{
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		TerrainCosts: []*mdpb.TerrainCost{
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 
@@ -75,24 +75,24 @@ var (
 	 * Y = 0 -
 	 *   X = 0
 	 */
-	impassableMap = &pdpb.TileMap{
+	impassableMap = &mdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 1, Y: 3},
-		Tiles: []*pdpb.Tile{
+		Tiles: []*mdpb.Tile{
 			{
 				Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-				TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+				TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			},
 			{
 				Coordinate:  &gdpb.Coordinate{X: 0, Y: 1},
-				TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED,
+				TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED,
 			},
 			{
 				Coordinate:  &gdpb.Coordinate{X: 0, Y: 2},
-				TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+				TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 			},
 		},
-		TerrainCosts: []*pdpb.TerrainCost{
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		TerrainCosts: []*mdpb.TerrainCost{
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 
@@ -102,21 +102,21 @@ var (
 	 * Y = 0 - - -
 	 *   X = 0
 	 */
-	passableMap = &pdpb.TileMap{
+	passableMap = &mdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 3, Y: 3},
-		Tiles: []*pdpb.Tile{
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		Tiles: []*mdpb.Tile{
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 2}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
-		TerrainCosts: []*pdpb.TerrainCost{
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+		TerrainCosts: []*mdpb.TerrainCost{
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
 		},
 	}
 
@@ -125,19 +125,19 @@ var (
 	 * Y = 0 - W -
 	 *   X = 0
 	 */
-	blockedRowMap = &pdpb.TileMap{
+	blockedRowMap = &mdpb.TileMap{
 		Dimension: &gdpb.Coordinate{X: 3, Y: 2},
-		Tiles: []*pdpb.Tile{
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
-			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+		Tiles: []*mdpb.Tile{
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 0}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 0, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 1, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
+			{Coordinate: &gdpb.Coordinate{X: 2, Y: 1}, TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS},
 		},
-		TerrainCosts: []*pdpb.TerrainCost{
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		TerrainCosts: []*mdpb.TerrainCost{
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	}
 )
@@ -150,7 +150,7 @@ type aStarResult struct {
 func TestAStarSearchError(t *testing.T) {
 	testConfigs := []struct {
 		name                string
-		m                   *pdpb.TileMap
+		m                   *mdpb.TileMap
 		src, dest           *gdpb.Coordinate
 		boundary, dimension *gdpb.Coordinate
 	}{
@@ -187,7 +187,7 @@ func TestAStarSearchError(t *testing.T) {
 func TestAStarSearch(t *testing.T) {
 	testConfigs := []struct {
 		name                string
-		m                   *pdpb.TileMap
+		m                   *mdpb.TileMap
 		src, dest           *gdpb.Coordinate
 		boundary, dimension *gdpb.Coordinate
 		want                aStarResult

@@ -6,22 +6,6 @@ option go_package = "game.pathing.api.data";
 import "api/data.proto";
 import "pathing/api/constants.proto";
 
-message Tile {
-  game.api.data.Coordinate coordinate = 1;
-  game.pathing.api.constants.TerrainType terrain_type = 2;
-}
-
-message TerrainCost {
-  game.pathing.api.constants.TerrainType terrain_type = 1;
-  double cost = 2;
-}
-
-message TileMap {
-  game.api.data.Coordinate dimension = 1;
-  repeated Tile tiles = 2;
-  repeated TerrainCost terrain_costs = 3;
-}
-
 message ClusterMap {
   // Base dimension per cluster.
   game.api.data.Coordinate tile_dimension = 1;

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
+	mcpb "github.com/downflux/game/map/api/constants_go_proto"
+	mdpb "github.com/downflux/game/map/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/pathing/hpf/tile"
@@ -21,29 +21,29 @@ func buildTileMap(d utils.MapCoordinate, walls []utils.MapCoordinate) (*tile.Map
 		wallHash[w] = true
 	}
 
-	var tiles []*pdpb.Tile
+	var tiles []*mdpb.Tile
 	for x := int32(0); x < d.X; x++ {
 		for y := int32(0); y < d.Y; y++ {
 			c := utils.MC(&gdpb.Coordinate{X: x, Y: y})
-			var t pcpb.TerrainType
+			var t mcpb.TerrainType
 			if _, found := wallHash[c]; found {
-				t = pcpb.TerrainType_TERRAIN_TYPE_BLOCKED
+				t = mcpb.TerrainType_TERRAIN_TYPE_BLOCKED
 			} else {
-				t = pcpb.TerrainType_TERRAIN_TYPE_PLAINS
+				t = mcpb.TerrainType_TERRAIN_TYPE_PLAINS
 			}
-			tiles = append(tiles, &pdpb.Tile{
+			tiles = append(tiles, &mdpb.Tile{
 				Coordinate:  utils.PB(c),
 				TerrainType: t,
 			})
 		}
 	}
 
-	return tile.ImportMap(&pdpb.TileMap{
+	return tile.ImportMap(&mdpb.TileMap{
 		Dimension: utils.PB(d),
 		Tiles:     tiles,
-		TerrainCosts: []*pdpb.TerrainCost{
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
-			{TerrainType: pcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
+		TerrainCosts: []*mdpb.TerrainCost{
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
+			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_BLOCKED, Cost: math.Inf(0)},
 		},
 	})
 }
@@ -105,9 +105,9 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &pdpb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -124,9 +124,9 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &pdpb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -143,15 +143,15 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &pdpb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 					{
-						Val: &pdpb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 1, Y: 0},
-							TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -168,9 +168,9 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &pdpb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -187,15 +187,15 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &pdpb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 					{
-						Val: &pdpb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 1, Y: 0},
-							TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},
@@ -212,15 +212,15 @@ func TestPath(t *testing.T) {
 			want: aStarResult{
 				path: []*tile.Tile{
 					{
-						Val: &pdpb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
-							TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 					{
-						Val: &pdpb.Tile{
+						Val: &mdpb.Tile{
 							Coordinate:  &gdpb.Coordinate{X: 1, Y: 0},
-							TerrainType: pcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
 						},
 					},
 				},

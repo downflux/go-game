@@ -11,12 +11,6 @@ enum Direction {
   DIRECTION_WEST = 4;
 }
 
-enum TerrainType {
-  TERRAIN_TYPE_UNKNOWN = 0;
-  TERRAIN_TYPE_BLOCKED = 1;
-  TERRAIN_TYPE_PLAINS = 2;
-}
-
 enum EdgeType {
   EDGE_TYPE_UNKNOWN = 0;
   EDGE_TYPE_INTER = 1;
