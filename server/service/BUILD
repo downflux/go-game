@@ -7,7 +7,9 @@ go_library(
     visibility = ["//server/grpc:__pkg__"],
     deps = [
 	"//api:api_go_proto",
+	"//api:data_go_proto",
 	"//map:map",
+        "//map/api:data_go_proto",
 	"//pathing/hpf:graph",
         "//server/service/api:constants_go_proto",
         "//server/service/commands:move",

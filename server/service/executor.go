@@ -10,6 +10,8 @@ import (
 
 	tile "github.com/downflux/game/map/map"
 	apipb "github.com/downflux/game/api/api_go_proto"
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
@@ -25,8 +27,19 @@ type Command interface {
 	Execute() error
 }
 
-func New() *Executor {
-	return &Executor{}
+func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
+	tm, err := tile.ImportMap(pb)
+	if err != nil {
+		return nil, err
+	}
+	g, err := graph.BuildGraph(tm, d)
+	if err != nil {
+		return nil, err
+	}
+	return &Executor{
+		tileMap: tm,
+		abstractGraph: g,
+	}, nil
 }
 
 type Executor struct {
