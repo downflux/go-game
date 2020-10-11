@@ -4,13 +4,6 @@ import (
 	"math"
 	"testing"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
-	mcpb "github.com/downflux/game/map/api/constants_go_proto"
-	mdpb "github.com/downflux/game/map/api/data_go_proto"
-	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
-
-	tile "github.com/downflux/game/map/map"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/edge"
@@ -19,6 +12,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
+
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	mcpb "github.com/downflux/game/map/api/constants_go_proto"
+	mdpb "github.com/downflux/game/map/api/data_go_proto"
+	tile "github.com/downflux/game/map/map"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 )
 
 var (

@@ -6,14 +6,15 @@ package astar
 import (
 	"math"
 
-	tileastar "github.com/downflux/game/map/astar"
-	tile "github.com/downflux/game/map/map"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/pathing/hpf/graphastar"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	tileastar "github.com/downflux/game/map/astar"
+	tile "github.com/downflux/game/map/map"
 )
 
 var (

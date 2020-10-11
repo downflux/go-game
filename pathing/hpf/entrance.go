@@ -6,16 +6,16 @@ import (
 	"math"
 	"reflect"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
-	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
-	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
-
-	tile "github.com/downflux/game/map/map"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	tile "github.com/downflux/game/map/map"
+	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 )
 
 const (

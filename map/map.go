@@ -4,13 +4,13 @@ package tile
 import (
 	"math"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
-	mcpb "github.com/downflux/game/map/api/constants_go_proto"
-	mdpb "github.com/downflux/game/map/api/data_go_proto"
-
 	"github.com/downflux/game/map/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	mcpb "github.com/downflux/game/map/api/constants_go_proto"
+	mdpb "github.com/downflux/game/map/api/data_go_proto"
 )
 
 var (

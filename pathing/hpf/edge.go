@@ -3,11 +3,11 @@
 package edge
 
 import (
-	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
-
 	"github.com/downflux/game/map/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 )
 
 // Map contains a collection of AbstractEdge instances, which

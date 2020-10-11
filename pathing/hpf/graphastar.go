@@ -5,15 +5,15 @@ package graphastar
 import (
 	"math"
 
-	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
-
-	tile "github.com/downflux/game/map/map"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/graph"
-	fastar "github.com/fzipp/astar"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	tile "github.com/downflux/game/map/map"
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
+	fastar "github.com/fzipp/astar"
 )
 
 var (

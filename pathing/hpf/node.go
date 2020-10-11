@@ -3,12 +3,12 @@
 package node
 
 import (
-	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
-
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
 )
 
 // Map contains a collection of AbstractNode instances, which

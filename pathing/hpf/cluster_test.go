@@ -3,11 +3,11 @@ package cluster
 import (
 	"testing"
 
+	"github.com/downflux/game/map/utils"
+
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	pcpb "github.com/downflux/game/pathing/api/constants_go_proto"
 	pdpb "github.com/downflux/game/pathing/api/data_go_proto"
-
-	"github.com/downflux/game/map/utils"
 )
 
 var (
