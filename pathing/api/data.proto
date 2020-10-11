@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package game.pathing.api.structs;
-option go_package = "game.pathing.api.structs";
+package game.pathing.api.data;
+option go_package = "game.pathing.api.data";
 
 import "api/data.proto";
 import "pathing/api/constants.proto";
