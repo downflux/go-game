@@ -274,6 +274,7 @@ go_test(
     embed = [":graph"],
     deps = [
         ":edge",
+        ":entrance",
         ":node",
         ":cluster",
         ":tile",

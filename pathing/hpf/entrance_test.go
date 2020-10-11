@@ -318,13 +318,13 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 	testConfigs := []struct {
 		name   string
 		s1, s2 *rtsspb.CoordinateSlice
-		want   []*rtsspb.Transition
+		want   []Transition
 	}{
 		{
 			name: "SingleWidthEntranceHorizontal",
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 1},
 			s2:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 1},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
@@ -335,7 +335,7 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			name: "SingleWidthEntranceVertical",
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 1},
 			s2:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 1},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
@@ -346,7 +346,7 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			name: "DoubleWidthEntranceHorizontal",
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 2},
 			s2:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 2},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
@@ -357,7 +357,7 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			name: "DoubleWidthEntranceVertical",
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 2},
 			s2:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 2},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
@@ -368,7 +368,7 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			name: "TripleWidthEntranceHorizontal",
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 3},
 			s2:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 3},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
@@ -379,7 +379,7 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			name: "TripleWidthEntranceVertical",
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 3},
 			s2:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 3},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
@@ -390,7 +390,7 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			name: "QuadrupleWidthEntranceHorizontal",
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 4},
 			s2:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 4},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
@@ -405,7 +405,7 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			name: "QuadrupleWidthEntranceVertical",
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 4},
 			s2:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 4},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
@@ -420,7 +420,7 @@ func TestBuildTransitionsFromOpenCoordinateSlice(t *testing.T) {
 			name: "QuadrupleWidthEmbeddedEntranceHorizontal",
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 1, Y: 1}, Length: 4},
 			s2:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 1, Y: 2}, Length: 4},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 2}},
@@ -531,7 +531,7 @@ func TestBuildTransitionsAux(t *testing.T) {
 		name   string
 		m      *rtsspb.TileMap
 		s1, s2 *rtsspb.CoordinateSlice
-		want   []*rtsspb.Transition
+		want   []Transition
 	}{
 		{name: "TrivialClosedMap", m: trivialClosedMap,
 			s1:   &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 1},
@@ -546,7 +546,7 @@ func TestBuildTransitionsAux(t *testing.T) {
 		{name: "TrivialOpenMap", m: trivialOpenMap,
 			s1: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 1},
 			s2: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 1},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
@@ -556,7 +556,7 @@ func TestBuildTransitionsAux(t *testing.T) {
 		{name: "LongVerticalOpenMap", m: longVerticalOpenMap,
 			s1: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 4},
 			s2: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 4},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
@@ -570,7 +570,7 @@ func TestBuildTransitionsAux(t *testing.T) {
 		{name: "LongHorizontalOpenMap", m: longHorizontalOpenMap,
 			s1: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 4},
 			s2: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_HORIZONTAL, Start: &gdpb.Coordinate{X: 0, Y: 1}, Length: 4},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
@@ -584,7 +584,7 @@ func TestBuildTransitionsAux(t *testing.T) {
 		{name: "LongSemiOpenMap", m: longSemiOpenMap,
 			s1: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 0, Y: 0}, Length: 3},
 			s2: &rtsspb.CoordinateSlice{Orientation: rtscpb.Orientation_ORIENTATION_VERTICAL, Start: &gdpb.Coordinate{X: 1, Y: 0}, Length: 3},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
@@ -621,12 +621,12 @@ func TestBuildTransitions(t *testing.T) {
 		m      *rtsspb.TileMap
 		cm     *rtsspb.ClusterMap
 		c1, c2 *gdpb.Coordinate
-		want   []*rtsspb.Transition
+		want   []Transition
 	}{
 		{name: "TrivialClosedMap", m: trivialClosedMap, cm: trivialClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 0}, want: nil},
 		{name: "TrivialSemiOpenMap", m: trivialSemiOpenMap, cm: trivialClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 0}, want: nil},
 		{name: "TrivialOpenMap", m: trivialOpenMap, cm: trivialClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 0},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
@@ -634,7 +634,7 @@ func TestBuildTransitions(t *testing.T) {
 			},
 		},
 		{name: "LongVerticalOpenMap", m: longVerticalOpenMap, cm: longVerticalClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 0},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},
@@ -646,7 +646,7 @@ func TestBuildTransitions(t *testing.T) {
 			},
 		},
 		{name: "LongHorizontalOpenMap", m: longHorizontalOpenMap, cm: longHorizontalClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 0, Y: 1},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
@@ -658,7 +658,7 @@ func TestBuildTransitions(t *testing.T) {
 			},
 		},
 		{name: "LongSemiOpenMap", m: longSemiOpenMap, cm: longSemiOpenClusterMap, c1: &gdpb.Coordinate{X: 0, Y: 0}, c2: &gdpb.Coordinate{X: 1, Y: 0},
-			want: []*rtsspb.Transition{
+			want: []Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 0}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 0}},

@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/edge"
+	"github.com/downflux/game/pathing/hpf/entrance"
 	"github.com/downflux/game/pathing/hpf/node"
 	"github.com/downflux/game/pathing/hpf/tile"
 	"github.com/downflux/game/pathing/hpf/utils"
@@ -122,8 +123,8 @@ func nodeLess(n1, n2 *rtsspb.AbstractNode) bool {
 	return coordLess(n1.GetTileCoordinate(), n2.GetTileCoordinate())
 }
 
-func transitionLess(t1, t2 *rtsspb.Transition) bool {
-	return nodeLess(t1.GetN1(), t2.GetN1())
+func transitionLess(t1, t2 entrance.Transition) bool {
+	return nodeLess(t1.N1, t2.N1)
 }
 
 func edgeLess(e1, e2 *rtsspb.AbstractEdge) bool {
@@ -182,7 +183,7 @@ func TestBuildTransitions(t *testing.T) {
 		name string
 		cm   *rtsspb.ClusterMap
 		tm   *rtsspb.TileMap
-		want []*rtsspb.Transition
+		want []entrance.Transition
 	}{
 		{
 			name: "TrivialOpenMap",
@@ -207,7 +208,7 @@ func TestBuildTransitions(t *testing.T) {
 					{Coordinate: &gdpb.Coordinate{X: 1, Y: 5}},
 				},
 			},
-			want: []*rtsspb.Transition{
+			want: []entrance.Transition{
 				{
 					N1: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 0, Y: 1}},
 					N2: &rtsspb.AbstractNode{TileCoordinate: &gdpb.Coordinate{X: 1, Y: 1}},

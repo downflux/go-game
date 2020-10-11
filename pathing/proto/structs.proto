@@ -38,13 +38,6 @@ message CoordinateSlice {
   int32 length = 3;
 }
 
-// TODO(minkezhang): Remove this proto. We don't need to save this intermediate
-// state and therefore do not need to export this.
-message Transition {
-  AbstractNode n1 = 1;
-  AbstractNode n2 = 2;
-}
-
 message AbstractGraph {
   repeated ClusterMap cluster_maps = 1;
   repeated AbstractNode nodes = 2;

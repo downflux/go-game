@@ -81,11 +81,11 @@ func BuildGraph(tm *tile.Map, tileDimension *gdpb.Coordinate) (*Graph, error) {
 		return nil, err
 	}
 	for _, t := range transitions {
-		g.NodeMap.Add(t.GetN1())
-		g.NodeMap.Add(t.GetN2())
+		g.NodeMap.Add(t.N1)
+		g.NodeMap.Add(t.N2)
 		g.EdgeMap.Add(&rtsspb.AbstractEdge{
-			Source:      t.GetN1().GetTileCoordinate(),
-			Destination: t.GetN2().GetTileCoordinate(),
+			Source:      t.N1.GetTileCoordinate(),
+			Destination: t.N2.GetTileCoordinate(),
 			EdgeType:    rtscpb.EdgeType_EDGE_TYPE_INTER,
 			Weight:      1, // Inter-edges are always of cost 1, per Botea.
 		})
@@ -250,8 +250,8 @@ func RemoveEphemeralNode(g *Graph, t utils.MapCoordinate, ephemeralKey int64) er
 
 // buildTransitions iterates over the tile.Map for the input cluster.Map overlay
 // and look for adjacent, open nodes along cluster-cluster borders.
-func buildTransitions(tm *tile.Map, cm *cluster.Map) ([]*rtsspb.Transition, error) {
-	var ts []*rtsspb.Transition
+func buildTransitions(tm *tile.Map, cm *cluster.Map) ([]entrance.Transition, error) {
+	var ts []entrance.Transition
 	for _, c1 := range cluster.Iterator(cm) {
 		neighbors, err := cluster.Neighbors(cm, c1)
 		if err != nil {

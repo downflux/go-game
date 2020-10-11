@@ -45,13 +45,17 @@ var (
 	}
 )
 
+type Transition struct {
+  N1, N2 *rtsspb.AbstractNode
+}
+
 // BuildTransitions takes in two adjacent map Cluster objects and returns the
 // list of Transition nodes which connect them. Transition nodes are a tuple of
 // non-blocking Tiles which are
 //   1. immediately adjacent to one another, and
 //   2. are in different Clusters.
 // See Botea 2004 for more information.
-func BuildTransitions(tm *tile.Map, cm *cluster.Map, c1, c2 utils.MapCoordinate) ([]*rtsspb.Transition, error) {
+func BuildTransitions(tm *tile.Map, cm *cluster.Map, c1, c2 utils.MapCoordinate) ([]Transition, error) {
 	if tm == nil {
 		return nil, status.Error(codes.FailedPrecondition, "input tile.Map reference must be non-nil")
 	}
@@ -224,12 +228,12 @@ func buildClusterEdgeCoordinateSlice(m *cluster.Map, c utils.MapCoordinate, d rt
 // MaxSingleGapWidth. We may also consider a more contextual reworking
 // of this function and take into consideration the nearest transition node
 // from adjacent slices, e.g. "transition nodes must be N tiles apart".
-func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb.Transition, error) {
+func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]Transition, error) {
 	if err := verifyCoordinateSlices(s1, s2); err != nil {
 		return nil, err
 	}
 
-	var transitions []*rtsspb.Transition
+	var transitions []Transition
 	var offsets []int32
 	if s1.GetLength() <= MaxSingleGapWidth {
 		offsets = append(offsets, s1.GetLength()/2)
@@ -247,7 +251,7 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]
 			return nil, err
 		}
 
-		transitions = append(transitions, &rtsspb.Transition{
+		transitions = append(transitions, Transition{
 			N1: &rtsspb.AbstractNode{
 				TileCoordinate: c1,
 			},
@@ -261,13 +265,13 @@ func buildTransitionsFromOpenCoordinateSlice(s1, s2 *rtsspb.CoordinateSlice) ([]
 
 // buildTransitionsAux constructs the list of Transition nodes given the
 // corresponding edges of two adjacent Cluster objects.
-func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]*rtsspb.Transition, error) {
+func buildTransitionsAux(m *tile.Map, s1, s2 *rtsspb.CoordinateSlice) ([]Transition, error) {
 	if err := verifyCoordinateSlices(s1, s2); err != nil {
 		return nil, err
 	}
 
 	orientation := s1.GetOrientation()
-	var res []*rtsspb.Transition
+	var res []Transition
 
 	var tSegment1, tSegment2 *rtsspb.CoordinateSlice
 	for o := int32(0); o < s1.GetLength(); o++ {
