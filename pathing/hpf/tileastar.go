@@ -5,7 +5,7 @@ import (
 	"math"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
+	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/tile"
 	"github.com/downflux/game/pathing/hpf/utils"

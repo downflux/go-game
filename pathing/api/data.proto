@@ -1,18 +1,18 @@
 syntax = "proto3";
 
-package game.pathing.proto.structs;
-option go_package = "game.pathing.proto.structs";
+package game.pathing.api.structs;
+option go_package = "game.pathing.api.structs";
 
 import "api/data.proto";
-import "pathing/proto/constants.proto";
+import "pathing/api/constants.proto";
 
 message Tile {
   game.api.data.Coordinate coordinate = 1;
-  game.pathing.proto.constants.TerrainType terrain_type = 2;
+  game.pathing.api.constants.TerrainType terrain_type = 2;
 }
 
 message TerrainCost {
-  game.pathing.proto.constants.TerrainType terrain_type = 1;
+  game.pathing.api.constants.TerrainType terrain_type = 1;
   double cost = 2;
 }
 
@@ -45,6 +45,6 @@ message AbstractNode {
 message AbstractEdge {
   game.api.data.Coordinate source = 1;
   game.api.data.Coordinate destination = 2;
-  game.pathing.proto.constants.EdgeType edge_type = 3;
+  game.pathing.api.constants.EdgeType edge_type = 3;
   double weight = 4;
 }

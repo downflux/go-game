@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtscpb "github.com/downflux/game/pathing/proto/constants_go_proto"
-	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
+	rtscpb "github.com/downflux/game/pathing/api/constants_go_proto"
+	rtsspb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/utils"
 	"github.com/google/go-cmp/cmp"

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	rtsspb "github.com/downflux/game/pathing/proto/structs_go_proto"
+	rtsspb "github.com/downflux/game/pathing/api/data_go_proto"
 
 	"github.com/downflux/game/pathing/hpf/cluster"
 	"github.com/downflux/game/pathing/hpf/utils"
