@@ -4,6 +4,17 @@ package game.api.data;
 option go_package = "game.api.data";
 
 message Coordinate {
-	int32 X = 1;
-	int32 Y = 2;
+  int32 X = 1;
+  int32 Y = 2;
+}
+
+message CurveDataPoint {
+  float tick = 1;
+  oneof datum {
+    Coordinate coordinate = 2;
+  }
+}
+
+message Curve {
+  repeated CurveDataPoint data = 1;
 }

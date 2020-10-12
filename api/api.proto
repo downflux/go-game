@@ -10,15 +10,29 @@ service DownFluxService {
   rpc Move(MoveRequest) returns (MoveResponse) {
     option idempotency_level = IDEMPOTENT;
   };
+
+  rpc StreamCurves(StreamCurvesRequest) returns (stream StreamCurvesResponse) {
+    option idempotency_level = IDEMPOTENT;
+  }
 }
 
 message MoveRequest {
-  string ClientID = 1;
-  string TickID = 2;
-  string EntityID = 3;
-  game.api.data.Coordinate Destination = 4;
-  game.api.constants.MoveType MoveType = 5;
+  string client_id = 1;
+  string tick_id = 2;
+  string entity_id = 3;
+  game.api.data.Coordinate destination = 4;
+  game.api.constants.MoveType move_type = 5;
 }
 
 message MoveResponse {}
 
+message StreamCurvesRequest {
+  string client_id = 1;
+  string tick_id = 2;
+}
+
+message StreamCurvesResponse {
+  string tick_id = 1;
+  string next_tick_id = 2;
+  repeated game.api.data.Curve curves = 3;
+}

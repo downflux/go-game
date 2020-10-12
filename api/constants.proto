@@ -8,3 +8,8 @@ enum MoveType {
   MOVE_TYPE_FORWARD = 1;
   MOVE_TYPE_RETREAT = 2;
 }
+
+enum CurveType {
+  CURVE_TYPE_UNKNOWN = 0;
+  CURVE_TYPE_PATH = 1;
+}
