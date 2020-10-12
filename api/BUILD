@@ -12,7 +12,7 @@ proto_library(
     ],
 )
 
-go_proto_library(
+go_grpc_library(
     name = "api_go_proto",
     importpath = "github.com/downflux/game/api/api_go_proto",
     proto = ":api_proto",

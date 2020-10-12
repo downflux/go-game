@@ -19,18 +19,18 @@ var (
 
 func New(pb *apipb.MoveRequest, m *tile.Map, g *graph.Graph) *Command {
 	return &Command{
-		tileMap: m,
+		tileMap:       m,
 		abstractGraph: g,
-		clientID: pb.GetClientID(),
-		tickID:   pb.GetTickID(),
+		clientID:      pb.GetClientId(),
+		tickID:        pb.GetTickId(),
 	}
 }
 
 type Command struct {
-	tileMap *tile.Map
+	tileMap       *tile.Map
 	abstractGraph *graph.Graph
-	clientID string
-	tickID   string
+	clientID      string
+	tickID        string
 }
 
 func (c *Command) Type() sscpb.CommandType {

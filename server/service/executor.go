@@ -8,10 +8,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	tile "github.com/downflux/game/map/map"
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
+	tile "github.com/downflux/game/map/map"
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
@@ -37,17 +37,21 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		return nil, err
 	}
 	return &Executor{
-		tileMap: tm,
+		tileMap:       tm,
 		abstractGraph: g,
 	}, nil
 }
 
 type Executor struct {
-	tileMap *tile.Map
+	tileMap       *tile.Map
 	abstractGraph *graph.Graph
 
 	commandQueueMux sync.RWMutex
 	commandQueue    []Command
+}
+
+func Tick(e *Executor) error {
+	return notImplemented
 }
 
 func AddCommand(e *Executor, c Command) error {
@@ -57,10 +61,6 @@ func AddCommand(e *Executor, c Command) error {
 	e.commandQueue = append(e.commandQueue, c)
 
 	// TODO(minkezhang): Add client validation as per design doc.
-	return notImplemented
-}
-
-func Tick(e *Executor) error {
 	return notImplemented
 }
 

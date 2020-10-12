@@ -6,7 +6,7 @@ option go_package = "game.api.api";
 import "api/constants.proto";
 import "api/data.proto";
 
-service DownFluxService {
+service DownFlux {
   rpc Move(MoveRequest) returns (MoveResponse) {
     option idempotency_level = IDEMPOTENT;
   };

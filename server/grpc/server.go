@@ -15,16 +15,24 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-func NewDownFluxService() *DownFluxService {
-	return &DownFluxService{
-		ex: executor.New(),
+func NewDownFluxServer() (*DownFluxServer, error) {
+	ex, err := executor.New(nil, nil)
+	if err != nil {
+		return nil, err
 	}
+	return &DownFluxServer{
+		ex: ex,
+	}, notImplemented
 }
 
-type DownFluxService struct {
+type DownFluxServer struct {
 	ex *executor.Executor
 }
 
-func (s *DownFluxService) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
+func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
 	return nil, executor.AddCommand(s.ex, executor.NewMoveCommand(s.ex, req))
+}
+
+func (s *DownFluxServer) StreamCurves(ctx context.Context, req *apipb.StreamCurvesRequest, stream apipb.DownFlux_StreamCurvesServer) error {
+	return notImplemented
 }
