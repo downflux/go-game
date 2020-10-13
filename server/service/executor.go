@@ -3,6 +3,7 @@ package executor
 import (
 	"sync"
 
+	"github.com/downflux/game/curves/curve"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/service/commands/move"
 	"google.golang.org/grpc/codes"
@@ -45,6 +46,9 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 type Executor struct {
 	tileMap       *tile.Map
 	abstractGraph *graph.Graph
+
+	curvesMux sync.RWMutex
+	curves    map[string]curve.Curve
 
 	commandQueueMux sync.RWMutex
 	commandQueue    []Command

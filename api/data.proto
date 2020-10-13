@@ -9,12 +9,16 @@ message Coordinate {
 }
 
 message CurveDataPoint {
-  float tick = 1;
+  double tick = 1;
   oneof datum {
-    Coordinate coordinate = 2;
+    bool bool_datum = 2;
+    int32 int32_datum = 3;
+    double double_datum = 4;
+    Coordinate coordinate_datum = 5;
   }
 }
 
 message Curve {
-  repeated CurveDataPoint data = 1;
+  string curve_id = 1;
+  repeated CurveDataPoint data = 2;
 }
