@@ -3,9 +3,17 @@ syntax = "proto3";
 package game.api.data;
 option go_package = "game.api.data";
 
+// Position is a specific point in the map, representing a point in the map.
+message Position {
+  double x = 1;
+  double y = 2;
+}
+
+// Coordinate is a pointer to a specific Tile object in a map.
+// TODO(minkezhang): Move to //map/api.
 message Coordinate {
-  int32 X = 1;
-  int32 Y = 2;
+  int32 x = 1;
+  int32 y = 2;
 }
 
 message CurveDataPoint {
@@ -14,7 +22,7 @@ message CurveDataPoint {
     bool bool_datum = 2;
     int32 int32_datum = 3;
     double double_datum = 4;
-    Coordinate coordinate_datum = 5;
+    Position position_datum = 5;
   }
 }
 

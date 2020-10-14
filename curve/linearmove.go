@@ -17,12 +17,12 @@ const (
 )
 
 var (
-	datumType = reflect.TypeOf(&gdpb.Coordinate{})
+	datumType = reflect.TypeOf(&gdpb.Position{})
 )
 
 type datum struct {
 	tick  float64
-	value *gdpb.Coordinate // clone, immutable
+	value *gdpb.Position // clone, immutable
 }
 
 func datumBefore(d1, d2 datum) bool {
@@ -55,7 +55,7 @@ func (c *LinearMoveCurve) DatumType() reflect.Type { return datumType }
 func (c *LinearMoveCurve) ClientID() string        { return c.entityID }
 
 func (c *LinearMoveCurve) Add(t float64, v interface{}) error {
-	c.data = insert(c.data, datum{tick: t, value: v.(*gdpb.Coordinate)}) // copy
+	c.data = insert(c.data, datum{tick: t, value: v.(*gdpb.Position)}) // copy
 	// TODO(minkezhang): Add data validation.
 	return nil
 }
@@ -68,13 +68,13 @@ func (c *LinearMoveCurve) Get(t float64) (interface{}, error) {
 	i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: t}) })
 
 	if i == len(c.data) {
-		return proto.Clone(c.data[len(c.data)-1].value).(*gdpb.Coordinate), nil
+		return proto.Clone(c.data[len(c.data)-1].value).(*gdpb.Position), nil
 	}
 	if i == 0 {
-		return proto.Clone(c.data[0].value).(*gdpb.Coordinate), nil // proto.Clone
+		return proto.Clone(c.data[0].value).(*gdpb.Position), nil // proto.Clone
 	}
 
-	return &gdpb.Coordinate{
+	return &gdpb.Position{
 		X: (c.data[i].value.GetX() + c.data[i-1].value.GetX()) / 2,
 		Y: (c.data[i].value.GetY() + c.data[i-1].value.GetY()) / 2,
 	}, nil

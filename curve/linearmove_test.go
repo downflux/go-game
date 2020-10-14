@@ -42,9 +42,9 @@ func TestInsert(t *testing.T) {
 		{name: "InsertAfter", data: []datum{{tick: 0}}, d: datum{tick: 1}, want: []datum{{tick: 0}, {tick: 1}}},
 		{
 			name: "InsertOverride",
-			data: []datum{{tick: 0, value: &gdpb.Coordinate{X: 0, Y: 0}}},
-			d:    datum{tick: 0, value: &gdpb.Coordinate{X: 1, Y: 1}},
-			want: []datum{{tick: 0, value: &gdpb.Coordinate{X: 1, Y: 1}}},
+			data: []datum{{tick: 0, value: &gdpb.Position{X: 0, Y: 0}}},
+			d:    datum{tick: 0, value: &gdpb.Position{X: 1, Y: 1}},
+			want: []datum{{tick: 0, value: &gdpb.Position{X: 1, Y: 1}}},
 		},
 		{name: "InsertBetween", data: []datum{{tick: 0}, {tick: 2}}, d: datum{tick: 1}, want: []datum{{tick: 0}, {tick: 1}, {tick: 2}}},
 	}
@@ -71,28 +71,28 @@ func TestGet(t *testing.T) {
 		name string
 		c    *LinearMoveCurve
 		t    float64
-		want *gdpb.Coordinate
+		want *gdpb.Position
 	}{
 		{
 			name: "GetAlreadyKnown",
-			c:    &LinearMoveCurve{data: []datum{{tick: 1, value: &gdpb.Coordinate{X: 1, Y: 1}}}},
+			c:    &LinearMoveCurve{data: []datum{{tick: 1, value: &gdpb.Position{X: 1, Y: 1}}}},
 			t:    1,
-			want: &gdpb.Coordinate{X: 1, Y: 1},
+			want: &gdpb.Position{X: 1, Y: 1},
 		},
 		{
 			name: "GetAfterLastKnown",
-			c:    &LinearMoveCurve{data: []datum{{tick: 0, value: &gdpb.Coordinate{X: 1, Y: 1}}}},
+			c:    &LinearMoveCurve{data: []datum{{tick: 0, value: &gdpb.Position{X: 1, Y: 1}}}},
 			t:    1,
-			want: &gdpb.Coordinate{X: 1, Y: 1},
+			want: &gdpb.Position{X: 1, Y: 1},
 		},
 		{
 			name: "GetInterpolatedValue",
 			c: &LinearMoveCurve{data: []datum{
-				{tick: 0, value: &gdpb.Coordinate{X: 0, Y: 0}},
-				{tick: 2, value: &gdpb.Coordinate{X: 2, Y: 2}},
+				{tick: 0, value: &gdpb.Position{X: 0, Y: 0}},
+				{tick: 1, value: &gdpb.Position{X: 1, Y: 1}},
 			}},
-			t:    1,
-			want: &gdpb.Coordinate{X: 1, Y: 1},
+			t:    0.5,
+			want: &gdpb.Position{X: 0.5, Y: 0.5},
 		},
 	}
 
@@ -102,7 +102,7 @@ func TestGet(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Get() = _, %v, want = _, nil", err)
 			}
-			if !proto.Equal(got.(*gdpb.Coordinate), c.want) {
+			if !proto.Equal(got.(*gdpb.Position), c.want) {
 				t.Fatalf("Get() = %v, want = %v", got, c.want)
 			}
 		})
