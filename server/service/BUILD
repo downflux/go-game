@@ -8,7 +8,8 @@ go_library(
     deps = [
         "//api:api_go_proto",
         "//api:data_go_proto",
-        "//curves:curve",
+        "//curve:curve",
+        "//entity:entity",
         "//map:map",
         "//map/api:data_go_proto",
         "//pathing/hpf:graph",

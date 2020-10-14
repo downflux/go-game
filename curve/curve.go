@@ -8,9 +8,9 @@ import (
 
 type Curve interface {
 	Type() gcpb.CurveType
+	ID() string
 	DatumType() reflect.Type
 	ClientID() string
-	CurveID() string
 	Get(t float32) interface{} // interpolation
 }
 

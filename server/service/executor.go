@@ -3,7 +3,8 @@ package executor
 import (
 	"sync"
 
-	"github.com/downflux/game/curves/curve"
+	"github.com/downflux/game/curve/curve"
+	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/service/commands/move"
 	"google.golang.org/grpc/codes"
@@ -25,7 +26,8 @@ type Command interface {
 	Type() sscpb.CommandType
 	ClientID() string
 	TickID() string
-	Execute() error
+	// TODO(minkezhang): Refactor Curve interface to not be dependent on curve.Curve.
+	Execute() ([]curve.Curve, error)
 }
 
 func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
@@ -40,12 +42,18 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	return &Executor{
 		tileMap:       tm,
 		abstractGraph: g,
+		entities: map[string]entity.Entity{},
+		curves: map[string]curve.Curve{},
+		commandQueue: nil,
 	}, nil
 }
 
 type Executor struct {
 	tileMap       *tile.Map
 	abstractGraph *graph.Graph
+
+	entitiesMux sync.RWMutex
+	entities    map[string]entity.Entity
 
 	curvesMux sync.RWMutex
 	curves    map[string]curve.Curve
@@ -55,7 +63,28 @@ type Executor struct {
 }
 
 func Tick(e *Executor) error {
+	e.commandQueueMux.Lock()
+	defer e.commandQueueMux.Unlock()
+
+	for _, cmd := range e.commandQueue {
+		if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
+			curves, err := cmd.Execute()
+			// TODO(minkezhang): Only return early if error is very bad -- else, just log.
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return notImplemented
+}
+
+func AddEntity(e *Executor, en entity.Entity) error {
+	e.entitiesMux.Lock()
+	defer e.entitiesMux.Unlock()
+
+	e.entities[en.ID()] = en
+	return nil
 }
 
 func AddCommand(e *Executor, c Command) error {

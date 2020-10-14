@@ -13,3 +13,8 @@ enum CurveType {
   CURVE_TYPE_UNKNOWN = 0;
   CURVE_TYPE_PATH = 1;
 }
+
+enum EntityType {
+  ENTITY_TYPE_UNKNOWN = 0;
+  ENTITY_TYPE_TANK = 1;
+}

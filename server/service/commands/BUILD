@@ -8,7 +8,10 @@ go_library(
     importpath = "github.com/downflux/game/server/service/commands/move",
     deps = [
         "//api:api_go_proto",
+        "//api:data_go_proto",
+	"//curve:curve",
 	"//map:map",
+	"//pathing/hpf:astar",
 	"//pathing/hpf:graph",
         "//server/service/api:constants_go_proto",
         "@org_golang_google_grpc//codes:go_default_library",
