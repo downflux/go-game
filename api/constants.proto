@@ -11,7 +11,7 @@ enum MoveType {
 
 enum CurveType {
   CURVE_TYPE_UNKNOWN = 0;
-  CURVE_TYPE_PATH = 1;
+  CURVE_TYPE_LINEAR_MOVE = 1;
 }
 
 enum EntityType {
