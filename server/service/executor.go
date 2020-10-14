@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
+	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
@@ -25,7 +26,8 @@ var (
 type Command interface {
 	Type() sscpb.CommandType
 	ClientID() string
-	TickID() string
+	Tick() float64
+
 	// TODO(minkezhang): Refactor Curve interface to not be dependent on curve.Curve.
 	Execute() ([]curve.Curve, error)
 }
@@ -43,32 +45,36 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		tileMap:       tm,
 		abstractGraph: g,
 		entities:      map[string]entity.Entity{},
-		curves:        map[string]curve.Curve{},
 		commandQueue:  nil,
 	}, nil
 }
 
 type Executor struct {
+	tickMux    sync.RWMutex
+	tick       float64
+	tickLookup map[string]float64
+
 	tileMap       *tile.Map
 	abstractGraph *graph.Graph
 
-	entitiesMux sync.RWMutex
-	entities    map[string]entity.Entity
-
-	curvesMux sync.RWMutex
-	curves    map[string]curve.Curve
+	dataMux  sync.RWMutex
+	entities map[string]entity.Entity
 
 	commandQueueMux sync.RWMutex
 	commandQueue    []Command
 }
 
 func Tick(e *Executor) error {
-	e.commandQueueMux.Lock()
-	defer e.commandQueueMux.Unlock()
+	// TODO(minkezhang): Increment tick counter.
 
-	for _, cmd := range e.commandQueue {
+	e.commandQueueMux.Lock()
+	commands := e.commandQueue
+	e.commandQueue = nil
+	e.commandQueueMux.Unlock()
+
+	for _, cmd := range commands {
 		if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
-			curves, err := cmd.Execute()
+			_, err := cmd.Execute()
 			// TODO(minkezhang): Only return early if error is very bad -- else, just log.
 			if err != nil {
 				return err
@@ -80,23 +86,60 @@ func Tick(e *Executor) error {
 }
 
 func AddEntity(e *Executor, en entity.Entity) error {
-	e.entitiesMux.Lock()
-	defer e.entitiesMux.Unlock()
+	e.dataMux.Lock()
+	defer e.dataMux.Unlock()
 
 	e.entities[en.ID()] = en
 	return nil
 }
 
-func AddCommand(e *Executor, c Command) error {
+func addCommands(e *Executor, cs []Command) error {
 	e.commandQueueMux.Lock()
 	defer e.commandQueueMux.Lock()
 
-	e.commandQueue = append(e.commandQueue, c)
+	e.commandQueue = append(e.commandQueue, cs...)
 
 	// TODO(minkezhang): Add client validation as per design doc.
-	return notImplemented
+	return nil
 }
 
-func NewMoveCommand(e *Executor, req *apipb.MoveRequest) *move.Command {
-	return move.New(req, e.tileMap, e.abstractGraph)
+// BuildMoveCommands
+//
+// Is expected to be called concurrently.
+func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, eids []string) []*move.Command {
+	e.dataMux.RLock()
+	defer e.dataMux.RUnlock()
+
+	var res []*move.Command
+	for _, eid := range eids {
+		en, found := e.entities[eid]
+		if found {
+			p, err := en.Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(t)
+			if err == nil {
+				move.New(e.tileMap, e.abstractGraph, cid, t, p.(*gdpb.Position), dest)
+			}
+		}
+	}
+	return res
+}
+
+func AddMoveCommands(e *Executor, req *apipb.MoveRequest) error {
+	tick, err := func() (float64, error) {
+		e.tickMux.RLock()
+		defer e.tickMux.RLock()
+		tick, found := e.tickLookup[req.GetTickId()]
+		if !found {
+			return 0, status.Errorf(codes.NotFound, "invalid tick ID %v", req.GetTickId())
+		}
+		return tick, nil
+	}()
+	if err != nil {
+		return err
+	}
+
+	var cs []Command
+	for _, c := range buildMoveCommands(e, req.GetClientId(), tick, req.GetDestination(), req.GetEntityIds()) {
+		cs = append(cs, c)
+	}
+	return addCommands(e, cs)
 }

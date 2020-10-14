@@ -10,6 +10,9 @@ go_library(
     importpath = "github.com/downflux/game/entity/entity",
     deps = [
         "//api:constants_go_proto",
+        "//api:data_go_proto",
+	"//curve:curve",
+	"//curve:linearmove",
     ],
 )
 

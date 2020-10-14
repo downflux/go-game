@@ -9,6 +9,11 @@ enum MoveType {
   MOVE_TYPE_RETREAT = 2;
 }
 
+enum CurveCategory {
+  CURVE_CATEGORY_UNKNOWN = 0;
+  CURVE_CATEGORY_MOVE = 1;
+}
+
 enum CurveType {
   CURVE_TYPE_UNKNOWN = 0;
   CURVE_TYPE_LINEAR_MOVE = 1;

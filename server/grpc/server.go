@@ -30,7 +30,7 @@ type DownFluxServer struct {
 }
 
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
-	return nil, executor.AddCommand(s.ex, executor.NewMoveCommand(s.ex, req))
+	return nil, executor.AddMoveCommands(s.ex, req)
 }
 
 func (s *DownFluxServer) StreamCurves(ctx context.Context, req *apipb.StreamCurvesRequest, stream apipb.DownFlux_StreamCurvesServer) error {

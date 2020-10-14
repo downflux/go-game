@@ -49,10 +49,17 @@ type LinearMoveCurve struct {
 	data     []datum
 }
 
+func New(id, eid string) *LinearMoveCurve {
+	return &LinearMoveCurve{
+		id:       id,
+		entityID: eid,
+	}
+}
+
 func (c *LinearMoveCurve) Type() gcpb.CurveType    { return curveType }
 func (c *LinearMoveCurve) ID() string              { return c.id }
 func (c *LinearMoveCurve) DatumType() reflect.Type { return datumType }
-func (c *LinearMoveCurve) ClientID() string        { return c.entityID }
+func (c *LinearMoveCurve) EntityID() string        { return c.entityID }
 
 func (c *LinearMoveCurve) Add(t float64, v interface{}) error {
 	c.data = insert(c.data, datum{tick: t, value: v.(*gdpb.Position)}) // copy

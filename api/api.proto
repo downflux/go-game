@@ -20,7 +20,7 @@ message MoveRequest {
   string client_id = 1;
   string tick_id = 2;
   repeated string entity_ids = 3;
-  game.api.data.Coordinate destination = 4;
+  game.api.data.Position destination = 4;
   game.api.constants.MoveType move_type = 5;
 }
 
