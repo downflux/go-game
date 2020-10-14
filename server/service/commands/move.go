@@ -54,11 +54,11 @@ func (c *Command) TickID() string {
 
 func (c *Command) Execute() ([]curve.Curve, error) {
 	/*
-	// TODO(minkezhang): Make entity singular, tie source at creation time.
-	for _, e := c.entityIDs {
-		p, _, err := astar.Path(c.tm, c.g, utils.MC(nil), utils.MC(c.destination), 10)
-		p = 
-	}
-	 */
+		// TODO(minkezhang): Make entity singular, tie source at creation time.
+		for _, e := c.entityIDs {
+			p, _, err := astar.Path(c.tm, c.g, utils.MC(nil), utils.MC(c.destination), 10)
+			p =
+		}
+	*/
 	return nil, notImplemented
 }

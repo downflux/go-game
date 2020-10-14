@@ -42,9 +42,9 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	return &Executor{
 		tileMap:       tm,
 		abstractGraph: g,
-		entities: map[string]entity.Entity{},
-		curves: map[string]curve.Curve{},
-		commandQueue: nil,
+		entities:      map[string]entity.Entity{},
+		curves:        map[string]curve.Curve{},
+		commandQueue:  nil,
 	}, nil
 }
 

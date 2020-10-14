@@ -69,20 +69,20 @@ func TestGetError(t *testing.T) {
 func TestGet(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		c *LinearMoveCurve
-		t float64
+		c    *LinearMoveCurve
+		t    float64
 		want *gdpb.Coordinate
 	}{
 		{
 			name: "GetAlreadyKnown",
-			c: &LinearMoveCurve{data: []datum{{tick: 1, value: &gdpb.Coordinate{X: 1, Y: 1}}}},
-			t: 1,
+			c:    &LinearMoveCurve{data: []datum{{tick: 1, value: &gdpb.Coordinate{X: 1, Y: 1}}}},
+			t:    1,
 			want: &gdpb.Coordinate{X: 1, Y: 1},
 		},
 		{
 			name: "GetAfterLastKnown",
-			c: &LinearMoveCurve{data: []datum{{tick: 0, value: &gdpb.Coordinate{X: 1, Y: 1}}}},
-			t: 1,
+			c:    &LinearMoveCurve{data: []datum{{tick: 0, value: &gdpb.Coordinate{X: 1, Y: 1}}}},
+			t:    1,
 			want: &gdpb.Coordinate{X: 1, Y: 1},
 		},
 		{
@@ -91,7 +91,7 @@ func TestGet(t *testing.T) {
 				{tick: 0, value: &gdpb.Coordinate{X: 0, Y: 0}},
 				{tick: 2, value: &gdpb.Coordinate{X: 2, Y: 2}},
 			}},
-			t: 1,
+			t:    1,
 			want: &gdpb.Coordinate{X: 1, Y: 1},
 		},
 	}
