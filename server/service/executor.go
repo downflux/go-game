@@ -44,6 +44,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	return &Executor{
 		tileMap:       tm,
 		abstractGraph: g,
+		tickLookup:    map[string]float64{},
 		entities:      map[string]entity.Entity{},
 		commandQueue:  nil,
 	}, nil
@@ -89,6 +90,10 @@ func AddEntity(e *Executor, en entity.Entity) error {
 	e.dataMux.Lock()
 	defer e.dataMux.Unlock()
 
+	if _, found := e.entities[en.ID()]; found {
+		return status.Errorf(codes.AlreadyExists, "given entity ID %v already exists in the entity list", en.ID())
+	}
+
 	e.entities[en.ID()] = en
 	return nil
 }
@@ -103,7 +108,7 @@ func addCommands(e *Executor, cs []Command) error {
 	return nil
 }
 
-// BuildMoveCommands
+// buildMoveCommands
 //
 // Is expected to be called concurrently.
 func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, eids []string) []*move.Command {
@@ -116,13 +121,16 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 		if found {
 			p, err := en.Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(t)
 			if err == nil {
-				move.New(e.tileMap, e.abstractGraph, cid, t, p.(*gdpb.Position), dest)
+				res = append(res, move.New(e.tileMap, e.abstractGraph, cid, t, p.(*gdpb.Position), dest))
 			}
 		}
 	}
 	return res
 }
 
+// AddMoveCommands
+//
+// Is expected to be called concurrently.
 func AddMoveCommands(e *Executor, req *apipb.MoveRequest) error {
 	tick, err := func() (float64, error) {
 		e.tickMux.RLock()

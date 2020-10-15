@@ -20,3 +20,20 @@ go_library(
         "@org_golang_google_grpc//status:go_default_library",
     ],
 )
+
+go_test(
+    name = "executor_test",
+    srcs = [":executor_test.go"],
+    importpath = "github.com/downflux/game/server/service/executor_test",
+    embed = [":executor"],
+    deps = [
+        "//api:data_go_proto",
+        "//entity:entity",
+        "//map/api:constants_go_proto",
+        "//map/api:data_go_proto",
+        "//server/service/commands:move",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
+    ],
+)
