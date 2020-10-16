@@ -14,6 +14,9 @@ type Entity interface {
 	ID() string
 	Type() gcpb.EntityType
 	Curve(t gcpb.CurveCategory) curve.Curve
+	Start() float64
+	End() float64
+	Delete()
 }
 
 type SimpleEntity struct {
@@ -41,6 +44,8 @@ func NewSimpleEntity(eid string, t float64, p *gdpb.Position) *SimpleEntity {
 	}}
 }
 
-func (e *SimpleEntity) ID() string                             { return e.id }
-func (e *SimpleEntity) Type() gcpb.EntityType                  { return gcpb.EntityType_ENTITY_TYPE_TANK }
+func (e *SimpleEntity) ID() string            { return e.id }
+func (e *SimpleEntity) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }
+
+// TODO(minkezhang): Decide if we should return default value.
 func (e *SimpleEntity) Curve(t gcpb.CurveCategory) curve.Curve { return e.curveLookup[t] }

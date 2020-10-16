@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/downflux/game/curve/curve"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,12 +18,15 @@ const (
 )
 
 var (
-	datumType = reflect.TypeOf(&gdpb.Position{})
+	datumType      = reflect.TypeOf(&gdpb.Position{})
+	notImplemented = status.Error(
+		codes.Unimplemented, "function not implemented")
 )
 
 type datum struct {
-	tick  float64
-	value *gdpb.Position // clone, immutable
+	tick float64
+	// value should be a clone of the input and considered immutable
+	value *gdpb.Position
 }
 
 func datumBefore(d1, d2 datum) bool {
@@ -43,6 +47,7 @@ func insert(data []datum, d datum) []datum {
 	return data
 }
 
+// TODO(minkezhang): Rename to Curve.
 type LinearMoveCurve struct {
 	id       string
 	entityID string
@@ -61,9 +66,24 @@ func (c *LinearMoveCurve) ID() string              { return c.id }
 func (c *LinearMoveCurve) DatumType() reflect.Type { return datumType }
 func (c *LinearMoveCurve) EntityID() string        { return c.entityID }
 
+// TODO(minkezhang): Add duplicate removal here / somewhere.
 func (c *LinearMoveCurve) Add(t float64, v interface{}) error {
-	c.data = insert(c.data, datum{tick: t, value: v.(*gdpb.Position)}) // copy
+	// TODO(minkezhang): Decide if copying v is necessary here.
+	c.data = insert(c.data, datum{tick: t, value: v.(*gdpb.Position)})
+
 	// TODO(minkezhang): Add data validation.
+	return nil
+}
+
+func (c *LinearMoveCurve) Merge(o curve.Curve) error {
+	switch o.Type() {
+	case gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE:
+		for _, d := range o.(*LinearMoveCurve).data {
+			c.Add(d.tick, d.value)
+		}
+	default:
+		return notImplemented
+	}
 	return nil
 }
 
@@ -78,7 +98,7 @@ func (c *LinearMoveCurve) Get(t float64) (interface{}, error) {
 		return proto.Clone(c.data[len(c.data)-1].value).(*gdpb.Position), nil
 	}
 	if i == 0 {
-		return proto.Clone(c.data[0].value).(*gdpb.Position), nil // proto.Clone
+		return proto.Clone(c.data[0].value).(*gdpb.Position), nil
 	}
 
 	return &gdpb.Position{

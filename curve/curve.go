@@ -18,6 +18,8 @@ import (
 //
 // We can remove the DatumType function once this is implemented.
 type Curve interface {
+	// TODO(minkezhang): Consider if we need Start(), End() tick values.
+
 	Type() gcpb.CurveType
 	ID() string
 	DatumType() reflect.Type
@@ -29,11 +31,13 @@ type Curve interface {
 	// Get returns a copy of the interal value at a given tick.
 	Get(t float64) (interface{}, error)
 
+	// Mutate, not copy constructor.
+	Merge(c Curve) error
+
 	// TODO(minkezhang): Implement the following.
 	/**
-	 * Merge(c Curve) error
 	 * Extract(t1, t2 float32) Curve // Same ID
 	 * Contains(c Curve) bool
-	 * Hash() bool // placeholder type
+	 * Hash() string // placeholder type
 	 */
 }

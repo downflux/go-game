@@ -19,6 +19,7 @@ go_library(
     srcs = ["linearmove.go"],
     importpath = "github.com/downflux/game/curve/linearmove",
     deps = [
+        ":curve",
         "//api:data_go_proto",
         "//api:constants_go_proto",
         "@com_github_golang_protobuf//proto:go_default_library",

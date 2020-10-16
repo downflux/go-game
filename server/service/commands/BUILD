@@ -9,12 +9,14 @@ go_library(
     deps = [
         "//api:data_go_proto",
 	"//curve:curve",
+	"//curve:linearmove",
 	"//map:map",
 	"//pathing/hpf:astar",
 	"//pathing/hpf:graph",
+	"//map:utils",
         "//server/service/api:constants_go_proto",
         "@com_github_golang_protobuf//proto:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
-    ],    
+    ],
 )

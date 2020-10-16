@@ -29,7 +29,7 @@ type Command interface {
 	Tick() float64
 
 	// TODO(minkezhang): Refactor Curve interface to not be dependent on curve.Curve.
-	Execute() ([]curve.Curve, error)
+	Execute() (curve.Curve, error)
 }
 
 func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
@@ -51,20 +51,24 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 }
 
 type Executor struct {
+	tileMap       *tile.Map
+	abstractGraph *graph.Graph
+
+	// Add-only.
 	tickMux    sync.RWMutex
 	tick       float64
 	tickLookup map[string]float64
 
-	tileMap       *tile.Map
-	abstractGraph *graph.Graph
-
+	// Add-only.
 	dataMux  sync.RWMutex
 	entities map[string]entity.Entity
 
+	// Add and delete.
 	commandQueueMux sync.RWMutex
 	commandQueue    []Command
 }
 
+// TODO(minkezhang): Test.
 func Tick(e *Executor) error {
 	// TODO(minkezhang): Increment tick counter.
 
@@ -75,9 +79,17 @@ func Tick(e *Executor) error {
 
 	for _, cmd := range commands {
 		if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
-			_, err := cmd.Execute()
-			// TODO(minkezhang): Only return early if error is very bad -- else, just log.
+			c, err := cmd.Execute()
 			if err != nil {
+				return err
+			}
+
+			// TODO(minkezhang): Only return early if error is very bad -- else, just log.
+			if err := func() error {
+				e.dataMux.RLock()
+				defer e.dataMux.RUnlock()
+				return e.entities[c.EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Merge(c)
+			}(); err != nil {
 				return err
 			}
 		}
@@ -124,7 +136,7 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 		if found {
 			p, err := en.Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(t)
 			if err == nil {
-				res = append(res, move.New(e.tileMap, e.abstractGraph, cid, t, p.(*gdpb.Position), dest))
+				res = append(res, move.New(e.tileMap, e.abstractGraph, cid, eid, t, p.(*gdpb.Position), dest))
 			}
 		}
 	}
