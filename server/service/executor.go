@@ -100,7 +100,7 @@ func AddEntity(e *Executor, en entity.Entity) error {
 
 func addCommands(e *Executor, cs []Command) error {
 	e.commandQueueMux.Lock()
-	defer e.commandQueueMux.Lock()
+	defer e.commandQueueMux.Unlock()
 
 	e.commandQueue = append(e.commandQueue, cs...)
 
@@ -111,6 +111,9 @@ func addCommands(e *Executor, cs []Command) error {
 // buildMoveCommands
 //
 // Is expected to be called concurrently.
+//
+// TODO(minkezhang): Decide how / when / if we want to deal with click
+// spamming (same eids, multiple move commands per tick).
 func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, eids []string) []*move.Command {
 	e.dataMux.RLock()
 	defer e.dataMux.RUnlock()
@@ -135,6 +138,7 @@ func AddMoveCommands(e *Executor, req *apipb.MoveRequest) error {
 	tick, err := func() (float64, error) {
 		e.tickMux.RLock()
 		defer e.tickMux.RLock()
+
 		tick, found := e.tickLookup[req.GetTickId()]
 		if !found {
 			return 0, status.Errorf(codes.NotFound, "invalid tick ID %v", req.GetTickId())

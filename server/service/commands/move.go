@@ -48,6 +48,7 @@ func (c *Command) ClientID() string {
 	return c.clientID
 }
 
+// Start time.
 func (c *Command) Tick() float64 {
 	return c.tick
 }
