@@ -34,7 +34,7 @@ message StreamCurvesRequest {
 }
 
 message StreamCurvesResponse {
-  string next_tick_id = 1;
+  string tick_id = 1;
   repeated game.api.data.Curve curves = 2;
 }
 

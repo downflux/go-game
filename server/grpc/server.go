@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/downflux/game/server/service/executor"
 	"google.golang.org/grpc/codes"
@@ -44,7 +44,7 @@ func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*api
 	if _, err := s.validateClient(req.GetClientId()); err != nil {
 		return nil, err
 	}
-	return nil, executor.AddMoveCommands(s.ex, req)
+	return &apipb.MoveResponse{}, executor.AddMoveCommands(s.ex, req)
 }
 
 func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequest) (*apipb.AddClientResponse, error) {
@@ -66,7 +66,7 @@ func (s *DownFluxServer) StreamCurves(req *apipb.StreamCurvesRequest, stream api
 	}
 
 	for r := range ch {
-		fmt.Println("sending: %v", r)
+		log.Println("grpc sending: ", r)
 		if err := stream.Send(r); err != nil {
 			return err
 		}

@@ -9,6 +9,8 @@ import (
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
+const idLen = 8
+
 type Entity interface {
 	ID() string
 	Type() gcpb.EntityType
@@ -28,7 +30,7 @@ type SimpleEntity struct {
 
 // TODO(minkezhang): Make this client-friendly too.
 func NewSimpleEntity(eid string, t float64, p *gdpb.Position) *SimpleEntity {
-	mc := linearmove.New(id.RandomString(32), eid)
+	mc := linearmove.New(id.RandomString(idLen), eid)
 	mc.Add(t, p)
 
 	return &SimpleEntity{id: eid, curveLookup: map[gcpb.CurveCategory]curve.Curve{

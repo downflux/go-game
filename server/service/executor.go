@@ -1,7 +1,7 @@
 package executor
 
 import (
-	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -20,6 +20,8 @@ import (
 	tile "github.com/downflux/game/map/map"
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
+
+const idLen = 8
 
 var (
 	notImplemented = status.Error(
@@ -46,13 +48,18 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	tid := id.RandomString(idLen)
 	return &Executor{
 		tileMap:       tm,
 		abstractGraph: g,
-		tickLookup:    map[string]float64{},
 		entities:      map[string]entity.Entity{},
 		commandQueue:  nil,
 		clientChannel: map[string]chan *apipb.StreamCurvesResponse{},
+		tickLookup: map[string]float64{
+			tid: 0,
+		},
+		currTickID: tid,
 	}, nil
 }
 
@@ -64,14 +71,14 @@ type Executor struct {
 	tickMux    sync.RWMutex
 	tick       float64
 	tickLookup map[string]float64
-	nextTickID string
+	currTickID string
 
 	// Add-only.
 	dataMux  sync.RWMutex
 	entities map[string]entity.Entity
 
 	// Add and delete.
-	commandQueueMux sync.RWMutex
+	commandQueueMux sync.Mutex
 	commandQueue    []Command
 
 	curveQueueMux sync.RWMutex
@@ -90,8 +97,8 @@ func (e *Executor) AddClient() (string, error) {
 	e.clientChannelMux.Lock()
 	defer e.clientChannelMux.Unlock()
 
-	cid := id.RandomString(32)
-	for _, found := e.clientChannel[cid]; found; cid = id.RandomString(32) {
+	cid := id.RandomString(idLen)
+	for _, found := e.clientChannel[cid]; found; cid = id.RandomString(idLen) {
 	}
 	e.clientChannel[cid] = make(chan *apipb.StreamCurvesResponse)
 
@@ -110,14 +117,19 @@ func advanceTickCounter(e *Executor) error {
 	defer e.tickMux.Unlock()
 	e.tick += 1
 
-	if e.nextTickID == "" {
-		e.nextTickID = id.RandomString(32)
+	s := id.RandomString(idLen)
+	for _, found := e.tickLookup[s]; found; s = id.RandomString(idLen) {
 	}
-	e.tickLookup[e.nextTickID] = e.tick
+
+	log.Printf("server advanced tick counter: tick == %v, id == %v\n", e.tick, s)
+	e.tickLookup[s] = e.tick
+	e.currTickID = s
+
 	return nil
 }
 
 func commandQueue(e *Executor) ([]Command, error) {
+	log.Println("server getting commands")
 	e.commandQueueMux.Lock()
 	commands := e.commandQueue
 	e.commandQueue = nil
@@ -140,6 +152,7 @@ func processCommand(e *Executor, cmd Command) error {
 				return err
 			}
 
+			log.Println("server adding curve to queue: ", c)
 			// TODO(minkezhang): Broadcast new entities first.
 			e.curveQueueMux.Lock()
 			e.curveQueue = append(e.curveQueue, c)
@@ -154,20 +167,15 @@ func processCommand(e *Executor, cmd Command) error {
 }
 
 func broadcastCurves(e *Executor) error {
-	fmt.Println("in broadcast")
+	log.Println("server is broadcasting curves")
 	e.curveQueueMux.RLock()
 	curves := e.curveQueue
 	e.curveQueue = nil
 	e.curveQueueMux.RUnlock()
 
 	e.tickMux.RLock()
-	// TODO(minkezhang): Make this use less data -- circular buffer.
-	s := id.RandomString(32)
-	for _, found := e.tickLookup[s]; found; s = id.RandomString(32) {
-	}
-	e.nextTickID = s
 	resp := &apipb.StreamCurvesResponse{
-		NextTickId: e.nextTickID,
+		TickId: e.currTickID,
 	}
 	e.tickMux.RUnlock()
 
@@ -182,12 +190,11 @@ func broadcastCurves(e *Executor) error {
 	// TODO(minkezhang): Make concurrent, and timeout.
 	// Once timeout, client needs to resync.
 	e.clientChannelMux.RLock()
-	fmt.Println("About to broadcast to", e.clientChannel)
 	defer e.clientChannelMux.RUnlock()
 	for _, ch := range e.clientChannel {
-		fmt.Println("sending to ch, msg: ", ch, resp)
+		log.Println("server sending message ", resp)
 		ch <- resp
-		fmt.Println("finished writing")
+		log.Println("server sent message")
 	}
 	return nil
 }
@@ -211,7 +218,8 @@ func CloseStreams(e *Executor) error {
 
 // TODO(minkezhang): Test.
 func Tick(e *Executor) error {
-	fmt.Println("IN TICK")
+	log.Println("server ticking")
+
 	t := time.Now()
 	if err := advanceTickCounter(e); err != nil {
 		return err
@@ -222,6 +230,7 @@ func Tick(e *Executor) error {
 		return err
 	}
 
+	log.Println("server processing commands: ", commands)
 	for _, cmd := range commands {
 		// TODO(minkezhang): Only return early if error is very bad -- else, just log.
 		if err := processCommand(e, cmd); err != nil {
@@ -252,6 +261,7 @@ func AddEntity(e *Executor, en entity.Entity) error {
 }
 
 func addCommands(e *Executor, cs []Command) error {
+	log.Println("server adding commands: ", cs)
 	e.commandQueueMux.Lock()
 	defer e.commandQueueMux.Unlock()
 
@@ -272,6 +282,7 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 	defer e.dataMux.RUnlock()
 
 	var res []*move.Command
+	log.Println("server building move commands with eids: ", eids, e.entities)
 	for _, eid := range eids {
 		en, found := e.entities[eid]
 		if found {
@@ -288,9 +299,10 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 //
 // Is expected to be called concurrently.
 func AddMoveCommands(e *Executor, req *apipb.MoveRequest) error {
+	log.Println("server adding move command", req)
 	tick, err := func() (float64, error) {
 		e.tickMux.RLock()
-		defer e.tickMux.RLock()
+		defer e.tickMux.RUnlock()
 
 		tick, found := e.tickLookup[req.GetTickId()]
 		if !found {
@@ -298,6 +310,7 @@ func AddMoveCommands(e *Executor, req *apipb.MoveRequest) error {
 		}
 		return tick, nil
 	}()
+	log.Println("server got tick:", tick, err)
 	if err != nil {
 		return err
 	}

@@ -16,9 +16,12 @@ import (
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
-const commandType = sscpb.CommandType_COMMAND_TYPE_MOVE
-const pathLength = 5
-const ticksPerTile = float64(10)
+const (
+	commandType = sscpb.CommandType_COMMAND_TYPE_MOVE
+	pathLength = 5
+	ticksPerTile = float64(10)
+	idLen = 8
+)
 
 var (
 	notImplemented = status.Error(
@@ -83,7 +86,7 @@ func (c *Command) Execute() (curve.Curve, error) {
 		return nil, err
 	}
 
-	cv := linearmove.New(id.RandomString(32), c.entityID)
+	cv := linearmove.New(id.RandomString(idLen), c.entityID)
 	for i, tile := range p {
 		cv.Add(c.tick+float64(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
 	}
