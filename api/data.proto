@@ -3,6 +3,8 @@ syntax = "proto3";
 package game.api.data;
 option go_package = "game.api.data";
 
+import "api/constants.proto";
+
 // Position is a specific point in the map, representing a point in the map.
 message Position {
   double x = 1;
@@ -16,7 +18,7 @@ message Coordinate {
   int32 y = 2;
 }
 
-message CurveDataPoint {
+message CurveDatum {
   double tick = 1;
   oneof datum {
     bool bool_datum = 2;
@@ -28,5 +30,7 @@ message CurveDataPoint {
 
 message Curve {
   string curve_id = 1;
-  repeated CurveDataPoint data = 2;
+  string entity_id = 2;
+  game.api.constants.CurveType type = 3;
+  repeated CurveDatum data = 4;
 }

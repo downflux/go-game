@@ -3,6 +3,7 @@ package linearmove
 import (
 	"reflect"
 	"sort"
+	"sync"
 
 	"github.com/downflux/game/curve/curve"
 	"github.com/golang/protobuf/proto"
@@ -52,6 +53,9 @@ type LinearMoveCurve struct {
 	id       string
 	entityID string
 	data     []datum
+
+	deltaMux sync.Mutex
+	delta    []datum
 }
 
 func New(id, eid string) *LinearMoveCurve {
@@ -69,7 +73,14 @@ func (c *LinearMoveCurve) EntityID() string        { return c.entityID }
 // TODO(minkezhang): Add duplicate removal here / somewhere.
 func (c *LinearMoveCurve) Add(t float64, v interface{}) error {
 	// TODO(minkezhang): Decide if copying v is necessary here.
-	c.data = insert(c.data, datum{tick: t, value: v.(*gdpb.Position)})
+	d := datum{tick: t, value: v.(*gdpb.Position)}
+
+	c.data = insert(c.data, d)
+
+	// Add to delta cache for broadcasting.
+	c.deltaMux.Lock()
+	c.delta = append(c.delta, d)
+	c.deltaMux.Unlock()
 
 	// TODO(minkezhang): Add data validation.
 	return nil
@@ -105,4 +116,26 @@ func (c *LinearMoveCurve) Get(t float64) (interface{}, error) {
 		X: (c.data[i].value.GetX() + c.data[i-1].value.GetX()) / 2,
 		Y: (c.data[i].value.GetY() + c.data[i-1].value.GetY()) / 2,
 	}, nil
+}
+
+func (c *LinearMoveCurve) ExportDelta() (*gdpb.Curve, error) {
+	c.deltaMux.Lock()
+	delta := c.delta
+	c.delta = nil
+	c.deltaMux.Unlock()
+
+	crv := &gdpb.Curve{
+		CurveId: c.ID(),
+		Type: c.Type(),
+		EntityId: c.EntityID(),
+	}
+
+	for _, d := range delta {
+		crv.Data = append(crv.GetData(), &gdpb.CurveDatum{
+			Tick: d.tick,
+			Datum: &gdpb.CurveDatum_PositionDatum{d.value},
+		})
+	}
+
+	return crv, nil
 }

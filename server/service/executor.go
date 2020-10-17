@@ -1,6 +1,7 @@
 package executor
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -63,6 +64,7 @@ type Executor struct {
 	tickMux    sync.RWMutex
 	tick       float64
 	tickLookup map[string]float64
+	nextTickID string
 
 	// Add-only.
 	dataMux  sync.RWMutex
@@ -77,6 +79,9 @@ type Executor struct {
 
 	clientChannelMux sync.RWMutex
 	clientChannel    map[string]chan *apipb.StreamCurvesResponse
+
+	doneMux sync.Mutex
+	done    bool
 }
 
 func (e *Executor) AddClient() (string, error) {
@@ -105,12 +110,10 @@ func advanceTickCounter(e *Executor) error {
 	defer e.tickMux.Unlock()
 	e.tick += 1
 
-	// TODO(minkezhang): Make this use less data -- circular buffer.
-	s := id.RandomString(32)
-	for _, found := e.tickLookup[s]; found; s = id.RandomString(32) {
+	if e.nextTickID == "" {
+		e.nextTickID = id.RandomString(32)
 	}
-	e.tickLookup[s] = e.tick
-
+	e.tickLookup[e.nextTickID] = e.tick
 	return nil
 }
 
@@ -151,11 +154,63 @@ func processCommand(e *Executor, cmd Command) error {
 }
 
 func broadcastCurves(e *Executor) error {
-	return notImplemented
+	fmt.Println("in broadcast")
+	e.curveQueueMux.RLock()
+	curves := e.curveQueue
+	e.curveQueue = nil
+	e.curveQueueMux.RUnlock()
+
+	e.tickMux.RLock()
+	// TODO(minkezhang): Make this use less data -- circular buffer.
+	s := id.RandomString(32)
+	for _, found := e.tickLookup[s]; found; s = id.RandomString(32) {
+	}
+	e.nextTickID = s
+	resp := &apipb.StreamCurvesResponse{
+		NextTickId: e.nextTickID,
+	}
+	e.tickMux.RUnlock()
+
+	for _, c := range curves {
+		d, err := c.ExportDelta()
+		if err != nil {
+			return err
+		}
+		resp.Curves = append(resp.GetCurves(), d)
+	}
+
+	fmt.Println("About to broadcast to", e.clientChannel)
+	// TODO(minkezhang): Make concurrent, and timeout.
+	// Once timeout, client needs to resync.
+	e.clientChannelMux.Lock()
+	defer e.clientChannelMux.Unlock()
+	for _, ch := range e.clientChannel {
+		fmt.Println("copied curve queue: %v", curves, ch)
+		ch <- resp
+	}
+	return nil
+}
+
+func SignalStop(e *Executor) error {
+	e.doneMux.Lock()
+	defer e.doneMux.Unlock()
+	e.done = true
+	return nil
+}
+
+// TODO(minkezhang): Make private as part of loop.
+func CloseStreams(e *Executor) error {
+	e.clientChannelMux.Lock()
+	defer e.clientChannelMux.Unlock()
+	for _, ch := range e.clientChannel {
+		close(ch)
+	}
+	return nil
 }
 
 // TODO(minkezhang): Test.
 func Tick(e *Executor) error {
+	fmt.Println("IN TICK")
 	t := time.Now()
 	if err := advanceTickCounter(e); err != nil {
 		return err

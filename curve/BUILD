@@ -11,6 +11,7 @@ go_library(
     importpath = "github.com/downflux/game/curve/curve",
     deps = [
         "//api:constants_go_proto",
+        "//api:data_go_proto",
     ],
 )
 

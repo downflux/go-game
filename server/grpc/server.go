@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/downflux/game/server/service/executor"
 	"google.golang.org/grpc/codes"
@@ -65,6 +66,7 @@ func (s *DownFluxServer) StreamCurves(req *apipb.StreamCurvesRequest, stream api
 	}
 
 	for r := range ch {
+		fmt.Println("sending: %v", r)
 		if err := stream.Send(r); err != nil {
 			return err
 		}

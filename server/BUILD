@@ -6,8 +6,7 @@ go_library(
     importpath = "github.com/downflux/game/server/id",
     visibility = [
         "//entity:__pkg__",
-        "//server/service:__pkg__",
-        "//server/service/commands:__pkg__",
+        "//server:__subpackages__",
     ],
     deps = [],
 )

@@ -21,9 +21,13 @@ go_test(
     embed = [":server"],
     deps = [
         "//api:api_go_proto",
+        "//api:constants_go_proto",
         "//api:data_go_proto",
+        "//entity:entity",
         "//map/api:constants_go_proto",
         "//map/api:data_go_proto",
+        "//server:id",
+        "//server/service:executor",
         "@org_golang_x_sync//errgroup:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",
