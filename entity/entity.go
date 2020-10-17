@@ -1,10 +1,9 @@
 package entity
 
 import (
-	"math/rand"
-
 	"github.com/downflux/game/curve/curve"
 	"github.com/downflux/game/curve/linearmove"
+	"github.com/downflux/game/server/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -14,9 +13,12 @@ type Entity interface {
 	ID() string
 	Type() gcpb.EntityType
 	Curve(t gcpb.CurveCategory) curve.Curve
-	Start() float64
-	End() float64
-	Delete()
+	// TODO(minkezhang): Implement these methods.
+	/*
+	 * Start() float64
+	 * End() float64
+	 * Delete()
+	 */
 }
 
 type SimpleEntity struct {
@@ -24,19 +26,9 @@ type SimpleEntity struct {
 	curveLookup map[gcpb.CurveCategory]curve.Curve
 }
 
-// TODO(minkezhang): Export to shared for server.
-func randID() string {
-	const charset = "abcdefghijklmnopqrstuvwxyz"
-	b := make([]byte, 32)
-	for i := range b {
-		b[i] = charset[rand.Intn(len(charset))]
-	}
-	return string(b)
-}
-
 // TODO(minkezhang): Make this client-friendly too.
 func NewSimpleEntity(eid string, t float64, p *gdpb.Position) *SimpleEntity {
-	mc := linearmove.New(randID(), eid)
+	mc := linearmove.New(id.RandomString(32), eid)
 	mc.Add(t, p)
 
 	return &SimpleEntity{id: eid, curveLookup: map[gcpb.CurveCategory]curve.Curve{

@@ -13,6 +13,7 @@ go_library(
         "//api:data_go_proto",
 	"//curve:curve",
 	"//curve:linearmove",
+        "//server:id",
     ],
 )
 

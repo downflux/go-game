@@ -6,6 +6,7 @@ import (
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/id"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -82,7 +83,7 @@ func (c *Command) Execute() (curve.Curve, error) {
 		return nil, err
 	}
 
-	cv := linearmove.New("", c.entityID)
+	cv := linearmove.New(id.RandomString(32), c.entityID)
 	for i, tile := range p {
 		cv.Add(c.tick+float64(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
 	}

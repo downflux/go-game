@@ -14,6 +14,7 @@ go_library(
         "//map:map",
         "//map/api:data_go_proto",
         "//pathing/hpf:graph",
+        "//server:id",
         "//server/service/api:constants_go_proto",
         "//server/service/commands:move",
         "@org_golang_google_grpc//codes:go_default_library",

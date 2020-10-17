@@ -7,6 +7,8 @@ import "api/constants.proto";
 import "api/data.proto";
 
 service DownFlux {
+  rpc AddClient(AddClientRequest) returns (AddClientResponse) {}
+
   rpc Move(MoveRequest) returns (MoveResponse) {
     option idempotency_level = IDEMPOTENT;
   };
@@ -35,4 +37,10 @@ message StreamCurvesResponse {
   string tick_id = 1;
   string next_tick_id = 2;
   repeated game.api.data.Curve curves = 3;
+}
+
+// TODO(minkezhang): Add team.
+message AddClientRequest {}
+message AddClientResponse {
+  string client_id = 1;
 }
