@@ -7,7 +7,6 @@ import (
 	"net"
 	"sync"
 	"testing"
-	// "time"
 
 	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/server/id"

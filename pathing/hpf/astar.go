@@ -118,7 +118,8 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate, l int) ([
 
 		var p []*tile.Tile
 		if c1 == c2 {
-			p, _, err := clusterBoundedTilePath(tm, g, t1, t2)
+			var err error
+			p, _, err = clusterBoundedTilePath(tm, g, t1, t2)
 			if err != nil {
 				return nil, 0, err
 			}
@@ -130,7 +131,7 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate, l int) ([
 		}
 
 		for _, n := range p {
-			if l == 0 || len(p) < l {
+			if l == 0 || len(path) < l {
 				path = append(path, n)
 			}
 		}
