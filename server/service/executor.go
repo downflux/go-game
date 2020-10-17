@@ -179,14 +179,15 @@ func broadcastCurves(e *Executor) error {
 		resp.Curves = append(resp.GetCurves(), d)
 	}
 
-	fmt.Println("About to broadcast to", e.clientChannel)
 	// TODO(minkezhang): Make concurrent, and timeout.
 	// Once timeout, client needs to resync.
-	e.clientChannelMux.Lock()
-	defer e.clientChannelMux.Unlock()
+	e.clientChannelMux.RLock()
+	fmt.Println("About to broadcast to", e.clientChannel)
+	defer e.clientChannelMux.RUnlock()
 	for _, ch := range e.clientChannel {
-		fmt.Println("copied curve queue: %v", curves, ch)
+		fmt.Println("sending to ch, msg: ", ch, resp)
 		ch <- resp
+		fmt.Println("finished writing")
 	}
 	return nil
 }
