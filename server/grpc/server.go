@@ -8,6 +8,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
+	gdpb "github.com/downflux/game/api/data_go_proto"
+	mdpb "github.com/downflux/game/map/api/data_go_proto"
 )
 
 var (
@@ -15,14 +17,14 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-func NewDownFluxServer() (*DownFluxServer, error) {
-	ex, err := executor.New(nil, nil)
+func NewDownFluxServer(pb *mdpb.TileMap, d *gdpb.Coordinate) (*DownFluxServer, error) {
+	ex, err := executor.New(pb, d)
 	if err != nil {
 		return nil, err
 	}
 	return &DownFluxServer{
 		ex: ex,
-	}, notImplemented
+	}, nil
 }
 
 type DownFluxServer struct {
@@ -56,7 +58,7 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 	return resp, nil
 }
 
-func (s *DownFluxServer) StreamCurves(ctx context.Context, req *apipb.StreamCurvesRequest, stream apipb.DownFlux_StreamCurvesServer) error {
+func (s *DownFluxServer) StreamCurves(req *apipb.StreamCurvesRequest, stream apipb.DownFlux_StreamCurvesServer) error {
 	ch, err := s.validateClient(req.GetClientId())
 	if err != nil {
 		return err

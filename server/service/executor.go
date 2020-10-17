@@ -76,7 +76,7 @@ type Executor struct {
 	curveQueue    []curve.Curve
 
 	clientChannelMux sync.RWMutex
-	clientChannel map[string]chan *apipb.StreamCurvesResponse
+	clientChannel    map[string]chan *apipb.StreamCurvesResponse
 }
 
 func (e *Executor) AddClient() (string, error) {
@@ -86,7 +86,8 @@ func (e *Executor) AddClient() (string, error) {
 	defer e.clientChannelMux.Unlock()
 
 	cid := id.RandomString(32)
-	for _, found := e.clientChannel[cid]; found; cid = id.RandomString(32) {}
+	for _, found := e.clientChannel[cid]; found; cid = id.RandomString(32) {
+	}
 	e.clientChannel[cid] = make(chan *apipb.StreamCurvesResponse)
 
 	return cid, nil
@@ -106,7 +107,8 @@ func advanceTickCounter(e *Executor) error {
 
 	// TODO(minkezhang): Make this use less data -- circular buffer.
 	s := id.RandomString(32)
-	for _, found := e.tickLookup[s]; found; s = id.RandomString(32) {}
+	for _, found := e.tickLookup[s]; found; s = id.RandomString(32) {
+	}
 	e.tickLookup[s] = e.tick
 
 	return nil
