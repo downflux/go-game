@@ -49,7 +49,7 @@ func insert(data []datum, d datum) []datum {
 }
 
 // TODO(minkezhang): Rename to Curve.
-type LinearMoveCurve struct {
+type Curve struct {
 	id       string
 	entityID string
 	data     []datum
@@ -58,20 +58,20 @@ type LinearMoveCurve struct {
 	delta    []datum
 }
 
-func New(id, eid string) *LinearMoveCurve {
-	return &LinearMoveCurve{
+func New(id, eid string) *Curve {
+	return &Curve{
 		id:       id,
 		entityID: eid,
 	}
 }
 
-func (c *LinearMoveCurve) Type() gcpb.CurveType    { return curveType }
-func (c *LinearMoveCurve) ID() string              { return c.id }
-func (c *LinearMoveCurve) DatumType() reflect.Type { return datumType }
-func (c *LinearMoveCurve) EntityID() string        { return c.entityID }
+func (c *Curve) Type() gcpb.CurveType    { return curveType }
+func (c *Curve) ID() string              { return c.id }
+func (c *Curve) DatumType() reflect.Type { return datumType }
+func (c *Curve) EntityID() string        { return c.entityID }
 
 // TODO(minkezhang): Add duplicate removal here / somewhere.
-func (c *LinearMoveCurve) Add(t float64, v interface{}) error {
+func (c *Curve) Add(t float64, v interface{}) error {
 	// TODO(minkezhang): Decide if copying v is necessary here.
 	d := datum{tick: t, value: v.(*gdpb.Position)}
 
@@ -86,10 +86,10 @@ func (c *LinearMoveCurve) Add(t float64, v interface{}) error {
 	return nil
 }
 
-func (c *LinearMoveCurve) Merge(o curve.Curve) error {
+func (c *Curve) Merge(o curve.Curve) error {
 	switch o.Type() {
 	case gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE:
-		for _, d := range o.(*LinearMoveCurve).data {
+		for _, d := range o.(*Curve).data {
 			c.Add(d.tick, d.value)
 		}
 	default:
@@ -98,7 +98,7 @@ func (c *LinearMoveCurve) Merge(o curve.Curve) error {
 	return nil
 }
 
-func (c *LinearMoveCurve) Get(t float64) (interface{}, error) {
+func (c *Curve) Get(t float64) (interface{}, error) {
 	if c.data == nil || datumBefore(datum{tick: t}, c.data[0]) {
 		return nil, status.Error(codes.OutOfRange, "given tick occurs before the curve existed")
 	}
@@ -118,7 +118,7 @@ func (c *LinearMoveCurve) Get(t float64) (interface{}, error) {
 	}, nil
 }
 
-func (c *LinearMoveCurve) ExportDelta() (*gdpb.Curve, error) {
+func (c *Curve) ExportDelta() (*gdpb.Curve, error) {
 	c.deltaMux.Lock()
 	delta := c.delta
 	c.delta = nil

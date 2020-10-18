@@ -60,7 +60,7 @@ func TestInsert(t *testing.T) {
 }
 
 func TestGetError(t *testing.T) {
-	c := &LinearMoveCurve{}
+	c := &Curve{}
 	if got, err := c.Get(0); err == nil {
 		t.Errorf("Get() = %v, nil, want a non-nil error", got)
 	}
@@ -89,25 +89,25 @@ func TestMerge(t *testing.T) {
 func TestGet(t *testing.T) {
 	testConfigs := []struct {
 		name string
-		c    *LinearMoveCurve
+		c    *Curve
 		t    float64
 		want *gdpb.Position
 	}{
 		{
 			name: "GetAlreadyKnown",
-			c:    &LinearMoveCurve{data: []datum{{tick: 1, value: &gdpb.Position{X: 1, Y: 1}}}},
+			c:    &Curve{data: []datum{{tick: 1, value: &gdpb.Position{X: 1, Y: 1}}}},
 			t:    1,
 			want: &gdpb.Position{X: 1, Y: 1},
 		},
 		{
 			name: "GetAfterLastKnown",
-			c:    &LinearMoveCurve{data: []datum{{tick: 0, value: &gdpb.Position{X: 1, Y: 1}}}},
+			c:    &Curve{data: []datum{{tick: 0, value: &gdpb.Position{X: 1, Y: 1}}}},
 			t:    1,
 			want: &gdpb.Position{X: 1, Y: 1},
 		},
 		{
 			name: "GetInterpolatedValue",
-			c: &LinearMoveCurve{data: []datum{
+			c: &Curve{data: []datum{
 				{tick: 0, value: &gdpb.Position{X: 0, Y: 0}},
 				{tick: 1, value: &gdpb.Position{X: 1, Y: 1}},
 			}},
