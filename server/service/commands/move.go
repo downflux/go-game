@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	commandType = sscpb.CommandType_COMMAND_TYPE_MOVE
-	pathLength = 5
+	commandType  = sscpb.CommandType_COMMAND_TYPE_MOVE
+	pathLength   = 5
 	ticksPerTile = float64(10)
-	idLen = 8
+	idLen        = 8
 )
 
 var (

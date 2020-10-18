@@ -30,7 +30,7 @@ func init() {
 
 const (
 	bufSize = 1024 * 1024
-	idLen = 8
+	idLen   = 8
 )
 
 var (
@@ -82,7 +82,7 @@ func newSUT() (*sut, error) {
 		gRPCServer:     gRPCServer,
 		gRPCServerImpl: gRPCServerImpl,
 		listener:       listener,
-		ctx: context.Background(),
+		ctx:            context.Background(),
 	}, nil
 }
 
@@ -158,12 +158,12 @@ func TestSendMoveCommand(t *testing.T) {
 	streamRespMux.Unlock()
 
 	moveResp, err := client.Move(s.ctx, &apipb.MoveRequest{
-		ClientId: cid,
+		ClientId:  cid,
 		EntityIds: []string{e.ID()},
 		// TODO(minkezhang): Fill out.
-		TickId: tickID,
+		TickId:      tickID,
 		Destination: &gdpb.Position{X: 3, Y: 0},
-		MoveType: gcpb.MoveType_MOVE_TYPE_FORWARD,
+		MoveType:    gcpb.MoveType_MOVE_TYPE_FORWARD,
 	})
 	log.Println("client received moveresp ", moveResp)
 

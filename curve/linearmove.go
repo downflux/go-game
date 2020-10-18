@@ -125,14 +125,14 @@ func (c *Curve) ExportDelta() (*gdpb.Curve, error) {
 	c.deltaMux.Unlock()
 
 	crv := &gdpb.Curve{
-		CurveId: c.ID(),
-		Type: c.Type(),
+		CurveId:  c.ID(),
+		Type:     c.Type(),
 		EntityId: c.EntityID(),
 	}
 
 	for _, d := range delta {
 		crv.Data = append(crv.GetData(), &gdpb.CurveDatum{
-			Tick: d.tick,
+			Tick:  d.tick,
 			Datum: &gdpb.CurveDatum_PositionDatum{d.value},
 		})
 	}
