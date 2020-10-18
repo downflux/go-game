@@ -77,10 +77,11 @@ type Executor struct {
 	dataMux  sync.RWMutex
 	entities map[string]entity.Entity
 
-	// Add and delete.
+	// Add and delete. Reset per tick.
 	commandQueueMux sync.Mutex
 	commandQueue    []Command
 
+	// Add and delete. Reset per tick.
 	curveQueueMux sync.RWMutex
 	curveQueue    []curve.Curve
 
