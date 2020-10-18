@@ -148,7 +148,7 @@ func processCommand(e *Executor, cmd Command) error {
 		if err := func() error {
 			e.dataMux.RLock()
 			defer e.dataMux.RUnlock()
-			if err := e.entities[c.EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Merge(c); err != nil {
+			if err := e.entities[c.EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).ReplaceTail(c); err != nil {
 				return err
 			}
 
