@@ -227,6 +227,55 @@ func TestPath(t *testing.T) {
 				cost: 1,
 			},
 		},
+		{
+			name: "CrossIntraClusterPath",
+			tm:   intraClusterMap,
+			g:    trivialIntraClusterGraph,
+			src:  &gdpb.Coordinate{X: 0, Y: 0},
+			dest: &gdpb.Coordinate{X: 5, Y: 0},
+			l:    10,
+			want: aStarResult{
+				path: []*tile.Tile{
+					{
+						Val: &mdpb.Tile{
+							Coordinate:  &gdpb.Coordinate{X: 0, Y: 0},
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+					{
+						Val: &mdpb.Tile{
+							Coordinate:  &gdpb.Coordinate{X: 1, Y: 0},
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+					{
+						Val: &mdpb.Tile{
+							Coordinate:  &gdpb.Coordinate{X: 2, Y: 0},
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+					{
+						Val: &mdpb.Tile{
+							Coordinate:  &gdpb.Coordinate{X: 3, Y: 0},
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+					{
+						Val: &mdpb.Tile{
+							Coordinate:  &gdpb.Coordinate{X: 4, Y: 0},
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+					{
+						Val: &mdpb.Tile{
+							Coordinate:  &gdpb.Coordinate{X: 5, Y: 0},
+							TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS,
+						},
+					},
+				},
+				cost: 5,
+			},
+		},
 	}
 
 	for _, c := range testConfigs {

@@ -1,5 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test", "go_binary")
 
+package(default_visibility=["//server/service:__subpackages__"])
+
 go_library(
     name = "astar",
     srcs = ["astar.go"],

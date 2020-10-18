@@ -3,7 +3,34 @@ syntax = "proto3";
 package game.api.data;
 option go_package = "game.api.data";
 
+import "api/constants.proto";
+
+// Position is a specific point in the map, representing a point in the map.
+message Position {
+  double x = 1;
+  double y = 2;
+}
+
+// Coordinate is a pointer to a specific Tile object in a map.
+// TODO(minkezhang): Move to //map/api.
 message Coordinate {
-	int32 X = 1;
-	int32 Y = 2;
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message CurveDatum {
+  double tick = 1;
+  oneof datum {
+    bool bool_datum = 2;
+    int32 int32_datum = 3;
+    double double_datum = 4;
+    Position position_datum = 5;
+  }
+}
+
+message Curve {
+  string curve_id = 1;
+  string entity_id = 2;
+  game.api.constants.CurveType type = 3;
+  repeated CurveDatum data = 4;
 }

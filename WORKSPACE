@@ -69,6 +69,13 @@ go_repository(
 )
 
 go_repository(
+    name = "org_golang_x_sync",
+    importpath = "golang.org/x/sync",
+    sum = "h1:Bx6FllMpG4NWDOfhMBz1VR2QYNp/SAOHPIAsaVmxfPo=",
+    version = "v0.0.0-20201008141435-b3e1573b7520",
+)
+
+go_repository(
     name = "org_golang_google_protobuf",
     importpath = "google.golang.org/protobuf",
     # TODO(minkezhang): Monitor this repo for when we can move away from ptypes.
