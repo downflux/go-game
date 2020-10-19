@@ -2,9 +2,9 @@ package main
 
 import (
 	"math"
-//	"math/rand"
-//	"log"
-//	"sync"
+	"math/rand"
+	"log"
+	"sync"
 	"time"
 
 	"github.com/g3n/engine/app"
@@ -81,11 +81,12 @@ func main() {
 		}
 	}()
 
+	maxObjects := 100
 	// Render the entire world. Bad idea.
 	// Unity has hard-capped 5k entity limit (see http://answers.unity.com/answers/408712/view.html).
 	//
 	// We need to cull (for occlusion) and delete rendered objects when outside FOV.
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < maxObjects; i++ {
 		tank := geometry.NewSphereSector(float64(r), 2, 2, 0, math.Pi, 0, math.Pi)
 		tankMaterial := material.NewStandard(math32.NewColor("Red"))
 		tankMesh := graphic.NewMesh(tank, tankMaterial)
