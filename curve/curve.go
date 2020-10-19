@@ -33,15 +33,13 @@ type Curve interface {
 	Get(t float64) (interface{}, error)
 
 	// Mutate, not copy constructor.
-	// TODO(minkezhang): Make this replace, not merge.
-	Merge(c Curve) error
+	ReplaceTail(c Curve) error
 
 	ExportDelta() (*gdpb.Curve, error)
+
 	// TODO(minkezhang): Implement the following.
 	/**
 	 * Export() (*gdpb.Curve, error)
-	 * Extract(t1, t2 float32) Curve // Same ID
-	 * Contains(c Curve) bool
-	 * Hash() string // placeholder type
+	 * Import(*gdpb.Curve) error
 	 */
 }
