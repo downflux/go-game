@@ -123,6 +123,10 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate, l int) ([
 			if err != nil {
 				return nil, 0, err
 			}
+
+			// TODO(minkezhang): Check if this will cause a memory
+			// leak.
+			p[0] = nil
 			_, p = p[0], p[1:]
 		} else {
 			// Inter-cluster nodes are always immediately adjacent

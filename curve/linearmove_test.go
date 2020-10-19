@@ -66,14 +66,16 @@ func TestGetError(t *testing.T) {
 	}
 }
 
-func TestMerge(t *testing.T) {
+func TestReplaceTail(t *testing.T) {
 	c1 := New("c1", "eid")
 	c1.Add(0, &gdpb.Position{X: 0, Y: 0})
+	c1.Add(1, &gdpb.Position{X: 10, Y: 10})
+	c1.Add(2, &gdpb.Position{X: 20, Y: 20})
 
 	c2 := New("", "eid")
 	c2.Add(1, &gdpb.Position{X: 1, Y: 1})
 
-	c1.Merge(c2)
+	c1.ReplaceTail(c2)
 
 	want := &gdpb.Position{X: 0.5, Y: 0.5}
 	got, err := c1.Get(0.5)

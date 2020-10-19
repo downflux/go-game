@@ -77,10 +77,11 @@ type Executor struct {
 	dataMux  sync.RWMutex
 	entities map[string]entity.Entity
 
-	// Add and delete.
+	// Add and delete. Reset per tick.
 	commandQueueMux sync.Mutex
 	commandQueue    []Command
 
+	// Add and delete. Reset per tick.
 	curveQueueMux sync.RWMutex
 	curveQueue    []curve.Curve
 
@@ -148,7 +149,7 @@ func processCommand(e *Executor, cmd Command) error {
 		if err := func() error {
 			e.dataMux.RLock()
 			defer e.dataMux.RUnlock()
-			if err := e.entities[c.EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Merge(c); err != nil {
+			if err := e.entities[c.EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).ReplaceTail(c); err != nil {
 				return err
 			}
 
