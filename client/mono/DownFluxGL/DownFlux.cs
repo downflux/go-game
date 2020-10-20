@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace DownFluxGL
 {
-    public class Game1 : Game
+    public class DownFlux : Game
     {
         Texture2D ballTexture;
         Vector2 ballPosition;
@@ -13,7 +13,7 @@ namespace DownFluxGL
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        public Game1()
+        public DownFlux()
         {
             _graphics = new GraphicsDeviceManager(this);
 
