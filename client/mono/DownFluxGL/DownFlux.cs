@@ -18,6 +18,8 @@ namespace DownFluxGL
             // Test PB initialization.
             System.Console.Error.WriteLine(
                 new DF.Game.API.Data.Position{X = 0.1, Y = 0.1});
+            System.Console.Error.WriteLine(
+                new DownFluxClient.DownFluxClient());
 
             _graphics = new GraphicsDeviceManager(this);
 
