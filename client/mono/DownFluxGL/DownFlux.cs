@@ -15,6 +15,10 @@ namespace DownFluxGL
 
         public DownFlux()
         {
+            // Test PB initialization.
+            System.Console.Error.WriteLine(
+                new DF.Game.API.Data.Position{X = 0.1, Y = 0.1});
+
             _graphics = new GraphicsDeviceManager(this);
 
             // TODO(minkezhang): Figure out why we can't control actual window
