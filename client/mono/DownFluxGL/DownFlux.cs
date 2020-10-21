@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using DownFluxClient;
 
 namespace DownFluxGL
 {
@@ -12,14 +13,13 @@ namespace DownFluxGL
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        private DownFluxClient.Client _c;
 
         public DownFlux()
         {
             // Test PB initialization.
             System.Console.Error.WriteLine(
                 new DF.Game.API.Data.Position{X = 0.1, Y = 0.1});
-            System.Console.Error.WriteLine(
-                new DownFluxClient.DownFluxClient());
 
             _graphics = new GraphicsDeviceManager(this);
 

@@ -5,6 +5,13 @@ See [Setting up your development environment for Ubuntu 20.04](https://docs.mono
 To build, see [Package games for distribution](https://docs.monogame.net/articles/packaging_games.html).
 
 ```bash
-dotnet publish -c Release -r linux-x64 /p:PublishReadyToRun=false /p:TieredCompilation=false --self-contained
+dotnet publish \
+    -c Release \
+    -r linux-x64 \
+    /p:PublishReadyToRun=false \
+    /p:TieredCompilation=false \
+    --self-contained
 ./bin/Release/netcoreapp3.1/linux-x64/DownFluxGL
+
+dotnet clean
 ```
