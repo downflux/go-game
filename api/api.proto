@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package game.api.api;
 option go_package = "game.api.api";
+option csharp_namespace = "DF.Game.API.API";
 
 import "api/constants.proto";
 import "api/data.proto";

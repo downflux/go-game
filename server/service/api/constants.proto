@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package game.server.service.api.constants;
 option go_package = "game.server.service.api.constants";
+option csharp_namespace = "DF.Game.Server.Service.API.Constants";
 
 enum CommandType {
   COMMAND_TYPE_UNKNOWN = 0;

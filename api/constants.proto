@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package game.api.constants;
 option go_package = "game.api.constants";
+option csharp_namespace = "DF.Game.API.Constants";
 
 enum MoveType {
   MOVE_TYPE_UNKNOWN = 0;
