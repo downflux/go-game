@@ -169,27 +169,33 @@ func (c *Curve) ReplaceTail(o curve.Curve) error {
 }
 
 // Get queries the Curve at a specific point for an interpolated value.
-func (c *Curve) Get(t float64) (interface{}, error) {
+func (c *Curve) Get(t float64) interface{} {
 	c.dataMux.RLock()
 	defer c.dataMux.RUnlock()
 
-	if c.data == nil || datumBefore(datum{tick: t}, c.data[0]) {
-		return nil, status.Error(codes.OutOfRange, "given tick occurs before the curve existed")
+	if c.data == nil {
+		return &gdpb.Position{}
+	}
+
+	if datumBefore(datum{tick: t}, c.data[0]) {
+		return proto.Clone(c.data[0].value).(*gdpb.Position)
+	}
+
+	if datumBefore(c.data[len(c.data) - 1], datum{tick: t}) {
+		return proto.Clone(c.data[len(c.data) - 1].value).(*gdpb.Position)
 	}
 
 	i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: t}) })
 
-	if i == len(c.data) {
-		return proto.Clone(c.data[len(c.data)-1].value).(*gdpb.Position), nil
-	}
 	if i == 0 {
-		return proto.Clone(c.data[0].value).(*gdpb.Position), nil
+		return proto.Clone(c.data[0].value).(*gdpb.Position)
 	}
 
+	tickDelta := t - c.data[i-1].tick
 	return &gdpb.Position{
-		X: (c.data[i].value.GetX() + c.data[i-1].value.GetX()) / 2,
-		Y: (c.data[i].value.GetY() + c.data[i-1].value.GetY()) / 2,
-	}, nil
+		X: c.data[i-1].value.GetX() + (c.data[i].value.GetX() - c.data[i-1].value.GetX()) / (c.data[i].tick - c.data[i-1].tick) * tickDelta,
+		Y: c.data[i-1].value.GetY() + (c.data[i].value.GetY() - c.data[i-1].value.GetY()) / (c.data[i].tick - c.data[i-1].tick) * tickDelta,
+	}
 }
 
 // ExportDelta builds a gdpb.Curve instance for data yet to be communicated

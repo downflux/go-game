@@ -287,10 +287,17 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 	for _, eid := range eids {
 		en, found := e.entities[eid]
 		if found {
-			p, err := en.Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(t)
-			if err == nil {
-				res = append(res, move.New(e.tileMap, e.abstractGraph, cid, eid, t, p.(*gdpb.Position), dest))
-			}
+			p := en.Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(t)
+			res = append(
+				res,
+				move.New(
+					e.tileMap,
+					e.abstractGraph,
+					cid,
+					eid,
+					t,
+					p.(*gdpb.Position),
+					dest))
 		}
 	}
 	return res
