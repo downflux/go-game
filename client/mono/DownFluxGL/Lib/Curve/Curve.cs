@@ -1,22 +1,22 @@
 namespace DF {
-  struct datum {
-    private double _tick;
-    private DF.Game.API.Data.Position _value;
+  namespace Curve {
+    struct datum {
+      private double _tick;
+      private DF.Game.API.Data.Position _value;
 
-    public datum(double tick) {
-      _tick = tick;
-      _value = null;
+      public datum(double tick) {
+        _tick = tick;
+        _value = null;
+      }
+
+      public double Tick { get => _tick; }
+      public DF.Game.API.Data.Position Value { get => _value; }
+
+      public static bool operator <(datum a, datum b) => a.Tick < b.Tick;
+      public static bool operator >(datum a, datum b) => a.Tick > b.Tick;
     }
 
-    public double Tick { get => _tick; }
-    public DF.Game.API.Data.Position Value { get => _value; }
-
-    public static bool operator <(datum a, datum b) => a.Tick < b.Tick;
-    public static bool operator >(datum a, datum b) => a.Tick > b.Tick;
-  }
-
-  namespace Curve {
-    class Curve {
+    public class Curve {
 	public static OneOf.OneOf<LinearMove> Import(DF.Game.API.Data.Curve pb) {
           switch (pb.Type) {
             case DF.Game.API.Constants.CurveType.LinearMove:
@@ -35,7 +35,7 @@ namespace DF {
     // See https://www.mono-project.com/docs/advanced/pinvoke/,
     // https://github.com/bazelbuild/rules_go/issues/54,
     // https://medium.com/learning-the-go-programming-language/calling-go-functions-from-other-languages-4c7d8bcc69bf.
-    class LinearMove {
+    public class LinearMove {
       private string _id;
       private string _entityID;
       private System.Collections.Generic.List<datum> _data;
