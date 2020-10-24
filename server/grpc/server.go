@@ -32,6 +32,9 @@ type DownFluxServer struct {
 	ex *executor.Executor
 }
 
+// Debug function. Delete.
+func (s *DownFluxServer) Executor() *executor.Executor { return s.ex }
+
 func (s *DownFluxServer) validateClient(cid string) (<-chan *apipb.StreamCurvesResponse, error) {
 	ch := s.ex.ClientChannel(cid)
 	if ch == nil {

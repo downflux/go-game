@@ -23,6 +23,7 @@ namespace DF {
         _ctSource = new System.Threading.CancellationTokenSource();
         _ct = _ctSource.Token;
         _curvesMutex = new System.Threading.ReaderWriterLock();
+        _curves = new StreamData();
       }
 
       public string Connect(string tickID) {
@@ -62,14 +63,18 @@ namespace DF {
           var s = call.ResponseStream;
           try {
             while (await s.MoveNext(_ct)) {
+              System.Console.Error.WriteLine("StreamCurvesLoop: RECEIVED");
               var resp = s.Current;
+              System.Console.Error.WriteLine(resp);
 
               _curvesMutex.AcquireWriterLock(1000);  // 1 sec
               try {
                 foreach (var curvePB in resp.Curves) {
                   try {
+                    System.Console.Error.WriteLine("IMPORTED CURVE: ");
+                    System.Console.Error.WriteLine(DF.Curve.Curve.Import(curvePB));
                     _curves.Enqueue((resp.TickId, DF.Curve.Curve.Import(curvePB)));
-                  } catch (System.ArgumentException) {
+                  } catch (System.ArgumentException e) {
                      // TODO(minkezhang): Log this to some file.
                   }
                 }

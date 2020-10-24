@@ -1,6 +1,6 @@
 namespace DF {
   namespace Curve {
-    struct datum {
+    class datum : System.IComparable {
       private double _tick;
       private DF.Game.API.Data.Position _value;
 
@@ -8,9 +8,18 @@ namespace DF {
         _tick = tick;
         _value = null;
       }
+      public datum(double tick, DF.Game.API.Data.Position value) {
+        _tick = tick;
+        _value = value;
+      }
 
       public double Tick { get => _tick; }
       public DF.Game.API.Data.Position Value { get => _value; }
+
+      public int CompareTo(object obj) {
+        var d = obj as datum;
+        return _tick.CompareTo(d._tick);
+      }
 
       public static bool operator <(datum a, datum b) => a.Tick < b.Tick;
       public static bool operator >(datum a, datum b) => a.Tick > b.Tick;
@@ -20,7 +29,7 @@ namespace DF {
 	public static OneOf.OneOf<LinearMove> Import(DF.Game.API.Data.Curve pb) {
           switch (pb.Type) {
             case DF.Game.API.Constants.CurveType.LinearMove:
-              return new LinearMove(pb.CurveId, pb.EntityId);
+              return new LinearMove(pb.CurveId, pb.EntityId, pb.Data);
             default:
               break;
           }
@@ -40,10 +49,17 @@ namespace DF {
       private string _entityID;
       private System.Collections.Generic.List<datum> _data;
 
-      public LinearMove(string id, string entityID) {
+      // Assuming data is already sorted.
+      public LinearMove(
+        string id,
+        string entityID,
+        Google.Protobuf.Collections.RepeatedField<DF.Game.API.Data.CurveDatum> data) {
         _id = id;
         _entityID = entityID;
         _data = new System.Collections.Generic.List<datum>();
+        foreach (var d in data) {
+          _data.Add(new datum(d.Tick, d.PositionDatum));
+        }
       }
 
       public string ID { get => _id; }

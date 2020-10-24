@@ -7,11 +7,14 @@ import (
 	"log"
 	"net"
 
+	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/server/grpc/server"
+	"github.com/downflux/game/server/service/executor"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 )
 
@@ -42,7 +45,7 @@ func main() {
 		log.Fatalf("could not parse map file: %v", err)
 	}
 
-	downFluxServer, err := server.NewDownFluxServer(mapPB, nil)
+	downFluxServer, err := server.NewDownFluxServer(mapPB, &gdpb.Coordinate{X: 5, Y: 5})
 	if err != nil {
 		log.Fatal("could not construct DownFlux server instance: %v", err)
 	}
@@ -52,5 +55,13 @@ func main() {
 	s := grpc.NewServer()
 	apipb.RegisterDownFluxServer(s, downFluxServer)
 
-	s.Serve(lis)
+	executor.AddEntity(downFluxServer.Executor(), entity.NewSimpleEntity(
+		"example-entity", 0, &gdpb.Position{X: 0, Y: 0},
+	))
+
+	go s.Serve(lis)
+
+	for {
+		executor.Tick(downFluxServer.Executor())
+	}
 }

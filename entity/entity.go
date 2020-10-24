@@ -33,12 +33,15 @@ func NewSimpleEntity(eid string, t float64, p *gdpb.Position) *SimpleEntity {
 	mc := linearmove.New(id.RandomString(idLen), eid)
 	mc.Add(t, p)
 
-	return &SimpleEntity{id: eid, curveLookup: map[gcpb.CurveCategory]curve.Curve{
-		gcpb.CurveCategory_CURVE_CATEGORY_MOVE: mc,
-	}}
+	return &SimpleEntity{
+		id: eid,
+		curveLookup: map[gcpb.CurveCategory]curve.Curve{
+			gcpb.CurveCategory_CURVE_CATEGORY_MOVE: mc,
+		},
+	}
 }
 
-func (e *SimpleEntity) ID() string            { return e.id }
+func (e *SimpleEntity) ID() string { return e.id }
 func (e *SimpleEntity) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }
 
 // TODO(minkezhang): Decide if we should return default value.

@@ -49,7 +49,8 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		return nil, err
 	}
 
-	tid := id.RandomString(idLen)
+	// TODO(minkezhang): Fix this.
+	tid := "example-tick-id" // id.RandomString(idLen)
 	return &Executor{
 		tileMap:       tm,
 		abstractGraph: g,
@@ -169,10 +170,14 @@ func processCommand(e *Executor, cmd Command) error {
 
 func broadcastCurves(e *Executor) error {
 	log.Println("server is broadcasting curves")
-	e.curveQueueMux.RLock()
+	e.curveQueueMux.Lock()
 	curves := e.curveQueue
 	e.curveQueue = nil
-	e.curveQueueMux.RUnlock()
+	e.curveQueueMux.Unlock()
+
+	if curves == nil {
+		return nil
+	}
 
 	e.tickMux.RLock()
 	resp := &apipb.StreamCurvesResponse{
@@ -219,7 +224,7 @@ func CloseStreams(e *Executor) error {
 
 // TODO(minkezhang): Test.
 func Tick(e *Executor) error {
-	log.Println("server ticking")
+	log.Println("1. server ticking", e.tick)
 
 	t := time.Now()
 	if err := advanceTickCounter(e); err != nil {
@@ -231,18 +236,21 @@ func Tick(e *Executor) error {
 		return err
 	}
 
-	log.Println("server processing commands: ", commands)
+	log.Println("2. server processing commands: ", commands, e.tick)
 	for _, cmd := range commands {
 		// TODO(minkezhang): Only return early if error is very bad -- else, just log.
 		if err := processCommand(e, cmd); err != nil {
+			log.Fatalf("2. server error: %v", err)
 			return err
 		}
 	}
 
+	log.Println("3. server broadcasting curves", e.tick)
 	if err := broadcastCurves(e); err != nil {
 		return err
 	}
 
+        log.Println("4. sleeping", e.tick)
 	if d := time.Now().Sub(t); d < tickDuration {
 		time.Sleep(tickDuration - d)
 	}
@@ -327,5 +335,6 @@ func AddMoveCommands(e *Executor, req *apipb.MoveRequest) error {
 	for _, c := range buildMoveCommands(e, req.GetClientId(), tick, req.GetDestination(), req.GetEntityIds()) {
 		cs = append(cs, c)
 	}
+	log.Printf("------------------------------------ cmd: cs == %v", cs)
 	return addCommands(e, cs)
 }

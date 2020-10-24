@@ -51,15 +51,16 @@ namespace DownFluxGL
 
             // TODO(minkezhang): Make this async task actually have a Wait()
             // somewhere.
-            _c.StreamCurvesLoop(_tid).Start();
+            // _c.StreamCurvesLoop(_tid).Start();
+            System.Threading.Tasks.Task.Run(() => _c.StreamCurvesLoop(_tid));
 
             // TODO(minkezhang): Remove this.
             _c.Move(
-              "",
+              "example-tick-id",
               new System.Collections.Generic.List<string>(){ "example-entity" },
               new DF.Game.API.Data.Position{
-                X = 5 * tileWidth,
-                Y = 5 * tileWidth
+                X = 5,
+                Y = 5
               },
               DF.Game.API.Constants.MoveType.Forward
             );
@@ -79,7 +80,10 @@ namespace DownFluxGL
             foreach (var d in _c.Data) {
               d.Item2.Switch(
                 linearMove => {
+                  System.Console.Error.WriteLine("MATCHED LINEAR MOVE");
                   if (!_curves.ContainsKey(linearMove.ID)) {
+                    System.Console.Error.WriteLine("Adding Curve: ", linearMove.ID);
+                    System.Console.Error.WriteLine(linearMove);
                     _curves[linearMove.ID] = linearMove;
                   } else {
                     _curves[linearMove.ID].AsT0.ReplaceTail(linearMove);
@@ -103,6 +107,11 @@ namespace DownFluxGL
               c.Value.Switch(
                 linearMove => {
                   var p = linearMove.Get(tick);
+                  System.Console.Error.WriteLine(tick);
+                  System.Console.Error.WriteLine("curve ID", linearMove.ID);
+                  System.Console.Error.WriteLine(p);
+                  System.Console.Error.WriteLine(linearMove.Get(30));
+
                   _spriteBatch.Draw(
                     ballTexture,
                     new Vector2((float) p.X * tileWidth, (float) p.Y * tileWidth),

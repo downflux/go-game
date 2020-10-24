@@ -10,7 +10,10 @@ go_binary(
     deps = [
         ":server",
         "//api:api_go_proto",
+        "//api:data_go_proto",
+        "//entity:entity",
 	"//map/api:data_go_proto",
+        "//server/service:executor",
         "@org_golang_google_grpc//:go_default_library",
         "@com_github_golang_protobuf//proto:go_default_library",
 
