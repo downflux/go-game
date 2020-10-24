@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package game.map.api.constants;
 option go_package = "game.map.api.constants";
+option csharp_namespace = "DF.Game.Map.API.Constants";
 
 enum TerrainType {
   TERRAIN_TYPE_UNKNOWN = 0;

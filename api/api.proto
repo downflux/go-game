@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package game.api.api;
 option go_package = "game.api.api";
+option csharp_namespace = "DF.Game.API.API";
 
 import "api/constants.proto";
 import "api/data.proto";
@@ -22,6 +23,7 @@ message MoveRequest {
   string client_id = 1;
   string tick_id = 2;
   repeated string entity_ids = 3;
+  // TODO(minkezhang): Make this Coordinate instead.
   game.api.data.Position destination = 4;
   game.api.constants.MoveType move_type = 5;
 }

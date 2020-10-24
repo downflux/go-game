@@ -30,7 +30,7 @@ type Curve interface {
 	Add(t float64, v interface{}) error
 
 	// Get returns a copy of the interal value at a given tick.
-	Get(t float64) (interface{}, error)
+	Get(t float64) interface{}
 
 	// Mutate, not copy constructor.
 	ReplaceTail(c Curve) error

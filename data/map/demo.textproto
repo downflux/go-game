@@ -1,0 +1,692 @@
+dimension: <
+  x: 10
+  y: 10
+>
+tiles: <
+  coordinate: <
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 1
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 2
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 3
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 4
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 5
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 6
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 7
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 8
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+    y: 1
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+    y: 2
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+    y: 3
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+    y: 4
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+    y: 5
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+    y: 6
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+    y: 7
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+    y: 8
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+tiles: <
+  coordinate: <
+    x: 9
+    y: 9
+  >
+  terrain_type: TERRAIN_TYPE_PLAINS
+>
+terrain_costs: <
+  terrain_type: TERRAIN_TYPE_PLAINS
+  cost: 1
+>
+terrain_costs: <
+  terrain_type: TERRAIN_TYPE_BLOCKED
+  cost: inf
+>

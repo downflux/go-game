@@ -59,13 +59,6 @@ func TestInsert(t *testing.T) {
 	}
 }
 
-func TestGetError(t *testing.T) {
-	c := &Curve{}
-	if got, err := c.Get(0); err == nil {
-		t.Errorf("Get() = %v, nil, want a non-nil error", got)
-	}
-}
-
 func TestReplaceTail(t *testing.T) {
 	c1 := New("c1", "eid")
 	c1.Add(0, &gdpb.Position{X: 0, Y: 0})
@@ -77,11 +70,8 @@ func TestReplaceTail(t *testing.T) {
 
 	c1.ReplaceTail(c2)
 
-	want := &gdpb.Position{X: 0.5, Y: 0.5}
-	got, err := c1.Get(0.5)
-	if err != nil {
-		t.Fatalf("Get() = _, %v, want = nil", err)
-	}
+	want := &gdpb.Position{X: 0.7, Y: 0.7}
+	got := c1.Get(0.7)
 
 	if diff := cmp.Diff(got, want, protocmp.Transform()); diff != "" {
 		t.Errorf("Get() mismatch (-want +got):\n%v", diff)
@@ -95,6 +85,18 @@ func TestGet(t *testing.T) {
 		t    float64
 		want *gdpb.Position
 	}{
+		{
+			name: "GetNull",
+			c:    &Curve{},
+			t:    1,
+			want: &gdpb.Position{},
+		},
+		{
+			name: "GetBeforeCreation",
+			c:    &Curve{data: []datum{{tick: 1, value: &gdpb.Position{X: 1, Y: 1}}}},
+			t:    0,
+                        want: &gdpb.Position{X: 1, Y: 1},
+		},
 		{
 			name: "GetAlreadyKnown",
 			c:    &Curve{data: []datum{{tick: 1, value: &gdpb.Position{X: 1, Y: 1}}}},
@@ -113,18 +115,14 @@ func TestGet(t *testing.T) {
 				{tick: 0, value: &gdpb.Position{X: 0, Y: 0}},
 				{tick: 1, value: &gdpb.Position{X: 1, Y: 1}},
 			}},
-			t:    0.5,
-			want: &gdpb.Position{X: 0.5, Y: 0.5},
+			t:    0.7,
+			want: &gdpb.Position{X: 0.7, Y: 0.7},
 		},
 	}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			got, err := c.c.Get(c.t)
-			if err != nil {
-				t.Fatalf("Get() = _, %v, want = _, nil", err)
-			}
-			if !proto.Equal(got.(*gdpb.Position), c.want) {
+			if got := c.c.Get(c.t); !proto.Equal(got.(*gdpb.Position), c.want) {
 				t.Fatalf("Get() = %v, want = %v", got, c.want)
 			}
 		})
