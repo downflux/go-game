@@ -43,6 +43,7 @@ namespace DF {
       public LinearMove(string id, string entityID) {
         _id = id;
         _entityID = entityID;
+        _data = new System.Collections.Generic.List<datum>();
       }
 
       public string ID { get => _id; }

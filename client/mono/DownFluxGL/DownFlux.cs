@@ -6,26 +6,35 @@ namespace DownFluxGL
 {
     public class DownFlux : Game
     {
+        private static int tileWidth = 100;
+
         Texture2D ballTexture;
-        Vector2 ballPosition;
-        float ballSpeed;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+
+        // DownFlux server API
         private DF.Client.Client _c;
+        private string _server;
+        private string _tid;
+        private System.Collections.Generic.Dictionary<
+          string, OneOf.OneOf<DF.Curve.LinearMove>> _curves;
 
-        public DownFlux()
+        // TODO(minkezhang): Get this on Initialize() from server.
+        private System.TimeSpan _serverTickDuration;
+
+        public DownFlux(string server, string tickID)
         {
-            // Test PB initialization.
-            System.Console.Error.WriteLine(
-                new DF.Game.API.Data.Position{X = 0.1, Y = 0.1});
-
+            _server = server;
+            _tid = tickID;
             _graphics = new GraphicsDeviceManager(this);
+            _curves = new System.Collections.Generic.Dictionary<
+              string, OneOf.OneOf<DF.Curve.LinearMove>>();
 
             // TODO(minkezhang): Figure out why we can't control actual window
             // size here.
-            _graphics.PreferredBackBufferWidth = 100;
-            _graphics.PreferredBackBufferHeight = 100;
+            _graphics.PreferredBackBufferWidth = 10 * tileWidth;
+            _graphics.PreferredBackBufferHeight = 10 * tileWidth;
             _graphics.ApplyChanges();
 
             Content.RootDirectory = "Content";
@@ -34,11 +43,26 @@ namespace DownFluxGL
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-            ballPosition = new Vector2(
-                _graphics.PreferredBackBufferWidth / 2,
-                _graphics.PreferredBackBufferHeight / 2);
-            ballSpeed = 100f;
+            _c = new DF.Client.Client(
+              new Grpc.Core.Channel(
+                _server, Grpc.Core.ChannelCredentials.Insecure));
+            _c.Connect(_tid);
+            _serverTickDuration = new System.TimeSpan((long) 1e6); // 100 ms
+
+            // TODO(minkezhang): Make this async task actually have a Wait()
+            // somewhere.
+            _c.StreamCurvesLoop(_tid).Start();
+
+            // TODO(minkezhang): Remove this.
+            _c.Move(
+              "",
+              new System.Collections.Generic.List<string>(){ "example-entity" },
+              new DF.Game.API.Data.Position{
+                X = 5 * tileWidth,
+                Y = 5 * tileWidth
+              },
+              DF.Game.API.Constants.MoveType.Forward
+            );
 
             base.Initialize();
         }
@@ -47,66 +71,53 @@ namespace DownFluxGL
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
             ballTexture = Content.Load<Texture2D>("Assets/ball");
         }
 
         protected override void Update(GameTime gameTime)
         {
-            // TODO: Add your update logic here
-
-            KeyboardState state = Keyboard.GetState();
-
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            foreach (var key in state.GetPressedKeys())
-                sb.Append("Key: ").Append(key).Append(" pressed ");
-
-            if (sb.Length > 0)
-                System.Console.Error.WriteLine(sb.ToString());
-
-            if (state.IsKeyDown(Keys.Escape))
-                Exit();
-
-            if (state.IsKeyDown(Keys.E))
-                ballPosition.Y -= ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if(state.IsKeyDown(Keys.D))
-                ballPosition.Y += ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (state.IsKeyDown(Keys.S))
-                ballPosition.X -= ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if(state.IsKeyDown(Keys.F))
-                ballPosition.X += ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            if(ballPosition.X > _graphics.PreferredBackBufferWidth - ballTexture.Width / 2)
-                ballPosition.X = _graphics.PreferredBackBufferWidth - ballTexture.Width / 2;
-            else if(ballPosition.X < ballTexture.Width / 2)
-                ballPosition.X = ballTexture.Width / 2;
-
-            if(ballPosition.Y > _graphics.PreferredBackBufferHeight - ballTexture.Height / 2)
-                ballPosition.Y = _graphics.PreferredBackBufferHeight - ballTexture.Height / 2;
-            else if(ballPosition.Y < ballTexture.Height / 2)
-                ballPosition.Y = ballTexture.Height / 2;
+            foreach (var d in _c.Data) {
+              d.Item2.Switch(
+                linearMove => {
+                  if (!_curves.ContainsKey(linearMove.ID)) {
+                    _curves[linearMove.ID] = linearMove;
+                  } else {
+                    _curves[linearMove.ID].AsT0.ReplaceTail(linearMove);
+                  }
+                }
+              );
+            }
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
+            var tick = gameTime.TotalGameTime / _serverTickDuration;
+
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
-
             _spriteBatch.Begin();
-            _spriteBatch.Draw(
-                ballTexture,
-                ballPosition,
-                null,
-                Color.White,
-                0f,
-                new Vector2(ballTexture.Width / 2, ballTexture.Height / 2),
-                Vector2.One,
-                SpriteEffects.None,
-                0f
-            );
+
+            foreach (var c in _curves) {
+              c.Value.Switch(
+                linearMove => {
+                  var p = linearMove.Get(tick);
+                  _spriteBatch.Draw(
+                    ballTexture,
+                    new Vector2((float) p.X * tileWidth, (float) p.Y * tileWidth),
+                    null,
+                    Color.White,
+                    0f,
+                    new Vector2(ballTexture.Width / 2, ballTexture.Height / 2),
+                    Vector2.One,
+                    SpriteEffects.None,
+                    0f
+                  );
+                }
+              );
+            }
+
             _spriteBatch.End();
 
             base.Draw(gameTime);

@@ -22,6 +22,7 @@ namespace DF {
         _client = new DF.Game.API.API.DownFlux.DownFluxClient(channel);
         _ctSource = new System.Threading.CancellationTokenSource();
         _ct = _ctSource.Token;
+        _curvesMutex = new System.Threading.ReaderWriterLock();
       }
 
       public string Connect(string tickID) {
@@ -31,10 +32,12 @@ namespace DF {
       }
 
       // Returns the current buffer of streamed messages.
-      public StreamData GetCurves() {
+      public StreamData Data {
+        get {
           var ret = _curves;
           _curves = new StreamData();
           return ret;
+        }
       }
 
       public void Move(
@@ -66,7 +69,7 @@ namespace DF {
                 foreach (var curvePB in resp.Curves) {
                   try {
                     _curves.Enqueue((resp.TickId, DF.Curve.Curve.Import(curvePB)));
-                  } catch (System.ArgumentException e) {
+                  } catch (System.ArgumentException) {
                      // TODO(minkezhang): Log this to some file.
                   }
                 }
