@@ -1,4 +1,21 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_binary(
+    name = "main",
+    srcs = ["main.go"],
+    importpath = "github.com/downflux/game/server/grpc/main",
+    data = [
+        "//data/map:map_data",
+    ],
+    deps = [
+        ":server",
+        "//api:api_go_proto",
+	"//map/api:data_go_proto",
+        "@org_golang_google_grpc//:go_default_library",
+        "@com_github_golang_protobuf//proto:go_default_library",
+
+    ],
+)
 
 go_library(
     name = "server",
