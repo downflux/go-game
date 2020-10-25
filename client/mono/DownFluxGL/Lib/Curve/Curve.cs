@@ -49,14 +49,15 @@ namespace DF {
       private string _entityID;
       private System.Collections.Generic.List<datum> _data;
 
-      // Assuming data is already sorted.
       public LinearMove(
         string id,
         string entityID,
         Google.Protobuf.Collections.RepeatedField<DF.Game.API.Data.CurveDatum> data) {
         _id = id;
         _entityID = entityID;
+
         _data = new System.Collections.Generic.List<datum>();
+        // Assuming data is already sorted.
         foreach (var d in data) {
           _data.Add(new datum(d.Tick, d.PositionDatum));
         }

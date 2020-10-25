@@ -160,6 +160,8 @@ func broadcastCurves(e *Executor) error {
 	e.curveQueue = nil
 	e.curveQueueMux.Unlock()
 
+	// TODO(minkezhang): Implement a server status endpoint.
+	// server_test is relying on this as a proxy for IsAlive().
 	if curves == nil {
 		return nil
 	}

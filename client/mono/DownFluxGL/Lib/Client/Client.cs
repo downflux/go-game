@@ -1,7 +1,8 @@
 namespace DF {
   namespace Client {
+    // double here represents the server tick.
     using StreamData = System.Collections.Generic.Queue<
-      (string, OneOf.OneOf<DF.Curve.LinearMove>)>;
+      (double, OneOf.OneOf<DF.Curve.LinearMove>)>;
 
     public class Client {
       private DF.Game.API.API.DownFlux.DownFluxClient _client;
@@ -42,23 +43,23 @@ namespace DF {
       }
 
       public void Move(
-        string tickID,
+        double tick,
         System.Collections.Generic.List<string> entityIDs,
         DF.Game.API.Data.Position destination,
         DF.Game.API.Constants.MoveType moveType) {
         _client.Move(new DF.Game.API.API.MoveRequest{
           ClientId = ID,
-          TickId = tickID,
+          Tick = tick,
           EntityIds = { entityIDs },
           Destination = destination,
           MoveType = moveType,
         });
       }
 
-      public async System.Threading.Tasks.Task StreamCurvesLoop(string tickID) {
+      public async System.Threading.Tasks.Task StreamCurvesLoop(double tick) {
         using (var call = _client.StreamCurves(new DF.Game.API.API.StreamCurvesRequest{
           ClientId = ID,
-          TickId = tickID,
+          Tick = tick,
         })) {
           var s = call.ResponseStream;
           try {
@@ -73,7 +74,7 @@ namespace DF {
                   try {
                     System.Console.Error.WriteLine("IMPORTED CURVE: ");
                     System.Console.Error.WriteLine(DF.Curve.Curve.Import(curvePB));
-                    _curves.Enqueue((resp.TickId, DF.Curve.Curve.Import(curvePB)));
+                    _curves.Enqueue((resp.Tick, DF.Curve.Curve.Import(curvePB)));
                   } catch (System.ArgumentException e) {
                      // TODO(minkezhang): Log this to some file.
                   }
