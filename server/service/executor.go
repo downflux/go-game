@@ -30,6 +30,7 @@ var (
 	tickDuration = 100 * time.Millisecond
 )
 
+// TODO(minkezhang): Move to command/ directory.
 type Command interface {
 	Type() sscpb.CommandType
 	ClientID() string
@@ -49,18 +50,12 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		return nil, err
 	}
 
-	// TODO(minkezhang): Fix this.
-	tid := "example-tick-id" // id.RandomString(idLen)
 	return &Executor{
 		tileMap:       tm,
 		abstractGraph: g,
 		entities:      map[string]entity.Entity{},
 		commandQueue:  nil,
 		clientChannel: map[string]chan *apipb.StreamCurvesResponse{},
-		tickLookup: map[string]float64{
-			tid: 0,
-		},
-		currTickID: tid,
 	}, nil
 }
 
@@ -71,8 +66,6 @@ type Executor struct {
 	// Add-only.
 	tickMux    sync.RWMutex
 	tick       float64
-	tickLookup map[string]float64
-	currTickID string
 
 	// Add-only.
 	dataMux  sync.RWMutex
@@ -116,16 +109,8 @@ func (e *Executor) ClientChannel(cid string) <-chan *apipb.StreamCurvesResponse 
 
 func advanceTickCounter(e *Executor) error {
 	e.tickMux.Lock()
-	defer e.tickMux.Unlock()
 	e.tick += 1
-
-	s := id.RandomString(idLen)
-	for _, found := e.tickLookup[s]; found; s = id.RandomString(idLen) {
-	}
-
-	log.Printf("server advanced tick counter: tick == %v, id == %v\n", e.tick, s)
-	e.tickLookup[s] = e.tick
-	e.currTickID = s
+	e.tickMux.Unlock()
 
 	return nil
 }
@@ -181,7 +166,7 @@ func broadcastCurves(e *Executor) error {
 
 	e.tickMux.RLock()
 	resp := &apipb.StreamCurvesResponse{
-		TickId: e.currTickID,
+		Tick: e.tick,
 	}
 	e.tickMux.RUnlock()
 
@@ -221,6 +206,21 @@ func CloseStreams(e *Executor) error {
 	}
 	return nil
 }
+
+/*
+func Run(e *Executor) error {
+	for {
+		t := time.Now()
+		if err := advanceTickCounter(e); err != nil {
+			return err
+		}
+
+		if err := Tick(e); err != nil {
+			return err
+		}
+	}
+}
+ */
 
 // TODO(minkezhang): Test.
 func Tick(e *Executor) error {
@@ -291,7 +291,6 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 	defer e.dataMux.RUnlock()
 
 	var res []*move.Command
-	log.Println("server building move commands with eids: ", eids, e.entities)
 	for _, eid := range eids {
 		en, found := e.entities[eid]
 		if found {
@@ -306,6 +305,8 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 					t,
 					p.(*gdpb.Position),
 					dest))
+		} else {
+			log.Printf("entity ID %s not found in server entity lookup, could not build Move command", eid)
 		}
 	}
 	return res
@@ -315,26 +316,14 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 //
 // Is expected to be called concurrently.
 func AddMoveCommands(e *Executor, req *apipb.MoveRequest) error {
-	log.Println("server adding move command", req)
-	tick, err := func() (float64, error) {
-		e.tickMux.RLock()
-		defer e.tickMux.RUnlock()
-
-		tick, found := e.tickLookup[req.GetTickId()]
-		if !found {
-			return 0, status.Errorf(codes.NotFound, "invalid tick ID %v", req.GetTickId())
-		}
-		return tick, nil
-	}()
-	log.Println("server got tick:", tick, err)
-	if err != nil {
-		return err
-	}
+	// TODO(minkezhang): If tick outside window, return error.
+	e.tickMux.RLock()
+	tick := e.tick
+	e.tickMux.RUnlock()
 
 	var cs []Command
 	for _, c := range buildMoveCommands(e, req.GetClientId(), tick, req.GetDestination(), req.GetEntityIds()) {
 		cs = append(cs, c)
 	}
-	log.Printf("------------------------------------ cmd: cs == %v", cs)
 	return addCommands(e, cs)
 }

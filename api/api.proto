@@ -20,8 +20,8 @@ service DownFlux {
 }
 
 message MoveRequest {
-  string client_id = 1;
-  string tick_id = 2;
+  double tick = 1;
+  string client_id = 2;
   repeated string entity_ids = 3;
   // TODO(minkezhang): Make this Coordinate instead.
   game.api.data.Position destination = 4;
@@ -31,17 +31,18 @@ message MoveRequest {
 message MoveResponse {}
 
 message StreamCurvesRequest {
-  string client_id = 1;
-  string tick_id = 2;
+  double tick = 1;
+  string client_id = 2;
 }
 
 message StreamCurvesResponse {
-  string tick_id = 1;
+  double tick = 1;
   repeated game.api.data.Curve curves = 2;
 }
 
 // TODO(minkezhang): Add team.
 message AddClientRequest {}
 message AddClientResponse {
-  string client_id = 1;
+  double tick = 1;
+  string client_id = 2;
 }
