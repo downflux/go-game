@@ -2,7 +2,7 @@ namespace DF {
   namespace Client {
     // double here represents the server tick.
     using StreamData = System.Collections.Generic.Queue<
-      (double, OneOf.OneOf<DF.Curve.LinearMove>)>;
+      (double, DF.Curve.Curve)>;
 
     public class Client {
       private DF.Game.API.API.DownFlux.DownFluxClient _client;

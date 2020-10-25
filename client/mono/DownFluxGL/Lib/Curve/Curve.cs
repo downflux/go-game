@@ -1,5 +1,21 @@
 namespace DF {
   namespace Curve {
+    // Public declaration of the types of curves client currently supports.
+    // Do not change the order here -- OneOf.Switch and Match, as well as
+    // AsTN methods, depend on this.
+    public abstract class Curve : OneOf.OneOfBase<LinearMove> {
+	public static Curve Import(DF.Game.API.Data.Curve pb) {
+          switch (pb.Type) {
+            case DF.Game.API.Constants.CurveType.LinearMove:
+              return new LinearMove(pb.CurveId, pb.EntityId, pb.Data);
+            default:
+              break;
+          }
+          throw new System.ArgumentException(
+            System.String.Format("Input CurveType {0} is not recognized", pb.Type));
+        }
+    }
+
     class datum : System.IComparable {
       private double _tick;
       private DF.Game.API.Data.Position _value;
@@ -25,26 +41,13 @@ namespace DF {
       public static bool operator >(datum a, datum b) => a.Tick > b.Tick;
     }
 
-    public class Curve {
-	public static OneOf.OneOf<LinearMove> Import(DF.Game.API.Data.Curve pb) {
-          switch (pb.Type) {
-            case DF.Game.API.Constants.CurveType.LinearMove:
-              return new LinearMove(pb.CurveId, pb.EntityId, pb.Data);
-            default:
-              break;
-          }
-          throw new System.ArgumentException(
-            System.String.Format("Input CurveType {0} is not recognized", pb.Type));
-        }
-    }
-
     // TODO(minkezhang): Explore if we can reuse existing Go implementation via
     // the c-shared build option.
     //
     // See https://www.mono-project.com/docs/advanced/pinvoke/,
     // https://github.com/bazelbuild/rules_go/issues/54,
     // https://medium.com/learning-the-go-programming-language/calling-go-functions-from-other-languages-4c7d8bcc69bf.
-    public class LinearMove {
+    public class LinearMove : Curve {
       private string _id;
       private string _entityID;
       private System.Collections.Generic.List<datum> _data;
