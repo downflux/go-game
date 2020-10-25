@@ -9,7 +9,6 @@ import (
 
 	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/server/grpc/server"
-	"github.com/downflux/game/server/service/executor"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 
@@ -55,13 +54,14 @@ func main() {
 	s := grpc.NewServer()
 	apipb.RegisterDownFluxServer(s, downFluxServer)
 
-	executor.AddEntity(downFluxServer.Executor(), entity.NewSimpleEntity(
+	downFluxServer.Executor().AddEntity(entity.NewSimpleEntity(
 		"example-entity", 0, &gdpb.Position{X: 0, Y: 0},
 	))
 
 	go s.Serve(lis)
 
 	for {
-		executor.Tick(downFluxServer.Executor())
+		// TODO(minkezhang): Call Run() instead.
+		downFluxServer.Executor().T()
 	}
 }

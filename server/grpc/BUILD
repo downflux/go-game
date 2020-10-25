@@ -13,7 +13,6 @@ go_binary(
         "//api:data_go_proto",
         "//entity:entity",
 	"//map/api:data_go_proto",
-        "//server/service:executor",
         "@org_golang_google_grpc//:go_default_library",
         "@com_github_golang_protobuf//proto:go_default_library",
 

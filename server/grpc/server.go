@@ -47,7 +47,7 @@ func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*api
 	if _, err := s.validateClient(req.GetClientId()); err != nil {
 		return nil, err
 	}
-	return &apipb.MoveResponse{}, executor.AddMoveCommands(s.ex, req)
+	return &apipb.MoveResponse{}, s.ex.AddMoveCommands(req)
 }
 
 func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequest) (*apipb.AddClientResponse, error) {

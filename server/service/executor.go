@@ -86,6 +86,13 @@ type Executor struct {
 	done    bool
 }
 
+func (e *Executor) Tick() float64 {
+	e.tickMux.RLock()
+	defer e.tickMux.RUnlock()
+
+	return e.tick
+}
+
 func (e *Executor) AddClient() (string, error) {
 	// TODO(minkezhang): Add Client struct.
 	// TODO(minkezhang): Add maxClients check.
@@ -107,25 +114,23 @@ func (e *Executor) ClientChannel(cid string) <-chan *apipb.StreamCurvesResponse 
 	return e.clientChannel[cid]
 }
 
-func advanceTickCounter(e *Executor) error {
+func (e *Executor) incrementTick() {
 	e.tickMux.Lock()
-	e.tick += 1
-	e.tickMux.Unlock()
+	defer e.tickMux.Unlock()
 
-	return nil
+	e.tick += 1
 }
 
-func commandQueue(e *Executor) ([]Command, error) {
-	log.Println("server getting commands")
+func (e *Executor) popCommandQueue() ([]Command, error) {
 	e.commandQueueMux.Lock()
+	defer e.commandQueueMux.Unlock()
+
 	commands := e.commandQueue
 	e.commandQueue = nil
-	e.commandQueueMux.Unlock()
-
 	return commands, nil
 }
 
-func processCommand(e *Executor, cmd Command) error {
+func (e *Executor) processCommand(cmd Command) error {
 	if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
 		c, err := cmd.Execute()
 		if err != nil {
@@ -135,12 +140,13 @@ func processCommand(e *Executor, cmd Command) error {
 		if err := func() error {
 			e.dataMux.RLock()
 			defer e.dataMux.RUnlock()
+
 			if err := e.entities[c.EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).ReplaceTail(c); err != nil {
 				return err
 			}
 
-			log.Println("server adding curve to queue: ", c)
-			// TODO(minkezhang): Broadcast new entities first.
+			log.Printf("server appending adding curve to queue: %v", c)
+
 			e.curveQueueMux.Lock()
 			e.curveQueue = append(e.curveQueue, c)
 			e.curveQueueMux.Unlock()
@@ -153,12 +159,17 @@ func processCommand(e *Executor, cmd Command) error {
 	return nil
 }
 
-func broadcastCurves(e *Executor) error {
-	log.Println("server is broadcasting curves")
+func (e *Executor) popCurveQueue() []curve.Curve {
 	e.curveQueueMux.Lock()
+	defer e.curveQueueMux.Unlock()
+
 	curves := e.curveQueue
 	e.curveQueue = nil
-	e.curveQueueMux.Unlock()
+	return curves
+}
+
+func (e *Executor) broadcastCurves() error {
+	curves := e.popCurveQueue()
 
 	// TODO(minkezhang): Implement a server status endpoint.
 	// server_test is relying on this as a proxy for IsAlive().
@@ -166,11 +177,9 @@ func broadcastCurves(e *Executor) error {
 		return nil
 	}
 
-	e.tickMux.RLock()
 	resp := &apipb.StreamCurvesResponse{
-		Tick: e.tick,
+		Tick: e.Tick(),
 	}
-	e.tickMux.RUnlock()
 
 	for _, c := range curves {
 		d, err := c.ExportDelta()
@@ -224,42 +233,45 @@ func Run(e *Executor) error {
 }
  */
 
-// TODO(minkezhang): Test.
-func Tick(e *Executor) error {
-	log.Println("1. server ticking", e.tick)
+// TODO(minkezhang): Test this and make private.
+func (e *Executor) T() error {
+	log.Printf("[%d] incrementing server tick", e.tick)
 
 	t := time.Now()
-	if err := advanceTickCounter(e); err != nil {
-		return err
-	}
+	e.incrementTick()
 
-	commands, err := commandQueue(e)
+	commands, err := e.popCommandQueue()
 	if err != nil {
 		return err
 	}
 
-	log.Println("2. server processing commands: ", commands, e.tick)
+	log.Printf("[%d] processing commands", e.tick)
 	for _, cmd := range commands {
-		// TODO(minkezhang): Only return early if error is very bad -- else, just log.
-		if err := processCommand(e, cmd); err != nil {
-			log.Fatalf("2. server error: %v", err)
+		// TODO(minkezhang): Add actual error handling here -- only
+		// Only return early if error is very bad.
+		if err := e.processCommand(cmd); err != nil {
+			log.Printf("[%d] error while processing command %v: %v", cmd, err)
 			return err
 		}
 	}
 
-	log.Println("3. server broadcasting curves", e.tick)
-	if err := broadcastCurves(e); err != nil {
+	// TODO(minkezhang): Broadcast new entities.
+
+	log.Printf("[%d] broadcasting curves", e.tick)
+	if err := e.broadcastCurves(); err != nil {
 		return err
 	}
 
-        log.Println("4. sleeping", e.tick)
+        log.Printf("[%d] waiting for next tick epoch", e.tick)
 	if d := time.Now().Sub(t); d < tickDuration {
 		time.Sleep(tickDuration - d)
 	}
 	return nil
 }
 
-func AddEntity(e *Executor, en entity.Entity) error {
+// TODO(minkezhang): Make this method private -- this is currently public for
+// debugging purposes.
+func (e *Executor) AddEntity(en entity.Entity) error {
 	e.dataMux.Lock()
 	defer e.dataMux.Unlock()
 
@@ -267,12 +279,14 @@ func AddEntity(e *Executor, en entity.Entity) error {
 		return status.Errorf(codes.AlreadyExists, "given entity ID %v already exists in the entity list", en.ID())
 	}
 
+	// TODO(minkezhang): Broadcast new entities by adding to new entity
+	// queue.
+
 	e.entities[en.ID()] = en
 	return nil
 }
 
-func addCommands(e *Executor, cs []Command) error {
-	log.Println("server adding commands: ", cs)
+func (e *Executor) addCommands(cs []Command) error {
 	e.commandQueueMux.Lock()
 	defer e.commandQueueMux.Unlock()
 
@@ -288,7 +302,7 @@ func addCommands(e *Executor, cs []Command) error {
 //
 // TODO(minkezhang): Decide how / when / if we want to deal with click
 // spamming (same eids, multiple move commands per tick).
-func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, eids []string) []*move.Command {
+func (e *Executor) buildMoveCommands(cid string, t float64, dest *gdpb.Position, eids []string) []*move.Command {
 	e.dataMux.RLock()
 	defer e.dataMux.RUnlock()
 
@@ -317,15 +331,13 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 // AddMoveCommands
 //
 // Is expected to be called concurrently.
-func AddMoveCommands(e *Executor, req *apipb.MoveRequest) error {
+func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
-	e.tickMux.RLock()
-	tick := e.tick
-	e.tickMux.RUnlock()
-
 	var cs []Command
-	for _, c := range buildMoveCommands(e, req.GetClientId(), tick, req.GetDestination(), req.GetEntityIds()) {
+
+	for _, c := range e.buildMoveCommands(req.GetClientId(), e.Tick(), req.GetDestination(), req.GetEntityIds()) {
 		cs = append(cs, c)
 	}
-	return addCommands(e, cs)
+
+	return e.addCommands(cs)
 }

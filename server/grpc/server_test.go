@@ -108,9 +108,10 @@ func TestSendMoveCommand(t *testing.T) {
 
 	cid := addClientResp.GetClientId()
 
-	// TODO(minkezhang): This is a hack -- clients should get the entities via broadcast.
+	// TODO(minkezhang): This is a hack -- clients should get the entities
+	// via broadcast.
 	e := entity.NewSimpleEntity(id.RandomString(idLen), 0, &gdpb.Position{X: 0, Y: 0})
-	executor.AddEntity(s.gRPCServerImpl.ex, e)
+	s.gRPCServerImpl.ex.AddEntity(e)
 
 	stream, err := client.StreamCurves(s.ctx, &apipb.StreamCurvesRequest{
 		ClientId: cid,
@@ -140,10 +141,11 @@ func TestSendMoveCommand(t *testing.T) {
 		return nil
 	})
 
-	if err := executor.Tick(s.gRPCServerImpl.ex); err != nil {
-		t.Fatalf("Tick() = %v, want = nil", err)
+	if err := s.gRPCServerImpl.ex.T(); err != nil {
+		t.Fatalf("T() = %v, want = nil", err)
 	}
 
+	// TODO(minkezhang): Implement executor.GetStatus() endpoint.
 	var serverReady bool
 	for !serverReady {
 		streamRespMux.Lock()
@@ -160,15 +162,14 @@ func TestSendMoveCommand(t *testing.T) {
 	moveResp, err := client.Move(s.ctx, &apipb.MoveRequest{
 		ClientId:  cid,
 		EntityIds: []string{e.ID()},
-		// TODO(minkezhang): Fill out.
 		Tick: tick,
 		Destination: &gdpb.Position{X: 3, Y: 0},
 		MoveType:    gcpb.MoveType_MOVE_TYPE_FORWARD,
 	})
 	log.Println("client received moveresp ", moveResp)
 
-	if err := executor.Tick(s.gRPCServerImpl.ex); err != nil {
-		t.Fatalf("Tick() = %v, want = nil", err)
+	if err := s.gRPCServerImpl.ex.T(); err != nil {
+		t.Fatalf("T() = %v, want = nil", err)
 	}
 
 	log.Println("closing server streams")
