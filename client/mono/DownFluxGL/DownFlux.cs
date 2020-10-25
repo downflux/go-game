@@ -52,11 +52,11 @@ namespace DownFluxGL
             // TODO(minkezhang): Make this async task actually have a Wait()
             // somewhere.
             // _c.StreamCurvesLoop(_tid).Start();
-            System.Threading.Tasks.Task.Run(() => _c.StreamCurvesLoop(_tid));
+            System.Threading.Tasks.Task.Run(() => _c.StreamCurvesLoop(0));
 
             // TODO(minkezhang): Remove this.
             _c.Move(
-              "example-tick-id",
+              0,
               new System.Collections.Generic.List<string>(){ "example-entity" },
               new DF.Game.API.Data.Position{
                 X = 5,

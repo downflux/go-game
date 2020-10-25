@@ -123,7 +123,6 @@ func TestBuildMoveCommands(t *testing.T) {
 }
 
 func TestAddMoveCommands(t *testing.T) {
-	const tid = "tick-id"
 	const eid = "entity-id"
 	const cid = "client-id"
 	p1 := &gdpb.Position{X: 0, Y: 0}
@@ -139,11 +138,8 @@ func TestAddMoveCommands(t *testing.T) {
 		t.Fatalf("AddEntity() = %v, want = nil", err)
 	}
 
-	e.tickLookup[tid] = t0
-
 	req := &apipb.MoveRequest{
 		ClientId:    cid,
-		TickId:      tid,
 		EntityIds:   []string{eid},
 		Destination: p2,
 	}

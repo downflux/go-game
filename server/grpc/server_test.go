@@ -154,14 +154,14 @@ func TestSendMoveCommand(t *testing.T) {
 	log.Println("server has sent first message, proceeding")
 
 	streamRespMux.Lock()
-	tickID := streamResp[0].GetTickId()
+	tick := streamResp[0].GetTick()
 	streamRespMux.Unlock()
 
 	moveResp, err := client.Move(s.ctx, &apipb.MoveRequest{
 		ClientId:  cid,
 		EntityIds: []string{e.ID()},
 		// TODO(minkezhang): Fill out.
-		TickId:      tickID,
+		Tick: tick,
 		Destination: &gdpb.Position{X: 3, Y: 0},
 		MoveType:    gcpb.MoveType_MOVE_TYPE_FORWARD,
 	})

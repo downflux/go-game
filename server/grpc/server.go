@@ -63,6 +63,7 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 }
 
 func (s *DownFluxServer) StreamCurves(req *apipb.StreamCurvesRequest, stream apipb.DownFlux_StreamCurvesServer) error {
+	log.Printf("DEBUG: received StreamCurve request %v", req)
 	ch, err := s.validateClient(req.GetClientId())
 	if err != nil {
 		return err
