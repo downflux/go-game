@@ -23,7 +23,6 @@ message MoveRequest {
   double tick = 1;
   string client_id = 2;
   repeated string entity_ids = 3;
-  // TODO(minkezhang): Make this Coordinate instead.
   game.api.data.Position destination = 4;
   game.api.constants.MoveType move_type = 5;
 }
