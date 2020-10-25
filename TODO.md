@@ -8,8 +8,9 @@
 * [ ] add client tests
 * [ ] consider what to do with partial moves
 * [ ] add AddClientResponse.Tick
-* [ ] add oneof curve subclass
+* [x] add oneof curve subclass
 * [ ] make entity interface more formal
+* [ ] refactor server / executor
 
 # Feature
 * [ ] make channel send from server nonblocking
