@@ -1,6 +1,6 @@
 # Refactoring
 
-* [ ] change MoveRequest.Destination to Coordinate
+* [x] change MoveRequest.Destination to Coordinate
 * [x] replace tickID with tick for now
 * [ ] add server documentation
 * [ ] add client documentation
