@@ -10,7 +10,8 @@ import (
 	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/service/commands/move"
+	"github.com/downflux/game/server/service/command/command"
+	"github.com/downflux/game/server/service/command/move"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -32,16 +33,6 @@ var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
 )
-
-// TODO(minkezhang): Move to command/ directory.
-type Command interface {
-	Type() sscpb.CommandType
-	ClientID() string
-	Tick() float64
-
-	// TODO(minkezhang): Refactor Curve interface to not be dependent on curve.Curve.
-	Execute() (curve.Curve, error)
-}
 
 func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	tm, err := tile.ImportMap(pb)
@@ -76,7 +67,7 @@ type Executor struct {
 
 	// Add and delete. Reset per tick.
 	commandQueueMux sync.Mutex
-	commandQueue    []Command
+	commandQueue    []command.Command
 
 	// Add and delete. Reset per tick.
 	curveQueueMux sync.RWMutex
@@ -122,7 +113,7 @@ func (e *Executor) ClientChannel(cid string) <-chan *apipb.StreamCurvesResponse 
 	return e.clientChannel[cid]
 }
 
-func (e *Executor) popCommandQueue() ([]Command, error) {
+func (e *Executor) popCommandQueue() ([]command.Command, error) {
 	e.commandQueueMux.Lock()
 	defer e.commandQueueMux.Unlock()
 
@@ -131,7 +122,7 @@ func (e *Executor) popCommandQueue() ([]Command, error) {
 	return commands, nil
 }
 
-func (e *Executor) processCommand(cmd Command) error {
+func (e *Executor) processCommand(cmd command.Command) error {
 	if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
 		c, err := cmd.Execute()
 		if err != nil {
@@ -274,7 +265,7 @@ func (e *Executor) AddEntity(en entity.Entity) error {
 	return nil
 }
 
-func (e *Executor) addCommands(cs []Command) error {
+func (e *Executor) addCommands(cs []command.Command) error {
 	e.commandQueueMux.Lock()
 	defer e.commandQueueMux.Unlock()
 
@@ -321,7 +312,7 @@ func (e *Executor) buildMoveCommands(cid string, t float64, dest *gdpb.Position,
 // Is expected to be called concurrently.
 func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
-	var cs []Command
+	var cs []command.Command
 
 	for _, c := range e.buildMoveCommands(req.GetClientId(), e.tick(), req.GetDestination(), req.GetEntityIds()) {
 		cs = append(cs, c)

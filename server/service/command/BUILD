@@ -5,7 +5,7 @@ package(default_visibility=["//server/service:__pkg__"])
 go_library(
     name = "move",
     srcs = ["move.go"],
-    importpath = "github.com/downflux/game/server/service/commands/move",
+    importpath = "github.com/downflux/game/server/service/command/move",
     deps = [
         "//api:data_go_proto",
 	"//curve:curve",
@@ -19,5 +19,15 @@ go_library(
         "@com_github_golang_protobuf//proto:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
+    ],
+)
+
+go_library(
+    name = "command",
+    srcs = ["command.go"],
+    importpath = "github.com/downflux/game/server/service/command/command",
+    deps = [
+        "//curve:curve",
+        "//server/service/api:constants_go_proto",
     ],
 )
