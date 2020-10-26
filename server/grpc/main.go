@@ -1,9 +1,9 @@
 package main
 
 import (
-	"io/ioutil"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 
@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	port = flag.Int("port", 4444, "gRPC server listener port")
+	port    = flag.Int("port", 4444, "gRPC server listener port")
 	mapFile = flag.String("map_file", "data/map/demo.textproto", "game map textproto file")
 )
 

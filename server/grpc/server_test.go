@@ -157,9 +157,9 @@ func TestSendMoveCommand(t *testing.T) {
 	log.Println("server has sent first message, proceeding")
 
 	moveResp, err := client.Move(s.ctx, &apipb.MoveRequest{
-		ClientId:  cid,
-		EntityIds: []string{e.ID()},
-		Tick: tick,
+		ClientId:    cid,
+		EntityIds:   []string{e.ID()},
+		Tick:        tick,
 		Destination: &gdpb.Position{X: 3, Y: 0},
 		MoveType:    gcpb.MoveType_MOVE_TYPE_FORWARD,
 	})
