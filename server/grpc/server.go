@@ -43,6 +43,12 @@ func (s *DownFluxServer) validateClient(cid string) (<-chan *apipb.StreamCurvesR
 	return ch, nil
 }
 
+func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequest) (*apipb.GetStatusResponse, error) {
+	return &apipb.GetStatusResponse{
+		Status: s.ex.Status(),
+	}, nil
+}
+
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
 	if _, err := s.validateClient(req.GetClientId()); err != nil {
 		return nil, err

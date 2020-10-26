@@ -59,9 +59,5 @@ func main() {
 	))
 
 	go s.Serve(lis)
-
-	for {
-		// TODO(minkezhang): Call Run() instead.
-		downFluxServer.Executor().T()
-	}
+	downFluxServer.Executor().Run()
 }

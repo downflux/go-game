@@ -96,9 +96,11 @@ func TestSendMoveCommand(t *testing.T) {
 		t.Fatalf("newConn() = _, %v, want = nil", err)
 	}
 	defer conn.Close()
+
 	var eg errgroup.Group
-	// eg.Go(func() error { return s.gRPCServer.Serve(s.listener) })
-	go s.gRPCServer.Serve(s.listener)
+
+	eg.Go(func() error { return s.gRPCServer.Serve(s.listener) })
+	eg.Go(func() error { return s.gRPCServerImpl.Executor().Run() })
 
 	client := apipb.NewDownFluxClient(conn)
 	addClientResp, err := client.AddClient(s.ctx, &apipb.AddClientRequest{})
@@ -127,7 +129,7 @@ func TestSendMoveCommand(t *testing.T) {
 		for {
 			log.Println("client listening for curves")
 			m, err := stream.Recv()
-			log.Println("client received response from server: ", m)
+			log.Println("client received response from server: ", m, err)
 			if err == io.EOF {
 				return nil
 			}
@@ -141,23 +143,18 @@ func TestSendMoveCommand(t *testing.T) {
 		return nil
 	})
 
-	if err := s.gRPCServerImpl.ex.T(); err != nil {
-		t.Fatalf("T() = %v, want = nil", err)
-	}
-
-	// TODO(minkezhang): Implement executor.GetStatus() endpoint.
 	var serverReady bool
+	var tick float64
 	for !serverReady {
-		streamRespMux.Lock()
-		serverReady = len(streamResp) > 0
-		streamRespMux.Unlock()
+		s, err := client.GetStatus(s.ctx, &apipb.GetStatusRequest{})
+		if err != nil {
+			t.Fatalf("GetStatus() = _, %v, want = nil", err)
+		}
+		serverReady = s.GetStatus().GetIsStarted()
+		tick = s.GetStatus().GetTick()
 	}
 
 	log.Println("server has sent first message, proceeding")
-
-	streamRespMux.Lock()
-	tick := streamResp[0].GetTick()
-	streamRespMux.Unlock()
 
 	moveResp, err := client.Move(s.ctx, &apipb.MoveRequest{
 		ClientId:  cid,
@@ -168,15 +165,14 @@ func TestSendMoveCommand(t *testing.T) {
 	})
 	log.Println("client received moveresp ", moveResp)
 
-	if err := s.gRPCServerImpl.ex.T(); err != nil {
-		t.Fatalf("T() = %v, want = nil", err)
-	}
-
 	log.Println("closing server streams")
 	executor.CloseStreams(s.gRPCServerImpl.ex)
 
 	log.Println("waiting for errgroup to stop")
+
+	s.gRPCServerImpl.Executor().Stop()
 	s.gRPCServer.GracefulStop()
+
 	if err := eg.Wait(); err != nil {
 		t.Fatalf("StreamCurvesResponse() = %v, want = nil", err)
 	}
