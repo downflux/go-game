@@ -146,8 +146,6 @@ func (e *Executor) processCommand(cmd Command) error {
 				return err
 			}
 
-			log.Printf("server appending adding curve to queue: %v", c)
-
 			e.curveQueueMux.Lock()
 			e.curveQueue = append(e.curveQueue, c)
 			e.curveQueueMux.Unlock()
@@ -195,24 +193,25 @@ func (e *Executor) broadcastCurves() error {
 	e.clientChannelMux.RLock()
 	defer e.clientChannelMux.RUnlock()
 	for _, ch := range e.clientChannel {
-		log.Println("server sending message ", resp)
 		ch <- resp
-		log.Println("server sent message")
 	}
 	return nil
 }
 
-// TODO(minkezhang): Make private as part of loop.
-func CloseStreams(e *Executor) error {
+func (e *Executor) closeStreams() error {
 	e.clientChannelMux.Lock()
 	defer e.clientChannelMux.Unlock()
+
 	for _, ch := range e.clientChannel {
 		close(ch)
 	}
 	return nil
 }
 
-func (e *Executor) Stop() { e.setIsStopped() }
+func (e *Executor) Stop() {
+	e.setIsStopped()
+        e.closeStreams()
+}
 
 func (e *Executor) Run() error {
 	e.setIsStarted()
@@ -238,19 +237,19 @@ func (e *Executor) t() error {
 		return err
 	}
 
-	log.Printf("[%d] processing commands", e.tick())
+	log.Printf("[%.f] processing commands", e.tick())
 	for _, cmd := range commands {
 		// TODO(minkezhang): Add actual error handling here -- only
 		// Only return early if error is very bad.
 		if err := e.processCommand(cmd); err != nil {
-			log.Printf("[%d] error while processing command %v: %v", cmd, err)
+			log.Printf("[%.f] error while processing command %v: %v", cmd, err)
 			return err
 		}
 	}
 
 	// TODO(minkezhang): Broadcast new entities.
 
-	log.Printf("[%d] broadcasting curves", e.tick())
+	log.Printf("[%.f] broadcasting curves", e.tick())
 	if err := e.broadcastCurves(); err != nil {
 		return err
 	}

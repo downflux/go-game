@@ -18,7 +18,7 @@ import (
 
 const (
 	commandType  = sscpb.CommandType_COMMAND_TYPE_MOVE
-	pathLength   = 5
+	pathLength   = 0
 	ticksPerTile = float64(10)
 	idLen        = 8
 )
@@ -81,6 +81,7 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 func (c *Command) Execute() (curve.Curve, error) {
 	// Called concurrently (across multiple commands).
 	// TODO(minkezhang): proto.Clone the return values in map.astar.Path.
+	// TODO(minkezhang): Add additional infrastructure necessary to set pathLength > 0.
 	p, _, err := astar.Path(c.tileMap, c.abstractGraph, utils.MC(coordinate(c.source)), utils.MC(coordinate(c.destination)), pathLength)
 	if err != nil {
 		return nil, err
