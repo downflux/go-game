@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 
 	"github.com/downflux/game/server/service/executor"
 	"google.golang.org/grpc/codes"
@@ -69,14 +68,12 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 }
 
 func (s *DownFluxServer) StreamCurves(req *apipb.StreamCurvesRequest, stream apipb.DownFlux_StreamCurvesServer) error {
-	log.Printf("DEBUG: received StreamCurve request %v", req)
 	ch, err := s.validateClient(req.GetClientId())
 	if err != nil {
 		return err
 	}
 
 	for r := range ch {
-		log.Println("grpc sending: ", r)
 		if err := stream.Send(r); err != nil {
 			return err
 		}
