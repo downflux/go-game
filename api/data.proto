@@ -5,6 +5,7 @@ option go_package = "game.api.data";
 option csharp_namespace = "DF.Game.API.Data";
 
 import "api/constants.proto";
+import "google/protobuf/duration.proto";
 
 // Position is a specific point in the map, representing a point in the map.
 message Position {
@@ -34,4 +35,10 @@ message Curve {
   string entity_id = 2;
   game.api.constants.CurveType type = 3;
   repeated CurveDatum data = 4;
+}
+
+message ServerStatus {
+  bool is_started = 1;
+  double tick = 2;
+  google.protobuf.Duration tick_duration = 3;
 }

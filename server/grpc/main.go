@@ -1,15 +1,14 @@
 package main
 
 import (
-	"io/ioutil"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 
 	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/server/grpc/server"
-	"github.com/downflux/game/server/service/executor"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 
@@ -19,7 +18,7 @@ import (
 )
 
 var (
-	port = flag.Int("port", 4444, "gRPC server listener port")
+	port    = flag.Int("port", 4444, "gRPC server listener port")
 	mapFile = flag.String("map_file", "data/map/demo.textproto", "game map textproto file")
 )
 
@@ -55,13 +54,10 @@ func main() {
 	s := grpc.NewServer()
 	apipb.RegisterDownFluxServer(s, downFluxServer)
 
-	executor.AddEntity(downFluxServer.Executor(), entity.NewSimpleEntity(
+	downFluxServer.Executor().AddEntity(entity.NewSimpleEntity(
 		"example-entity", 0, &gdpb.Position{X: 0, Y: 0},
 	))
 
 	go s.Serve(lis)
-
-	for {
-		executor.Tick(downFluxServer.Executor())
-	}
+	downFluxServer.Executor().Run()
 }

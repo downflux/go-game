@@ -10,12 +10,13 @@ import (
 
 	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/service/executor"
+	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
+	"google.golang.org/protobuf/testing/protocmp"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -87,6 +88,39 @@ func newSUT() (*sut, error) {
 }
 
 func TestSendMoveCommand(t *testing.T) {
+	const expectedStreamMessageLength = 1
+	dest := &gdpb.Position{X: 3, Y: 0}
+	want := &apipb.StreamCurvesResponse{
+		Curves: []*gdpb.Curve{
+			&gdpb.Curve{
+				Type: gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+				Data: []*gdpb.CurveDatum{
+					&gdpb.CurveDatum{
+						Datum: &gdpb.CurveDatum_PositionDatum{
+							&gdpb.Position{X: 0, Y: 0},
+						},
+					},
+					&gdpb.CurveDatum{
+						Datum: &gdpb.CurveDatum_PositionDatum{
+							&gdpb.Position{X: 1, Y: 0},
+						},
+					},
+					&gdpb.CurveDatum{
+						Datum: &gdpb.CurveDatum_PositionDatum{
+							&gdpb.Position{X: 2, Y: 0},
+						},
+					},
+					&gdpb.CurveDatum{
+						Datum: &gdpb.CurveDatum_PositionDatum{
+							&gdpb.Position{X: 3, Y: 0},
+						},
+					},
+				},
+			},
+		},
+	}
+	e := entity.NewSimpleEntity(id.RandomString(idLen), 0, &gdpb.Position{X: 0, Y: 0})
+
 	s, err := newSUT()
 	if err != nil {
 		t.Fatalf("newSut() = _, %v, want = nil", err)
@@ -96,21 +130,22 @@ func TestSendMoveCommand(t *testing.T) {
 		t.Fatalf("newConn() = _, %v, want = nil", err)
 	}
 	defer conn.Close()
+
+	// TODO(minkezhang): This is a hack -- clients should get the entities
+	// via broadcast.
+	s.gRPCServerImpl.ex.AddEntity(e)
+
 	var eg errgroup.Group
-	// eg.Go(func() error { return s.gRPCServer.Serve(s.listener) })
-	go s.gRPCServer.Serve(s.listener)
+	eg.Go(func() error { return s.gRPCServer.Serve(s.listener) })
+	eg.Go(func() error { return s.gRPCServerImpl.Executor().Run() })
 
 	client := apipb.NewDownFluxClient(conn)
-	addClientResp, err := client.AddClient(s.ctx, &apipb.AddClientRequest{})
+	resp, err := client.AddClient(s.ctx, &apipb.AddClientRequest{})
 	if err != nil {
 		t.Fatalf("AddPlayer() = _, %v, want = nil", err)
 	}
 
-	cid := addClientResp.GetClientId()
-
-	// TODO(minkezhang): This is a hack -- clients should get the entities via broadcast.
-	e := entity.NewSimpleEntity(id.RandomString(idLen), 0, &gdpb.Position{X: 0, Y: 0})
-	executor.AddEntity(s.gRPCServerImpl.ex, e)
+	cid := resp.GetClientId()
 
 	stream, err := client.StreamCurves(s.ctx, &apipb.StreamCurvesRequest{
 		ClientId: cid,
@@ -124,15 +159,14 @@ func TestSendMoveCommand(t *testing.T) {
 
 	eg.Go(func() error {
 		for {
-			log.Println("client listening for curves")
 			m, err := stream.Recv()
-			log.Println("client received response from server: ", m)
 			if err == io.EOF {
 				return nil
 			}
 			if err != nil {
 				return err
 			}
+
 			streamRespMux.Lock()
 			streamResp = append(streamResp, m)
 			streamRespMux.Unlock()
@@ -140,47 +174,54 @@ func TestSendMoveCommand(t *testing.T) {
 		return nil
 	})
 
-	if err := executor.Tick(s.gRPCServerImpl.ex); err != nil {
-		t.Fatalf("Tick() = %v, want = nil", err)
+	var serverReady bool
+	var tick float64
+	for !serverReady {
+		s, err := client.GetStatus(s.ctx, &apipb.GetStatusRequest{})
+		if err != nil {
+			t.Fatalf("GetStatus() = _, %v, want = nil", err)
+		}
+		serverReady = s.GetStatus().GetIsStarted()
+		tick = s.GetStatus().GetTick()
 	}
 
-	var serverReady bool
-	for !serverReady {
+	if _, err := client.Move(s.ctx, &apipb.MoveRequest{
+		ClientId:    cid,
+		EntityIds:   []string{e.ID()},
+		Tick:        tick,
+		Destination: dest,
+		MoveType:    gcpb.MoveType_MOVE_TYPE_FORWARD,
+	}); err != nil {
+		t.Fatalf("Move() = _, %v, want = nil", err)
+	}
+
+	var nMessages int
+	for nMessages < expectedStreamMessageLength {
 		streamRespMux.Lock()
-		serverReady = len(streamResp) > 0
+		nMessages = len(streamResp)
 		streamRespMux.Unlock()
 	}
 
-	log.Println("server has sent first message, proceeding")
-
-	streamRespMux.Lock()
-	tick := streamResp[0].GetTick()
-	streamRespMux.Unlock()
-
-	moveResp, err := client.Move(s.ctx, &apipb.MoveRequest{
-		ClientId:  cid,
-		EntityIds: []string{e.ID()},
-		// TODO(minkezhang): Fill out.
-		Tick: tick,
-		Destination: &gdpb.Position{X: 3, Y: 0},
-		MoveType:    gcpb.MoveType_MOVE_TYPE_FORWARD,
-	})
-	log.Println("client received moveresp ", moveResp)
-
-	if err := executor.Tick(s.gRPCServerImpl.ex); err != nil {
-		t.Fatalf("Tick() = %v, want = nil", err)
-	}
-
-	log.Println("closing server streams")
-	executor.CloseStreams(s.gRPCServerImpl.ex)
-
-	log.Println("waiting for errgroup to stop")
+	s.gRPCServerImpl.Executor().Stop()
 	s.gRPCServer.GracefulStop()
+
 	if err := eg.Wait(); err != nil {
 		t.Fatalf("StreamCurvesResponse() = %v, want = nil", err)
 	}
 
-	log.Println(streamResp)
+	streamRespMux.Lock()
+	defer streamRespMux.Unlock()
+
+	if diff := cmp.Diff(
+		want,
+		streamResp[0],
+		protocmp.Transform(),
+		protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick"),
+		protocmp.IgnoreFields(&gdpb.Curve{}, "entity_id", "curve_id"),
+		protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
+	); diff != "" {
+		t.Errorf("StreamCurvesResponse() mismatch (-want +got):\n%v", diff)
+	}
 }
 
 func TestAddClient(t *testing.T) {

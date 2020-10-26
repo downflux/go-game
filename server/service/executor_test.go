@@ -48,11 +48,11 @@ func TestAddEntity(t *testing.T) {
 		t.Fatalf("New() = _, %v, want = nil", err)
 	}
 
-	if err := AddEntity(e, entity.NewSimpleEntity("simple", 100, &gdpb.Position{X: 0, Y: 0})); err != nil {
+	if err := e.AddEntity(entity.NewSimpleEntity("simple", 100, &gdpb.Position{X: 0, Y: 0})); err != nil {
 		t.Fatalf("AddEntity() = %v, want = nil", err)
 	}
 
-	if err := AddEntity(e, entity.NewSimpleEntity("simple", 0, nil)); err == nil {
+	if err := e.AddEntity(entity.NewSimpleEntity("simple", 0, nil)); err == nil {
 		t.Error("AddEntity() = nil, want a non-nil error")
 	}
 }
@@ -103,12 +103,12 @@ func TestBuildMoveCommands(t *testing.T) {
 			}
 
 			if c.addEntity {
-				if err := AddEntity(e, entity.NewSimpleEntity(c.eid, c.t1, c.p1)); err != nil {
+				if err := e.AddEntity(entity.NewSimpleEntity(c.eid, c.t1, c.p1)); err != nil {
 					t.Fatalf("AddEntity() = %v, want = nil", err)
 				}
 			}
 
-			got := buildMoveCommands(e, c.cid, c.t2, c.p2, []string{c.eid})
+			got := e.buildMoveCommands(c.cid, c.t2, c.p2, []string{c.eid})
 			if diff := cmp.Diff(
 				got,
 				c.want,
@@ -134,7 +134,7 @@ func TestAddMoveCommands(t *testing.T) {
 		t.Fatalf("New() = _, %v, want = nil", err)
 	}
 
-	if err := AddEntity(e, entity.NewSimpleEntity(eid, t0, p1)); err != nil {
+	if err := e.AddEntity(entity.NewSimpleEntity(eid, t0, p1)); err != nil {
 		t.Fatalf("AddEntity() = %v, want = nil", err)
 	}
 
@@ -144,7 +144,7 @@ func TestAddMoveCommands(t *testing.T) {
 		Destination: p2,
 	}
 
-	if err := AddMoveCommands(e, req); err != nil {
+	if err := e.AddMoveCommands(req); err != nil {
 		t.Fatalf("AddMoveCommands() = _, %v, want = nil", err)
 	}
 

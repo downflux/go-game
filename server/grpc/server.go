@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 
 	"github.com/downflux/game/server/service/executor"
 	"google.golang.org/grpc/codes"
@@ -43,11 +42,17 @@ func (s *DownFluxServer) validateClient(cid string) (<-chan *apipb.StreamCurvesR
 	return ch, nil
 }
 
+func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequest) (*apipb.GetStatusResponse, error) {
+	return &apipb.GetStatusResponse{
+		Status: s.ex.Status(),
+	}, nil
+}
+
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
 	if _, err := s.validateClient(req.GetClientId()); err != nil {
 		return nil, err
 	}
-	return &apipb.MoveResponse{}, executor.AddMoveCommands(s.ex, req)
+	return &apipb.MoveResponse{}, s.ex.AddMoveCommands(req)
 }
 
 func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequest) (*apipb.AddClientResponse, error) {
@@ -63,14 +68,12 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 }
 
 func (s *DownFluxServer) StreamCurves(req *apipb.StreamCurvesRequest, stream apipb.DownFlux_StreamCurvesServer) error {
-	log.Printf("DEBUG: received StreamCurve request %v", req)
 	ch, err := s.validateClient(req.GetClientId())
 	if err != nil {
 		return err
 	}
 
 	for r := range ch {
-		log.Println("grpc sending: ", r)
 		if err := stream.Send(r); err != nil {
 			return err
 		}

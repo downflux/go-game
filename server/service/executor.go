@@ -3,6 +3,7 @@ package executor
 import (
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/downflux/game/curve/curve"
@@ -12,6 +13,7 @@ import (
 	"github.com/downflux/game/server/service/commands/move"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -21,13 +23,14 @@ import (
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
-const idLen = 8
+const (
+	idLen = 8
+	tickDuration = 100 * time.Millisecond
+)
 
 var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
-
-	tickDuration = 100 * time.Millisecond
 )
 
 // TODO(minkezhang): Move to command/ directory.
@@ -63,9 +66,9 @@ type Executor struct {
 	tileMap       *tile.Map
 	abstractGraph *graph.Graph
 
-	// Add-only.
-	tickMux    sync.RWMutex
-	tick       float64
+	isStoppedImpl int32
+	isStartedImpl int32
+	tickImpl int64
 
 	// Add-only.
 	dataMux  sync.RWMutex
@@ -81,9 +84,21 @@ type Executor struct {
 
 	clientChannelMux sync.RWMutex
 	clientChannel    map[string]chan *apipb.StreamCurvesResponse
+}
 
-	doneMux sync.Mutex
-	done    bool
+func (e *Executor) tick() float64 { return float64(atomic.LoadInt64(&(e.tickImpl))) }
+func (e *Executor) incrementTick() { atomic.AddInt64(&(e.tickImpl), 1) }
+func (e *Executor) isStarted() bool { return atomic.LoadInt32(&(e.isStartedImpl)) != 0 }
+func (e *Executor) setIsStarted() { atomic.StoreInt32(&(e.isStartedImpl), 1) }
+func (e *Executor) isStopped() bool { return atomic.LoadInt32(&(e.isStoppedImpl)) != 0 }
+func (e *Executor) setIsStopped() { atomic.StoreInt32(&(e.isStoppedImpl), 1) }
+
+func (e *Executor) Status() *gdpb.ServerStatus {
+	return &gdpb.ServerStatus{
+		Tick: e.tick(),
+		IsStarted: e.isStarted(),
+		TickDuration: durationpb.New(tickDuration),
+	}
 }
 
 func (e *Executor) AddClient() (string, error) {
@@ -107,25 +122,16 @@ func (e *Executor) ClientChannel(cid string) <-chan *apipb.StreamCurvesResponse 
 	return e.clientChannel[cid]
 }
 
-func advanceTickCounter(e *Executor) error {
-	e.tickMux.Lock()
-	e.tick += 1
-	e.tickMux.Unlock()
-
-	return nil
-}
-
-func commandQueue(e *Executor) ([]Command, error) {
-	log.Println("server getting commands")
+func (e *Executor) popCommandQueue() ([]Command, error) {
 	e.commandQueueMux.Lock()
+	defer e.commandQueueMux.Unlock()
+
 	commands := e.commandQueue
 	e.commandQueue = nil
-	e.commandQueueMux.Unlock()
-
 	return commands, nil
 }
 
-func processCommand(e *Executor, cmd Command) error {
+func (e *Executor) processCommand(cmd Command) error {
 	if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
 		c, err := cmd.Execute()
 		if err != nil {
@@ -135,12 +141,11 @@ func processCommand(e *Executor, cmd Command) error {
 		if err := func() error {
 			e.dataMux.RLock()
 			defer e.dataMux.RUnlock()
+
 			if err := e.entities[c.EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).ReplaceTail(c); err != nil {
 				return err
 			}
 
-			log.Println("server adding curve to queue: ", c)
-			// TODO(minkezhang): Broadcast new entities first.
 			e.curveQueueMux.Lock()
 			e.curveQueue = append(e.curveQueue, c)
 			e.curveQueueMux.Unlock()
@@ -153,12 +158,17 @@ func processCommand(e *Executor, cmd Command) error {
 	return nil
 }
 
-func broadcastCurves(e *Executor) error {
-	log.Println("server is broadcasting curves")
+func (e *Executor) popCurveQueue() []curve.Curve {
 	e.curveQueueMux.Lock()
+	defer e.curveQueueMux.Unlock()
+
 	curves := e.curveQueue
 	e.curveQueue = nil
-	e.curveQueueMux.Unlock()
+	return curves
+}
+
+func (e *Executor) broadcastCurves() error {
+	curves := e.popCurveQueue()
 
 	// TODO(minkezhang): Implement a server status endpoint.
 	// server_test is relying on this as a proxy for IsAlive().
@@ -166,11 +176,9 @@ func broadcastCurves(e *Executor) error {
 		return nil
 	}
 
-	e.tickMux.RLock()
 	resp := &apipb.StreamCurvesResponse{
-		Tick: e.tick,
+		Tick: e.tick(),
 	}
-	e.tickMux.RUnlock()
 
 	for _, c := range curves {
 		d, err := c.ExportDelta()
@@ -185,81 +193,73 @@ func broadcastCurves(e *Executor) error {
 	e.clientChannelMux.RLock()
 	defer e.clientChannelMux.RUnlock()
 	for _, ch := range e.clientChannel {
-		log.Println("server sending message ", resp)
 		ch <- resp
-		log.Println("server sent message")
 	}
 	return nil
 }
 
-func SignalStop(e *Executor) error {
-	e.doneMux.Lock()
-	defer e.doneMux.Unlock()
-	e.done = true
-	return nil
-}
-
-// TODO(minkezhang): Make private as part of loop.
-func CloseStreams(e *Executor) error {
+func (e *Executor) closeStreams() error {
 	e.clientChannelMux.Lock()
 	defer e.clientChannelMux.Unlock()
+
 	for _, ch := range e.clientChannel {
 		close(ch)
 	}
 	return nil
 }
 
-/*
-func Run(e *Executor) error {
-	for {
-		t := time.Now()
-		if err := advanceTickCounter(e); err != nil {
-			return err
-		}
-
-		if err := Tick(e); err != nil {
-			return err
-		}
-	}
+func (e *Executor) Stop() {
+	e.setIsStopped()
+        e.closeStreams()
 }
- */
 
-// TODO(minkezhang): Test.
-func Tick(e *Executor) error {
-	log.Println("1. server ticking", e.tick)
+func (e *Executor) Run() error {
+	e.setIsStarted()
+	for !e.isStopped() {
+		t := time.Now()
+		e.incrementTick()
 
-	t := time.Now()
-	if err := advanceTickCounter(e); err != nil {
-		return err
-	}
-
-	commands, err := commandQueue(e)
-	if err != nil {
-		return err
-	}
-
-	log.Println("2. server processing commands: ", commands, e.tick)
-	for _, cmd := range commands {
-		// TODO(minkezhang): Only return early if error is very bad -- else, just log.
-		if err := processCommand(e, cmd); err != nil {
-			log.Fatalf("2. server error: %v", err)
+		if err := e.t(); err != nil {
 			return err
 		}
-	}
 
-	log.Println("3. server broadcasting curves", e.tick)
-	if err := broadcastCurves(e); err != nil {
-		return err
-	}
-
-        log.Println("4. sleeping", e.tick)
-	if d := time.Now().Sub(t); d < tickDuration {
-		time.Sleep(tickDuration - d)
+		if d := time.Now().Sub(t); d < tickDuration {
+			time.Sleep(tickDuration - d)
+		}
 	}
 	return nil
 }
 
-func AddEntity(e *Executor, en entity.Entity) error {
+// TODO(minkezhang): Test this and make private.
+func (e *Executor) t() error {
+	commands, err := e.popCommandQueue()
+	if err != nil {
+		return err
+	}
+
+	log.Printf("[%.f] processing commands", e.tick())
+	for _, cmd := range commands {
+		// TODO(minkezhang): Add actual error handling here -- only
+		// Only return early if error is very bad.
+		if err := e.processCommand(cmd); err != nil {
+			log.Printf("[%.f] error while processing command %v: %v", cmd, err)
+			return err
+		}
+	}
+
+	// TODO(minkezhang): Broadcast new entities.
+
+	log.Printf("[%.f] broadcasting curves", e.tick())
+	if err := e.broadcastCurves(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TODO(minkezhang): Make this method private -- this is currently public for
+// debugging purposes.
+func (e *Executor) AddEntity(en entity.Entity) error {
 	e.dataMux.Lock()
 	defer e.dataMux.Unlock()
 
@@ -267,12 +267,14 @@ func AddEntity(e *Executor, en entity.Entity) error {
 		return status.Errorf(codes.AlreadyExists, "given entity ID %v already exists in the entity list", en.ID())
 	}
 
+	// TODO(minkezhang): Broadcast new entities by adding to new entity
+	// queue.
+
 	e.entities[en.ID()] = en
 	return nil
 }
 
-func addCommands(e *Executor, cs []Command) error {
-	log.Println("server adding commands: ", cs)
+func (e *Executor) addCommands(cs []Command) error {
 	e.commandQueueMux.Lock()
 	defer e.commandQueueMux.Unlock()
 
@@ -288,7 +290,7 @@ func addCommands(e *Executor, cs []Command) error {
 //
 // TODO(minkezhang): Decide how / when / if we want to deal with click
 // spamming (same eids, multiple move commands per tick).
-func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, eids []string) []*move.Command {
+func (e *Executor) buildMoveCommands(cid string, t float64, dest *gdpb.Position, eids []string) []*move.Command {
 	e.dataMux.RLock()
 	defer e.dataMux.RUnlock()
 
@@ -317,15 +319,13 @@ func buildMoveCommands(e *Executor, cid string, t float64, dest *gdpb.Position, 
 // AddMoveCommands
 //
 // Is expected to be called concurrently.
-func AddMoveCommands(e *Executor, req *apipb.MoveRequest) error {
+func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
-	e.tickMux.RLock()
-	tick := e.tick
-	e.tickMux.RUnlock()
-
 	var cs []Command
-	for _, c := range buildMoveCommands(e, req.GetClientId(), tick, req.GetDestination(), req.GetEntityIds()) {
+
+	for _, c := range e.buildMoveCommands(req.GetClientId(), e.tick(), req.GetDestination(), req.GetEntityIds()) {
 		cs = append(cs, c)
 	}
-	return addCommands(e, cs)
+
+	return e.addCommands(cs)
 }

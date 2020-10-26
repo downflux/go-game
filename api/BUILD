@@ -27,6 +27,7 @@ proto_library(
     srcs = ["data.proto"],
     deps = [
         ":constants_proto",
+	"@com_google_protobuf//:duration_proto",
     ],
 )
 
@@ -36,6 +37,7 @@ go_proto_library(
     proto = ":data_proto",
     deps = [
         ":constants_go_proto",
+        "@io_bazel_rules_go//proto/wkt:duration_go_proto",
     ],
 )
 

@@ -17,6 +17,16 @@ service DownFlux {
   rpc StreamCurves(StreamCurvesRequest) returns (stream StreamCurvesResponse) {
     option idempotency_level = IDEMPOTENT;
   }
+
+  rpc GetStatus(GetStatusRequest) returns (GetStatusResponse) {
+    option idempotency_level = IDEMPOTENT;
+  }
+}
+
+message GetStatusRequest {}
+
+message GetStatusResponse {
+  game.api.data.ServerStatus status = 1;
 }
 
 message MoveRequest {
