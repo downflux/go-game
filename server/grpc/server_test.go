@@ -154,8 +154,6 @@ func TestSendMoveCommand(t *testing.T) {
 		tick = s.GetStatus().GetTick()
 	}
 
-	log.Println("server has sent first message, proceeding")
-
 	moveResp, err := client.Move(s.ctx, &apipb.MoveRequest{
 		ClientId:    cid,
 		EntityIds:   []string{e.ID()},
@@ -177,7 +175,9 @@ func TestSendMoveCommand(t *testing.T) {
 		t.Fatalf("StreamCurvesResponse() = %v, want = nil", err)
 	}
 
-	log.Println(streamResp)
+	if len(streamResp) == 0 {
+		t.Errorf("len(streamResp) = 0, want > 0")
+	}
 }
 
 func TestAddClient(t *testing.T) {
