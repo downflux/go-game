@@ -161,16 +161,11 @@ func (e *Executor) popCurveQueue() []curve.Curve {
 func (e *Executor) broadcastCurves() error {
 	curves := e.popCurveQueue()
 
-	// TODO(minkezhang): Implement a server status endpoint.
-	// server_test is relying on this as a proxy for IsAlive().
-	if curves == nil {
-		return nil
-	}
-
 	resp := &apipb.StreamCurvesResponse{
 		Tick: e.tick(),
 	}
 
+	// TODO(minkezhang): Make concurrent.
 	for _, c := range curves {
 		d, err := c.ExportDelta()
 		if err != nil {
@@ -183,6 +178,7 @@ func (e *Executor) broadcastCurves() error {
 	// Once timeout, client needs to resync.
 	e.clientChannelMux.RLock()
 	defer e.clientChannelMux.RUnlock()
+
 	for _, ch := range e.clientChannel {
 		ch <- resp
 	}
@@ -210,10 +206,12 @@ func (e *Executor) Run() error {
 		t := time.Now()
 		e.incrementTick()
 
-		if err := e.t(); err != nil {
+		if err := e.doTick(); err != nil {
 			return err
 		}
 
+		// TODO(minkezhang): Add metrics collection here for tick
+		// distribution.
 		if d := time.Now().Sub(t); d < tickDuration {
 			time.Sleep(tickDuration - d)
 		}
@@ -221,8 +219,7 @@ func (e *Executor) Run() error {
 	return nil
 }
 
-// TODO(minkezhang): Test this and make private.
-func (e *Executor) t() error {
+func (e *Executor) doTick() error {
 	commands, err := e.popCommandQueue()
 	if err != nil {
 		return err
