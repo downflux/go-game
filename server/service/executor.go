@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	idLen = 8
+	idLen        = 8
 	tickDuration = 100 * time.Millisecond
 )
 
@@ -68,7 +68,7 @@ type Executor struct {
 
 	isStoppedImpl int32
 	isStartedImpl int32
-	tickImpl int64
+	tickImpl      int64
 
 	// Add-only.
 	dataMux  sync.RWMutex
@@ -86,17 +86,17 @@ type Executor struct {
 	clientChannel    map[string]chan *apipb.StreamCurvesResponse
 }
 
-func (e *Executor) tick() float64 { return float64(atomic.LoadInt64(&(e.tickImpl))) }
-func (e *Executor) incrementTick() { atomic.AddInt64(&(e.tickImpl), 1) }
+func (e *Executor) tick() float64   { return float64(atomic.LoadInt64(&(e.tickImpl))) }
+func (e *Executor) incrementTick()  { atomic.AddInt64(&(e.tickImpl), 1) }
 func (e *Executor) isStarted() bool { return atomic.LoadInt32(&(e.isStartedImpl)) != 0 }
-func (e *Executor) setIsStarted() { atomic.StoreInt32(&(e.isStartedImpl), 1) }
+func (e *Executor) setIsStarted()   { atomic.StoreInt32(&(e.isStartedImpl), 1) }
 func (e *Executor) isStopped() bool { return atomic.LoadInt32(&(e.isStoppedImpl)) != 0 }
-func (e *Executor) setIsStopped() { atomic.StoreInt32(&(e.isStoppedImpl), 1) }
+func (e *Executor) setIsStopped()   { atomic.StoreInt32(&(e.isStoppedImpl), 1) }
 
 func (e *Executor) Status() *gdpb.ServerStatus {
 	return &gdpb.ServerStatus{
-		Tick: e.tick(),
-		IsStarted: e.isStarted(),
+		Tick:         e.tick(),
+		IsStarted:    e.isStarted(),
 		TickDuration: durationpb.New(tickDuration),
 	}
 }
@@ -210,7 +210,7 @@ func (e *Executor) closeStreams() error {
 
 func (e *Executor) Stop() {
 	e.setIsStopped()
-        e.closeStreams()
+	e.closeStreams()
 }
 
 func (e *Executor) Run() error {

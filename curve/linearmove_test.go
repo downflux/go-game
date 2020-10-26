@@ -95,7 +95,7 @@ func TestGet(t *testing.T) {
 			name: "GetBeforeCreation",
 			c:    &Curve{data: []datum{{tick: 1, value: &gdpb.Position{X: 1, Y: 1}}}},
 			t:    0,
-                        want: &gdpb.Position{X: 1, Y: 1},
+			want: &gdpb.Position{X: 1, Y: 1},
 		},
 		{
 			name: "GetAlreadyKnown",

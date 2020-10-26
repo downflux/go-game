@@ -1,9 +1,9 @@
 package main
 
 import (
+	"log"
 	"math"
 	"math/rand"
-	"log"
 	"sync"
 	"time"
 
@@ -93,8 +93,8 @@ func main() {
 		scene.Add(tankMesh)
 
 		go func() {
-			x := (pDim - 2 * r) * rand.Float32() - (pDim / float32(2) - r)
-			y := (pDim - 2 * r) * rand.Float32() - (pDim / float32(2) - r)
+			x := (pDim-2*r)*rand.Float32() - (pDim/float32(2) - r)
+			y := (pDim-2*r)*rand.Float32() - (pDim/float32(2) - r)
 			for {
 				tickMux.RLock()
 				s := tick
@@ -102,13 +102,13 @@ func main() {
 
 				dx := 0.1 * (rand.Float32() - 0.5)
 				dy := 0.1 * (rand.Float32() - 0.5)
-				if x + dx > 5 || x + dx < -5 {
+				if x+dx > 5 || x+dx < -5 {
 					dx = 0
 				}
-				if y + dy > 5 || y + dy < -5 {
+				if y+dy > 5 || y+dy < -5 {
 					dy = 0
 				}
-				d := math32.NewVector3(x + dx, y + dy, 0)
+				d := math32.NewVector3(x+dx, y+dy, 0)
 				tankMesh.SetPositionVec(d)
 
 				timeToSleep := tickLen - time.Now().Sub(s)

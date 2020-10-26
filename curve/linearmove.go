@@ -181,8 +181,8 @@ func (c *Curve) Get(t float64) interface{} {
 		return proto.Clone(c.data[0].value).(*gdpb.Position)
 	}
 
-	if datumBefore(c.data[len(c.data) - 1], datum{tick: t}) {
-		return proto.Clone(c.data[len(c.data) - 1].value).(*gdpb.Position)
+	if datumBefore(c.data[len(c.data)-1], datum{tick: t}) {
+		return proto.Clone(c.data[len(c.data)-1].value).(*gdpb.Position)
 	}
 
 	i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: t}) })
@@ -193,8 +193,8 @@ func (c *Curve) Get(t float64) interface{} {
 
 	tickDelta := t - c.data[i-1].tick
 	return &gdpb.Position{
-		X: c.data[i-1].value.GetX() + (c.data[i].value.GetX() - c.data[i-1].value.GetX()) / (c.data[i].tick - c.data[i-1].tick) * tickDelta,
-		Y: c.data[i-1].value.GetY() + (c.data[i].value.GetY() - c.data[i-1].value.GetY()) / (c.data[i].tick - c.data[i-1].tick) * tickDelta,
+		X: c.data[i-1].value.GetX() + (c.data[i].value.GetX()-c.data[i-1].value.GetX())/(c.data[i].tick-c.data[i-1].tick)*tickDelta,
+		Y: c.data[i-1].value.GetY() + (c.data[i].value.GetY()-c.data[i-1].value.GetY())/(c.data[i].tick-c.data[i-1].tick)*tickDelta,
 	}
 }
 

@@ -41,7 +41,7 @@ func NewSimpleEntity(eid string, t float64, p *gdpb.Position) *SimpleEntity {
 	}
 }
 
-func (e *SimpleEntity) ID() string { return e.id }
+func (e *SimpleEntity) ID() string            { return e.id }
 func (e *SimpleEntity) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }
 
 // TODO(minkezhang): Decide if we should return default value.

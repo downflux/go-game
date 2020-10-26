@@ -92,25 +92,25 @@ func TestSendMoveCommand(t *testing.T) {
 	dest := &gdpb.Position{X: 3, Y: 0}
 	want := &apipb.StreamCurvesResponse{
 		Curves: []*gdpb.Curve{
-			&gdpb.Curve{
+			{
 				Type: gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
 				Data: []*gdpb.CurveDatum{
-					&gdpb.CurveDatum{
+					{
 						Datum: &gdpb.CurveDatum_PositionDatum{
 							&gdpb.Position{X: 0, Y: 0},
 						},
 					},
-					&gdpb.CurveDatum{
+					{
 						Datum: &gdpb.CurveDatum_PositionDatum{
 							&gdpb.Position{X: 1, Y: 0},
 						},
 					},
-					&gdpb.CurveDatum{
+					{
 						Datum: &gdpb.CurveDatum_PositionDatum{
 							&gdpb.Position{X: 2, Y: 0},
 						},
 					},
-					&gdpb.CurveDatum{
+					{
 						Datum: &gdpb.CurveDatum_PositionDatum{
 							&gdpb.Position{X: 3, Y: 0},
 						},

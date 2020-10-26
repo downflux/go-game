@@ -63,7 +63,7 @@ func (c *Command) Tick() float64 {
 	return c.tick
 }
 
-// We're assuming the position values are sane and doesn't overflow int32.
+// We're assuming the position values are sane and don't overflow int32.
 func coordinate(p *gdpb.Position) *gdpb.Coordinate {
 	return &gdpb.Coordinate{
 		X: int32(p.GetX()),
