@@ -7,7 +7,8 @@ import (
 	"github.com/downflux/game/pathing/hpf/edge"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/pathing/hpf/node"
-	"github.com/downflux/game/server/service/commands/move"
+	"github.com/downflux/game/server/service/command/command"
+	"github.com/downflux/game/server/service/command/move"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -149,7 +150,7 @@ func TestAddMoveCommands(t *testing.T) {
 	}
 
 	if diff := cmp.Diff(
-		[]Command{move.New(e.tileMap, e.abstractGraph, cid, eid, t0, p1, p2)},
+		[]command.Command{move.New(e.tileMap, e.abstractGraph, cid, eid, t0, p1, p2)},
 		e.commandQueue,
 		cmp.AllowUnexported(move.Command{}, graph.Graph{}, tile.Map{}, node.Map{}, edge.Map{}),
 		protocmp.Transform(),
