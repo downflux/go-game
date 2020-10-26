@@ -14,6 +14,7 @@ service DownFlux {
     option idempotency_level = IDEMPOTENT;
   };
 
+  // TODO(minkezhang): Rename StreamData.
   rpc StreamCurves(StreamCurvesRequest) returns (stream StreamCurvesResponse) {
     option idempotency_level = IDEMPOTENT;
   }
@@ -47,6 +48,7 @@ message StreamCurvesRequest {
 message StreamCurvesResponse {
   double tick = 1;
   repeated game.api.data.Curve curves = 2;
+  repeated game.api.data.Entity entities = 3;
 }
 
 // TODO(minkezhang): Add team.

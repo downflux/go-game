@@ -42,3 +42,8 @@ message ServerStatus {
   double tick = 2;
   google.protobuf.Duration tick_duration = 3;
 }
+
+message Entity {
+  string entity_id = 1;
+  game.api.constants.EntityType type = 2;  
+}

@@ -74,6 +74,10 @@ type Executor struct {
 	curveQueueMux sync.RWMutex
 	curveQueue    []curve.Curve
 
+	// Add and delete. Reset per tick.
+	entityQueueMux sync.RWMutex
+	entityQueue    []entity.Entity
+
 	clientChannelMux sync.RWMutex
 	clientChannel    map[string]chan *apipb.StreamCurvesResponse
 }
@@ -150,18 +154,26 @@ func (e *Executor) processCommand(cmd command.Command) error {
 	return nil
 }
 
-func (e *Executor) popCurveQueue() []curve.Curve {
+func (e *Executor) popTickQueue() ([]curve.Curve, []entity.Entity) {
 	e.curveQueueMux.Lock()
+	e.entityQueueMux.Lock()
+	defer e.entityQueueMux.Unlock()
 	defer e.curveQueueMux.Unlock()
 
 	curves := e.curveQueue
+	entities := e.entityQueue
+
 	e.curveQueue = nil
-	return curves
+	e.entityQueue = nil
+
+	return curves, entities
 }
 
 func (e *Executor) broadcastCurves() error {
-	curves := e.popCurveQueue()
+	curves, entities := e.popTickQueue()
 
+	// TODO(minkezhang): Decide if it's okay that the reported tick may not
+	// coincide with the ticks of the curve and entities.
 	resp := &apipb.StreamCurvesResponse{
 		Tick: e.tick(),
 	}
@@ -173,6 +185,12 @@ func (e *Executor) broadcastCurves() error {
 			return err
 		}
 		resp.Curves = append(resp.GetCurves(), d)
+	}
+	for _, e := range entities {
+		resp.Entities = append(resp.GetEntities(), &gdpb.Entity{
+			EntityId: e.ID(),
+			Type: e.Type(),
+		})
 	}
 
 	e.clientChannelMux.RLock()
@@ -256,16 +274,21 @@ func (e *Executor) doTick() error {
 // debugging purposes.
 func (e *Executor) AddEntity(en entity.Entity) error {
 	e.dataMux.Lock()
+	e.entityQueueMux.Lock()
+	defer e.entityQueueMux.Unlock()
 	defer e.dataMux.Unlock()
 
 	if _, found := e.entities[en.ID()]; found {
 		return status.Errorf(codes.AlreadyExists, "given entity ID %v already exists in the entity list", en.ID())
 	}
 
-	// TODO(minkezhang): Broadcast new entities by adding to new entity
-	// queue.
-
 	e.entities[en.ID()] = en
+	e.entityQueue = append(e.entityQueue, en)
+
+	// TODO(minkezhang): Append all entity curves to queue.
+	// TODO(minkezhang): Add Entity.GetAllCurves().
+	// TODO(minkezhang): Make curve queue a map instead.
+	// TODO(minkezhang): If curve in queue exists, use merge instead.
 	return nil
 }
 
