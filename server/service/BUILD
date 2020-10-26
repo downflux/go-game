@@ -21,6 +21,7 @@ go_library(
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
         "@org_golang_google_protobuf//types/known/durationpb:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
     ],
 )
 
@@ -31,6 +32,7 @@ go_test(
     embed = [":executor"],
     deps = [
         "//api:api_go_proto",
+        "//api:constants_go_proto",
         "//api:data_go_proto",
         "//entity:entity",
         "//map/api:constants_go_proto",
@@ -44,5 +46,6 @@ go_test(
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
         "@org_golang_google_protobuf//testing/protocmp:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
     ],
 )

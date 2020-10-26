@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"golang.org/x/sync/errgroup"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -161,16 +162,11 @@ func (e *Executor) popCurveQueue() []curve.Curve {
 func (e *Executor) broadcastCurves() error {
 	curves := e.popCurveQueue()
 
-	// TODO(minkezhang): Implement a server status endpoint.
-	// server_test is relying on this as a proxy for IsAlive().
-	if curves == nil {
-		return nil
-	}
-
 	resp := &apipb.StreamCurvesResponse{
 		Tick: e.tick(),
 	}
 
+	// TODO(minkezhang): Make concurrent.
 	for _, c := range curves {
 		d, err := c.ExportDelta()
 		if err != nil {
@@ -179,14 +175,21 @@ func (e *Executor) broadcastCurves() error {
 		resp.Curves = append(resp.GetCurves(), d)
 	}
 
-	// TODO(minkezhang): Make concurrent, and timeout.
-	// Once timeout, client needs to resync.
 	e.clientChannelMux.RLock()
 	defer e.clientChannelMux.RUnlock()
+
+	var eg errgroup.Group
 	for _, ch := range e.clientChannel {
-		ch <- resp
+		ch := ch
+		eg.Go(func() error {
+			ch <- resp
+			// TODO(minkezhang): Add timeout support.
+			// Will need to implement resync logic once timeout is
+			// added.
+			return nil
+		})
 	}
-	return nil
+	return eg.Wait()
 }
 
 func (e *Executor) closeStreams() error {
@@ -210,10 +213,12 @@ func (e *Executor) Run() error {
 		t := time.Now()
 		e.incrementTick()
 
-		if err := e.t(); err != nil {
+		if err := e.doTick(); err != nil {
 			return err
 		}
 
+		// TODO(minkezhang): Add metrics collection here for tick
+		// distribution.
 		if d := time.Now().Sub(t); d < tickDuration {
 			time.Sleep(tickDuration - d)
 		}
@@ -221,8 +226,7 @@ func (e *Executor) Run() error {
 	return nil
 }
 
-// TODO(minkezhang): Test this and make private.
-func (e *Executor) t() error {
+func (e *Executor) doTick() error {
 	commands, err := e.popCommandQueue()
 	if err != nil {
 		return err

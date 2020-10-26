@@ -11,9 +11,11 @@ import (
 	"github.com/downflux/game/server/service/command/move"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
+	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	mcpb "github.com/downflux/game/map/api/constants_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
@@ -40,6 +42,104 @@ func TestNewExecutor(t *testing.T) {
 	_, err := New(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
 	if err != nil {
 		t.Errorf("New() = _, %v, want = nil", err)
+	}
+}
+
+// TODO(minkezhang): Test sending Move request on a stale tick -- what should
+// actually occur in the response?
+
+// TODO(minkezhang): Add test for client timeout while broadcasting curves.
+
+func TestDoTick(t *testing.T) {
+	const eid = "entity-id"
+	dest := &gdpb.Position{X: 3, Y: 0}
+	src := &gdpb.Position{X: 0, Y: 0}
+	t1 := float64(0)
+	const nClients = 1000
+	want := &apipb.StreamCurvesResponse{
+		Tick: 0,
+		Curves: []*gdpb.Curve{
+			{
+				EntityId: eid,
+				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+				Data: []*gdpb.CurveDatum{
+					{
+						Datum: &gdpb.CurveDatum_PositionDatum{
+							&gdpb.Position{X: 0, Y: 0},
+						},
+					},
+					{
+						Datum: &gdpb.CurveDatum_PositionDatum{
+							&gdpb.Position{X: 1, Y: 0},
+						},
+					},
+					{
+						Datum: &gdpb.CurveDatum_PositionDatum{
+							&gdpb.Position{X: 2, Y: 0},
+						},
+					},
+					{
+						Datum: &gdpb.CurveDatum_PositionDatum{
+							&gdpb.Position{X: 3, Y: 0},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	e, err := New(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
+	if err != nil {
+		t.Fatalf("New() = _, %v, want = nil", err)
+	}
+
+	if err := e.AddEntity(entity.NewSimpleEntity(eid, t1, src)); err != nil {
+		t.Fatalf("AddEntity() = %v, want = nil", err)
+	}
+
+	var cids []string
+	for i := 0; i < nClients; i++ {
+		cid, err := e.AddClient()
+		if err != nil {
+			t.Fatalf("AddClient() = _, %v, want = nil", err)
+		}
+		cids = append(cids, cid)
+	}
+
+	if err := e.AddMoveCommands(&apipb.MoveRequest{
+		Tick:        1,
+		ClientId:    cids[0],
+		EntityIds:   []string{eid},
+		Destination: dest,
+		MoveType:    gcpb.MoveType_MOVE_TYPE_FORWARD,
+	}); err != nil {
+		t.Fatalf("AddMoveCommands() = %v, want = nil", err)
+	}
+
+	var eg errgroup.Group
+	eg.Go(e.doTick)
+
+	var streamResponses []*apipb.StreamCurvesResponse
+	for i := 0; i < nClients; i++ {
+		// Assuming all clients will receive messages in a timely manner.
+		streamResponses = append(streamResponses, <-e.ClientChannel(cids[i]))
+	}
+
+	if err := eg.Wait(); err != nil {
+		t.Fatalf("Wait() = %v, want = nil", err)
+	}
+
+	for _, streamResponse := range streamResponses {
+	if diff := cmp.Diff(
+		want,
+		streamResponse,
+		protocmp.Transform(),
+		protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick"),
+		protocmp.IgnoreFields(&gdpb.Curve{}, "curve_id"),
+		protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
+	); diff != "" {
+		t.Errorf("<-e.ClientChannel() mismatch (-want +got):\n%v", diff)
+	}
 	}
 }
 
