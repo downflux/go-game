@@ -1,7 +1,6 @@
 package executor
 
 import (
-	"golang.org/x/sync/errgroup"
 	"testing"
 
 	"github.com/downflux/game/entity/entity"
@@ -12,6 +11,7 @@ import (
 	"github.com/downflux/game/server/service/command/move"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
@@ -48,11 +48,14 @@ func TestNewExecutor(t *testing.T) {
 // TODO(minkezhang): Test sending Move request on a stale tick -- what should
 // actually occur in the response?
 
+// TODO(minkezhang): Add test for client timeout while broadcasting curves.
+
 func TestDoTick(t *testing.T) {
 	const eid = "entity-id"
 	dest := &gdpb.Position{X: 3, Y: 0}
 	src := &gdpb.Position{X: 0, Y: 0}
 	t1 := float64(0)
+	const nClients = 1000
 	want := &apipb.StreamCurvesResponse{
 		Tick: 0,
 		Curves: []*gdpb.Curve{
@@ -94,14 +97,18 @@ func TestDoTick(t *testing.T) {
 		t.Fatalf("AddEntity() = %v, want = nil", err)
 	}
 
-	cid, err := e.AddClient()
-	if err != nil {
-		t.Fatalf("AddClient() = _, %v, want = nil", err)
+	var cids []string
+	for i := 0; i < nClients; i++ {
+		cid, err := e.AddClient()
+		if err != nil {
+			t.Fatalf("AddClient() = _, %v, want = nil", err)
+		}
+		cids = append(cids, cid)
 	}
 
 	if err := e.AddMoveCommands(&apipb.MoveRequest{
 		Tick:        1,
-		ClientId:    cid,
+		ClientId:    cids[0],
 		EntityIds:   []string{eid},
 		Destination: dest,
 		MoveType:    gcpb.MoveType_MOVE_TYPE_FORWARD,
@@ -112,12 +119,17 @@ func TestDoTick(t *testing.T) {
 	var eg errgroup.Group
 	eg.Go(e.doTick)
 
-	streamResponse := <-e.ClientChannel(cid)
+	var streamResponses []*apipb.StreamCurvesResponse
+	for i := 0; i < nClients; i++ {
+		// Assuming all clients will receive messages in a timely manner.
+		streamResponses = append(streamResponses, <-e.ClientChannel(cids[i]))
+	}
 
 	if err := eg.Wait(); err != nil {
 		t.Fatalf("Wait() = %v, want = nil", err)
 	}
 
+	for _, streamResponse := range streamResponses {
 	if diff := cmp.Diff(
 		want,
 		streamResponse,
@@ -127,6 +139,7 @@ func TestDoTick(t *testing.T) {
 		protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
 	); diff != "" {
 		t.Errorf("<-e.ClientChannel() mismatch (-want +got):\n%v", diff)
+	}
 	}
 }
 

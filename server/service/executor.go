@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"golang.org/x/sync/errgroup"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -174,15 +175,21 @@ func (e *Executor) broadcastCurves() error {
 		resp.Curves = append(resp.GetCurves(), d)
 	}
 
-	// TODO(minkezhang): Make concurrent, and timeout.
-	// Once timeout, client needs to resync.
 	e.clientChannelMux.RLock()
 	defer e.clientChannelMux.RUnlock()
 
+	var eg errgroup.Group
 	for _, ch := range e.clientChannel {
-		ch <- resp
+		ch := ch
+		eg.Go(func() error {
+			ch <- resp
+			// TODO(minkezhang): Add timeout support.
+			// Will need to implement resync logic once timeout is
+			// added.
+			return nil
+		})
 	}
-	return nil
+	return eg.Wait()
 }
 
 func (e *Executor) closeStreams() error {
