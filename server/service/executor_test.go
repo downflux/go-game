@@ -186,7 +186,7 @@ func TestBuildMoveCommands(t *testing.T) {
 			p1:        &gdpb.Position{X: 0, Y: 0},
 			p2:        &gdpb.Position{X: 1, Y: 0},
 			want: []*move.Command{
-				move.New(nil, nil, "random-client", "some-entity", 1, &gdpb.Position{X: 0, Y: 0}, &gdpb.Position{X: 1, Y: 0}),
+				move.New(nil, nil, "random-client", "some-entity", &gdpb.Position{X: 1, Y: 0}),
 			},
 		},
 		{
@@ -215,7 +215,7 @@ func TestBuildMoveCommands(t *testing.T) {
 				}
 			}
 
-			got := e.buildMoveCommands(c.cid, c.t2, c.p2, []string{c.eid})
+			got := e.buildMoveCommands(c.cid, c.p2, []string{c.eid})
 			if diff := cmp.Diff(
 				got,
 				c.want,
@@ -256,7 +256,7 @@ func TestAddMoveCommands(t *testing.T) {
 	}
 
 	if diff := cmp.Diff(
-		[]command.Command{move.New(e.tileMap, e.abstractGraph, cid, eid, t0, p1, p2)},
+		[]command.Command{move.New(e.tileMap, e.abstractGraph, cid, eid, p2)},
 		e.commandQueue,
 		cmp.AllowUnexported(move.Command{}, graph.Graph{}, tile.Map{}, node.Map{}, edge.Map{}),
 		protocmp.Transform(),

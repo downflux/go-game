@@ -27,14 +27,12 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-func New(m *tile.Map, g *graph.Graph, cid string, eid string, t float64, source *gdpb.Position, destination *gdpb.Position) *Command {
+func New(m *tile.Map, g *graph.Graph, cid string, eid string, destination *gdpb.Position) *Command {
 	return &Command{
 		tileMap:       m,
 		abstractGraph: g,
 		clientID:      cid,
 		entityID:      eid,
-		tick:          t,
-		source:        proto.Clone(source).(*gdpb.Position),
 		destination:   proto.Clone(destination).(*gdpb.Position),
 	}
 }
@@ -44,18 +42,13 @@ type Command struct {
 	abstractGraph *graph.Graph
 	entityID      string
 	clientID      string
-	tick          float64
 	source        *gdpb.Position
 	destination   *gdpb.Position
 }
 
-func (c *Command) Type() sscpb.CommandType {
-	return commandType
-}
-
-func (c *Command) ClientID() string {
-	return c.clientID
-}
+func (c *Command) EntityID() string        { return c.entityID }
+func (c *Command) Type() sscpb.CommandType { return commandType }
+func (c *Command) ClientID() string        { return c.clientID }
 
 // We're assuming the position values are sane and don't overflow int32.
 func coordinate(p *gdpb.Position) *gdpb.Coordinate {
@@ -72,18 +65,25 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 	}
 }
 
-func (c *Command) Execute(tick float64) (curve.Curve, error) {
+type Args struct {
+	Tick   float64
+	Source *gdpb.Position
+}
+
+func (c *Command) Execute(args interface{}) (curve.Curve, error) {
+	a := args.(Args)
+
 	// Called concurrently (across multiple commands).
 	// TODO(minkezhang): proto.Clone the return values in map.astar.Path.
 	// TODO(minkezhang): Add additional infrastructure necessary to set pathLength > 0.
-	p, _, err := astar.Path(c.tileMap, c.abstractGraph, utils.MC(coordinate(c.source)), utils.MC(coordinate(c.destination)), pathLength)
+	p, _, err := astar.Path(c.tileMap, c.abstractGraph, utils.MC(coordinate(a.Source)), utils.MC(coordinate(c.destination)), pathLength)
 	if err != nil {
 		return nil, err
 	}
 
-	cv := linearmove.New(c.entityID, tick)
+	cv := linearmove.New(c.entityID, a.Tick)
 	for i, tile := range p {
-		cv.Add(tick+float64(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
+		cv.Add(a.Tick+float64(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
 	}
 
 	return cv, nil

@@ -133,7 +133,9 @@ func (e *Executor) popCommandQueue() ([]command.Command, error) {
 
 func (e *Executor) processCommand(cmd command.Command) error {
 	if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
-		c, err := cmd.Execute(e.tick())
+		c, err := cmd.Execute(move.Args{
+			Tick:   e.tick(),
+			Source: e.entities[cmd.(*move.Command).EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(e.tick()).(*gdpb.Position)})
 		if err != nil {
 			return err
 		}
@@ -331,15 +333,14 @@ func (e *Executor) addCommands(cs []command.Command) error {
 //
 // TODO(minkezhang): Decide how / when / if we want to deal with click
 // spamming (same eids, multiple move commands per tick).
-func (e *Executor) buildMoveCommands(cid string, t float64, dest *gdpb.Position, eids []string) []*move.Command {
+func (e *Executor) buildMoveCommands(cid string, dest *gdpb.Position, eids []string) []*move.Command {
 	e.dataMux.RLock()
 	defer e.dataMux.RUnlock()
 
 	var res []*move.Command
 	for _, eid := range eids {
-		en, found := e.entities[eid]
+		_, found := e.entities[eid]
 		if found {
-			p := en.Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(t)
 			res = append(
 				res,
 				move.New(
@@ -347,8 +348,6 @@ func (e *Executor) buildMoveCommands(cid string, t float64, dest *gdpb.Position,
 					e.abstractGraph,
 					cid,
 					eid,
-					t,
-					p.(*gdpb.Position),
 					dest))
 		} else {
 			log.Printf("entity ID %s not found in server entity lookup, could not build Move command", eid)
@@ -364,8 +363,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 	var cs []command.Command
 
-	t := e.tick()
-	for _, c := range e.buildMoveCommands(req.GetClientId(), t, req.GetDestination(), req.GetEntityIds()) {
+	for _, c := range e.buildMoveCommands(req.GetClientId(), req.GetDestination(), req.GetEntityIds()) {
 		cs = append(cs, c)
 	}
 

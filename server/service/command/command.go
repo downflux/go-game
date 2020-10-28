@@ -12,5 +12,5 @@ type Command interface {
 
 	// Execute will run subroutine for the command implementation at the
 	// specified server tick.
-	Execute(tick float64) (curve.Curve, error)
+	Execute(args interface{}) (curve.Curve, error)
 }
