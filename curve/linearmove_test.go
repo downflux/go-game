@@ -60,21 +60,154 @@ func TestInsert(t *testing.T) {
 }
 
 func TestReplaceTail(t *testing.T) {
-	c1 := New("c1", "eid")
-	c1.Add(0, &gdpb.Position{X: 0, Y: 0})
-	c1.Add(1, &gdpb.Position{X: 10, Y: 10})
-	c1.Add(2, &gdpb.Position{X: 20, Y: 20})
+	replaceC1 := New("eid", 0)
+	replaceC1.Add(0, &gdpb.Position{X: 0, Y: 0})
+	replaceC1.Add(1, &gdpb.Position{X: 10, Y: 10})
+	replaceC1.Add(2, &gdpb.Position{X: 20, Y: 20})
+	replaceC2 := New("eid", 1)
+	replaceC2.Add(1, &gdpb.Position{X: 1, Y: 1})
 
-	c2 := New("", "eid")
-	c2.Add(1, &gdpb.Position{X: 1, Y: 1})
+	replaceSameTickC1 := New("eid", 0)
+	replaceSameTickC1.Add(0, &gdpb.Position{X: 0, Y: 0})
+	replaceSameTickC1.Add(1, &gdpb.Position{X: 10, Y: 10})
+	replaceSameTickC1.Add(2, &gdpb.Position{X: 20, Y: 20})
+	replaceSameTickC2 := New("eid", 0)
+	replaceSameTickC2.Add(1, &gdpb.Position{X: 1, Y: 1})
 
-	c1.ReplaceTail(c2)
+	tooStaleC1 := New("eid", 1)
+	tooStaleC1.Add(0, &gdpb.Position{X: 0, Y: 0})
+	tooStaleC1.Add(1, &gdpb.Position{X: 10, Y: 10})
+	tooStaleC1.Add(2, &gdpb.Position{X: 20, Y: 20})
+	tooStaleC2 := New("eid", 0)
+	tooStaleC2.Add(1, &gdpb.Position{X: 1, Y: 1})
 
-	want := &gdpb.Position{X: 0.7, Y: 0.7}
-	got := c1.Get(0.7)
+	updateTickC1 := New("eid", 0)
+	updateTickC2 := New("eid", 2)
+	updateTickC2.Add(0, &gdpb.Position{X: 0, Y: 0})
+	updateTickC2.Add(1, &gdpb.Position{X: 10, Y: 10})
+	updateTickC1.ReplaceTail(updateTickC2)
+	updateTickC3 := New("eid", 1)
+	updateTickC3.Add(2, &gdpb.Position{X: 20, Y: 20})
 
-	if diff := cmp.Diff(got, want, protocmp.Transform()); diff != "" {
-		t.Errorf("Get() mismatch (-want +got):\n%v", diff)
+	testConfigs := []struct {
+		name string
+		c1   *Curve
+		c2   *Curve
+		tick float64
+		want *gdpb.Position
+	}{
+		{
+			name: "ReplaceTailNormal",
+			c1:   replaceC1,
+			c2:   replaceC2,
+			tick: 0.7,
+			want: &gdpb.Position{X: 0.7, Y: 0.7},
+		},
+		{
+			name: "ReplaceTailSameTick",
+			c1:   replaceSameTickC1,
+			c2:   replaceSameTickC2,
+			tick: 0.7,
+			want: &gdpb.Position{X: 0.7, Y: 0.7},
+		},
+		{
+			name: "ReplaceTooStale",
+			c1:   tooStaleC1,
+			c2:   tooStaleC2,
+			tick: 0.7,
+			want: &gdpb.Position{X: 7, Y: 7},
+		},
+		{
+			name: "ReplaceUpdateTick",
+			c1:   updateTickC1,
+			c2:   updateTickC3,
+			tick: 2,
+			want: &gdpb.Position{X: 10, Y: 10},
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			c.c1.ReplaceTail(c.c2)
+			got := c.c1.Get(c.tick)
+			if diff := cmp.Diff(got, c.want, protocmp.Transform()); diff != "" {
+				t.Errorf("Get() mismatch (-want +got):\n%v", diff)
+			}
+		})
+	}
+}
+
+func TestExportTail(t *testing.T) {
+	const eid = "eid"
+	cSimple := New(eid, 0)
+	cSimple.Add(0, &gdpb.Position{X: 0, Y: 0})
+	cSimple.Add(1, &gdpb.Position{X: 1, Y: 1})
+
+	testConfigs := []struct {
+		name string
+		c    *Curve
+		t    float64
+		want *gdpb.Curve
+	}{
+		{
+			name: "ExportTailSimple",
+			c:    cSimple,
+			t:    0,
+			want: &gdpb.Curve{
+				EntityId: eid,
+				Tick:     cSimple.Tick(),
+				Category: cSimple.Category(),
+				Type:     cSimple.Type(),
+				Data: []*gdpb.CurveDatum{
+					{
+						Tick:  0,
+						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(0).(*gdpb.Position)},
+					},
+					{
+						Tick:  1,
+						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(1).(*gdpb.Position)},
+					},
+				},
+			},
+		},
+		{
+			name: "ExportTailPartial",
+			c:    cSimple,
+			t:    0.9,
+			want: &gdpb.Curve{
+				EntityId: eid,
+				Tick:     cSimple.Tick(),
+				Category: cSimple.Category(),
+				Type:     cSimple.Type(),
+				Data: []*gdpb.CurveDatum{
+					{
+						Tick:  1,
+						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(1).(*gdpb.Position)},
+					},
+				},
+			},
+		},
+		{
+			name: "ExportTailNoData",
+			c:    cSimple,
+			t:    1.1,
+			want: &gdpb.Curve{
+				EntityId: eid,
+				Tick:     cSimple.Tick(),
+				Category: cSimple.Category(),
+				Type:     cSimple.Type(),
+				Data:     []*gdpb.CurveDatum{},
+			},
+		},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			got := c.c.ExportTail(c.t)
+			if diff := cmp.Diff(got, c.want, protocmp.Transform()); diff != "" {
+				t.Errorf("ExportTail() mismatch (-want, +got):\n%v", diff)
+			}
+		})
 	}
 }
 

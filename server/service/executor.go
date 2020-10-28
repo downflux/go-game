@@ -6,16 +6,15 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/downflux/game/curve/curve"
 	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/command/command"
 	"github.com/downflux/game/server/service/command/move"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
-	"golang.org/x/sync/errgroup"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -34,6 +33,11 @@ var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
 )
+
+type dirtyCurve struct {
+	eid      string
+	category gcpb.CurveCategory
+}
 
 func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	tm, err := tile.ImportMap(pb)
@@ -62,7 +66,7 @@ type Executor struct {
 	isStartedImpl int32
 	tickImpl      int64
 
-	// Add-only.
+	// Add-only. Acquire first.
 	dataMux  sync.RWMutex
 	entities map[string]entity.Entity
 
@@ -70,13 +74,13 @@ type Executor struct {
 	commandQueueMux sync.Mutex
 	commandQueue    []command.Command
 
-	// Add and delete. Reset per tick.
-	curveQueueMux sync.RWMutex
-	curveQueue    []curve.Curve
-
-	// Add and delete. Reset per tick.
+	// Add and delete. Reset per tick. Acquire second.
 	entityQueueMux sync.RWMutex
-	entityQueue    []entity.Entity
+	entityQueue    []string
+
+	// Add and delete. Reset per tick. Acquire last.
+	curveQueueMux sync.RWMutex
+	curveQueue    []dirtyCurve
 
 	clientChannelMux sync.RWMutex
 	clientChannel    map[string]chan *apipb.StreamCurvesResponse
@@ -129,7 +133,7 @@ func (e *Executor) popCommandQueue() ([]command.Command, error) {
 
 func (e *Executor) processCommand(cmd command.Command) error {
 	if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
-		c, err := cmd.Execute()
+		c, err := cmd.Execute(e.tick())
 		if err != nil {
 			return err
 		}
@@ -138,12 +142,15 @@ func (e *Executor) processCommand(cmd command.Command) error {
 			e.dataMux.RLock()
 			defer e.dataMux.RUnlock()
 
-			if err := e.entities[c.EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).ReplaceTail(c); err != nil {
+			if err := e.entities[c.EntityID()].Curve(c.Category()).ReplaceTail(c); err != nil {
 				return err
 			}
 
 			e.curveQueueMux.Lock()
-			e.curveQueue = append(e.curveQueue, c)
+			e.curveQueue = append(e.curveQueue, dirtyCurve{
+				eid:      c.EntityID(),
+				category: c.Category(),
+			})
 			e.curveQueueMux.Unlock()
 
 			return nil
@@ -154,14 +161,39 @@ func (e *Executor) processCommand(cmd command.Command) error {
 	return nil
 }
 
-func (e *Executor) popTickQueue() ([]curve.Curve, []entity.Entity) {
-	e.curveQueueMux.Lock()
+func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
+	e.dataMux.Lock()
 	e.entityQueueMux.Lock()
-	defer e.entityQueueMux.Unlock()
+	e.curveQueueMux.Lock()
 	defer e.curveQueueMux.Unlock()
+	defer e.entityQueueMux.Unlock()
+	defer e.dataMux.Unlock()
 
-	curves := e.curveQueue
-	entities := e.entityQueue
+	var processedCurves = map[string]map[gcpb.CurveCategory]bool{}
+
+	var curves []*gdpb.Curve
+	var entities []*gdpb.Entity
+
+	// TODO(minkezhang): Make concurrent.
+	for _, eid := range e.entityQueue {
+		entities = append(entities, &gdpb.Entity{
+			EntityId: eid,
+			Type:     e.entities[eid].Type(),
+		})
+	}
+	for _, dc := range e.curveQueue {
+		if _, found := processedCurves[dc.eid]; !found {
+			processedCurves[dc.eid] = map[gcpb.CurveCategory]bool{}
+		}
+		if _, found := processedCurves[dc.eid][dc.category]; !found {
+			processedCurves[dc.eid][dc.category] = true
+			// TODO(minkezhang): Consider and implement what
+			// happens on late / re-sync. Simply populate e.tick()
+			// with last known good client tick, and mark all
+			// curves and entities as dirty.
+			curves = append(curves, e.entities[dc.eid].Curve(dc.category).ExportTail(e.tick()))
+		}
+	}
 
 	e.curveQueue = nil
 	e.entityQueue = nil
@@ -175,22 +207,9 @@ func (e *Executor) broadcastCurves() error {
 	// TODO(minkezhang): Decide if it's okay that the reported tick may not
 	// coincide with the ticks of the curve and entities.
 	resp := &apipb.StreamCurvesResponse{
-		Tick: e.tick(),
-	}
-
-	// TODO(minkezhang): Make concurrent.
-	for _, c := range curves {
-		d, err := c.ExportDelta()
-		if err != nil {
-			return err
-		}
-		resp.Curves = append(resp.GetCurves(), d)
-	}
-	for _, e := range entities {
-		resp.Entities = append(resp.GetEntities(), &gdpb.Entity{
-			EntityId: e.ID(),
-			Type: e.Type(),
-		})
+		Tick:     e.tick(),
+		Curves:   curves,
+		Entities: entities,
 	}
 
 	e.clientChannelMux.RLock()
@@ -260,8 +279,6 @@ func (e *Executor) doTick() error {
 		}
 	}
 
-	// TODO(minkezhang): Broadcast new entities.
-
 	log.Printf("[%.f] broadcasting curves", e.tick())
 	if err := e.broadcastCurves(); err != nil {
 		return err
@@ -272,9 +289,12 @@ func (e *Executor) doTick() error {
 
 // TODO(minkezhang): Make this method private -- this is currently public for
 // debugging purposes.
+// TODO(minkezhang): Make this generate a Command instead.
 func (e *Executor) AddEntity(en entity.Entity) error {
 	e.dataMux.Lock()
 	e.entityQueueMux.Lock()
+	e.curveQueueMux.Lock()
+	defer e.curveQueueMux.Unlock()
 	defer e.entityQueueMux.Unlock()
 	defer e.dataMux.Unlock()
 
@@ -283,12 +303,15 @@ func (e *Executor) AddEntity(en entity.Entity) error {
 	}
 
 	e.entities[en.ID()] = en
-	e.entityQueue = append(e.entityQueue, en)
 
-	// TODO(minkezhang): Append all entity curves to queue.
-	// TODO(minkezhang): Add Entity.GetAllCurves().
-	// TODO(minkezhang): Make curve queue a map instead.
-	// TODO(minkezhang): If curve in queue exists, use merge instead.
+	e.entityQueue = append(e.entityQueue, en.ID())
+	for _, cat := range en.CurveCategories() {
+		e.curveQueue = append(e.curveQueue, dirtyCurve{
+			eid:      en.ID(),
+			category: cat,
+		})
+	}
+
 	return nil
 }
 
@@ -341,7 +364,8 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 	var cs []command.Command
 
-	for _, c := range e.buildMoveCommands(req.GetClientId(), e.tick(), req.GetDestination(), req.GetEntityIds()) {
+	t := e.tick()
+	for _, c := range e.buildMoveCommands(req.GetClientId(), t, req.GetDestination(), req.GetEntityIds()) {
 		cs = append(cs, c)
 	}
 

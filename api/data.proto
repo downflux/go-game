@@ -31,10 +31,11 @@ message CurveDatum {
 }
 
 message Curve {
-  string curve_id = 1;
-  string entity_id = 2;
+  string entity_id = 1;
+  game.api.constants.CurveCategory category = 2;
   game.api.constants.CurveType type = 3;
   repeated CurveDatum data = 4;
+  double tick = 5;  // Generated server tick -- measure of staleness.
 }
 
 message ServerStatus {

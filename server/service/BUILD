@@ -9,7 +9,6 @@ go_library(
         "//api:api_go_proto",
         "//api:constants_go_proto",
         "//api:data_go_proto",
-        "//curve:curve",
         "//entity:entity",
         "//map:map",
         "//map/api:data_go_proto",

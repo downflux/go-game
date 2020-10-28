@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	curveType = gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE
+	categoryType = gcpb.CurveCategory_CURVE_CATEGORY_MOVE
+	curveType    = gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE
 )
 
 var (
@@ -56,29 +57,19 @@ func datumBefore(d1, d2 datum) bool {
 // Curve implements a curve.Curve which represents the physical location
 // of a specific entity.
 type Curve struct {
-	// id is read-only and not alterable after construction
-	id string
-
-	// entityID is read-only and not alterable after construction
+	// entityID is read-only and not alterable after construction.
 	entityID string
 
 	dataMux sync.RWMutex
+	tick    float64
 	data    []datum
-
-	deltaMux sync.Mutex
-	// delta keeps track of data that have not yet been communicated to the
-	// client yet.
-	//
-	// TODO(minkezhang): add enableDelta bool field -- clients should not
-	// be keeping track of this field.
-	delta []datum
 }
 
 // New constructs an instance of a Curve.
-func New(id, eid string) *Curve {
+func New(eid string, tick float64) *Curve {
 	return &Curve{
-		id:       id,
 		entityID: eid,
+		tick:     tick,
 	}
 }
 
@@ -86,8 +77,13 @@ func New(id, eid string) *Curve {
 // data interpretation, etc.
 func (c *Curve) Type() gcpb.CurveType { return curveType }
 
-// ID returns the Curve ID.
-func (c *Curve) ID() string { return c.id }
+func (c *Curve) Tick() float64 {
+	c.dataMux.RLock()
+	defer c.dataMux.RUnlock()
+
+	return c.tick
+}
+func (c *Curve) Category() gcpb.CurveCategory { return categoryType }
 
 // EntityID returns the ID of the parent Entity.
 func (c *Curve) EntityID() string { return c.entityID }
@@ -106,11 +102,6 @@ func (c *Curve) addDatumUnsafe(t float64, v interface{}) error {
 	d := datum{tick: t, value: proto.Clone(v.(*gdpb.Position)).(*gdpb.Position)}
 
 	c.data = insert(c.data, d)
-
-	// Add to delta cache for broadcasting.
-	c.deltaMux.Lock()
-	c.delta = append(c.delta, d)
-	c.deltaMux.Unlock()
 
 	// TODO(minkezhang): Add data validation.
 	return nil
@@ -142,6 +133,11 @@ func (c *Curve) Add(t float64, v interface{}) error {
 func (c *Curve) ReplaceTail(o curve.Curve) error {
 	c.dataMux.Lock()
 	defer c.dataMux.Unlock()
+
+	if c.tick > o.Tick() {
+		return nil
+	}
+	c.tick = o.Tick()
 
 	switch o.Type() {
 	case gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE:
@@ -198,26 +194,25 @@ func (c *Curve) Get(t float64) interface{} {
 	}
 }
 
-// ExportDelta builds a gdpb.Curve instance for data yet to be communicated
+// ExportTail builds a gdpb.Curve instance for data yet to be communicated
 // to the client.
-func (c *Curve) ExportDelta() (*gdpb.Curve, error) {
-	c.deltaMux.Lock()
-	delta := c.delta
-	c.delta = nil
-	c.deltaMux.Unlock()
+func (c *Curve) ExportTail(tick float64) *gdpb.Curve {
+	c.dataMux.RLock()
+	defer c.dataMux.RUnlock()
 
 	pb := &gdpb.Curve{
-		CurveId:  c.ID(),
 		Type:     c.Type(),
+		Category: c.Category(),
 		EntityId: c.EntityID(),
+		Tick:     c.Tick(),
 	}
 
-	for _, d := range delta {
+	for i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: tick}) }); i < len(c.data); i++ {
 		pb.Data = append(pb.GetData(), &gdpb.CurveDatum{
-			Tick:  d.tick,
-			Datum: &gdpb.CurveDatum_PositionDatum{d.value},
+			Tick:  c.data[i].tick,
+			Datum: &gdpb.CurveDatum_PositionDatum{c.data[i].value},
 		})
 	}
 
-	return pb, nil
+	return pb
 }

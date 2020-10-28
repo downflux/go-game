@@ -6,7 +6,6 @@ import (
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/server/id"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -58,11 +57,6 @@ func (c *Command) ClientID() string {
 	return c.clientID
 }
 
-// Start time.
-func (c *Command) Tick() float64 {
-	return c.tick
-}
-
 // We're assuming the position values are sane and don't overflow int32.
 func coordinate(p *gdpb.Position) *gdpb.Coordinate {
 	return &gdpb.Coordinate{
@@ -78,7 +72,7 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 	}
 }
 
-func (c *Command) Execute() (curve.Curve, error) {
+func (c *Command) Execute(tick float64) (curve.Curve, error) {
 	// Called concurrently (across multiple commands).
 	// TODO(minkezhang): proto.Clone the return values in map.astar.Path.
 	// TODO(minkezhang): Add additional infrastructure necessary to set pathLength > 0.
@@ -87,9 +81,9 @@ func (c *Command) Execute() (curve.Curve, error) {
 		return nil, err
 	}
 
-	cv := linearmove.New(id.RandomString(idLen), c.entityID)
+	cv := linearmove.New(c.entityID, tick)
 	for i, tile := range p {
-		cv.Add(c.tick+float64(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
+		cv.Add(tick+float64(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
 	}
 
 	return cv, nil

@@ -58,10 +58,17 @@ func TestDoTick(t *testing.T) {
 	const nClients = 1000
 	want := &apipb.StreamCurvesResponse{
 		Tick: 0,
+		Entities: []*gdpb.Entity{
+			{
+				EntityId: eid,
+				Type:     gcpb.EntityType_ENTITY_TYPE_TANK,
+			},
+		},
 		Curves: []*gdpb.Curve{
 			{
 				EntityId: eid,
 				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+				Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
 				Data: []*gdpb.CurveDatum{
 					{
 						Datum: &gdpb.CurveDatum_PositionDatum{
@@ -130,16 +137,15 @@ func TestDoTick(t *testing.T) {
 	}
 
 	for _, streamResponse := range streamResponses {
-	if diff := cmp.Diff(
-		want,
-		streamResponse,
-		protocmp.Transform(),
-		protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick"),
-		protocmp.IgnoreFields(&gdpb.Curve{}, "curve_id"),
-		protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
-	); diff != "" {
-		t.Errorf("<-e.ClientChannel() mismatch (-want +got):\n%v", diff)
-	}
+		if diff := cmp.Diff(
+			want,
+			streamResponse,
+			protocmp.Transform(),
+			protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick"),
+			protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
+		); diff != "" {
+			t.Errorf("<-e.ClientChannel() mismatch (-want +got):\n%v", diff)
+		}
 	}
 }
 

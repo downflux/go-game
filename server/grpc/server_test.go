@@ -90,10 +90,12 @@ func newSUT() (*sut, error) {
 func TestSendMoveCommand(t *testing.T) {
 	const expectedStreamMessageLength = 1
 	dest := &gdpb.Position{X: 3, Y: 0}
+	src := &gdpb.Position{X: 0, Y: 0}
 	want := &apipb.StreamCurvesResponse{
 		Curves: []*gdpb.Curve{
 			{
-				Type: gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+				Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
 				Data: []*gdpb.CurveDatum{
 					{
 						Datum: &gdpb.CurveDatum_PositionDatum{
@@ -119,7 +121,7 @@ func TestSendMoveCommand(t *testing.T) {
 			},
 		},
 	}
-	e := entity.NewSimpleEntity(id.RandomString(idLen), 0, &gdpb.Position{X: 0, Y: 0})
+	e := entity.NewSimpleEntity(id.RandomString(idLen), 0, src)
 
 	s, err := newSUT()
 	if err != nil {
@@ -217,7 +219,7 @@ func TestSendMoveCommand(t *testing.T) {
 		streamResp[0],
 		protocmp.Transform(),
 		protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick"),
-		protocmp.IgnoreFields(&gdpb.Curve{}, "entity_id", "curve_id"),
+		protocmp.IgnoreFields(&gdpb.Curve{}, "tick", "entity_id"),
 		protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
 	); diff != "" {
 		t.Errorf("StreamCurvesResponse() mismatch (-want +got):\n%v", diff)
