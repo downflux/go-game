@@ -7,7 +7,7 @@ namespace DownFluxGL
         [STAThread]
         static void Main()
         {
-            using (var game = new DownFlux("localhost:4444", ""))
+            using (var game = new DownFlux("localhost:4444"))
                 game.Run();
         }
     }

@@ -27,7 +27,7 @@ namespace DF {
         _curves = new StreamData();
       }
 
-      public string Connect(string tickID) {
+      public string Connect() {
         var resp = _client.AddClient(new DF.Game.API.API.AddClientRequest());
         _id = resp.ClientId;
         return ID;
@@ -40,6 +40,10 @@ namespace DF {
           _curves = new StreamData();
           return ret;
         }
+      }
+
+      public DF.Game.API.Data.ServerStatus GetStatus() {
+        return _client.GetStatus(new DF.Game.API.API.GetStatusRequest{}).Status;
       }
 
       public void Move(

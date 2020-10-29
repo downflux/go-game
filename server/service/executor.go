@@ -206,6 +206,10 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 func (e *Executor) broadcastCurves() error {
 	curves, entities := e.popTickQueue()
 
+	if curves == nil && entities == nil {
+		return nil
+	}
+
 	// TODO(minkezhang): Decide if it's okay that the reported tick may not
 	// coincide with the ticks of the curve and entities.
 	resp := &apipb.StreamCurvesResponse{

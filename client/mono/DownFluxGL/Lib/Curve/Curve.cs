@@ -7,7 +7,7 @@ namespace DF {
 	public static Curve Import(DF.Game.API.Data.Curve pb) {
           switch (pb.Type) {
             case DF.Game.API.Constants.CurveType.LinearMove:
-              return new LinearMove(pb.CurveId, pb.EntityId, pb.Data);
+              return new LinearMove(pb.EntityId, pb.Tick, pb.Data);
             default:
               break;
           }
@@ -48,16 +48,16 @@ namespace DF {
     // https://github.com/bazelbuild/rules_go/issues/54,
     // https://medium.com/learning-the-go-programming-language/calling-go-functions-from-other-languages-4c7d8bcc69bf.
     public class LinearMove : Curve {
-      private string _id;
       private string _entityID;
       private System.Collections.Generic.List<datum> _data;
+      private double _tick; // Act as staleness indicator.
 
       public LinearMove(
-        string id,
         string entityID,
+        double tick,
         Google.Protobuf.Collections.RepeatedField<DF.Game.API.Data.CurveDatum> data) {
-        _id = id;
         _entityID = entityID;
+        _tick = tick;
 
         _data = new System.Collections.Generic.List<datum>();
         // Assuming data is already sorted.
@@ -66,10 +66,16 @@ namespace DF {
         }
       }
 
-      public string ID { get => _id; }
       public string EntityID { get => _entityID; }
+      public double Tick { get => _tick; }
 
       public void ReplaceTail(LinearMove curve) {
+        if (_tick > curve.Tick) {
+          return;
+        }
+
+        _tick = curve.Tick;
+
         if (curve._data.Count == 0) {
           return;
         }

@@ -16,20 +16,19 @@ namespace DownFluxGL
         // DownFlux server API
         private DF.Client.Client _c;
         private string _server;
-        private string _tid;
         private System.Collections.Generic.Dictionary<
-          string, OneOf.OneOf<DF.Curve.LinearMove>> _curves;
+          (string, DF.Game.API.Constants.CurveCategory),
+          OneOf.OneOf<DF.Curve.LinearMove>> _curves;
 
-        // TODO(minkezhang): Get this on Initialize() from server.
         private System.TimeSpan _serverTickDuration;
 
-        public DownFlux(string server, string tickID)
+        public DownFlux(string server)
         {
             _server = server;
-            _tid = tickID;
             _graphics = new GraphicsDeviceManager(this);
             _curves = new System.Collections.Generic.Dictionary<
-              string, OneOf.OneOf<DF.Curve.LinearMove>>();
+              (string, DF.Game.API.Constants.CurveCategory),
+              OneOf.OneOf<DF.Curve.LinearMove>>();
 
             // TODO(minkezhang): Figure out why we can't control actual window
             // size here.
@@ -46,17 +45,27 @@ namespace DownFluxGL
             _c = new DF.Client.Client(
               new Grpc.Core.Channel(
                 _server, Grpc.Core.ChannelCredentials.Insecure));
-            _c.Connect(_tid);
-            _serverTickDuration = new System.TimeSpan((long) 1e6); // 100 ms
+            _c.Connect();
+
+            bool isStarted = false;
+            double tick = 0;
+            // TODO(minkezhang): Import map.
+            while (!isStarted) {
+              var status = _c.GetStatus();
+              _serverTickDuration = status.TickDuration.ToTimeSpan();
+              isStarted = status.IsStarted;
+              tick = status.Tick;
+            }
 
             // TODO(minkezhang): Make this async task actually have a Wait()
             // somewhere.
             // _c.StreamCurvesLoop(_tid).Start();
-            System.Threading.Tasks.Task.Run(() => _c.StreamCurvesLoop(0));
+            System.Threading.Tasks.Task.Run(() => _c.StreamCurvesLoop(tick));
 
-            // TODO(minkezhang): Remove this.
+            // TODO(minkezhang): gGenerate entity name dynamically instead.
+            // TODO(minkezhang): Call Move() only when user clicks on map.
             _c.Move(
-              0,
+              tick,
               new System.Collections.Generic.List<string>(){ "example-entity" },
               new DF.Game.API.Data.Position{
                 X = 5,
@@ -81,12 +90,12 @@ namespace DownFluxGL
               d.Item2.Switch(
                 linearMove => {
                   System.Console.Error.WriteLine("MATCHED LINEAR MOVE");
-                  if (!_curves.ContainsKey(linearMove.ID)) {
-                    System.Console.Error.WriteLine("Adding Curve: ", linearMove.ID);
+                  if (!_curves.ContainsKey((linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move))) {
+                    System.Console.Error.WriteLine("Adding curve for entity: ", linearMove.EntityID);
                     System.Console.Error.WriteLine(linearMove);
-                    _curves[linearMove.ID] = linearMove;
+                    _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)] = linearMove;
                   } else {
-                    _curves[linearMove.ID].AsT0.ReplaceTail(linearMove);
+                    _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)].AsT0.ReplaceTail(linearMove);
                   }
                 }
               );
@@ -108,7 +117,6 @@ namespace DownFluxGL
                 linearMove => {
                   var p = linearMove.Get(tick);
                   System.Console.Error.WriteLine(tick);
-                  System.Console.Error.WriteLine("curve ID", linearMove.ID);
                   System.Console.Error.WriteLine(p);
                   System.Console.Error.WriteLine(linearMove.Get(30));
 

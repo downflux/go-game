@@ -45,6 +45,7 @@ message StreamCurvesRequest {
   string client_id = 2;
 }
 
+// TODO(minkezhang): Rename to StreamData or something.
 message StreamCurvesResponse {
   double tick = 1;
   repeated game.api.data.Curve curves = 2;
