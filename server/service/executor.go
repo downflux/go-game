@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -65,6 +66,8 @@ type Executor struct {
 	isStoppedImpl int32
 	isStartedImpl int32
 	tickImpl      int64
+	startTimeMux  sync.Mutex
+	startTimeImpl time.Time
 
 	// Add-only. Acquire first.
 	dataMux  sync.RWMutex
@@ -92,12 +95,27 @@ func (e *Executor) isStarted() bool { return atomic.LoadInt32(&(e.isStartedImpl)
 func (e *Executor) setIsStarted()   { atomic.StoreInt32(&(e.isStartedImpl), 1) }
 func (e *Executor) isStopped() bool { return atomic.LoadInt32(&(e.isStoppedImpl)) != 0 }
 func (e *Executor) setIsStopped()   { atomic.StoreInt32(&(e.isStoppedImpl), 1) }
+func (e *Executor) startTime() time.Time {
+	e.startTimeMux.Lock()
+	defer e.startTimeMux.Unlock()
+
+	return e.startTimeImpl
+}
+func (e *Executor) setStartTime() {
+	e.startTimeMux.Lock()
+	defer e.startTimeMux.Unlock()
+
+	log.Printf("time.Now == %v", time.Now())
+	e.startTimeImpl = time.Now()
+}
 
 func (e *Executor) Status() *gdpb.ServerStatus {
+	log.Println("timestamppb == %v", timestamppb.New(e.startTime()))
 	return &gdpb.ServerStatus{
 		Tick:         e.tick(),
 		IsStarted:    e.isStarted(),
 		TickDuration: durationpb.New(tickDuration),
+		StartTime:    timestamppb.New(e.startTime()),
 	}
 }
 
@@ -251,6 +269,7 @@ func (e *Executor) Stop() {
 }
 
 func (e *Executor) Run() error {
+	e.setStartTime()
 	e.setIsStarted()
 	for !e.isStopped() {
 		t := time.Now()

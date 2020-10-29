@@ -25,6 +25,7 @@ namespace DownFluxGL
           DF.Curve.Curve> _curves;
 
         private System.TimeSpan _serverTickDuration;
+        private System.DateTime _serverStartTime;
 
         public DownFlux(string server)
         {
@@ -61,6 +62,7 @@ namespace DownFluxGL
               _serverTickDuration = status.TickDuration.ToTimeSpan();
               isStarted = status.IsStarted;
               tick = status.Tick;
+              _serverStartTime = status.StartTime.ToDateTime().ToLocalTime();
             }
 
             // TODO(minkezhang): Make this async task actually have a Wait()
@@ -71,7 +73,7 @@ namespace DownFluxGL
                     // TODO(minkzhang): Move into Update.
                     // TODO(minkezhang): Call Move() only when user clicks on map.
                     _c.Move(
-                      0, // TODO(minkezhang): Fix this tick.
+                      0, // TODO(minkezhang): fix this tick.
                       new System.Collections.Generic.List<string>(){"example-entity"},
                       new DF.Game.API.Data.Position{
                         X = 5,
@@ -122,7 +124,7 @@ namespace DownFluxGL
 
         protected override void Draw(GameTime gameTime)
         {
-            var tick = gameTime.TotalGameTime / _serverTickDuration;
+            var tick = (System.DateTime.Now - _serverStartTime) / _serverTickDuration;
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
@@ -132,9 +134,6 @@ namespace DownFluxGL
               c.Value.Switch(
                 linearMove => {
                   var p = linearMove.Get(tick);
-                  System.Console.Error.WriteLine(tick);
-                  System.Console.Error.WriteLine(p);
-                  System.Console.Error.WriteLine(linearMove.Get(30));
 
                   _spriteBatch.Draw(
                     ballTexture,

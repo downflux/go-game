@@ -6,6 +6,7 @@ option csharp_namespace = "DF.Game.API.Data";
 
 import "api/constants.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 // Position is a specific point in the map, representing a point in the map.
 message Position {
@@ -42,6 +43,7 @@ message ServerStatus {
   bool is_started = 1;
   double tick = 2;
   google.protobuf.Duration tick_duration = 3;
+  google.protobuf.Timestamp start_time = 4;
 }
 
 message Entity {

@@ -28,6 +28,7 @@ proto_library(
     deps = [
         ":constants_proto",
 	"@com_google_protobuf//:duration_proto",
+	"@com_google_protobuf//:timestamp_proto",
     ],
 )
 
@@ -38,6 +39,7 @@ go_proto_library(
     deps = [
         ":constants_go_proto",
         "@io_bazel_rules_go//proto/wkt:duration_go_proto",
+        "@io_bazel_rules_go//proto/wkt:timestamp_go_proto",
     ],
 )
 
