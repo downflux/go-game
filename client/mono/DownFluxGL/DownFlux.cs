@@ -16,9 +16,13 @@ namespace DownFluxGL
         // DownFlux server API
         private DF.Client.Client _c;
         private string _server;
+
+        // Add-only collections
+        private System.Collections.Generic.Dictionary<
+          string, DF.Entity.Entity> _entities;
         private System.Collections.Generic.Dictionary<
           (string, DF.Game.API.Constants.CurveCategory),
-          OneOf.OneOf<DF.Curve.LinearMove>> _curves;
+          DF.Curve.Curve> _curves;
 
         private System.TimeSpan _serverTickDuration;
 
@@ -28,7 +32,9 @@ namespace DownFluxGL
             _graphics = new GraphicsDeviceManager(this);
             _curves = new System.Collections.Generic.Dictionary<
               (string, DF.Game.API.Constants.CurveCategory),
-              OneOf.OneOf<DF.Curve.LinearMove>>();
+              DF.Curve.Curve>();
+            _entities = new System.Collections.Generic.Dictionary<
+              string, DF.Entity.Entity>();
 
             // TODO(minkezhang): Figure out why we can't control actual window
             // size here.
@@ -62,17 +68,17 @@ namespace DownFluxGL
             // _c.StreamCurvesLoop(_tid).Start();
             System.Threading.Tasks.Task.Run(() => _c.StreamCurvesLoop(tick));
 
-            // TODO(minkezhang): gGenerate entity name dynamically instead.
-            // TODO(minkezhang): Call Move() only when user clicks on map.
-            _c.Move(
-              tick,
-              new System.Collections.Generic.List<string>(){ "example-entity" },
-              new DF.Game.API.Data.Position{
-                X = 5,
-                Y = 5
-              },
-              DF.Game.API.Constants.MoveType.Forward
-            );
+                    // TODO(minkzhang): Move into Update.
+                    // TODO(minkezhang): Call Move() only when user clicks on map.
+                    _c.Move(
+                      0, // TODO(minkezhang): Fix this tick.
+                      new System.Collections.Generic.List<string>(){"example-entity"},
+                      new DF.Game.API.Data.Position{
+                        X = 5,
+                        Y = 5
+                      },
+                      DF.Game.API.Constants.MoveType.Forward
+                    );
 
             base.Initialize();
         }
@@ -86,16 +92,26 @@ namespace DownFluxGL
 
         protected override void Update(GameTime gameTime)
         {
+            // TODO(minkezhang): Determine if we need d to be a CurveStream
+            // object (with associated tick).
             foreach (var d in _c.Data) {
               d.Item2.Switch(
                 linearMove => {
-                  System.Console.Error.WriteLine("MATCHED LINEAR MOVE");
                   if (!_curves.ContainsKey((linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move))) {
-                    System.Console.Error.WriteLine("Adding curve for entity: ", linearMove.EntityID);
                     System.Console.Error.WriteLine(linearMove);
                     _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)] = linearMove;
                   } else {
                     _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)].AsT0.ReplaceTail(linearMove);
+                  }
+                }
+              );
+            }
+
+            foreach (var e in _c.Entities) {
+              e.Item2.Switch(
+                simpleEntity => {
+                  if (!_entities.ContainsKey(simpleEntity.ID)) {
+                    _entities[simpleEntity.ID] = simpleEntity;
                   }
                 }
               );

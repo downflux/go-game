@@ -1,8 +1,11 @@
 namespace DF {
   namespace Client {
     // double here represents the server tick.
-    using StreamData = System.Collections.Generic.Queue<
+    // TODO(minkezhang): Remove the tuple -- this can be a naked queue.
+    using CurveStream = System.Collections.Generic.Queue<
       (double, DF.Curve.Curve)>;
+    using EntityStream = System.Collections.Generic.Queue<
+      (double, DF.Entity.Entity)>;
 
     public class Client {
       private DF.Game.API.API.DownFlux.DownFluxClient _client;
@@ -15,7 +18,10 @@ namespace DF {
       // TODO(minkezhang): Add entity list.
 
       private System.Threading.ReaderWriterLock _curvesMutex;
-      private StreamData _curves;
+      private CurveStream _curves;
+
+      private System.Threading.ReaderWriterLock _entitiesMutex;
+      private EntityStream _entities;
 
       public string ID { get => _id; }
 
@@ -23,8 +29,12 @@ namespace DF {
         _client = new DF.Game.API.API.DownFlux.DownFluxClient(channel);
         _ctSource = new System.Threading.CancellationTokenSource();
         _ct = _ctSource.Token;
+
         _curvesMutex = new System.Threading.ReaderWriterLock();
-        _curves = new StreamData();
+        _curves = new CurveStream();
+
+        _entitiesMutex = new System.Threading.ReaderWriterLock();
+        _entities = new EntityStream();
       }
 
       public string Connect() {
@@ -34,11 +44,30 @@ namespace DF {
       }
 
       // Returns the current buffer of streamed messages.
-      public StreamData Data {
+      // TODO(minkezhang): Rename Curves or something.
+      public CurveStream Data {
         get {
-          var ret = _curves;
-          _curves = new StreamData();
-          return ret;
+          _curvesMutex.AcquireReaderLock(1000);  // 1 sec
+          try {
+            var ret = _curves;
+            _curves = new CurveStream();
+            return ret;
+          } finally {
+            _curvesMutex.ReleaseReaderLock();
+          }
+        }
+      }
+
+      public EntityStream Entities {
+        get {
+          _entitiesMutex.AcquireReaderLock(1000);
+          try {
+            var ret = _entities;
+            _entities = new EntityStream();
+            return ret;
+          } finally {
+            _entitiesMutex.ReleaseReaderLock();
+          }
         }
       }
 
@@ -76,15 +105,25 @@ namespace DF {
               try {
                 foreach (var curvePB in resp.Curves) {
                   try {
-                    System.Console.Error.WriteLine("IMPORTED CURVE: ");
-                    System.Console.Error.WriteLine(DF.Curve.Curve.Import(curvePB));
                     _curves.Enqueue((resp.Tick, DF.Curve.Curve.Import(curvePB)));
-                  } catch (System.ArgumentException e) {
+                  } catch (System.ArgumentException) {
                      // TODO(minkezhang): Log this to some file.
                   }
                 }
               } finally {
                 _curvesMutex.ReleaseWriterLock();
+              }
+              // TODO(minkezhang): Parallelize this.
+              _entitiesMutex.AcquireWriterLock(1000);  // 1 sec
+              try {
+                foreach (var entityPB in resp.Entities) {
+                  try {
+                    _entities.Enqueue((resp.Tick, DF.Entity.Entity.Import(entityPB)));
+                  } catch (System.ArgumentException) {
+                  }
+                }
+              } finally {
+                _entitiesMutex.ReleaseWriterLock();
               }
             }
           } catch (System.Threading.Tasks.TaskCanceledException) {
