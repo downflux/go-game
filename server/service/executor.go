@@ -55,8 +55,62 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		abstractGraph: g,
 		entities:      map[string]entity.Entity{},
 		commandQueue:  nil,
-		clientChannel: map[string]chan *apipb.StreamCurvesResponse{},
+		clients: map[string]*Client{},
 	}, nil
+}
+
+// TODO(minkezhang): Export out into separate module.
+type Client struct {
+	mux sync.Mutex
+	id string  // read-only
+	ch chan *apipb.StreamCurvesResponse
+	isSynced bool
+}
+
+func (c *Client) ID() string {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	return c.id
+}
+func (c *Client) Channel() chan *apipb.StreamCurvesResponse {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	return c.ch
+}
+func (c *Client) NewChannel() {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	c.ch = make(chan *apipb.StreamCurvesResponse)
+}
+func (c *Client) CloseChannel() {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	close(c.ch)
+	c.ch = nil
+}
+func (c *Client) IsSynced() bool {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	return c.isSynced
+}
+func (c *Client) SetIsSynced(s bool) {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	c.isSynced = s
+}
+func NewClient(cid string) *Client {
+	c := &Client{
+		id: cid,
+		isSynced: false,
+	}
+	c.NewChannel()
+	return c
 }
 
 type Executor struct {
@@ -85,8 +139,8 @@ type Executor struct {
 	curveQueueMux sync.RWMutex
 	curveQueue    []dirtyCurve
 
-	clientChannelMux sync.RWMutex
-	clientChannel    map[string]chan *apipb.StreamCurvesResponse
+	clientsMux sync.RWMutex
+	clients    map[string]*Client
 }
 
 func (e *Executor) tick() float64   { return float64(atomic.LoadInt64(&(e.tickImpl))) }
@@ -120,24 +174,23 @@ func (e *Executor) Status() *gdpb.ServerStatus {
 }
 
 func (e *Executor) AddClient() (string, error) {
-	// TODO(minkezhang): Add Client struct.
 	// TODO(minkezhang): Add maxClients check.
-	e.clientChannelMux.Lock()
-	defer e.clientChannelMux.Unlock()
+	e.clientsMux.Lock()
+	defer e.clientsMux.Unlock()
 
 	cid := id.RandomString(idLen)
-	for _, found := e.clientChannel[cid]; found; cid = id.RandomString(idLen) {
+	for _, found := e.clients[cid]; found; cid = id.RandomString(idLen) {
 	}
-	e.clientChannel[cid] = make(chan *apipb.StreamCurvesResponse)
+	e.clients[cid] = NewClient(cid)
 
 	return cid, nil
 }
 
 func (e *Executor) ClientChannel(cid string) <-chan *apipb.StreamCurvesResponse {
-	e.clientChannelMux.RLock()
-	defer e.clientChannelMux.RUnlock()
+	e.clientsMux.RLock()
+	defer e.clientsMux.RUnlock()
 
-	return e.clientChannel[cid]
+	return e.clients[cid].Channel()
 }
 
 func (e *Executor) popCommandQueue() ([]command.Command, error) {
@@ -236,12 +289,12 @@ func (e *Executor) broadcastCurves() error {
 		Entities: entities,
 	}
 
-	e.clientChannelMux.RLock()
-	defer e.clientChannelMux.RUnlock()
+	e.clientsMux.RLock()
+	defer e.clientsMux.RUnlock()
 
 	var eg errgroup.Group
-	for _, ch := range e.clientChannel {
-		ch := ch
+	for _, c := range e.clients {
+		ch := c.Channel()
 		eg.Go(func() error {
 			ch <- resp
 			// TODO(minkezhang): Add timeout support.
@@ -254,11 +307,11 @@ func (e *Executor) broadcastCurves() error {
 }
 
 func (e *Executor) closeStreams() error {
-	e.clientChannelMux.Lock()
-	defer e.clientChannelMux.Unlock()
+	e.clientsMux.Lock()
+	defer e.clientsMux.Unlock()
 
-	for _, ch := range e.clientChannel {
-		close(ch)
+	for _, c := range e.clients {
+		c.CloseChannel()
 	}
 	return nil
 }
