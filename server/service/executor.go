@@ -159,12 +159,10 @@ func (e *Executor) setStartTime() {
 	e.startTimeMux.Lock()
 	defer e.startTimeMux.Unlock()
 
-	log.Printf("time.Now == %v", time.Now())
 	e.startTimeImpl = time.Now()
 }
 
 func (e *Executor) Status() *gdpb.ServerStatus {
-	log.Println("timestamppb == %v", timestamppb.New(e.startTime()))
 	return &gdpb.ServerStatus{
 		Tick:         e.tick(),
 		IsStarted:    e.isStarted(),
@@ -235,12 +233,12 @@ func (e *Executor) processCommand(cmd command.Command) error {
 }
 
 func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
-	e.dataMux.Lock()
+	e.dataMux.RLock()
 	e.entityQueueMux.Lock()
 	e.curveQueueMux.Lock()
 	defer e.curveQueueMux.Unlock()
 	defer e.entityQueueMux.Unlock()
-	defer e.dataMux.Unlock()
+	defer e.dataMux.RUnlock()
 
 	var processedCurves = map[string]map[gcpb.CurveCategory]bool{}
 
@@ -255,6 +253,7 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 		})
 	}
 	for _, dc := range e.curveQueue {
+		// Do not broadcast curve twice.
 		if _, found := processedCurves[dc.eid]; !found {
 			processedCurves[dc.eid] = map[gcpb.CurveCategory]bool{}
 		}
@@ -271,6 +270,29 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 	e.curveQueue = nil
 	e.entityQueue = nil
 
+	return curves, entities
+}
+
+func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
+	e.dataMux.RLock()
+	defer e.dataMux.RUnlock()
+
+        var curves []*gdpb.Curve
+        var entities []*gdpb.Entity
+
+	// TODO(minkezhang): Give some leeway here, broadcast a bit in the
+	// past.
+	beginningTick := e.tick()
+
+	for _, en := range e.entities {
+		entities = append(entities, &gdpb.Entity{
+                        EntityId: en.ID(),
+                        Type:     en.Type(),
+                })
+		for _, cat := range en.CurveCategories() {
+			curves = append(curves, e.entities[en.ID()].Curve(cat).ExportTail(beginningTick))
+		}
+	}
 	return curves, entities
 }
 
@@ -292,11 +314,30 @@ func (e *Executor) broadcastCurves() error {
 	e.clientsMux.RLock()
 	defer e.clientsMux.RUnlock()
 
+	allResp := &apipb.StreamCurvesResponse{
+		Tick: e.tick(),
+	}
+	var needFullState bool
+	for _, c := range e.clients {
+		needFullState = needFullState || !c.IsSynced()
+	}
+	if needFullState {
+		allCurves, allEntities := e.allCurvesAndEntities()
+		allResp.Curves = allCurves
+		allResp.Entities = allEntities
+	}
+
 	var eg errgroup.Group
 	for _, c := range e.clients {
+		c := c
 		ch := c.Channel()
 		eg.Go(func() error {
-			ch <- resp
+			if c.IsSynced() {
+				ch <- resp
+			} else {
+				ch <- allResp
+				c.SetIsSynced(true)
+			}
 			// TODO(minkezhang): Add timeout support.
 			// Will need to implement resync logic once timeout is
 			// added.
@@ -347,17 +388,14 @@ func (e *Executor) doTick() error {
 		return err
 	}
 
-	log.Printf("[%.f] processing commands", e.tick())
 	for _, cmd := range commands {
 		// TODO(minkezhang): Add actual error handling here -- only
 		// Only return early if error is very bad.
 		if err := e.processCommand(cmd); err != nil {
-			log.Printf("[%.f] error while processing command %v: %v", cmd, err)
 			return err
 		}
 	}
 
-	log.Printf("[%.f] broadcasting curves", e.tick())
 	if err := e.broadcastCurves(); err != nil {
 		return err
 	}

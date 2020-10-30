@@ -218,7 +218,7 @@ func TestSendMoveCommand(t *testing.T) {
 		want,
 		streamResp[0],
 		protocmp.Transform(),
-		protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick"),
+		protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick", "entities"),
 		protocmp.IgnoreFields(&gdpb.Curve{}, "tick", "entity_id"),
 		protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
 	); diff != "" {
