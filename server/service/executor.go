@@ -103,6 +103,10 @@ func (c *Client) SetIsSynced(s bool) {
 	defer c.mux.Unlock()
 
 	c.isSynced = s
+	if !s {
+		close(c.ch)
+		c.ch = nil
+	}
 }
 func NewClient(cid string) *Client {
 	c := &Client{
