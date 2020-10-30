@@ -196,6 +196,10 @@ func (c *Curve) Get(t float64) interface{} {
 
 // ExportTail builds a gdpb.Curve instance for data yet to be communicated
 // to the client.
+//
+// Export tail will include in the Curve returned a single point before the
+// tick -- this allows clients to extrapolate the current position of an
+// entity if input tick does not fall on an exact data point.
 func (c *Curve) ExportTail(tick float64) *gdpb.Curve {
 	c.dataMux.RLock()
 	defer c.dataMux.RUnlock()
@@ -207,7 +211,20 @@ func (c *Curve) ExportTail(tick float64) *gdpb.Curve {
 		Tick:     c.Tick(),
 	}
 
-	for i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: tick}) }); i < len(c.data); i++ {
+	i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: tick}) })
+	// If tick is a very large number, still include at minimum the last
+	// known position of an entity.
+	if i > len(c.data) - 1 {
+		i = len(c.data) - 1
+	}
+	// If the tick falls in between two indices, return the smaller index
+	// as we still need to interpolate the position until time passes to
+	// the larger tick.
+	if (c.data[i].tick > tick) && (i > 0) {
+		i -= 1
+	}
+
+	for i := i; i < len(c.data); i++ {
 		pb.Data = append(pb.GetData(), &gdpb.CurveDatum{
 			Tick:  c.data[i].tick,
 			Datum: &gdpb.CurveDatum_PositionDatum{c.data[i].value},

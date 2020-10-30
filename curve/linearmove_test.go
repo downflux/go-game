@@ -142,6 +142,7 @@ func TestExportTail(t *testing.T) {
 	cSimple := New(eid, 0)
 	cSimple.Add(0, &gdpb.Position{X: 0, Y: 0})
 	cSimple.Add(1, &gdpb.Position{X: 1, Y: 1})
+	cSimple.Add(2, &gdpb.Position{X: 2, Y: 2})
 
 	testConfigs := []struct {
 		name string
@@ -167,13 +168,17 @@ func TestExportTail(t *testing.T) {
 						Tick:  1,
 						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(1).(*gdpb.Position)},
 					},
+					{
+						Tick:  2,
+						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(2).(*gdpb.Position)},
+					},
 				},
 			},
 		},
 		{
 			name: "ExportTailPartial",
 			c:    cSimple,
-			t:    0.9,
+			t:    1,
 			want: &gdpb.Curve{
 				EntityId: eid,
 				Tick:     cSimple.Tick(),
@@ -184,11 +189,15 @@ func TestExportTail(t *testing.T) {
 						Tick:  1,
 						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(1).(*gdpb.Position)},
 					},
+					{
+						Tick:  2,
+						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(2).(*gdpb.Position)},
+					},
 				},
 			},
 		},
 		{
-			name: "ExportTailNoData",
+			name: "ExportTailOffsetIndex",
 			c:    cSimple,
 			t:    1.1,
 			want: &gdpb.Curve{
@@ -196,7 +205,33 @@ func TestExportTail(t *testing.T) {
 				Tick:     cSimple.Tick(),
 				Category: cSimple.Category(),
 				Type:     cSimple.Type(),
-				Data:     []*gdpb.CurveDatum{},
+				Data: []*gdpb.CurveDatum{
+					{
+						Tick:  1,
+						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(1).(*gdpb.Position)},
+					},
+					{
+						Tick:  2,
+						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(2).(*gdpb.Position)},
+					},
+				},
+			},
+		},
+		{
+			name: "ExportTailPastLastDataPoint",
+			c:    cSimple,
+			t:    2.1,
+			want: &gdpb.Curve{
+				EntityId: eid,
+				Tick:     cSimple.Tick(),
+				Category: cSimple.Category(),
+				Type:     cSimple.Type(),
+				Data:     []*gdpb.CurveDatum{
+					{
+						Tick:  2,
+						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(2).(*gdpb.Position)},
+					},
+				},
 			},
 		},
 	}

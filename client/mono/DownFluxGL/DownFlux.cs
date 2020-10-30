@@ -70,18 +70,6 @@ namespace DownFluxGL
             // _c.StreamCurvesLoop(_tid).Start();
             System.Threading.Tasks.Task.Run(() => _c.StreamCurvesLoop(tick));
 
-                    // TODO(minkzhang): Move into Update.
-                    // TODO(minkezhang): Call Move() only when user clicks on map.
-                    _c.Move(
-                      0, // TODO(minkezhang): fix this tick.
-                      new System.Collections.Generic.List<string>(){"example-entity"},
-                      new DF.Game.API.Data.Position{
-                        X = 5,
-                        Y = 5
-                      },
-                      DF.Game.API.Constants.MoveType.Forward
-                    );
-
             base.Initialize();
         }
 
@@ -94,6 +82,8 @@ namespace DownFluxGL
 
         protected override void Update(GameTime gameTime)
         {
+            var tick = (System.DateTime.Now - _serverStartTime) / _serverTickDuration;
+
             // TODO(minkezhang): Determine if we need d to be a CurveStream
             // object (with associated tick).
             foreach (var d in _c.Data) {
@@ -114,6 +104,17 @@ namespace DownFluxGL
                 simpleEntity => {
                   if (!_entities.ContainsKey(simpleEntity.ID)) {
                     _entities[simpleEntity.ID] = simpleEntity;
+
+                    // TODO(minkezhang): Call Move() only when user clicks on map.
+                    _c.Move(
+                      tick,
+                      new System.Collections.Generic.List<string>(){simpleEntity.ID},
+                      new DF.Game.API.Data.Position{
+                        X = 5,
+                        Y = 5
+                      },
+                      DF.Game.API.Constants.MoveType.Forward
+                    );
                   }
                 }
               );

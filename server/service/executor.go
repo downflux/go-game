@@ -172,6 +172,7 @@ func (e *Executor) Status() *gdpb.ServerStatus {
 }
 
 func (e *Executor) AddClient() (string, error) {
+	log.Printf("DEBUG: Adding client")
 	// TODO(minkezhang): Add maxClients check.
 	e.clientsMux.Lock()
 	defer e.clientsMux.Unlock()
@@ -299,10 +300,6 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 func (e *Executor) broadcastCurves() error {
 	curves, entities := e.popTickQueue()
 
-	if curves == nil && entities == nil {
-		return nil
-	}
-
 	// TODO(minkezhang): Decide if it's okay that the reported tick may not
 	// coincide with the ticks of the curve and entities.
 	resp := &apipb.StreamCurvesResponse{
@@ -310,13 +307,13 @@ func (e *Executor) broadcastCurves() error {
 		Curves:   curves,
 		Entities: entities,
 	}
+	allResp := &apipb.StreamCurvesResponse{
+		Tick: e.tick(),
+	}
 
 	e.clientsMux.RLock()
 	defer e.clientsMux.RUnlock()
 
-	allResp := &apipb.StreamCurvesResponse{
-		Tick: e.tick(),
-	}
 	var needFullState bool
 	for _, c := range e.clients {
 		needFullState = needFullState || !c.IsSynced()
@@ -327,14 +324,22 @@ func (e *Executor) broadcastCurves() error {
 		allResp.Entities = allEntities
 	}
 
+	if !needFullState && curves == nil && entities == nil {
+		return nil
+	}
+
+	log.Printf("DEBUG: sending curves to %d clients", len(e.clients))
 	var eg errgroup.Group
 	for _, c := range e.clients {
 		c := c
 		ch := c.Channel()
 		eg.Go(func() error {
+			log.Printf("DEBUG: Attempting to send message to client %v", c)
 			if c.IsSynced() {
+				log.Printf("DEBUG: Sending response to a synced client: %v", resp)
 				ch <- resp
 			} else {
+				log.Printf("DEBUG: Sending response to an unsynced client: %v", allResp)
 				ch <- allResp
 				c.SetIsSynced(true)
 			}
@@ -396,6 +401,7 @@ func (e *Executor) doTick() error {
 		}
 	}
 
+	log.Printf("[%.f] Broadcasting curves to all clients", e.tick())
 	if err := e.broadcastCurves(); err != nil {
 		return err
 	}
