@@ -6,6 +6,7 @@ option csharp_namespace = "DF.Game.API.Data";
 
 import "api/constants.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 // Position is a specific point in the map, representing a point in the map.
 message Position {
@@ -31,14 +32,21 @@ message CurveDatum {
 }
 
 message Curve {
-  string curve_id = 1;
-  string entity_id = 2;
+  string entity_id = 1;
+  game.api.constants.CurveCategory category = 2;
   game.api.constants.CurveType type = 3;
   repeated CurveDatum data = 4;
+  double tick = 5;  // Generated server tick -- measure of staleness.
 }
 
 message ServerStatus {
   bool is_started = 1;
   double tick = 2;
   google.protobuf.Duration tick_duration = 3;
+  google.protobuf.Timestamp start_time = 4;
+}
+
+message Entity {
+  string entity_id = 1;
+  game.api.constants.EntityType type = 2;  
 }

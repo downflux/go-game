@@ -9,7 +9,8 @@ import (
 type Command interface {
 	Type() sscpb.CommandType
 	ClientID() string
-	Tick() float64
 
-	Execute() (curve.Curve, error)
+	// Execute will run subroutine for the command implementation at the
+	// specified server tick.
+	Execute(args interface{}) (curve.Curve, error)
 }

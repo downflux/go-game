@@ -14,7 +14,6 @@ go_library(
 	"//map:utils",
 	"//pathing/hpf:astar",
 	"//pathing/hpf:graph",
-	"//server:id",
         "//server/service/api:constants_go_proto",
         "@com_github_golang_protobuf//proto:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",

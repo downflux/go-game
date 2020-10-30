@@ -56,12 +56,19 @@ func TestDoTick(t *testing.T) {
 	src := &gdpb.Position{X: 0, Y: 0}
 	t1 := float64(0)
 	const nClients = 1000
-	want := &apipb.StreamCurvesResponse{
+	want := &apipb.StreamDataResponse{
 		Tick: 0,
+		Entities: []*gdpb.Entity{
+			{
+				EntityId: eid,
+				Type:     gcpb.EntityType_ENTITY_TYPE_TANK,
+			},
+		},
 		Curves: []*gdpb.Curve{
 			{
 				EntityId: eid,
 				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+				Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
 				Data: []*gdpb.CurveDatum{
 					{
 						Datum: &gdpb.CurveDatum_PositionDatum{
@@ -119,7 +126,7 @@ func TestDoTick(t *testing.T) {
 	var eg errgroup.Group
 	eg.Go(e.doTick)
 
-	var streamResponses []*apipb.StreamCurvesResponse
+	var streamResponses []*apipb.StreamDataResponse
 	for i := 0; i < nClients; i++ {
 		// Assuming all clients will receive messages in a timely manner.
 		streamResponses = append(streamResponses, <-e.ClientChannel(cids[i]))
@@ -130,16 +137,15 @@ func TestDoTick(t *testing.T) {
 	}
 
 	for _, streamResponse := range streamResponses {
-	if diff := cmp.Diff(
-		want,
-		streamResponse,
-		protocmp.Transform(),
-		protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick"),
-		protocmp.IgnoreFields(&gdpb.Curve{}, "curve_id"),
-		protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
-	); diff != "" {
-		t.Errorf("<-e.ClientChannel() mismatch (-want +got):\n%v", diff)
-	}
+		if diff := cmp.Diff(
+			want,
+			streamResponse,
+			protocmp.Transform(),
+			protocmp.IgnoreFields(&apipb.StreamDataResponse{}, "tick"),
+			protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
+		); diff != "" {
+			t.Errorf("<-e.ClientChannel() mismatch (-want +got):\n%v", diff)
+		}
 	}
 }
 
@@ -180,7 +186,7 @@ func TestBuildMoveCommands(t *testing.T) {
 			p1:        &gdpb.Position{X: 0, Y: 0},
 			p2:        &gdpb.Position{X: 1, Y: 0},
 			want: []*move.Command{
-				move.New(nil, nil, "random-client", "some-entity", 1, &gdpb.Position{X: 0, Y: 0}, &gdpb.Position{X: 1, Y: 0}),
+				move.New(nil, nil, "random-client", "some-entity", &gdpb.Position{X: 1, Y: 0}),
 			},
 		},
 		{
@@ -209,7 +215,7 @@ func TestBuildMoveCommands(t *testing.T) {
 				}
 			}
 
-			got := e.buildMoveCommands(c.cid, c.t2, c.p2, []string{c.eid})
+			got := e.buildMoveCommands(c.cid, c.p2, []string{c.eid})
 			if diff := cmp.Diff(
 				got,
 				c.want,
@@ -250,7 +256,7 @@ func TestAddMoveCommands(t *testing.T) {
 	}
 
 	if diff := cmp.Diff(
-		[]command.Command{move.New(e.tileMap, e.abstractGraph, cid, eid, t0, p1, p2)},
+		[]command.Command{move.New(e.tileMap, e.abstractGraph, cid, eid, p2)},
 		e.commandQueue,
 		cmp.AllowUnexported(move.Command{}, graph.Graph{}, tile.Map{}, node.Map{}, edge.Map{}),
 		protocmp.Transform(),

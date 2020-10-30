@@ -34,7 +34,7 @@ type DownFluxServer struct {
 // Debug function. Delete.
 func (s *DownFluxServer) Executor() *executor.Executor { return s.ex }
 
-func (s *DownFluxServer) validateClient(cid string) (<-chan *apipb.StreamCurvesResponse, error) {
+func (s *DownFluxServer) validateClient(cid string) (<-chan *apipb.StreamDataResponse, error) {
 	ch := s.ex.ClientChannel(cid)
 	if ch == nil {
 		return nil, status.Errorf(codes.NotFound, "client %v not found", cid)
@@ -67,7 +67,7 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 	return resp, nil
 }
 
-func (s *DownFluxServer) StreamCurves(req *apipb.StreamCurvesRequest, stream apipb.DownFlux_StreamCurvesServer) error {
+func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
 	ch, err := s.validateClient(req.GetClientId())
 	if err != nil {
 		return err

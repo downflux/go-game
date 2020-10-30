@@ -22,8 +22,10 @@ type Curve interface {
 	// TODO(minkezhang): Consider if we need Start(), End() tick values.
 
 	Type() gcpb.CurveType
-	ID() string
+	Category() gcpb.CurveCategory
 	DatumType() reflect.Type
+	Tick() float64
+
 	EntityID() string
 
 	// Add takes a value and copies it into the curve.
@@ -35,11 +37,5 @@ type Curve interface {
 	// Mutate, not copy constructor.
 	ReplaceTail(c Curve) error
 
-	ExportDelta() (*gdpb.Curve, error)
-
-	// TODO(minkezhang): Implement the following.
-	/**
-	 * Export() (*gdpb.Curve, error)
-	 * Import(*gdpb.Curve) error
-	 */
+	ExportTail(tick float64) *gdpb.Curve
 }
