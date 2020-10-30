@@ -56,7 +56,7 @@ func TestDoTick(t *testing.T) {
 	src := &gdpb.Position{X: 0, Y: 0}
 	t1 := float64(0)
 	const nClients = 1000
-	want := &apipb.StreamCurvesResponse{
+	want := &apipb.StreamDataResponse{
 		Tick: 0,
 		Entities: []*gdpb.Entity{
 			{
@@ -126,7 +126,7 @@ func TestDoTick(t *testing.T) {
 	var eg errgroup.Group
 	eg.Go(e.doTick)
 
-	var streamResponses []*apipb.StreamCurvesResponse
+	var streamResponses []*apipb.StreamDataResponse
 	for i := 0; i < nClients; i++ {
 		// Assuming all clients will receive messages in a timely manner.
 		streamResponses = append(streamResponses, <-e.ClientChannel(cids[i]))
@@ -141,7 +141,7 @@ func TestDoTick(t *testing.T) {
 			want,
 			streamResponse,
 			protocmp.Transform(),
-			protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick"),
+			protocmp.IgnoreFields(&apipb.StreamDataResponse{}, "tick"),
 			protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
 		); diff != "" {
 			t.Errorf("<-e.ClientChannel() mismatch (-want +got):\n%v", diff)

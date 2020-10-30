@@ -89,15 +89,15 @@ namespace DF {
         });
       }
 
-      public async System.Threading.Tasks.Task StreamCurvesLoop(double tick) {
-        using (var call = _client.StreamCurves(new DF.Game.API.API.StreamCurvesRequest{
+      public async System.Threading.Tasks.Task StreamDataLoop(double tick) {
+        using (var call = _client.StreamData(new DF.Game.API.API.StreamDataRequest{
           ClientId = ID,
           Tick = tick,
         })) {
           var s = call.ResponseStream;
           try {
             while (await s.MoveNext(_ct)) {
-              System.Console.Error.WriteLine("StreamCurvesLoop: RECEIVED");
+              System.Console.Error.WriteLine("StreamDataLoop: RECEIVED");
               var resp = s.Current;
               System.Console.Error.WriteLine(resp);
 

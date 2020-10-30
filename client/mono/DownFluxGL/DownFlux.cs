@@ -67,8 +67,8 @@ namespace DownFluxGL
 
             // TODO(minkezhang): Make this async task actually have a Wait()
             // somewhere.
-            // _c.StreamCurvesLoop(_tid).Start();
-            System.Threading.Tasks.Task.Run(() => _c.StreamCurvesLoop(tick));
+            // _c.StreamDataLoop(_tid).Start();
+            System.Threading.Tasks.Task.Run(() => _c.StreamDataLoop(tick));
 
             base.Initialize();
         }

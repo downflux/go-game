@@ -15,7 +15,7 @@ service DownFlux {
   };
 
   // TODO(minkezhang): Rename StreamData.
-  rpc StreamCurves(StreamCurvesRequest) returns (stream StreamCurvesResponse) {
+  rpc StreamData(StreamDataRequest) returns (stream StreamDataResponse) {
     option idempotency_level = IDEMPOTENT;
   }
 
@@ -40,13 +40,12 @@ message MoveRequest {
 
 message MoveResponse {}
 
-message StreamCurvesRequest {
+message StreamDataRequest {
   double tick = 1;
   string client_id = 2;
 }
 
-// TODO(minkezhang): Rename to StreamData or something.
-message StreamCurvesResponse {
+message StreamDataResponse {
   double tick = 1;
   repeated game.api.data.Curve curves = 2;
   repeated game.api.data.Entity entities = 3;

@@ -91,7 +91,7 @@ func TestSendMoveCommand(t *testing.T) {
 	const expectedStreamMessageLength = 1
 	dest := &gdpb.Position{X: 3, Y: 0}
 	src := &gdpb.Position{X: 0, Y: 0}
-	want := &apipb.StreamCurvesResponse{
+	want := &apipb.StreamDataResponse{
 		Curves: []*gdpb.Curve{
 			{
 				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
@@ -149,14 +149,14 @@ func TestSendMoveCommand(t *testing.T) {
 
 	cid := resp.GetClientId()
 
-	stream, err := client.StreamCurves(s.ctx, &apipb.StreamCurvesRequest{
+	stream, err := client.StreamData(s.ctx, &apipb.StreamDataRequest{
 		ClientId: cid,
 	})
 	if err != nil {
-		t.Fatalf("StreamCurves() = _, %v, want = nil", err)
+		t.Fatalf("StreamData() = _, %v, want = nil", err)
 	}
 
-	var streamResp []*apipb.StreamCurvesResponse
+	var streamResp []*apipb.StreamDataResponse
 	var streamRespMux sync.Mutex
 
 	eg.Go(func() error {
@@ -208,7 +208,7 @@ func TestSendMoveCommand(t *testing.T) {
 	s.gRPCServer.GracefulStop()
 
 	if err := eg.Wait(); err != nil {
-		t.Fatalf("StreamCurvesResponse() = %v, want = nil", err)
+		t.Fatalf("StreamDataResponse() = %v, want = nil", err)
 	}
 
 	streamRespMux.Lock()
@@ -218,11 +218,11 @@ func TestSendMoveCommand(t *testing.T) {
 		want,
 		streamResp[0],
 		protocmp.Transform(),
-		protocmp.IgnoreFields(&apipb.StreamCurvesResponse{}, "tick", "entities"),
+		protocmp.IgnoreFields(&apipb.StreamDataResponse{}, "tick", "entities"),
 		protocmp.IgnoreFields(&gdpb.Curve{}, "tick", "entity_id"),
 		protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
 	); diff != "" {
-		t.Errorf("StreamCurvesResponse() mismatch (-want +got):\n%v", diff)
+		t.Errorf("StreamDataResponse() mismatch (-want +got):\n%v", diff)
 	}
 }
 

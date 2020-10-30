@@ -63,7 +63,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 type Client struct {
 	mux sync.Mutex
 	id string  // read-only
-	ch chan *apipb.StreamCurvesResponse
+	ch chan *apipb.StreamDataResponse
 	isSynced bool
 }
 
@@ -73,7 +73,7 @@ func (c *Client) ID() string {
 
 	return c.id
 }
-func (c *Client) Channel() chan *apipb.StreamCurvesResponse {
+func (c *Client) Channel() chan *apipb.StreamDataResponse {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
@@ -83,7 +83,7 @@ func (c *Client) NewChannel() {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
-	c.ch = make(chan *apipb.StreamCurvesResponse)
+	c.ch = make(chan *apipb.StreamDataResponse)
 }
 func (c *Client) CloseChannel() {
 	c.mux.Lock()
@@ -185,7 +185,7 @@ func (e *Executor) AddClient() (string, error) {
 	return cid, nil
 }
 
-func (e *Executor) ClientChannel(cid string) <-chan *apipb.StreamCurvesResponse {
+func (e *Executor) ClientChannel(cid string) <-chan *apipb.StreamDataResponse {
 	e.clientsMux.RLock()
 	defer e.clientsMux.RUnlock()
 
@@ -302,12 +302,12 @@ func (e *Executor) broadcastCurves() error {
 
 	// TODO(minkezhang): Decide if it's okay that the reported tick may not
 	// coincide with the ticks of the curve and entities.
-	resp := &apipb.StreamCurvesResponse{
+	resp := &apipb.StreamDataResponse{
 		Tick:     e.tick(),
 		Curves:   curves,
 		Entities: entities,
 	}
-	allResp := &apipb.StreamCurvesResponse{
+	allResp := &apipb.StreamDataResponse{
 		Tick: e.tick(),
 	}
 
