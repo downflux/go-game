@@ -2,9 +2,12 @@ package server
 
 import (
 	"context"
+	"time"
 
 	"github.com/downflux/game/server/service/executor"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
@@ -12,9 +15,61 @@ import (
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 )
 
+const (
+	serverKeepAliveTime = 5 * time.Second
+	serverKeepAliveTimeout = 5 * time.Second
+
+	// clientKeepAliveTime is the time between heartbeat pings the client
+	// will wait between resending the ping. The minimum interval accepted
+	// by the grpc/keepalive package is 10s.
+	clientKeepAliveTime = 10 * time.Second
+	clientKeepAliveTimeout = 5 * time.Second
+)
+
 var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
+
+	// DefaultServerOptions returns the default options the server will employ
+	// for connecting to the client. Notably, these options will allow the server
+	// to receive keepalive messages from the client periodically to facilitate
+	// detecting network problems early.
+	//
+	// Example
+	//
+	// s := grpc.NewServer(DefaultServerOptions...)
+	DefaultServerOptions = []grpc.ServerOption{
+		grpc.KeepaliveEnforcementPolicy(
+			keepalive.EnforcementPolicy{
+				MinTime: serverKeepAliveTime,
+				PermitWithoutStream: false,
+			},
+		),
+		grpc.KeepaliveParams(
+			keepalive.ServerParameters{
+				Time: serverKeepAliveTime,
+				Timeout: serverKeepAliveTimeout,
+			},
+		),
+	}
+
+	// DefaultClientOptions returns the recommended default client options when
+	// connecting to the server. This will mainly be used for client disconnect
+	// detection.
+	//
+	// Example
+	//
+	// c, err := grpc.Dial("localhost:4444", DefaultClientOptions...)
+	DefaultClientOptions = []grpc.DialOption{
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time: clientKeepAliveTime,
+				Timeout: clientKeepAliveTimeout,
+				PermitWithoutStream: false,
+			},
+		),
+	}
+
 )
 
 func NewDownFluxServer(pb *mdpb.TileMap, d *gdpb.Coordinate) (*DownFluxServer, error) {
@@ -31,7 +86,10 @@ type DownFluxServer struct {
 	ex *executor.Executor
 }
 
-// Debug function. Delete.
+// Executor returns the internal executor.Executor instance. This is a debug
+// function.
+//
+// TODO(minkezhang): Delete this function.
 func (s *DownFluxServer) Executor() *executor.Executor { return s.ex }
 
 func (s *DownFluxServer) validateClient(cid string) (<-chan *apipb.StreamDataResponse, error) {
@@ -68,6 +126,11 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 }
 
 func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
+	// TODO(minkezhang): Make this a loop -- we guarantee Executor will
+	// always be able to send, blocking.
+	//
+	// We detect timeouts and disconnects in the server via gRPC keepalive
+	// operations and StatsHandler (https://stackoverflow.com/q/62654489).
 	ch, err := s.validateClient(req.GetClientId())
 	if err != nil {
 		return err

@@ -28,8 +28,10 @@ go_library(
         "//api:data_go_proto",
         "//map/api:data_go_proto",
         "//server/service:executor",
-        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//keepalive:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
     ],
 )
 
