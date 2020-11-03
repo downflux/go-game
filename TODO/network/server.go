@@ -4,8 +4,10 @@ import (
 	"context"
 	"log"
 	"net"
+	"time"
 
         "google.golang.org/grpc"
+        "google.golang.org/grpc/keepalive"
 	/*
         "google.golang.org/grpc/codes"
         "google.golang.org/grpc/keepalive"
@@ -17,7 +19,27 @@ import (
 
 const (
 	addr = "localhost:4444"
+	serverKeepAliveTime = time.Second
+	serverKeepAliveTimeout = 30 * time.Second
 )
+
+var (
+	serverOpts = []grpc.ServerOption{
+		grpc.KeepaliveEnforcementPolicy(
+                        keepalive.EnforcementPolicy{
+                                MinTime: 1 * time.Second, // serverKeepAliveTime,
+                                PermitWithoutStream: true,
+                        },
+                ),
+                grpc.KeepaliveParams(
+                        keepalive.ServerParameters{
+                                Time: serverKeepAliveTime,
+                                Timeout: serverKeepAliveTimeout,
+                        },
+                ),
+	}
+)
+
 
 type DemoServer struct {}
 
@@ -33,7 +55,7 @@ func (s *DemoServer) StreamData(req *dpb.StreamDataRequest, stream dpb.NetworkDe
 			log.Print(err)
 			return err
 		}
-		return nil
+		time.Sleep(time.Second)
 	}
 	return nil
 }
@@ -45,7 +67,7 @@ func main() {
 	}
 
 	demoServer := &DemoServer{}
-	s := grpc.NewServer()  // ...
+	s := grpc.NewServer(serverOpts...)
 	dpb.RegisterNetworkDemoServer(s, demoServer)
 	s.Serve(lis)
 }

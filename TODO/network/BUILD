@@ -22,6 +22,7 @@ go_binary(
     deps = [
         ":demo_go_proto",
         "@org_golang_google_grpc//:go_default_library",
+        "@org_golang_google_grpc//keepalive:go_default_library",
     ],
 )
 
@@ -32,5 +33,6 @@ go_binary(
     deps = [
         ":demo_go_proto",
         "@org_golang_google_grpc//:go_default_library",
+        "@org_golang_google_grpc//keepalive:go_default_library",
     ],
 )
