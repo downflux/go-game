@@ -34,5 +34,6 @@ go_binary(
         ":demo_go_proto",
         "@org_golang_google_grpc//:go_default_library",
         "@org_golang_google_grpc//keepalive:go_default_library",
+	"@com_github_shopify_toxiproxy//:go_default_library",
     ],
 )
