@@ -2,8 +2,12 @@ package server
 
 import (
 	"context"
+	"net"
+	"time"
 
 	"github.com/downflux/game/server/service/executor"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -16,6 +20,53 @@ var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
 )
+
+type ServerWrapper struct {
+	gRPCServer     *grpc.Server
+	gRPCServerImpl *DownFluxServer
+	wg             errgroup.Group
+}
+
+func NewServerWrapper(
+	serverOptions []grpc.ServerOption,
+	pb *mdpb.TileMap,
+	d *gdpb.Coordinate) (*ServerWrapper, error) {
+	sw := &ServerWrapper{}
+
+	gRPCServerImpl, err := NewDownFluxServer(pb, d)
+	if err != nil {
+		return nil, err
+	}
+
+	sw.gRPCServerImpl = gRPCServerImpl
+	sw.gRPCServer = grpc.NewServer(serverOptions...)
+	apipb.RegisterDownFluxServer(sw.gRPCServer, sw.gRPCServerImpl)
+
+	return sw, nil
+}
+
+func (s *ServerWrapper) Start(addr string) error {
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+
+	s.wg.Go(func() error { return s.gRPCServer.Serve(lis) })
+	s.wg.Go(s.gRPCServerImpl.ex.Run)
+
+	for isStarted := false; !isStarted; isStarted = s.gRPCServerImpl.ex.Status().GetIsStarted() {
+		time.Sleep(time.Second)
+	}
+
+	return nil
+}
+
+func (s *ServerWrapper) Stop() error {
+	s.gRPCServerImpl.ex.Stop()
+	s.gRPCServer.GracefulStop()
+
+	return s.wg.Wait()
+}
 
 func NewDownFluxServer(pb *mdpb.TileMap, d *gdpb.Coordinate) (*DownFluxServer, error) {
 	ex, err := executor.New(pb, d)

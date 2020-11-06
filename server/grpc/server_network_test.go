@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"net"
 	"os"
 	"testing"
 	"time"
@@ -86,41 +85,14 @@ func newGRPCClient(hostAddr string) (*grpc.ClientConn, apipb.DownFluxClient, err
 	return conn, apipb.NewDownFluxClient(conn), nil
 }
 
-func waitForExecutorBoot(ctx context.Context, c apipb.DownFluxClient) error {
-	statusResp := &apipb.GetStatusResponse{}
-	for !statusResp.GetStatus().GetIsStarted() {
-		var err error
-		statusResp, err = c.GetStatus(ctx, &apipb.GetStatusRequest{})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func newGRPCServer(hostAddr string) (*grpc.Server, *DownFluxServer, error) {
-	lis, err := net.Listen("tcp", hostAddr)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	gRPCServerImpl, err := NewDownFluxServer(nil, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	gRPCServer := grpc.NewServer(option.DefaultServerOptions...)
-	apipb.RegisterDownFluxServer(gRPCServer, gRPCServerImpl)
-
-	go gRPCServer.Serve(lis)
-	go gRPCServerImpl.Executor().Run()
-
-	return gRPCServer, gRPCServerImpl, nil
-}
-
 func TestServerDetectedTimeout(t *testing.T) {
 	listenerAddr := testGlobal.newAddress()
 	serverAddr := testGlobal.newAddress()
+	serverOptionConfig := option.ServerOptionConfig{
+		MinimumClientInterval:   10 * time.Second,
+		ServerHeartbeatInterval: time.Second,
+		ServerHeartbeatTimeout:  time.Second,
+	}
 
 	p, err := testGlobal.toxiClient.CreateProxy("downflux", listenerAddr, serverAddr)
 	if err != nil {
@@ -128,22 +100,20 @@ func TestServerDetectedTimeout(t *testing.T) {
 	}
 	defer p.Delete()
 
-	s, sImpl, err := newGRPCServer(serverAddr)
+	// Create gRPC server.
+	sw, err := NewServerWrapper(option.ServerOptions(serverOptionConfig), nil, nil)
 	if err != nil {
-		t.Fatalf("newGRPCServer() = _, _, %v, want = nil", err)
+		t.Fatalf("NewServerWrapper() = _, %v, want = nil", err)
 	}
-	defer sImpl.Executor().Stop()
-	defer s.GracefulStop()
+	sw.Start(serverAddr)
+	defer sw.Stop()
 
+	// Create gRPC client.
 	conn, client, err := newGRPCClient(listenerAddr)
 	if err != nil {
 		t.Fatalf("newGRPCClient() = _, _, %v, want = nil", err)
 	}
 	defer conn.Close()
-
-	if err := waitForExecutorBoot(context.Background(), client); err != nil {
-		t.Fatalf("waitForExecutorBoot() = %v, want = nil", err)
-	}
 
 	clientResp, err := client.AddClient(context.Background(), &apipb.AddClientRequest{})
 	if err != nil {
@@ -158,10 +128,7 @@ func TestServerDetectedTimeout(t *testing.T) {
 	}
 
 	p.AddToxic("latency_downstream", "latency", "downstream", 1.0, tpc.Attributes{
-		"latency": (4 * option.ServerKeepAliveTimeout) / time.Millisecond,
-	})
-	p.AddToxic("latency_upstream", "latency", "upstream", 1.0, tpc.Attributes{
-		"latency": (4 * option.ServerKeepAliveTimeout) / time.Millisecond,
+		"latency": (2 * serverOptionConfig.ServerHeartbeatTimeout) / time.Millisecond,
 	})
 
 	go func() {
