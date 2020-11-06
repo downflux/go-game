@@ -9,28 +9,28 @@ import (
 	"syscall"
 	"time"
 
-        "google.golang.org/grpc"
-        "google.golang.org/grpc/keepalive"
-	toxiproxyclient "github.com/Shopify/toxiproxy/client"
 	"github.com/Shopify/toxiproxy"
+	toxiproxyclient "github.com/Shopify/toxiproxy/client"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 
 	dpb "github.com/downflux/game/TODO/network/demo_go_proto"
 )
 
 const (
-	addr = "localhost:4444"
-	clientKeepAliveTime = 10 * time.Second
+	addr                   = "localhost:4444"
+	clientKeepAliveTime    = 10 * time.Second
 	clientKeepAliveTimeout = 1 * time.Second
 )
 
 var (
 	dialOpts = grpc.WithKeepaliveParams(
-                        keepalive.ClientParameters{
-                                Time: clientKeepAliveTime,
-                                Timeout: clientKeepAliveTimeout,
-                                PermitWithoutStream: true,
-                        },
-                )
+		keepalive.ClientParameters{
+			Time:                clientKeepAliveTime,
+			Timeout:             clientKeepAliveTimeout,
+			PermitWithoutStream: true,
+		},
+	)
 )
 
 func main() {
@@ -58,7 +58,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	defer conn.Close()  // ?
+	defer conn.Close() // ?
 
 	c := dpb.NewNetworkDemoClient(conn)
 	stream, err := c.StreamData(context.Background(), &dpb.StreamDataRequest{})

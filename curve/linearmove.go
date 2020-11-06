@@ -214,7 +214,7 @@ func (c *Curve) ExportTail(tick float64) *gdpb.Curve {
 	i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: tick}) })
 	// If tick is a very large number, still include at minimum the last
 	// known position of an entity.
-	if i > len(c.data) - 1 {
+	if i > len(c.data)-1 {
 		i = len(c.data) - 1
 	}
 	// If the tick falls in between two indices, return the smaller index

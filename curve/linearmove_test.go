@@ -226,7 +226,7 @@ func TestExportTail(t *testing.T) {
 				Tick:     cSimple.Tick(),
 				Category: cSimple.Category(),
 				Type:     cSimple.Type(),
-				Data:     []*gdpb.CurveDatum{
+				Data: []*gdpb.CurveDatum{
 					{
 						Tick:  2,
 						Datum: &gdpb.CurveDatum_PositionDatum{cSimple.Get(2).(*gdpb.Position)},

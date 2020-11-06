@@ -6,42 +6,41 @@ import (
 	"net"
 	"time"
 
-        "google.golang.org/grpc"
-        "google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 	/*
-        "google.golang.org/grpc/codes"
-        "google.golang.org/grpc/keepalive"
-        "google.golang.org/grpc/status"
-	 */
+	   "google.golang.org/grpc/codes"
+	   "google.golang.org/grpc/keepalive"
+	   "google.golang.org/grpc/status"
+	*/
 
 	dpb "github.com/downflux/game/TODO/network/demo_go_proto"
 )
 
 const (
-	addr = "localhost:4444"
-	serverKeepAliveTime = time.Second
+	addr                   = "localhost:4444"
+	serverKeepAliveTime    = time.Second
 	serverKeepAliveTimeout = 30 * time.Second
 )
 
 var (
 	serverOpts = []grpc.ServerOption{
 		grpc.KeepaliveEnforcementPolicy(
-                        keepalive.EnforcementPolicy{
-                                MinTime: 1 * time.Second, // serverKeepAliveTime,
-                                PermitWithoutStream: true,
-                        },
-                ),
-                grpc.KeepaliveParams(
-                        keepalive.ServerParameters{
-                                Time: serverKeepAliveTime,
-                                Timeout: serverKeepAliveTimeout,
-                        },
-                ),
+			keepalive.EnforcementPolicy{
+				MinTime:             1 * time.Second, // serverKeepAliveTime,
+				PermitWithoutStream: true,
+			},
+		),
+		grpc.KeepaliveParams(
+			keepalive.ServerParameters{
+				Time:    serverKeepAliveTime,
+				Timeout: serverKeepAliveTimeout,
+			},
+		),
 	}
 )
 
-
-type DemoServer struct {}
+type DemoServer struct{}
 
 func (s *DemoServer) Single(ctx context.Context, req *dpb.SingleRequest) (*dpb.SingleResponse, error) {
 	return &dpb.SingleResponse{}, nil

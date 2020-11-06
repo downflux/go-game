@@ -55,15 +55,15 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		abstractGraph: g,
 		entities:      map[string]entity.Entity{},
 		commandQueue:  nil,
-		clients: map[string]*Client{},
+		clients:       map[string]*Client{},
 	}, nil
 }
 
 // TODO(minkezhang): Export out into separate module.
 type Client struct {
-	mux sync.Mutex
-	id string  // read-only
-	ch chan *apipb.StreamDataResponse
+	mux      sync.Mutex
+	id       string // read-only
+	ch       chan *apipb.StreamDataResponse
 	isSynced bool
 }
 
@@ -110,7 +110,7 @@ func (c *Client) SetIsSynced(s bool) {
 }
 func NewClient(cid string) *Client {
 	c := &Client{
-		id: cid,
+		id:       cid,
 		isSynced: false,
 	}
 	c.NewChannel()
@@ -282,8 +282,8 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 	e.dataMux.RLock()
 	defer e.dataMux.RUnlock()
 
-        var curves []*gdpb.Curve
-        var entities []*gdpb.Entity
+	var curves []*gdpb.Curve
+	var entities []*gdpb.Entity
 
 	// TODO(minkezhang): Give some leeway here, broadcast a bit in the
 	// past.
@@ -291,9 +291,9 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 
 	for _, en := range e.entities {
 		entities = append(entities, &gdpb.Entity{
-                        EntityId: en.ID(),
-                        Type:     en.Type(),
-                })
+			EntityId: en.ID(),
+			Type:     en.Type(),
+		})
 		for _, cat := range en.CurveCategories() {
 			curves = append(curves, e.entities[en.ID()].Curve(cat).ExportTail(beginningTick))
 		}
