@@ -61,15 +61,12 @@ func main() {
 	defer conn.Close()  // ?
 
 	c := dpb.NewNetworkDemoClient(conn)
-	log.Println("establishing server stream")
 	stream, err := c.StreamData(context.Background(), &dpb.StreamDataRequest{})
 	if err != nil {
 		log.Fatal(err)
 	}
 	for {
-		log.Println("calling server stream")
 		r, err := stream.Recv()
-		log.Println("read from server stream, adding downstream")
 		p.AddToxic("latency_downstream", "latency", "downstream", 1.0, toxiproxyclient.Attributes{
 			"latency": 10000,
 		})
