@@ -52,6 +52,7 @@ go_test(
     embed = [":server"],
     deps = [
         ":option",
+        ":handler",
         "//api:api_go_proto",
         "@com_github_shopify_toxiproxy//:go_default_library",
         "@com_github_shopify_toxiproxy//client:go_default_library",
@@ -80,5 +81,14 @@ go_test(
         "@org_golang_google_grpc//status:go_default_library",
         "@org_golang_google_grpc//test/bufconn:go_default_library",
         "@org_golang_google_protobuf//testing/protocmp:go_default_library",
+    ],
+)
+
+go_library(
+    name = "handler",
+    srcs = ["handler.go"],
+    importpath = "github.com/downflux/game/server/grpc/handler",
+    deps = [
+	"@org_golang_google_grpc//stats:go_default_library",
     ],
 )

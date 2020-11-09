@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Shopify/toxiproxy"
+	"github.com/downflux/game/server/grpc/handler"
 	"github.com/downflux/game/server/grpc/option"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/connectivity"
@@ -101,7 +102,8 @@ func TestServerDetectedTimeout(t *testing.T) {
 	defer p.Delete()
 
 	// Create gRPC server.
-	sw, err := NewServerWrapper(option.ServerOptions(serverOptionConfig), nil, nil)
+	sw, err := NewServerWrapper(
+		append(option.ServerOptions(serverOptionConfig), grpc.StatsHandler(&handler.DownFluxHandler{})), nil, nil)
 	if err != nil {
 		t.Fatalf("NewServerWrapper() = _, %v, want = nil", err)
 	}
@@ -136,6 +138,7 @@ func TestServerDetectedTimeout(t *testing.T) {
 		for m, err = nil, nil; err == nil; m, err = stream.Recv() {
 			fmt.Println(m, err)
 		}
+		conn.Close()
 	}()
 
 	// Register for a conn.WaitForStateChange -- at this point, inspect server and ensure

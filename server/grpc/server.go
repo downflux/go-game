@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net"
 	"time"
 
@@ -127,15 +128,34 @@ func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.D
 	//
 	// We detect timeouts and disconnects in the server via gRPC keepalive
 	// operations and StatsHandler (https://stackoverflow.com/q/62654489).
-	ch, err := s.validateClient(req.GetClientId())
+	defer log.Println("Exiting streaming loop, marking client as dirty.")
+	_, err := s.validateClient(req.GetClientId())
 	if err != nil {
 		return err
 	}
 
-	for r := range ch {
-		if err := stream.Send(r); err != nil {
+	for {
+		// TODO(minkezhang): Add timeout on send.
+		if err := stream.Send(&apipb.StreamDataResponse{}); err != nil {
+			log.Println("StreamData: sending message resulted in error", err)
 			return err
 		}
+		time.Sleep(100 * time.Millisecond)
 	}
+	/*
+	for r := range ch {
+		if err := stream.Send(r); err != nil {
+			log.Println("StreamData: sending message resulted in error", err)
+			return err
+		}
+	} */
 	return nil
 }
+
+// Failure modes to consider -- NOT latency
+// Server cannot send for N seconds -- close stream, mark client as dirty
+// IGNORE Server sends in (N - 1) seconds and needs to resync client
+// 	TODO(minkezhang): Skip messages in queue < current tick.
+//	This is actually okay -- we'll need to resync because messages are always deltas.
+// 	unless we were to merge all skipped messages.
+// Server sends normally (happy path)
