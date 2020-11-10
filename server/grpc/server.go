@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/downflux/game/server/service/executor"
@@ -123,32 +124,71 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 }
 
 func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
-	// TODO(minkezhang): Make this a loop -- we guarantee Executor will
-	// always be able to send, blocking.
-	//
-	// We detect timeouts and disconnects in the server via gRPC keepalive
-	// operations and StatsHandler (https://stackoverflow.com/q/62654489).
-	defer log.Println("Exiting streaming loop, marking client as dirty.")
-	_, err := s.validateClient(req.GetClientId())
+	ch, err := s.validateClient(req.GetClientId())
 	if err != nil {
 		return err
 	}
 
+	done := make(chan struct{})
+	defer func() {
+		log.Println("Exiting streaming loop, marking client as dirty.")
+		close(done)
+	}()
+
+	var l sync.Mutex
+	var q []*apipb.StreamDataResponse
+	var chanClosed bool
+
+	go func() {
+		defer func() {
+			l.Lock()
+			chanClosed = true
+			l.Unlock()
+		}()
+		for {
+			log.Println("LISTENING CH")
+			select {
+				case <-done:
+					log.Println("GOT DONE")
+					return
+				case m, ok := <-ch:
+					log.Println("RECV MESSAGE: ", m, ok)
+					if !ok {
+						return
+					}
+					l.Lock()
+					log.Println("GOROUTINE ACQ L")
+					q = append(q, m)
+					l.Unlock()
+					log.Println("GOROUTINE RELEASE L")
+			}
+		}
+	}()
+
 	for {
-		// TODO(minkezhang): Add timeout on send.
-		if err := stream.Send(&apipb.StreamDataResponse{}); err != nil {
-			log.Println("StreamData: sending message resulted in error", err)
-			return err
+		l.Lock()
+		tq := q
+		q = nil
+		ok := !chanClosed
+		l.Unlock()
+
+		if tq == nil && !ok {
+			return nil
 		}
-		time.Sleep(100 * time.Millisecond)
+
+		for _, m := range tq {
+			log.Println("sending: ", m)
+			// Send does not block on flakey network connection. See gRPC
+			// docs. On server keepalive failure, StreamData will return
+			// with connection error. On client close, StreamData will
+			// return with connection error.
+			if err := stream.Send(m); err != nil {
+				log.Println("----------------- sent")
+				return err
+			}
+			log.Println("----------------- sent")
+		}
 	}
-	/*
-	for r := range ch {
-		if err := stream.Send(r); err != nil {
-			log.Println("StreamData: sending message resulted in error", err)
-			return err
-		}
-	} */
 	return nil
 }
 

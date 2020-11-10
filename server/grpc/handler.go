@@ -16,6 +16,6 @@ func (h *DownFluxHandler) TagConn(ctx context.Context, s *stats.ConnTagInfo) con
 func (h *DownFluxHandler) HandleConn(ctx context.Context, s stats.ConnStats) {
 	switch s.(type) {
 		case *stats.ConnEnd:
-			log.Println("detected connection break")
+			log.Println("handler detected connection break")
 	}
 }

@@ -86,7 +86,9 @@ func newGRPCClient(hostAddr string) (*grpc.ClientConn, apipb.DownFluxClient, err
 	return conn, apipb.NewDownFluxClient(conn), nil
 }
 
-func TestServerDetectedTimeout(t *testing.T) {
+func TestClientCloseStream(t *testing.T) {}
+func TestServerDetectedTimeout(t *testing.T) {}
+func TestServerDetectedLatency(t *testing.T) {
 	listenerAddr := testGlobal.newAddress()
 	serverAddr := testGlobal.newAddress()
 	serverOptionConfig := option.ServerOptionConfig{
@@ -103,7 +105,11 @@ func TestServerDetectedTimeout(t *testing.T) {
 
 	// Create gRPC server.
 	sw, err := NewServerWrapper(
-		append(option.ServerOptions(serverOptionConfig), grpc.StatsHandler(&handler.DownFluxHandler{})), nil, nil)
+		append(
+			option.ServerOptions(serverOptionConfig),
+			grpc.StatsHandler(&handler.DownFluxHandler{})),
+		nil,
+		nil)
 	if err != nil {
 		t.Fatalf("NewServerWrapper() = _, %v, want = nil", err)
 	}
@@ -130,15 +136,17 @@ func TestServerDetectedTimeout(t *testing.T) {
 	}
 
 	p.AddToxic("latency_downstream", "latency", "downstream", 1.0, tpc.Attributes{
-		"latency": (2 * serverOptionConfig.ServerHeartbeatTimeout) / time.Millisecond,
+		"latency": (10 * serverOptionConfig.ServerHeartbeatTimeout) / time.Millisecond,
 	})
 
 	go func() {
 		var m *apipb.StreamDataResponse
+		var err error
 		for m, err = nil, nil; err == nil; m, err = stream.Recv() {
-			fmt.Println(m, err)
+			fmt.Println("received message: ", m)
 		}
-		conn.Close()
+		fmt.Println("final error:", err)
+		// conn.Close()
 	}()
 
 	// Register for a conn.WaitForStateChange -- at this point, inspect server and ensure
