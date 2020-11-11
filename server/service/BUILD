@@ -6,6 +6,25 @@ go_library(
     importpath = "github.com/downflux/game/server/service/client",
     deps = [
         "//api:api_go_proto",
+        "//server/service/api:constants_go_proto",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+    ],
+)
+
+go_test(
+    name = "client_test",
+    srcs = ["client_test.go"],
+    importpath = "github.com/downflux/game/server/service/client_test",
+    embed = [":client"],
+    deps = [
+        "//api:api_go_proto",
+        "//server/service/api:constants_go_proto",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
     ],
 )
 

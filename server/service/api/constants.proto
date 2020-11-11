@@ -9,3 +9,9 @@ enum CommandType {
   COMMAND_TYPE_MOVE = 1;
 }
 
+enum ClientStatus {
+  CLIENT_STATUS_UNKNOWN = 0;
+  CLIENT_STATUS_NEW = 1;
+  CLIENT_STATUS_DESYNCED = 2;
+  CLIENT_STATUS_OK = 3;
+}
