@@ -9,6 +9,7 @@ import (
 	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/server/service/client"
 	"github.com/downflux/game/server/service/command/command"
 	"github.com/downflux/game/server/service/command/move"
 	"golang.org/x/sync/errgroup"
@@ -55,66 +56,8 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		abstractGraph: g,
 		entities:      map[string]entity.Entity{},
 		commandQueue:  nil,
-		clients:       map[string]*Client{},
+		clients:       map[string]*client.Client{},
 	}, nil
-}
-
-// TODO(minkezhang): Export out into separate module.
-type Client struct {
-	mux      sync.Mutex
-	id       string // read-only
-	ch       chan *apipb.StreamDataResponse
-	isSynced bool
-}
-
-func (c *Client) ID() string {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	return c.id
-}
-func (c *Client) Channel() chan *apipb.StreamDataResponse {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	return c.ch
-}
-func (c *Client) NewChannel() {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	c.ch = make(chan *apipb.StreamDataResponse)
-}
-func (c *Client) CloseChannel() {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	close(c.ch)
-	c.ch = nil
-}
-func (c *Client) IsSynced() bool {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	return c.isSynced
-}
-func (c *Client) SetIsSynced(s bool) {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	c.isSynced = s
-	if !s {
-		close(c.ch)
-		c.ch = nil
-	}
-}
-func NewClient(cid string) *Client {
-	c := &Client{
-		id:       cid,
-		isSynced: false,
-	}
-	c.NewChannel()
-	return c
 }
 
 type Executor struct {
@@ -144,7 +87,7 @@ type Executor struct {
 	curveQueue    []dirtyCurve
 
 	clientsMux sync.RWMutex
-	clients    map[string]*Client
+	clients    map[string]*client.Client
 }
 
 func (e *Executor) tick() float64   { return float64(atomic.LoadInt64(&(e.tickImpl))) }
@@ -184,7 +127,7 @@ func (e *Executor) AddClient() (string, error) {
 	cid := id.RandomString(idLen)
 	for _, found := e.clients[cid]; found; cid = id.RandomString(idLen) {
 	}
-	e.clients[cid] = NewClient(cid)
+	e.clients[cid] = client.New(cid)
 
 	return cid, nil
 }

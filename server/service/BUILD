@@ -1,11 +1,21 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
+    name = "client",
+    srcs = ["client.go"],
+    importpath = "github.com/downflux/game/server/service/client",
+    deps = [
+        "//api:api_go_proto",
+    ],
+)
+
+go_library(
     name = "executor",
     srcs = ["executor.go"],
     importpath = "github.com/downflux/game/server/service/executor",
     visibility = ["//server/grpc:__pkg__"],
     deps = [
+        ":client",
         "//api:api_go_proto",
         "//api:constants_go_proto",
         "//api:data_go_proto",
