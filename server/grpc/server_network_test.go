@@ -86,7 +86,7 @@ func newGRPCClient(hostAddr string) (*grpc.ClientConn, apipb.DownFluxClient, err
 	return conn, apipb.NewDownFluxClient(conn), nil
 }
 
-func TestClientCloseStream(t *testing.T) {}
+func TestClientCloseStream(t *testing.T)     {}
 func TestServerDetectedTimeout(t *testing.T) {}
 func TestServerDetectedLatency(t *testing.T) {
 	listenerAddr := testGlobal.newAddress()

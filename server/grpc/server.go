@@ -123,70 +123,71 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 	return resp, nil
 }
 
+type clientConnection struct {
+	done chan struct{}
+
+	mux           sync.Mutex
+	responseQueue []*apipb.StreamDataResponse
+	chanClosed    bool
+}
+
 func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
 	ch, err := s.validateClient(req.GetClientId())
 	if err != nil {
 		return err
 	}
 
-	done := make(chan struct{})
-	defer func() {
-		log.Println("Exiting streaming loop, marking client as dirty.")
-		close(done)
-	}()
+	clientMetadata := clientConnection{
+		done: make(chan struct{}),
+		mux:  sync.Mutex{},
+	}
 
-	var l sync.Mutex
-	var q []*apipb.StreamDataResponse
-	var chanClosed bool
+	defer func() {
+		// TODO(minkezhang): Implement this.
+		log.Println("Exiting streaming loop, marking client as dirty.")
+		close(clientMetadata.done)
+	}()
 
 	go func() {
 		defer func() {
-			l.Lock()
-			chanClosed = true
-			l.Unlock()
+			clientMetadata.mux.Lock()
+			clientMetadata.chanClosed = true
+			clientMetadata.mux.Unlock()
 		}()
 		for {
-			log.Println("LISTENING CH")
 			select {
-				case <-done:
-					log.Println("GOT DONE")
+			case <-clientMetadata.done:
+				return
+			case m, ok := <-ch:
+				if !ok {
 					return
-				case m, ok := <-ch:
-					log.Println("RECV MESSAGE: ", m, ok)
-					if !ok {
-						return
-					}
-					l.Lock()
-					log.Println("GOROUTINE ACQ L")
-					q = append(q, m)
-					l.Unlock()
-					log.Println("GOROUTINE RELEASE L")
+				}
+				clientMetadata.mux.Lock()
+				clientMetadata.responseQueue = append(clientMetadata.responseQueue, m)
+				clientMetadata.mux.Unlock()
 			}
 		}
 	}()
 
 	for {
-		l.Lock()
-		tq := q
-		q = nil
-		ok := !chanClosed
-		l.Unlock()
+		clientMetadata.mux.Lock()
+		tq := clientMetadata.responseQueue
+		clientMetadata.responseQueue = nil
+		ok := !clientMetadata.chanClosed
+		clientMetadata.mux.Unlock()
 
 		if tq == nil && !ok {
 			return nil
 		}
 
 		for _, m := range tq {
-			log.Println("sending: ", m)
 			// Send does not block on flakey network connection. See gRPC
 			// docs. On server keepalive failure, StreamData will return
 			// with connection error. On client close, StreamData will
 			// return with connection error.
 			if err := stream.Send(m); err != nil {
-				log.Println("----------------- sent")
 				return err
 			}
-			log.Println("----------------- sent")
 		}
 	}
 	return nil

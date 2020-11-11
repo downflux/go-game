@@ -113,7 +113,6 @@ func NewClient(cid string) *Client {
 		id:       cid,
 		isSynced: false,
 	}
-	c.NewChannel()
 	return c
 }
 
@@ -192,6 +191,10 @@ func (e *Executor) AddClient() (string, error) {
 func (e *Executor) ClientChannel(cid string) <-chan *apipb.StreamDataResponse {
 	e.clientsMux.RLock()
 	defer e.clientsMux.RUnlock()
+
+	if e.clients[cid].Channel() == nil {
+		e.clients[cid].NewChannel()
+	}
 
 	return e.clients[cid].Channel()
 }
