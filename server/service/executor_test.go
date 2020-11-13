@@ -1,6 +1,7 @@
 package executor
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/downflux/game/entity/entity"
@@ -51,48 +52,28 @@ func TestNewExecutor(t *testing.T) {
 // TODO(minkezhang): Add test for client timeout while broadcasting curves.
 
 func TestDoTick(t *testing.T) {
-	const eid = "entity-id"
+	const (
+		eid      = "entity-id"
+		t1       = float64(0)
+		nClients = 1000
+	)
 	dest := &gdpb.Position{X: 3, Y: 0}
 	src := &gdpb.Position{X: 0, Y: 0}
-	t1 := float64(0)
-	const nClients = 1000
+
 	want := &apipb.StreamDataResponse{
-		Tick: 0,
-		Entities: []*gdpb.Entity{
-			{
-				EntityId: eid,
-				Type:     gcpb.EntityType_ENTITY_TYPE_TANK,
+		Tick:     0,
+		Entities: []*gdpb.Entity{{EntityId: eid, Type: gcpb.EntityType_ENTITY_TYPE_TANK}},
+		Curves: []*gdpb.Curve{{
+			EntityId: eid,
+			Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+			Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
+			Data: []*gdpb.CurveDatum{
+				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 1, Y: 0}}},
+				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 2, Y: 0}}},
+				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 3, Y: 0}}},
 			},
-		},
-		Curves: []*gdpb.Curve{
-			{
-				EntityId: eid,
-				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
-				Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
-				Data: []*gdpb.CurveDatum{
-					{
-						Datum: &gdpb.CurveDatum_PositionDatum{
-							&gdpb.Position{X: 0, Y: 0},
-						},
-					},
-					{
-						Datum: &gdpb.CurveDatum_PositionDatum{
-							&gdpb.Position{X: 1, Y: 0},
-						},
-					},
-					{
-						Datum: &gdpb.CurveDatum_PositionDatum{
-							&gdpb.Position{X: 2, Y: 0},
-						},
-					},
-					{
-						Datum: &gdpb.CurveDatum_PositionDatum{
-							&gdpb.Position{X: 3, Y: 0},
-						},
-					},
-				},
-			},
-		},
+		}},
 	}
 
 	e, err := New(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
@@ -114,7 +95,7 @@ func TestDoTick(t *testing.T) {
 	}
 
 	if err := e.AddMoveCommands(&apipb.MoveRequest{
-		Tick:        1,
+		Tick:        t1,
 		ClientId:    cids[0],
 		EntityIds:   []string{eid},
 		Destination: dest,
@@ -123,14 +104,38 @@ func TestDoTick(t *testing.T) {
 		t.Fatalf("AddMoveCommands() = %v, want = nil", err)
 	}
 
-	var eg errgroup.Group
-	eg.Go(e.doTick)
+	// Connect to server and signal intent to start listening for messages.
+	for i := 0; i < nClients; i++ {
+		if err := e.StartClientStream(cids[i]); err != nil {
+			t.Fatalf("StartClientStream() = %v, want = nil", err)
+		}
+	}
 
+	var eg errgroup.Group
+
+	var streamResponsesMux sync.Mutex
 	var streamResponses []*apipb.StreamDataResponse
 	for i := 0; i < nClients; i++ {
-		// Assuming all clients will receive messages in a timely manner.
-		streamResponses = append(streamResponses, <-e.ClientChannel(cids[i]))
+		ch, err := e.ClientChannel(cids[i])
+		if err != nil {
+			t.Fatalf("ClientChannel() = _, %v, want = _, nil", err)
+		}
+		// Assuming all clients will receive messages in a timely
+		// manner. Start listening for messages before the tick starts
+		// to guarantee we will recieve a message during
+		// broadcastCurves.
+		eg.Go(func() error {
+			m := <-ch
+
+			streamResponsesMux.Lock()
+			defer streamResponsesMux.Unlock()
+
+			streamResponses = append(streamResponses, m)
+			return nil
+		})
 	}
+
+	eg.Go(e.doTick)
 
 	if err := eg.Wait(); err != nil {
 		t.Fatalf("Wait() = %v, want = nil", err)

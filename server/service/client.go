@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
-	scpb "github.com/downflux/game/server/service/api/constants_go_proto"
+	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
 type Client struct {
@@ -15,10 +15,10 @@ type Client struct {
 
 	mux    sync.Mutex
 	ch     chan *apipb.StreamDataResponse
-	status scpb.ClientStatus
+	status sscpb.ClientStatus
 }
 
-func invalidTransitionError(clientStatus, targetStatus scpb.ClientStatus) error {
+func invalidTransitionError(clientStatus, targetStatus sscpb.ClientStatus) error {
 	return status.Errorf(
 		codes.FailedPrecondition,
 		"there is no defined transition path from the current client status %v to %v",
@@ -27,7 +27,7 @@ func invalidTransitionError(clientStatus, targetStatus scpb.ClientStatus) error 
 }
 
 func (c *Client) ID() string { return c.id }
-func (c *Client) Status() scpb.ClientStatus {
+func (c *Client) Status() sscpb.ClientStatus {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
@@ -37,7 +37,7 @@ func (c *Client) Status() scpb.ClientStatus {
 // SetStatus changes the client with side-effects to the desired status.
 //
 // The current expected transition graph is of the form
-//   NEW -> DESYNCED -> OK -> NEW
+//   NEW -> DESYNCED -> OK -> NEW -> ... TEARDOWN
 //
 // NEW: The client does not have an associated channel, and will not broadcast
 // any data.
@@ -46,32 +46,49 @@ func (c *Client) Status() scpb.ClientStatus {
 // current game tick.
 //
 // OK: The client has an associated channel and is synced.
-func (c *Client) SetStatus(s scpb.ClientStatus) error {
+//
+// TEARDOWN: The client has closed the channel and is not accepting any further
+// status transitions.
+func (c *Client) SetStatus(s sscpb.ClientStatus) error {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
+	return c.setStatusUnsafe(s)
+}
+
+func (c *Client) setStatusUnsafe(s sscpb.ClientStatus) error {
 	switch s {
-	case scpb.ClientStatus_CLIENT_STATUS_NEW:
+	case sscpb.ClientStatus_CLIENT_STATUS_NEW:
 		switch c.status {
-		case scpb.ClientStatus_CLIENT_STATUS_NEW:
-		case scpb.ClientStatus_CLIENT_STATUS_OK:
+		case sscpb.ClientStatus_CLIENT_STATUS_NEW:
+		case sscpb.ClientStatus_CLIENT_STATUS_OK:
 			close(c.ch)
 			c.ch = nil
 		default:
 			return invalidTransitionError(c.status, s)
 		}
-	case scpb.ClientStatus_CLIENT_STATUS_DESYNCED:
+	case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
 		switch c.status {
-		case scpb.ClientStatus_CLIENT_STATUS_DESYNCED:
-		case scpb.ClientStatus_CLIENT_STATUS_NEW:
+		case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
+		case sscpb.ClientStatus_CLIENT_STATUS_NEW:
 			c.ch = make(chan *apipb.StreamDataResponse)
 		default:
 			return invalidTransitionError(c.status, s)
 		}
-	case scpb.ClientStatus_CLIENT_STATUS_OK:
+	case sscpb.ClientStatus_CLIENT_STATUS_OK:
 		switch c.status {
-		case scpb.ClientStatus_CLIENT_STATUS_OK:
-		case scpb.ClientStatus_CLIENT_STATUS_DESYNCED:
+		case sscpb.ClientStatus_CLIENT_STATUS_OK:
+		case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
+		default:
+			return invalidTransitionError(c.status, s)
+		}
+	case sscpb.ClientStatus_CLIENT_STATUS_TEARDOWN:
+		switch c.status {
+		case sscpb.ClientStatus_CLIENT_STATUS_NEW:
+		case sscpb.ClientStatus_CLIENT_STATUS_OK:
+			close(c.ch)
+			c.ch = nil
+		case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
 		default:
 			return invalidTransitionError(c.status, s)
 		}
@@ -88,37 +105,34 @@ func (c *Client) Channel() (<-chan *apipb.StreamDataResponse, error) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
-	if c.status == scpb.ClientStatus_CLIENT_STATUS_UNKNOWN || c.status == scpb.ClientStatus_CLIENT_STATUS_NEW {
-		return nil, status.Errorf(codes.FailedPrecondition, "no client channel exists with client status %v", c.status)
+	if (c.status == sscpb.ClientStatus_CLIENT_STATUS_UNKNOWN) || (c.status == sscpb.ClientStatus_CLIENT_STATUS_NEW) {
+		return nil, status.Errorf(
+			codes.FailedPrecondition,
+			"client channel is not defined for clients with status %v",
+			c.status)
 	}
 
 	return c.ch, nil
 }
 
 func (c *Client) Send(m *apipb.StreamDataResponse) error {
-	ch, err := func () (chan<- *apipb.StreamDataResponse, error) {
-		c.mux.Lock()
-		defer c.mux.Unlock()
+	c.mux.Lock()
+	defer c.mux.Unlock()
 
-		if c.status == scpb.ClientStatus_CLIENT_STATUS_UNKNOWN || c.status == scpb.ClientStatus_CLIENT_STATUS_NEW {
-			return nil, status.Errorf(
-				codes.FailedPrecondition,
-				"no client channel exists with client status %v",
-				c.status)
-		}
-		return c.ch, nil
-	}()
-	if err != nil {
-		return err
+	if (c.status == sscpb.ClientStatus_CLIENT_STATUS_UNKNOWN) || (c.status == sscpb.ClientStatus_CLIENT_STATUS_NEW) {
+		return status.Errorf(
+			codes.FailedPrecondition,
+			"no client channel exists with client status %v",
+			c.status)
 	}
 
-	ch <- m
-	return nil
+	c.ch <- m
+	return c.setStatusUnsafe(sscpb.ClientStatus_CLIENT_STATUS_OK)
 }
 
 func New(cid string) *Client {
 	return &Client{
 		id:     cid,
-		status: scpb.ClientStatus_CLIENT_STATUS_NEW,
+		status: sscpb.ClientStatus_CLIENT_STATUS_NEW,
 	}
 }

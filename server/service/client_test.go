@@ -3,8 +3,8 @@ package client
 import (
 	"fmt"
 	"math/rand"
-	"time"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
@@ -13,12 +13,12 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
-	scpb "github.com/downflux/game/server/service/api/constants_go_proto"
+	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
 func TestNew(t *testing.T) {
 	const cid = "client-id"
-	const status = scpb.ClientStatus_CLIENT_STATUS_NEW
+	const status = sscpb.ClientStatus_CLIENT_STATUS_NEW
 
 	c := New(cid)
 
@@ -51,10 +51,10 @@ func TestSend(t *testing.T) {
 	var channels []<-chan *apipb.StreamDataResponse
 	for i := 0; i < nClients; i++ {
 		c := New(fmt.Sprintf("client-%d", i))
-		if err := c.SetStatus(scpb.ClientStatus_CLIENT_STATUS_DESYNCED); err != nil {
+		if err := c.SetStatus(sscpb.ClientStatus_CLIENT_STATUS_DESYNCED); err != nil {
 			t.Fatalf("SetStatus() = %v, want = nil", err)
 		}
-		if err := c.SetStatus(scpb.ClientStatus_CLIENT_STATUS_OK); err != nil {
+		if err := c.SetStatus(sscpb.ClientStatus_CLIENT_STATUS_OK); err != nil {
 			t.Fatalf("SetStatus() = %v, want = nil", err)
 		}
 		clients = append(clients, c)

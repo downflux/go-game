@@ -119,7 +119,6 @@ func (e *Executor) Status() *gdpb.ServerStatus {
 }
 
 func (e *Executor) AddClient() (string, error) {
-	log.Printf("DEBUG: Adding client")
 	// TODO(minkezhang): Add maxClients check.
 	e.clientsMux.Lock()
 	defer e.clientsMux.Unlock()
@@ -132,7 +131,14 @@ func (e *Executor) AddClient() (string, error) {
 	return cid, nil
 }
 
-func (e *Executor) ClientChannel(cid string) <-chan *apipb.StreamDataResponse {
+func (e *Executor) StartClientStream(cid string) error {
+	e.clientsMux.Lock()
+	defer e.clientsMux.Unlock()
+
+	return e.clients[cid].SetStatus(sscpb.ClientStatus_CLIENT_STATUS_DESYNCED)
+}
+
+func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, error) {
 	e.clientsMux.RLock()
 	defer e.clientsMux.RUnlock()
 
@@ -245,6 +251,8 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 }
 
 func (e *Executor) broadcastCurves() error {
+	log.Printf("[%.f]: broadcasting curves", e.tick())
+
 	curves, entities := e.popTickQueue()
 
 	// TODO(minkezhang): Decide if it's okay that the reported tick may not
@@ -261,52 +269,50 @@ func (e *Executor) broadcastCurves() error {
 	e.clientsMux.RLock()
 	defer e.clientsMux.RUnlock()
 
-	var needFullState bool
+	okClients := map[string]bool{}
+	desyncedClients := map[string]bool{}
+
 	for _, c := range e.clients {
-		needFullState = needFullState || !c.IsSynced()
+		switch c.Status() {
+		case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
+			desyncedClients[c.ID()] = true
+		case sscpb.ClientStatus_CLIENT_STATUS_OK:
+			okClients[c.ID()] = true
+		default:
+		}
 	}
-	if needFullState {
+	if desyncedClients != nil {
 		allCurves, allEntities := e.allCurvesAndEntities()
 		allResp.Curves = allCurves
 		allResp.Entities = allEntities
 	}
 
-	if !needFullState && curves == nil && entities == nil {
+	if desyncedClients != nil && curves == nil && entities == nil {
 		return nil
 	}
 
-	log.Printf("DEBUG: sending curves to %d clients", len(e.clients))
+	log.Println("clients: ", desyncedClients, okClients)
 	var eg errgroup.Group
-	for _, c := range e.clients {
-		c := c
-		ch := c.Channel()
-		eg.Go(func() error {
-			log.Printf("DEBUG: Attempting to send message to client %v", c)
-			if c.IsSynced() {
-				log.Printf("DEBUG: Sending response to a synced client: %v", resp)
-				ch <- resp
-			} else {
-				log.Printf("DEBUG: Sending response to an unsynced client: %v", allResp)
-				ch <- allResp
-				c.SetIsSynced(true)
-			}
-			// TODO(minkezhang): Add timeout support.
-			// Will need to implement resync logic once timeout is
-			// added.
-			return nil
-		})
+	for cid := range okClients {
+		cid := cid
+		eg.Go(func() error { return e.clients[cid].Send(resp) })
+	}
+	for cid := range desyncedClients {
+		cid := cid
+		eg.Go(func() error { return e.clients[cid].Send(allResp) })
 	}
 	return eg.Wait()
 }
 
 func (e *Executor) closeStreams() error {
-	e.clientsMux.Lock()
-	defer e.clientsMux.Unlock()
+	e.clientsMux.RLock()
+	defer e.clientsMux.RUnlock()
 
+	var eg errgroup.Group
 	for _, c := range e.clients {
-		c.CloseChannel()
+		eg.Go(func() error { return c.SetStatus(sscpb.ClientStatus_CLIENT_STATUS_TEARDOWN) })
 	}
-	return nil
+	return eg.Wait()
 }
 
 func (e *Executor) Stop() {
@@ -348,7 +354,6 @@ func (e *Executor) doTick() error {
 		}
 	}
 
-	log.Printf("[%.f] Broadcasting curves to all clients", e.tick())
 	if err := e.broadcastCurves(); err != nil {
 		return err
 	}
