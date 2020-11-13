@@ -38,6 +38,7 @@ func (c *Client) Status() sscpb.ClientStatus {
 //
 // The current expected transition graph is of the form
 //   NEW -> DESYNCED -> OK -> NEW -> ... TEARDOWN
+//                   -> NEW
 //
 // NEW: The client does not have an associated channel, and will not broadcast
 // any data.
@@ -60,8 +61,10 @@ func (c *Client) setStatusUnsafe(s sscpb.ClientStatus) error {
 	switch s {
 	case sscpb.ClientStatus_CLIENT_STATUS_NEW:
 		switch c.status {
-		case sscpb.ClientStatus_CLIENT_STATUS_NEW:
 		case sscpb.ClientStatus_CLIENT_STATUS_OK:
+			close(c.ch)
+			c.ch = nil
+		case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
 			close(c.ch)
 			c.ch = nil
 		default:
@@ -69,7 +72,6 @@ func (c *Client) setStatusUnsafe(s sscpb.ClientStatus) error {
 		}
 	case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
 		switch c.status {
-		case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
 		case sscpb.ClientStatus_CLIENT_STATUS_NEW:
 			c.ch = make(chan *apipb.StreamDataResponse)
 		default:
@@ -89,6 +91,8 @@ func (c *Client) setStatusUnsafe(s sscpb.ClientStatus) error {
 			close(c.ch)
 			c.ch = nil
 		case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
+			close(c.ch)
+			c.ch = nil
 		default:
 			return invalidTransitionError(c.status, s)
 		}

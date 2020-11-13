@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"net"
 	"sync"
 	"time"
@@ -84,19 +83,18 @@ type DownFluxServer struct {
 	ex *executor.Executor
 }
 
+func (s *DownFluxServer) validateClient(cid string) error {
+	if !s.ex.ClientExists(cid) {
+		return status.Errorf(codes.NotFound, "client %v not found", cid)
+	}
+	return nil
+}
+
 // Executor returns the internal executor.Executor instance. This is a debug
 // function.
 //
 // TODO(minkezhang): Delete this function.
 func (s *DownFluxServer) Executor() *executor.Executor { return s.ex }
-
-func (s *DownFluxServer) validateClient(cid string) (<-chan *apipb.StreamDataResponse, error) {
-	ch := s.ex.ClientChannel(cid)
-	if ch == nil {
-		return nil, status.Errorf(codes.NotFound, "client %v not found", cid)
-	}
-	return ch, nil
-}
 
 func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequest) (*apipb.GetStatusResponse, error) {
 	return &apipb.GetStatusResponse{
@@ -105,7 +103,7 @@ func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequ
 }
 
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
-	if _, err := s.validateClient(req.GetClientId()); err != nil {
+	if err := s.validateClient(req.GetClientId()); err != nil {
 		return nil, err
 	}
 	return &apipb.MoveResponse{}, s.ex.AddMoveCommands(req)
@@ -132,8 +130,7 @@ type clientConnection struct {
 }
 
 func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
-	ch, err := s.validateClient(req.GetClientId())
-	if err != nil {
+	if err := s.validateClient(req.GetClientId()); err != nil {
 		return err
 	}
 
@@ -141,33 +138,40 @@ func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.D
 		done: make(chan struct{}),
 		mux:  sync.Mutex{},
 	}
-
 	defer func() {
-		// TODO(minkezhang): Implement this.
-		log.Println("Exiting streaming loop, marking client as dirty.")
+		s.ex.StopClientStreamError(req.GetClientId())
 		close(clientMetadata.done)
 	}()
 
-	go func() {
+	if err := s.ex.StartClientStream(req.GetClientId()); err != nil {
+		return err
+	}
+
+	ch, err := s.ex.ClientChannel(req.GetClientId())
+	if err != nil {
+		return err
+	}
+
+	go func(md *clientConnection) {
 		defer func() {
-			clientMetadata.mux.Lock()
-			clientMetadata.chanClosed = true
-			clientMetadata.mux.Unlock()
+			md.mux.Lock()
+			md.chanClosed = true
+			md.mux.Unlock()
 		}()
 		for {
 			select {
-			case <-clientMetadata.done:
+			case <-md.done:
 				return
 			case m, ok := <-ch:
 				if !ok {
 					return
 				}
-				clientMetadata.mux.Lock()
-				clientMetadata.responseQueue = append(clientMetadata.responseQueue, m)
-				clientMetadata.mux.Unlock()
+				md.mux.Lock()
+				md.responseQueue = append(md.responseQueue, m)
+				md.mux.Unlock()
 			}
 		}
-	}()
+	}(&clientMetadata)
 
 	for {
 		clientMetadata.mux.Lock()

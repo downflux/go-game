@@ -118,6 +118,14 @@ func (e *Executor) Status() *gdpb.ServerStatus {
 	}
 }
 
+func (e *Executor) ClientExists(cid string) bool {
+	e.clientsMux.Lock()
+	defer e.clientsMux.Unlock()
+
+	_, found := e.clients[cid]
+	return found
+}
+
 func (e *Executor) AddClient() (string, error) {
 	// TODO(minkezhang): Add maxClients check.
 	e.clientsMux.Lock()
@@ -136,6 +144,13 @@ func (e *Executor) StartClientStream(cid string) error {
 	defer e.clientsMux.Unlock()
 
 	return e.clients[cid].SetStatus(sscpb.ClientStatus_CLIENT_STATUS_DESYNCED)
+}
+
+func (e *Executor) StopClientStreamError(cid string) error {
+	e.clientsMux.Lock()
+	defer e.clientsMux.Unlock()
+
+	return e.clients[cid].SetStatus(sscpb.ClientStatus_CLIENT_STATUS_NEW)
 }
 
 func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, error) {
