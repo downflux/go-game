@@ -3,7 +3,6 @@ package executor
 import (
 	"log"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/downflux/game/entity/entity"
@@ -13,8 +12,6 @@ import (
 	"github.com/downflux/game/server/service/command/move"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/durationpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -22,6 +19,7 @@ import (
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
+	serverstatus "github.com/downflux/game/server/service/status"
 )
 
 const (
@@ -55,18 +53,14 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		entities:      map[string]entity.Entity{},
 		commandQueue:  nil,
 		clients:       clientlist.New(idLen),
+		statusImpl:    serverstatus.New(tickDuration),
 	}, nil
 }
 
 type Executor struct {
 	tileMap       *tile.Map
 	abstractGraph *graph.Graph
-
-	isStoppedImpl int32
-	isStartedImpl int32
-	tickImpl      int64
-	startTimeMux  sync.Mutex
-	startTimeImpl time.Time
+	statusImpl    *serverstatus.Status
 
 	// Add-only. Acquire first.
 	dataMux  sync.RWMutex
@@ -84,37 +78,11 @@ type Executor struct {
 	curveQueueMux sync.RWMutex
 	curveQueue    []dirtyCurve
 
+	// Add-only.
 	clients *clientlist.List
 }
 
-func (e *Executor) tick() float64   { return float64(atomic.LoadInt64(&(e.tickImpl))) }
-func (e *Executor) incrementTick()  { atomic.AddInt64(&(e.tickImpl), 1) }
-func (e *Executor) isStarted() bool { return atomic.LoadInt32(&(e.isStartedImpl)) != 0 }
-func (e *Executor) setIsStarted()   { atomic.StoreInt32(&(e.isStartedImpl), 1) }
-func (e *Executor) isStopped() bool { return atomic.LoadInt32(&(e.isStoppedImpl)) != 0 }
-func (e *Executor) setIsStopped()   { atomic.StoreInt32(&(e.isStoppedImpl), 1) }
-func (e *Executor) startTime() time.Time {
-	e.startTimeMux.Lock()
-	defer e.startTimeMux.Unlock()
-
-	return e.startTimeImpl
-}
-func (e *Executor) setStartTime() {
-	e.startTimeMux.Lock()
-	defer e.startTimeMux.Unlock()
-
-	e.startTimeImpl = time.Now()
-}
-
-func (e *Executor) Status() *gdpb.ServerStatus {
-	return &gdpb.ServerStatus{
-		Tick:         e.tick(),
-		IsStarted:    e.isStarted(),
-		TickDuration: durationpb.New(tickDuration),
-		StartTime:    timestamppb.New(e.startTime()),
-	}
-}
-
+func (e *Executor) Status() *gdpb.ServerStatus             { return e.statusImpl.PB() }
 func (e *Executor) ClientExists(cid string) bool           { return e.clients.In(cid) }
 func (e *Executor) AddClient() (string, error)             { return e.clients.Add() }
 func (e *Executor) StartClientStream(cid string) error     { return e.clients.Start(cid) }
@@ -135,8 +103,8 @@ func (e *Executor) popCommandQueue() ([]command.Command, error) {
 func (e *Executor) processCommand(cmd command.Command) error {
 	if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
 		c, err := cmd.Execute(move.Args{
-			Tick:   e.tick(),
-			Source: e.entities[cmd.(*move.Command).EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(e.tick()).(*gdpb.Position)})
+			Tick:   e.statusImpl.Tick(),
+			Source: e.entities[cmd.(*move.Command).EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(e.statusImpl.Tick()).(*gdpb.Position)})
 		if err != nil {
 			return err
 		}
@@ -191,11 +159,7 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 		}
 		if _, found := processedCurves[dc.eid][dc.category]; !found {
 			processedCurves[dc.eid][dc.category] = true
-			// TODO(minkezhang): Consider and implement what
-			// happens on late / re-sync. Simply populate e.tick()
-			// with last known good client tick, and mark all
-			// curves and entities as dirty.
-			curves = append(curves, e.entities[dc.eid].Curve(dc.category).ExportTail(e.tick()))
+			curves = append(curves, e.entities[dc.eid].Curve(dc.category).ExportTail(e.statusImpl.Tick()))
 		}
 	}
 
@@ -214,7 +178,7 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 
 	// TODO(minkezhang): Give some leeway here, broadcast a bit in the
 	// past.
-	beginningTick := e.tick()
+	beginningTick := e.statusImpl.Tick()
 
 	for _, en := range e.entities {
 		entities = append(entities, &gdpb.Entity{
@@ -229,7 +193,7 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 }
 
 func (e *Executor) broadcastCurves() error {
-	log.Printf("[%.f]: broadcasting curves", e.tick())
+	log.Printf("[%.f]: broadcasting curves", e.statusImpl.Tick())
 
 	curves, entities := e.popTickQueue()
 
@@ -238,14 +202,14 @@ func (e *Executor) broadcastCurves() error {
 			// TODO(minkezhang): Decide if it's okay that the reported tick may not
 			// coincide with the ticks of the curve and entities.
 			return &apipb.StreamDataResponse{
-				Tick:     e.tick(),
+				Tick:     e.statusImpl.Tick(),
 				Curves:   curves,
 				Entities: entities,
 			}
 		},
 		func() *apipb.StreamDataResponse {
 			full := &apipb.StreamDataResponse{
-				Tick: e.tick(),
+				Tick: e.statusImpl.Tick(),
 			}
 			allCurves, allEntities := e.allCurvesAndEntities()
 			full.Curves = allCurves
@@ -256,16 +220,16 @@ func (e *Executor) broadcastCurves() error {
 }
 
 func (e *Executor) Stop() {
-	e.setIsStopped()
+	e.statusImpl.SetIsStopped()
 	e.clients.StopAll()
 }
 
 func (e *Executor) Run() error {
-	e.setStartTime()
-	e.setIsStarted()
-	for !e.isStopped() {
+	e.statusImpl.SetStartTime()
+	e.statusImpl.SetIsStarted()
+	for !e.statusImpl.IsStopped() {
 		t := time.Now()
-		e.incrementTick()
+		e.statusImpl.IncrementTick()
 
 		if err := e.doTick(); err != nil {
 			return err
