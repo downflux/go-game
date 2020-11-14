@@ -115,11 +115,13 @@ func (e *Executor) Status() *gdpb.ServerStatus {
 	}
 }
 
-func (e *Executor) ClientExists(cid string) bool { return e.clients.In(cid) }
-func (e *Executor) AddClient() (string, error) { return e.clients.Add() }
-func (e *Executor) StartClientStream(cid string) error { return e.clients.Start(cid) }
+func (e *Executor) ClientExists(cid string) bool           { return e.clients.In(cid) }
+func (e *Executor) AddClient() (string, error)             { return e.clients.Add() }
+func (e *Executor) StartClientStream(cid string) error     { return e.clients.Start(cid) }
 func (e *Executor) StopClientStreamError(cid string) error { return e.clients.Stop(cid, false) }
-func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, error) { return e.clients.Channel(cid) }
+func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, error) {
+	return e.clients.Channel(cid)
+}
 
 func (e *Executor) popCommandQueue() ([]command.Command, error) {
 	e.commandQueueMux.Lock()
