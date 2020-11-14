@@ -1,6 +1,21 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
+    name = "clientlist",
+    srcs = ["clientlist.go"],
+    importpath = "github.com/downflux/game/server/service/clientlist",
+    deps = [
+        ":client",
+        "//api:api_go_proto",
+        "//server:id",
+        "//server/service/api:constants_go_proto",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
+    ],
+)
+
+go_library(
     name = "client",
     srcs = ["client.go"],
     importpath = "github.com/downflux/game/server/service/client",
@@ -34,7 +49,7 @@ go_library(
     importpath = "github.com/downflux/game/server/service/executor",
     visibility = ["//server/grpc:__pkg__"],
     deps = [
-        ":client",
+        ":clientlist",
         "//api:api_go_proto",
         "//api:constants_go_proto",
         "//api:data_go_proto",
@@ -42,7 +57,6 @@ go_library(
         "//map:map",
         "//map/api:data_go_proto",
         "//pathing/hpf:graph",
-        "//server:id",
         "//server/service/api:constants_go_proto",
         "//server/service/command:command",
         "//server/service/command:move",
@@ -50,7 +64,6 @@ go_library(
         "@org_golang_google_grpc//status:go_default_library",
         "@org_golang_google_protobuf//types/known/durationpb:go_default_library",
         "@org_golang_google_protobuf//types/known/timestamppb:go_default_library",
-        "@org_golang_x_sync//errgroup:go_default_library",
     ],
 )
 

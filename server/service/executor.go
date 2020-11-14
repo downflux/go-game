@@ -8,11 +8,9 @@ import (
 
 	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/service/client"
+	"github.com/downflux/game/server/service/clientlist"
 	"github.com/downflux/game/server/service/command/command"
 	"github.com/downflux/game/server/service/command/move"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -56,7 +54,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		abstractGraph: g,
 		entities:      map[string]entity.Entity{},
 		commandQueue:  nil,
-		clients:       map[string]*client.Client{},
+		clients:       clientlist.New(idLen),
 	}, nil
 }
 
@@ -86,8 +84,7 @@ type Executor struct {
 	curveQueueMux sync.RWMutex
 	curveQueue    []dirtyCurve
 
-	clientsMux sync.RWMutex
-	clients    map[string]*client.Client
+	clients *clientlist.List
 }
 
 func (e *Executor) tick() float64   { return float64(atomic.LoadInt64(&(e.tickImpl))) }
@@ -118,47 +115,11 @@ func (e *Executor) Status() *gdpb.ServerStatus {
 	}
 }
 
-func (e *Executor) ClientExists(cid string) bool {
-	e.clientsMux.Lock()
-	defer e.clientsMux.Unlock()
-
-	_, found := e.clients[cid]
-	return found
-}
-
-func (e *Executor) AddClient() (string, error) {
-	// TODO(minkezhang): Add maxClients check.
-	e.clientsMux.Lock()
-	defer e.clientsMux.Unlock()
-
-	cid := id.RandomString(idLen)
-	for _, found := e.clients[cid]; found; cid = id.RandomString(idLen) {
-	}
-	e.clients[cid] = client.New(cid)
-
-	return cid, nil
-}
-
-func (e *Executor) StartClientStream(cid string) error {
-	e.clientsMux.Lock()
-	defer e.clientsMux.Unlock()
-
-	return e.clients[cid].SetStatus(sscpb.ClientStatus_CLIENT_STATUS_DESYNCED)
-}
-
-func (e *Executor) StopClientStreamError(cid string) error {
-	e.clientsMux.Lock()
-	defer e.clientsMux.Unlock()
-
-	return e.clients[cid].SetStatus(sscpb.ClientStatus_CLIENT_STATUS_NEW)
-}
-
-func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, error) {
-	e.clientsMux.RLock()
-	defer e.clientsMux.RUnlock()
-
-	return e.clients[cid].Channel()
-}
+func (e *Executor) ClientExists(cid string) bool { return e.clients.In(cid) }
+func (e *Executor) AddClient() (string, error) { return e.clients.Add() }
+func (e *Executor) StartClientStream(cid string) error { return e.clients.Start(cid) }
+func (e *Executor) StopClientStreamError(cid string) error { return e.clients.Stop(cid, false) }
+func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, error) { return e.clients.Channel(cid) }
 
 func (e *Executor) popCommandQueue() ([]command.Command, error) {
 	e.commandQueueMux.Lock()
@@ -270,69 +231,31 @@ func (e *Executor) broadcastCurves() error {
 
 	curves, entities := e.popTickQueue()
 
-	// TODO(minkezhang): Decide if it's okay that the reported tick may not
-	// coincide with the ticks of the curve and entities.
-	resp := &apipb.StreamDataResponse{
-		Tick:     e.tick(),
-		Curves:   curves,
-		Entities: entities,
-	}
-	allResp := &apipb.StreamDataResponse{
-		Tick: e.tick(),
-	}
-
-	e.clientsMux.RLock()
-	defer e.clientsMux.RUnlock()
-
-	okClients := map[string]bool{}
-	desyncedClients := map[string]bool{}
-
-	for _, c := range e.clients {
-		switch c.Status() {
-		case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
-			desyncedClients[c.ID()] = true
-		case sscpb.ClientStatus_CLIENT_STATUS_OK:
-			okClients[c.ID()] = true
-		default:
-		}
-	}
-	if desyncedClients != nil {
-		allCurves, allEntities := e.allCurvesAndEntities()
-		allResp.Curves = allCurves
-		allResp.Entities = allEntities
-	}
-
-	if desyncedClients != nil && curves == nil && entities == nil {
-		return nil
-	}
-
-	log.Println("clients: ", desyncedClients, okClients)
-	var eg errgroup.Group
-	for cid := range okClients {
-		cid := cid
-		eg.Go(func() error { return e.clients[cid].Send(resp) })
-	}
-	for cid := range desyncedClients {
-		cid := cid
-		eg.Go(func() error { return e.clients[cid].Send(allResp) })
-	}
-	return eg.Wait()
-}
-
-func (e *Executor) closeStreams() error {
-	e.clientsMux.RLock()
-	defer e.clientsMux.RUnlock()
-
-	var eg errgroup.Group
-	for _, c := range e.clients {
-		eg.Go(func() error { return c.SetStatus(sscpb.ClientStatus_CLIENT_STATUS_TEARDOWN) })
-	}
-	return eg.Wait()
+	return e.clients.Broadcast(
+		func() *apipb.StreamDataResponse {
+			// TODO(minkezhang): Decide if it's okay that the reported tick may not
+			// coincide with the ticks of the curve and entities.
+			return &apipb.StreamDataResponse{
+				Tick:     e.tick(),
+				Curves:   curves,
+				Entities: entities,
+			}
+		},
+		func() *apipb.StreamDataResponse {
+			full := &apipb.StreamDataResponse{
+				Tick: e.tick(),
+			}
+			allCurves, allEntities := e.allCurvesAndEntities()
+			full.Curves = allCurves
+			full.Entities = allEntities
+			return full
+		},
+	)
 }
 
 func (e *Executor) Stop() {
 	e.setIsStopped()
-	e.closeStreams()
+	e.clients.StopAll()
 }
 
 func (e *Executor) Run() error {
