@@ -1,5 +1,14 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
+go_library(
+    name = "client",
+    srcs = ["client.go"],
+    importpath = "github.com/downflux/game/server/grpc/client",
+    deps = [
+        "//api:api_go_proto",
+    ],
+)
+
 go_binary(
     name = "main",
     srcs = ["main.go"],
@@ -24,6 +33,7 @@ go_library(
     srcs = ["server.go"],
     importpath = "github.com/downflux/game/server/grpc/server",
     deps = [
+        ":client",
         "//api:api_go_proto",
         "//api:data_go_proto",
         "//map/api:data_go_proto",

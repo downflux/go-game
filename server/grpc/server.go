@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"net"
-	"sync"
 	"time"
 
+	"github.com/downflux/game/server/grpc/client"
 	"github.com/downflux/game/server/service/executor"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -25,7 +25,7 @@ var (
 type ServerWrapper struct {
 	gRPCServer     *grpc.Server
 	gRPCServerImpl *DownFluxServer
-	wg             errgroup.Group
+	eg             errgroup.Group
 }
 
 func NewServerWrapper(
@@ -52,8 +52,8 @@ func (s *ServerWrapper) Start(addr string) error {
 		return err
 	}
 
-	s.wg.Go(func() error { return s.gRPCServer.Serve(lis) })
-	s.wg.Go(s.gRPCServerImpl.ex.Run)
+	s.eg.Go(func() error { return s.gRPCServer.Serve(lis) })
+	s.eg.Go(s.gRPCServerImpl.ex.Run)
 
 	for isStarted := false; !isStarted; isStarted = s.gRPCServerImpl.ex.Status().GetIsStarted() {
 		time.Sleep(time.Second)
@@ -66,7 +66,7 @@ func (s *ServerWrapper) Stop() error {
 	s.gRPCServerImpl.ex.Stop()
 	s.gRPCServer.GracefulStop()
 
-	return s.wg.Wait()
+	return s.eg.Wait()
 }
 
 func NewDownFluxServer(pb *mdpb.TileMap, d *gdpb.Coordinate) (*DownFluxServer, error) {
@@ -121,26 +121,15 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 	return resp, nil
 }
 
-type clientConnection struct {
-	done chan struct{}
-
-	mux           sync.Mutex
-	responseQueue []*apipb.StreamDataResponse
-	chanClosed    bool
-}
-
 func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
 	if err := s.validateClient(req.GetClientId()); err != nil {
 		return err
 	}
 
-	clientMetadata := clientConnection{
-		done: make(chan struct{}),
-		mux:  sync.Mutex{},
-	}
+	md := client.New()
 	defer func() {
 		s.ex.StopClientStreamError(req.GetClientId())
-		close(clientMetadata.done)
+		md.Close()
 	}()
 
 	if err := s.ex.StartClientStream(req.GetClientId()); err != nil {
@@ -152,39 +141,28 @@ func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.D
 		return err
 	}
 
-	go func(md *clientConnection) {
-		defer func() {
-			md.mux.Lock()
-			md.chanClosed = true
-			md.mux.Unlock()
-		}()
+	go func(md *client.Connection) {
+		defer md.SetChannelClosed(true)
 		for {
 			select {
-			case <-md.done:
+			case <-md.Done():
 				return
 			case m, ok := <-ch:
 				if !ok {
 					return
 				}
-				md.mux.Lock()
-				md.responseQueue = append(md.responseQueue, m)
-				md.mux.Unlock()
+				md.AddMessage(m)
 			}
 		}
-	}(&clientMetadata)
+	}(md)
 
 	for {
-		clientMetadata.mux.Lock()
-		tq := clientMetadata.responseQueue
-		clientMetadata.responseQueue = nil
-		ok := !clientMetadata.chanClosed
-		clientMetadata.mux.Unlock()
-
-		if tq == nil && !ok {
+		resp, ok := md.Responses()
+		if resp == nil && !ok {
 			return nil
 		}
 
-		for _, m := range tq {
+		for _, m := range resp {
 			// Send does not block on flakey network connection. See gRPC
 			// docs. On server keepalive failure, StreamData will return
 			// with connection error. On client close, StreamData will
