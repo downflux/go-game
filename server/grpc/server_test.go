@@ -92,34 +92,16 @@ func TestSendMoveCommand(t *testing.T) {
 	dest := &gdpb.Position{X: 3, Y: 0}
 	src := &gdpb.Position{X: 0, Y: 0}
 	want := &apipb.StreamDataResponse{
-		Curves: []*gdpb.Curve{
-			{
-				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
-				Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
-				Data: []*gdpb.CurveDatum{
-					{
-						Datum: &gdpb.CurveDatum_PositionDatum{
-							&gdpb.Position{X: 0, Y: 0},
-						},
-					},
-					{
-						Datum: &gdpb.CurveDatum_PositionDatum{
-							&gdpb.Position{X: 1, Y: 0},
-						},
-					},
-					{
-						Datum: &gdpb.CurveDatum_PositionDatum{
-							&gdpb.Position{X: 2, Y: 0},
-						},
-					},
-					{
-						Datum: &gdpb.CurveDatum_PositionDatum{
-							&gdpb.Position{X: 3, Y: 0},
-						},
-					},
-				},
+		Curves: []*gdpb.Curve{{
+			Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+			Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
+			Data: []*gdpb.CurveDatum{
+				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 1, Y: 0}}},
+				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 2, Y: 0}}},
+				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 3, Y: 0}}},
 			},
-		},
+		}},
 	}
 	e := entity.NewSimpleEntity(id.RandomString(idLen), 0, src)
 

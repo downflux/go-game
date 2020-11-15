@@ -94,3 +94,48 @@ go_repository(
     importpath = "github.com/fzipp/astar",
     commit = "330d9f048c8e9a904c80f32aa3a95ce6d24afbe0",
 )
+
+# ToxiProxy dependencies.
+# See https://github.com/kubernetes/test-infra/blob/master/repos.bzl.
+go_repository(
+    name = "com_github_shopify_toxiproxy",
+    importpath = "github.com/Shopify/toxiproxy",
+    sum = "h1:TKdv8HiTLgE5wdJuEML90aBgNWsokNbMijUGhmcoBJc=",
+    version = "v2.1.4+incompatible",
+)
+go_repository(
+    name = "com_github_sirupsen_logrus",
+    importpath = "github.com/sirupsen/logrus",
+    sum = "h1:juTguoYk5qI21pwyTXY3B3Y5cOTH3ZUyZCg1v/mihuo=",
+    version = "v1.2.0",
+)
+go_repository(
+    name = "com_github_gorilla_mux",
+    importpath = "github.com/gorilla/mux",
+    sum = "h1:Pgr17XVTNXAk3q/r4CpKzC5xBM/qW1uVLV+IhRZpIIk=",
+    version = "v1.6.2",
+)
+go_repository(
+    name = "in_gopkg_tomb_v1",
+    importpath = "gopkg.in/tomb.v1",
+    sum = "h1:uRGJdciOHaEIrze2W8Q3AKkepLTh2hOroT7a+7czfdQ=",
+    version = "v1.0.0-20141024135613-dd632973f1e7",
+)
+go_repository(
+    name = "org_golang_x_crypto",
+    importpath = "golang.org/x/crypto",
+    sum = "h1:bselrhR0Or1vomJZC8ZIjWtbDmn9OYFLX5Ik9alpJpE=",
+    version = "v0.0.0-20190404164418-38d8ce5564a5",
+)
+go_repository(
+    name = "com_github_gorilla_context",
+    importpath = "github.com/gorilla/context",
+    sum = "h1:AWwleXJkX/nhcU9bZSnZoi3h/qGYqQAGhq6zZe/aQW8=",
+    version = "v1.1.1",
+)
+go_repository(
+    name = "org_golang_x_sys",
+    importpath = "golang.org/x/sys",
+    sum = "h1:nFYrTHrdrAOpShe27kaFHjsqYSEQ0KWqdWLu3xuZJts=",
+    version = "v0.0.0-20190403152447-81d4e9dc473e",
+)

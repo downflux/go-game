@@ -2,8 +2,13 @@ package server
 
 import (
 	"context"
+	"net"
+	"sync"
+	"time"
 
 	"github.com/downflux/game/server/service/executor"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -16,6 +21,53 @@ var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
 )
+
+type ServerWrapper struct {
+	gRPCServer     *grpc.Server
+	gRPCServerImpl *DownFluxServer
+	wg             errgroup.Group
+}
+
+func NewServerWrapper(
+	serverOptions []grpc.ServerOption,
+	pb *mdpb.TileMap,
+	d *gdpb.Coordinate) (*ServerWrapper, error) {
+	sw := &ServerWrapper{}
+
+	gRPCServerImpl, err := NewDownFluxServer(pb, d)
+	if err != nil {
+		return nil, err
+	}
+
+	sw.gRPCServerImpl = gRPCServerImpl
+	sw.gRPCServer = grpc.NewServer(serverOptions...)
+	apipb.RegisterDownFluxServer(sw.gRPCServer, sw.gRPCServerImpl)
+
+	return sw, nil
+}
+
+func (s *ServerWrapper) Start(addr string) error {
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+
+	s.wg.Go(func() error { return s.gRPCServer.Serve(lis) })
+	s.wg.Go(s.gRPCServerImpl.ex.Run)
+
+	for isStarted := false; !isStarted; isStarted = s.gRPCServerImpl.ex.Status().GetIsStarted() {
+		time.Sleep(time.Second)
+	}
+
+	return nil
+}
+
+func (s *ServerWrapper) Stop() error {
+	s.gRPCServerImpl.ex.Stop()
+	s.gRPCServer.GracefulStop()
+
+	return s.wg.Wait()
+}
 
 func NewDownFluxServer(pb *mdpb.TileMap, d *gdpb.Coordinate) (*DownFluxServer, error) {
 	ex, err := executor.New(pb, d)
@@ -31,16 +83,18 @@ type DownFluxServer struct {
 	ex *executor.Executor
 }
 
-// Debug function. Delete.
-func (s *DownFluxServer) Executor() *executor.Executor { return s.ex }
-
-func (s *DownFluxServer) validateClient(cid string) (<-chan *apipb.StreamDataResponse, error) {
-	ch := s.ex.ClientChannel(cid)
-	if ch == nil {
-		return nil, status.Errorf(codes.NotFound, "client %v not found", cid)
+func (s *DownFluxServer) validateClient(cid string) error {
+	if !s.ex.ClientExists(cid) {
+		return status.Errorf(codes.NotFound, "client %v not found", cid)
 	}
-	return ch, nil
+	return nil
 }
+
+// Executor returns the internal executor.Executor instance. This is a debug
+// function.
+//
+// TODO(minkezhang): Delete this function.
+func (s *DownFluxServer) Executor() *executor.Executor { return s.ex }
 
 func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequest) (*apipb.GetStatusResponse, error) {
 	return &apipb.GetStatusResponse{
@@ -49,7 +103,7 @@ func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequ
 }
 
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
-	if _, err := s.validateClient(req.GetClientId()); err != nil {
+	if err := s.validateClient(req.GetClientId()); err != nil {
 		return nil, err
 	}
 	return &apipb.MoveResponse{}, s.ex.AddMoveCommands(req)
@@ -67,16 +121,86 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 	return resp, nil
 }
 
+type clientConnection struct {
+	done chan struct{}
+
+	mux           sync.Mutex
+	responseQueue []*apipb.StreamDataResponse
+	chanClosed    bool
+}
+
 func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
-	ch, err := s.validateClient(req.GetClientId())
+	if err := s.validateClient(req.GetClientId()); err != nil {
+		return err
+	}
+
+	clientMetadata := clientConnection{
+		done: make(chan struct{}),
+		mux:  sync.Mutex{},
+	}
+	defer func() {
+		s.ex.StopClientStreamError(req.GetClientId())
+		close(clientMetadata.done)
+	}()
+
+	if err := s.ex.StartClientStream(req.GetClientId()); err != nil {
+		return err
+	}
+
+	ch, err := s.ex.ClientChannel(req.GetClientId())
 	if err != nil {
 		return err
 	}
 
-	for r := range ch {
-		if err := stream.Send(r); err != nil {
-			return err
+	go func(md *clientConnection) {
+		defer func() {
+			md.mux.Lock()
+			md.chanClosed = true
+			md.mux.Unlock()
+		}()
+		for {
+			select {
+			case <-md.done:
+				return
+			case m, ok := <-ch:
+				if !ok {
+					return
+				}
+				md.mux.Lock()
+				md.responseQueue = append(md.responseQueue, m)
+				md.mux.Unlock()
+			}
+		}
+	}(&clientMetadata)
+
+	for {
+		clientMetadata.mux.Lock()
+		tq := clientMetadata.responseQueue
+		clientMetadata.responseQueue = nil
+		ok := !clientMetadata.chanClosed
+		clientMetadata.mux.Unlock()
+
+		if tq == nil && !ok {
+			return nil
+		}
+
+		for _, m := range tq {
+			// Send does not block on flakey network connection. See gRPC
+			// docs. On server keepalive failure, StreamData will return
+			// with connection error. On client close, StreamData will
+			// return with connection error.
+			if err := stream.Send(m); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
+
+// Failure modes to consider -- NOT latency
+// Server cannot send for N seconds -- close stream, mark client as dirty
+// IGNORE Server sends in (N - 1) seconds and needs to resync client
+// 	TODO(minkezhang): Skip messages in queue < current tick.
+//	This is actually okay -- we'll need to resync because messages are always deltas.
+// 	unless we were to merge all skipped messages.
+// Server sends normally (happy path)
