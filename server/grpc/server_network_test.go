@@ -11,8 +11,11 @@ import (
 	"github.com/Shopify/toxiproxy"
 	"github.com/downflux/game/server/grpc/handler"
 	"github.com/downflux/game/server/grpc/option"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	_ "google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/status"
 
 	tpc "github.com/Shopify/toxiproxy/client"
 	apipb "github.com/downflux/game/api/api_go_proto"
@@ -57,11 +60,13 @@ func (p networkImpairmentProxy) newAddress() string {
 }
 
 func setup() {
+	rand.Seed(time.Now().UnixNano())
+	p := fmt.Sprintf("%d", randomPort())
 	testGlobal.toxi = toxiproxy.NewServer()
-	go testGlobal.toxi.Listen(toxiHost, toxiPort)
+	go testGlobal.toxi.Listen(toxiHost, p)
 
 	time.Sleep(time.Second) // Wait for toxiproxy server to be up.
-	testGlobal.toxiClient = tpc.NewClient(fmt.Sprintf("%s:%s", toxiHost, toxiPort))
+	testGlobal.toxiClient = tpc.NewClient(fmt.Sprintf("%s:%s", toxiHost, p))
 }
 
 func teardown() {
@@ -86,85 +91,108 @@ func newGRPCClient(hostAddr string) (*grpc.ClientConn, apipb.DownFluxClient, err
 	return conn, apipb.NewDownFluxClient(conn), nil
 }
 
-func TestClientCloseStream(t *testing.T)     {}
-func TestServerDetectedTimeout(t *testing.T) {}
-func TestServerDetectedLatency(t *testing.T) {
-	listenerAddr := testGlobal.newAddress()
-	serverAddr := testGlobal.newAddress()
+func TestClientCloseStream(t *testing.T) {}
+func TestServerCloseStream(t *testing.T) {
 	serverOptionConfig := option.ServerOptionConfig{
 		MinimumClientInterval:   10 * time.Second,
 		ServerHeartbeatInterval: time.Second,
 		ServerHeartbeatTimeout:  time.Second,
 	}
 
-	p, err := testGlobal.toxiClient.CreateProxy("downflux", listenerAddr, serverAddr)
-	if err != nil {
-		t.Fatalf("CreateProxy() = _, %v, want = nil", err)
-	}
-	defer p.Delete()
-
-	// Create gRPC server.
-	sw, err := NewServerWrapper(
-		append(
-			option.ServerOptions(serverOptionConfig),
-			grpc.StatsHandler(&handler.DownFluxHandler{})),
-		nil,
-		nil)
-	if err != nil {
-		t.Fatalf("NewServerWrapper() = _, %v, want = nil", err)
-	}
-	sw.Start(serverAddr)
-	defer sw.Stop()
-
-	// Create gRPC client.
-	conn, client, err := newGRPCClient(listenerAddr)
-	if err != nil {
-		t.Fatalf("newGRPCClient() = _, _, %v, want = nil", err)
-	}
-	defer conn.Close()
-
-	clientResp, err := client.AddClient(context.Background(), &apipb.AddClientRequest{})
-	if err != nil {
-		t.Fatalf("AddClient() = _, %v, want = nil", err)
-	}
-
-	stream, err := client.StreamData(context.Background(), &apipb.StreamDataRequest{
-		ClientId: clientResp.GetClientId(),
-	})
-	if err != nil {
-		t.Fatalf("StreamData() = _, %v, want = nil", err)
+	testConfigs := []struct {
+		name  string
+		toxic tpc.Toxic
+		want  codes.Code
+	}{
+		{
+			name: "TestClientHighLatency",
+			toxic: tpc.Toxic{
+				Name:     "downstream_latency",
+				Type:     "latency",
+				Stream:   "downstream",
+				Toxicity: 1.0,
+				Attributes: tpc.Attributes{
+					"latency": (4 * serverOptionConfig.ServerHeartbeatTimeout) / time.Millisecond,
+				},
+			},
+			want: codes.Unavailable,
+		},
+		{
+			name: "TestClientTimeout",
+			toxic: tpc.Toxic{
+				Name:       "downstream_timeout",
+				Type:       "timeout",
+				Stream:     "downstream",
+				Toxicity:   1.0,
+				Attributes: tpc.Attributes{"timeout": 0},
+			},
+			want: codes.Unavailable,
+		},
 	}
 
-	p.AddToxic("latency_downstream", "latency", "downstream", 1.0, tpc.Attributes{
-		"latency": (10 * serverOptionConfig.ServerHeartbeatTimeout) / time.Millisecond,
-	})
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			listenerAddr := testGlobal.newAddress()
+			serverAddr := testGlobal.newAddress()
 
-	go func() {
-		var m *apipb.StreamDataResponse
-		var err error
-		for m, err = nil, nil; err == nil; m, err = stream.Recv() {
-			fmt.Println("received message: ", m)
-		}
-		fmt.Println("final error:", err)
-		// conn.Close()
-	}()
-
-	// Register for a conn.WaitForStateChange -- at this point, inspect server and ensure
-	// 1. it's still ticking
-	// 2. it's disconnected client stream / etc. after N retries
-	//   a. (non-transient latency / termination)
-	//   b. connection error detection
-	// 3. it's ready for reconnect (mark client as dirty)
-	for {
-		s := conn.GetState()
-		fmt.Println(s)
-		/*
-			if s != connectivity.Ready {
-				p.RemoveToxic("latency_downstream")
+			p, err := testGlobal.toxiClient.CreateProxy("downflux", listenerAddr, serverAddr)
+			if err != nil {
+				t.Fatalf("CreateProxy() = _, %v, want = nil", err)
 			}
-		*/
-		time.Sleep(time.Second)
-	}
+			defer p.Delete()
 
-	t.Error(err)
+			// Create gRPC server.
+			sw, err := NewServerWrapper(
+				append(
+					option.ServerOptions(serverOptionConfig),
+					grpc.StatsHandler(&handler.DownFluxHandler{})),
+				nil,
+				nil)
+			if err != nil {
+				t.Fatalf("NewServerWrapper() = _, %v, want = nil", err)
+			}
+			sw.Start(serverAddr)
+			defer sw.Stop()
+
+			// Create gRPC client.
+			conn, client, err := newGRPCClient(listenerAddr)
+			if err != nil {
+				t.Fatalf("newGRPCClient() = _, _, %v, want = nil", err)
+			}
+			defer conn.Close()
+
+			clientResp, err := client.AddClient(context.Background(), &apipb.AddClientRequest{})
+			if err != nil {
+				t.Fatalf("AddClient() = _, %v, want = nil", err)
+			}
+
+			stream, err := client.StreamData(context.Background(), &apipb.StreamDataRequest{
+				ClientId: clientResp.GetClientId(),
+			})
+			if err != nil {
+				t.Fatalf("StreamData() = _, %v, want = nil", err)
+			}
+
+			p.AddToxic(c.toxic.Name, c.toxic.Type, c.toxic.Stream, c.toxic.Toxicity, c.toxic.Attributes)
+
+			var eg errgroup.Group
+			eg.Go(func() error {
+				var m *apipb.StreamDataResponse
+				var err error
+				for m, err = nil, nil; err == nil; m, err = stream.Recv() {
+					fmt.Println("received message: ", m)
+				}
+				return err
+			})
+
+			s, ok := status.FromError(eg.Wait())
+			if !ok {
+				t.Fatalf("FromError() = _, %v, want = true", ok)
+			}
+
+			if s.Code() != c.want {
+				t.Errorf("Code() = %v, want = %v", s.Code(), c.want)
+			}
+		})
+	}
 }

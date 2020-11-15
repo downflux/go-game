@@ -49,6 +49,7 @@ go_test(
     name = "server_network_test",
     srcs = ["server_network_test.go"],
     importpath = "github.com/downflux/game/server/grpc/server_network_test",
+    timeout = "short",
     embed = [":server"],
     deps = [
         ":option",
@@ -57,7 +58,10 @@ go_test(
         "@com_github_shopify_toxiproxy//:go_default_library",
         "@com_github_shopify_toxiproxy//client:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//connectivity:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
     ],
 )
 
