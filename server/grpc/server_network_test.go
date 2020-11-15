@@ -79,7 +79,6 @@ func TestMain(m *testing.M) {
 	teardown()
 
 	os.Exit(code)
-
 }
 
 func newGRPCClient(hostAddr string) (*grpc.ClientConn, apipb.DownFluxClient, error) {
@@ -91,7 +90,11 @@ func newGRPCClient(hostAddr string) (*grpc.ClientConn, apipb.DownFluxClient, err
 	return conn, apipb.NewDownFluxClient(conn), nil
 }
 
-func TestClientCloseStream(t *testing.T) {}
+func TestClientCloseStream(t *testing.T) {
+	// TODO(minkezhang): Write this test for client detecting a network
+	// flake.
+}
+
 func TestServerCloseStream(t *testing.T) {
 	serverOptionConfig := option.ServerOptionConfig{
 		MinimumClientInterval:   10 * time.Second,
