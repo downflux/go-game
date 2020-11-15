@@ -11,12 +11,12 @@
 * [x] add AddClientResponse.Tick
 * [x] add oneof curve subclass
 * [ ] make entity interface more formal
-* [ ] *broadcast entities along with curves in StreamCurves*
+* [x] broadcast entities along with curves in StreamCurves
 * [x] refactor server / executor
 
 # Feature
 * [x] make channel send from server nonblocking
-* [ ] make channel send from server with timeout
-* [ ] support Reconnect() and share game state at specific tick
+* [x] make channel send from server with timeout
+* [x] support Reconnect() and share game state at specific tick
 * [ ] parallelize move commands
 * [x] add Run() which iterates through Tick()
