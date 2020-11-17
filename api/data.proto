@@ -1,3 +1,6 @@
+// Package data.proto
+// Game-level structs.
+
 syntax = "proto3";
 
 package game.api.data;
@@ -21,6 +24,9 @@ message Coordinate {
   int32 y = 2;
 }
 
+// CurveDatum represents a single (time, data) point on a curve. The value of
+// the datum may be of multiple types, and it is up to the client and server
+// to consume this data responsibly.
 message CurveDatum {
   double tick = 1;
   oneof datum {
@@ -31,21 +37,38 @@ message CurveDatum {
   }
 }
 
+// Curve represents a time series of a specified property. This curve belongs
+// to a specific entity.
 message Curve {
   string entity_id = 1;
   game.api.constants.CurveCategory category = 2;
   game.api.constants.CurveType type = 3;
   repeated CurveDatum data = 4;
-  double tick = 5;  // Generated server tick -- measure of staleness.
+
+  // tick is the last server tick at which the curve has been updated. This is
+  // used as a measure of staleness of the curve, and is used when we merge
+  // curves of the same entity property.
+  double tick = 5;
 }
 
+// ServerStatus represents the current status of the game server.
 message ServerStatus {
   bool is_started = 1;
+
+  // tick represents the current server tick that is being processed. This is a
+  // non-zero integer (cast into a float). This, together with the start_time
+  // and tick_duration, allows the client to predict the current server tick.
   double tick = 2;
+
   google.protobuf.Duration tick_duration = 3;
   google.protobuf.Timestamp start_time = 4;
 }
 
+// Entity represents a game object. This may be a unit (TANK), a rendered
+// (PROJECTILE_ROCKET), a non-rendered object (PLAYER), or any other trackable
+// data struct. This object's propeties are represented as parametric curves.
+// The entire list of entities, along with the property curves, represent
+// wholly the game state.
 message Entity {
   string entity_id = 1;
   game.api.constants.EntityType type = 2;  

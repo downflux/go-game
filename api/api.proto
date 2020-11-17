@@ -1,3 +1,6 @@
+// api.proto
+// Fully specifies the client-server API endpoints.
+
 syntax = "proto3";
 
 package game.api.api;
@@ -7,18 +10,28 @@ option csharp_namespace = "DF.Game.API.API";
 import "api/constants.proto";
 import "api/data.proto";
 
+// DownFlux surfaces client-server API endpoints to play the game.
 service DownFlux {
+
+  // AddClient instructs the server to create a new client object, and
+  // represents a new player joining the game.
   rpc AddClient(AddClientRequest) returns (AddClientResponse) {}
 
+  // Move represents a player's intent to move an entity to the specified
+  // target location.
   rpc Move(MoveRequest) returns (MoveResponse) {
     option idempotency_level = IDEMPOTENT;
   };
 
-  // TODO(minkezhang): Rename StreamData.
+  // StreamData is a persistent client-server connection communicating the
+  // game state. See https://docs.downflux.com/design/network.html for more
+  // details on the specific format and intent of the messages.
   rpc StreamData(StreamDataRequest) returns (stream StreamDataResponse) {
     option idempotency_level = IDEMPOTENT;
   }
 
+  // GetStatus returns the internal game server status. This is useful for the
+  // client to know when the server has formally started processing ticks.
   rpc GetStatus(GetStatusRequest) returns (GetStatusResponse) {
     option idempotency_level = IDEMPOTENT;
   }
