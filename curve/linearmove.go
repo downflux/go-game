@@ -1,3 +1,5 @@
+// Package linearmove implements a specific curve type, i.e. that of a
+// position curve traveling at constant velocity.
 package linearmove
 
 import (
@@ -73,16 +75,21 @@ func New(eid string, tick float64) *Curve {
 	}
 }
 
-// Type returns the type of the Curve, which govners e.g. the interpolation,
+// Type returns the type of the Curve, which governs e.g. the interpolation,
 // data interpretation, etc.
 func (c *Curve) Type() gcpb.CurveType { return curveType }
 
+// Tick returns the last server tick at which the curve was updated and
+// current. Values along the parametric curve past this tick should be
+// considered non-authoritative.
 func (c *Curve) Tick() float64 {
 	c.dataMux.RLock()
 	defer c.dataMux.RUnlock()
 
 	return c.tick
 }
+
+// Category returns the entity property that this curve represents.
 func (c *Curve) Category() gcpb.CurveCategory { return categoryType }
 
 // EntityID returns the ID of the parent Entity.
