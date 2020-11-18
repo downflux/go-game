@@ -15,7 +15,9 @@ import (
 )
 
 const (
-	clientBufSize = 5
+	// TODO(minkezhang): Change to a buffered value (e.g. 5) and verify
+	// tests do not break.
+	clientBufSize = 0
 )
 
 // Client is the server-specific representation of a player in a specific game.
