@@ -1,3 +1,4 @@
+// Package executor contains the logic for the core game loop.
 package executor
 
 import (
@@ -32,11 +33,20 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
+// dirtyCurve represents a Curve instance which was altered in the current
+// tick and will need to be broadcast to all clients.
+//
+// The Entity UUID and CurveCategory uniquely identifies a curve.
 type dirtyCurve struct {
+	// eid is the parent Entity UUID.
 	eid      string
+
+	// category is the Entity property for which this Curve instance
+	// represents.
 	category gcpb.CurveCategory
 }
 
+// New creates a new instance of the Executor.
 func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	tm, err := tile.ImportMap(pb)
 	if err != nil {
@@ -57,40 +67,91 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	}, nil
 }
 
+// Executor encapsulates logic for executing the core game loop.
 type Executor struct {
+	// tileMap is the underlying Map object used for the game.
 	tileMap       *tile.Map
+
+	// abstractGraph is the underlying abstracted pathing logic data layer
+	// for the associated Map.
 	abstractGraph *graph.Graph
+
+	// statusImpl represents the current Executor state metadata.
 	statusImpl    *serverstatus.Status
 
-	// Add-only. Acquire first.
-	dataMux  sync.RWMutex
-	entities map[string]entity.Entity
+	// clients is an append-only set of connected players / AI.
+	clients *clientlist.List
 
-	// Add and delete. Reset per tick.
+	// commandQueueMux guards the commandQueue property.
 	commandQueueMux sync.Mutex
+
+	// commandQueue is a FIFO list of commands to be run per tick. This
+	// list is reset per tick.
+	//
+	// TODO(minkezhang): Refactor this into a CommandQueue object, that
+	// hashes a command the tick it is scheduled at to run, and by a UUID
+	// for cancelling the command.
 	commandQueue    []command.Command
 
-	// Add and delete. Reset per tick. Acquire second.
+	// dataMux guards the entities property.
+	//
+	// This lock must be acquired first.
+	dataMux  sync.RWMutex
+
+	// entities is an append-only set of game entities.
+	entities map[string]entity.Entity
+
+	// entityQueueMux guards the entityQueue property.
+	// This lock must be acquired second.
 	entityQueueMux sync.RWMutex
+
+	// entityQueue is an unordered list of new entites created during the
+	// current game tick. This list is reset per tick.
+	//
+	// TODO(minkezhang): Determine if we can isolate this property and not
+	// rely on the entities property.
 	entityQueue    []string
 
-	// Add and delete. Reset per tick. Acquire last.
+	// curveQueueMux protects the curveQueue property.
+	//
+	// This lock must be acquired third.
 	curveQueueMux sync.RWMutex
-	curveQueue    []dirtyCurve
 
-	// Add-only.
-	clients *clientlist.List
+	// curveQueue is an unordered list of curves that have been mutated
+	// during the current game tick. This list is reset per tick.
+	//
+	// TODO(minkezhang): Determine if we can isolate this property and not
+	// rely on the entities property.
+	curveQueue    []dirtyCurve
 }
 
+// Status returns the current Executor status.
 func (e *Executor) Status() *gdpb.ServerStatus             { return e.statusImpl.PB() }
+
+// ClientExists tests for if the specified Client UUID is currently being
+// tracked by the Executor.
 func (e *Executor) ClientExists(cid string) bool           { return e.clients.In(cid) }
+
+// AddClient creates a new Client to be tracked by the Executor.
 func (e *Executor) AddClient() (string, error)             { return e.clients.Add() }
+
+// StartClientStream instructs the Executor to mark the associated client
+// ready for game state updates.
 func (e *Executor) StartClientStream(cid string) error     { return e.clients.Start(cid) }
+
+// StopClientStreamError instructs the Executor to mark the associated client
+// as having been disconnected, and stop broadcasting future game states to the
+// linked channel.
 func (e *Executor) StopClientStreamError(cid string) error { return e.clients.Stop(cid, false) }
+
+// ClientChannel returns a read-only game state channel. This is consumed by
+// the gRPC server and forwarded to the end-user.
 func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, error) {
 	return e.clients.Channel(cid)
 }
 
+// popCommandQueue returns the list of commands for the current server tick and
+// resets the internal list.
 func (e *Executor) popCommandQueue() ([]command.Command, error) {
 	e.commandQueueMux.Lock()
 	defer e.commandQueueMux.Unlock()
@@ -100,6 +161,7 @@ func (e *Executor) popCommandQueue() ([]command.Command, error) {
 	return commands, nil
 }
 
+// processCommand executes a single command with side-effects.
 func (e *Executor) processCommand(cmd command.Command) error {
 	if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
 		c, err := cmd.Execute(move.Args{
@@ -132,6 +194,8 @@ func (e *Executor) processCommand(cmd command.Command) error {
 	return nil
 }
 
+// popTickQueue returns the list of curves and entity protos that will need to
+// be broadcast to all valid cliens for the current server tick.
 func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 	e.dataMux.RLock()
 	e.entityQueueMux.Lock()
@@ -169,6 +233,9 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 	return curves, entities
 }
 
+// allCurvesAndEntities returns a list of all Curve and Entity protos as of the
+// current tick. This is used to broadcast the full game state to new or
+// reconnecting clients.
 func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 	e.dataMux.RLock()
 	defer e.dataMux.RUnlock()
@@ -192,6 +259,8 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 	return curves, entities
 }
 
+// broadcastCurves will send the current game state delta or full game state to
+// all connected clients. This is a blocking call.
 func (e *Executor) broadcastCurves() error {
 	log.Printf("[%.f]: broadcasting curves", e.statusImpl.Tick())
 
@@ -219,11 +288,14 @@ func (e *Executor) broadcastCurves() error {
 	)
 }
 
+// Stop will teardown the Executor and close all client channels. This is
+// called at the end of the game.
 func (e *Executor) Stop() {
 	e.statusImpl.SetIsStopped()
 	e.clients.StopAll()
 }
 
+// Run executes the core game loop.
 func (e *Executor) Run() error {
 	e.statusImpl.SetStartTime()
 	e.statusImpl.SetIsStarted()
@@ -244,6 +316,7 @@ func (e *Executor) Run() error {
 	return nil
 }
 
+// doTick executes a single iteration of the core game loop.
 func (e *Executor) doTick() error {
 	commands, err := e.popCommandQueue()
 	if err != nil {
@@ -265,9 +338,13 @@ func (e *Executor) doTick() error {
 	return nil
 }
 
+// AddEntity creates a new entity.
+//
 // TODO(minkezhang): Make this method private -- this is currently public for
 // debugging purposes.
-// TODO(minkezhang): Make this generate a Command instead.
+//
+// TODO(minkezhang): Make this schedule a generated Command instead for the
+// next tick.
 func (e *Executor) AddEntity(en entity.Entity) error {
 	e.dataMux.Lock()
 	e.entityQueueMux.Lock()
@@ -293,6 +370,7 @@ func (e *Executor) AddEntity(en entity.Entity) error {
 	return nil
 }
 
+// addCommands extends the current tick-specific command queue with the input.
 func (e *Executor) addCommands(cs []command.Command) error {
 	e.commandQueueMux.Lock()
 	defer e.commandQueueMux.Unlock()
@@ -303,9 +381,7 @@ func (e *Executor) addCommands(cs []command.Command) error {
 	return nil
 }
 
-// buildMoveCommands
-//
-// Is expected to be called concurrently.
+// buildMoveCommands constructs a list of command.Command instances.
 //
 // TODO(minkezhang): Decide how / when / if we want to deal with click
 // spamming (same eids, multiple move commands per tick).
@@ -332,9 +408,8 @@ func (e *Executor) buildMoveCommands(cid string, dest *gdpb.Position, eids []str
 	return res
 }
 
-// AddMoveCommands
-//
-// Is expected to be called concurrently.
+// AddMoveCommands transforms the player MoveRequest input into a list of
+// Command instances, and schedules them to be executed in the next tick.
 func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 	var cs []command.Command

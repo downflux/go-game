@@ -1,3 +1,4 @@
+// Package status contains logic reguarding the current Executor state.
 package status
 
 import (
@@ -11,22 +12,49 @@ import (
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
+// Status represents the internal Executor state.
 type Status struct {
+	// tickDuration is the target maximum interval between successive
+	// ticks, typically ~10Hz. This is immutable.
 	tickDuration  time.Duration
+
+	// isStoppedImpl represents the boolean value of if the Executor
+	// should stop running the core game loop logic. This boolean is set
+	// to true at teardown.
+	//
+	// TODO(minkezhang): Remove this logic and combile with isStartedImpl.
 	isStoppedImpl int32
+
+	// isStartedImpl represents the boolean value of if the Executor
+	// has started running the core game loop logic. This boolean is set
+	// to true at the beginning of Executor.Run().
 	isStartedImpl int32
+
+	// tickImpl represents the internal server tick counter. This is
+	// advanced once per game loop.
 	tickImpl      int64
 
+	// startTimeMux guards the startTimeImpl variable.
 	startTimeMux  sync.Mutex
+
+	// startTimeImpl represents the time at which Executor.Run() was
+	// called. This is useful client-side along with the tick duration to
+	// estimate current server tick.
+	//
+	// This should only be set once.
+	//
+	// TODO(minkezhang): Actually ensure this is only set once.
 	startTimeImpl time.Time
 }
 
+// New returns a new Status instance.
 func New(tickDuration time.Duration) *Status {
 	return &Status{
 		tickDuration: tickDuration,
 	}
 }
 
+// PB exports the Status instance into an associated protobuf.
 func (s *Status) PB() *gdpb.ServerStatus {
 	return &gdpb.ServerStatus{
 		Tick:         s.Tick(),

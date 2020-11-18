@@ -1,25 +1,33 @@
+// constants.proto
+// Global-level constants.
+
 syntax = "proto3";
 
 package game.api.constants;
 option go_package = "game.api.constants";
 option csharp_namespace = "DF.Game.API.Constants";
 
+// MoveType represents a subtype of movement specified in a Move request.
 enum MoveType {
   MOVE_TYPE_UNKNOWN = 0;
   MOVE_TYPE_FORWARD = 1;
   MOVE_TYPE_RETREAT = 2;
 }
 
+// CurveCategory indicates the metric / property a curve represents.
 enum CurveCategory {
   CURVE_CATEGORY_UNKNOWN = 0;
   CURVE_CATEGORY_MOVE = 1;
 }
 
+// CurveType indicates the interpolation method that should be used for the
+// specified curve.
 enum CurveType {
   CURVE_TYPE_UNKNOWN = 0;
   CURVE_TYPE_LINEAR_MOVE = 1;
 }
 
+// EntityType indicates the type of an object.
 enum EntityType {
   ENTITY_TYPE_UNKNOWN = 0;
   ENTITY_TYPE_TANK = 1;

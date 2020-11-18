@@ -1,3 +1,7 @@
+// Package client represents the server-specific view of a player and its
+// associated metadata. This package is used to keep track of notably the
+// connection status for StreamData calls and to encapsulate some reconnect
+// logic.
 package client
 
 import (
@@ -10,14 +14,34 @@ import (
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
-type Client struct {
-	id string // read-only
+const (
+	// TODO(minkezhang): Change to a buffered value (e.g. 5) and verify
+	// tests do not break.
+	clientBufSize = 0
+)
 
+// Client is the server-specific representation of a player in a specific game.
+type Client struct {
+	// id is the UUID of the connecting client. This is immutable.
+	id string
+
+	// mux guards ch and status, and must be acquired before any R/W
+	// operations occur.
 	mux    sync.Mutex
+
+	// ch is an open connection for streaming data -- this is hooked up to
+	// the gRPC server, which attempts to read from this channel as fast as
+	// possible. This channel should not be blocked on writes.
 	ch     chan *apipb.StreamDataResponse
+
+	// status surfaces the server view of a specific client connection
+	// state.
 	status sscpb.ClientStatus
 }
 
+// invalidTransitionError constructs an appropriate gRPC error for when
+// external logic attempts a transition between ClientStatus states with no
+// edge.
 func invalidTransitionError(clientStatus, targetStatus sscpb.ClientStatus) error {
 	return status.Errorf(
 		codes.FailedPrecondition,
@@ -26,7 +50,10 @@ func invalidTransitionError(clientStatus, targetStatus sscpb.ClientStatus) error
 		targetStatus)
 }
 
+// ID returns the UUID of the client.
 func (c *Client) ID() string { return c.id }
+
+// Status returns the current client connection state.
 func (c *Client) Status() sscpb.ClientStatus {
 	c.mux.Lock()
 	defer c.mux.Unlock()
@@ -35,6 +62,16 @@ func (c *Client) Status() sscpb.ClientStatus {
 }
 
 // SetStatus changes the client with side-effects to the desired status.
+//
+// This call is atomic.
+func (c *Client) SetStatus(s sscpb.ClientStatus) error {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	return c.setStatusUnsafe(s)
+}
+
+// setStatusUnsafe changes the client with side-effects to the desired status.
 //
 // The current expected transition graph is of the form
 //   NEW -> DESYNCED -> OK -> NEW -> ... TEARDOWN
@@ -50,13 +87,6 @@ func (c *Client) Status() sscpb.ClientStatus {
 //
 // TEARDOWN: The client has closed the channel and is not accepting any further
 // status transitions.
-func (c *Client) SetStatus(s sscpb.ClientStatus) error {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	return c.setStatusUnsafe(s)
-}
-
 func (c *Client) setStatusUnsafe(s sscpb.ClientStatus) error {
 	switch s {
 	case sscpb.ClientStatus_CLIENT_STATUS_NEW:
@@ -73,7 +103,7 @@ func (c *Client) setStatusUnsafe(s sscpb.ClientStatus) error {
 	case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
 		switch c.status {
 		case sscpb.ClientStatus_CLIENT_STATUS_NEW:
-			c.ch = make(chan *apipb.StreamDataResponse)
+			c.ch = make(chan *apipb.StreamDataResponse, clientBufSize)
 		default:
 			return invalidTransitionError(c.status, s)
 		}
@@ -105,6 +135,8 @@ func (c *Client) setStatusUnsafe(s sscpb.ClientStatus) error {
 	return nil
 }
 
+// Channel surfaces a read-only channel of game states. This data is generally
+// consumed by the gRPC server and forwarded to the corresponding client.
 func (c *Client) Channel() (<-chan *apipb.StreamDataResponse, error) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
@@ -119,6 +151,7 @@ func (c *Client) Channel() (<-chan *apipb.StreamDataResponse, error) {
 	return c.ch, nil
 }
 
+// Send will write the associated game state to the internal channel.
 func (c *Client) Send(m *apipb.StreamDataResponse) error {
 	c.mux.Lock()
 	defer c.mux.Unlock()
@@ -134,6 +167,7 @@ func (c *Client) Send(m *apipb.StreamDataResponse) error {
 	return c.setStatusUnsafe(sscpb.ClientStatus_CLIENT_STATUS_OK)
 }
 
+// New constructs a new Client instance.
 func New(cid string) *Client {
 	return &Client{
 		id:     cid,

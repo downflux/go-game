@@ -50,7 +50,9 @@ func (c *Command) EntityID() string        { return c.entityID }
 func (c *Command) Type() sscpb.CommandType { return commandType }
 func (c *Command) ClientID() string        { return c.clientID }
 
-// We're assuming the position values are sane and don't overflow int32.
+// coordinate transforms a gdpb.Position instance into a gdpb.Coordinate
+// instance. We're assuming the position values are sane and don't overflow
+// int32.
 func coordinate(p *gdpb.Position) *gdpb.Coordinate {
 	return &gdpb.Coordinate{
 		X: int32(p.GetX()),

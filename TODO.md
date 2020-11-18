@@ -7,7 +7,6 @@
 * [ ] add API documentation
 * [ ] add client tests
 * [x] add server tests
-* [ ] consider what to do with partial moves
 * [x] add AddClientResponse.Tick
 * [x] add oneof curve subclass
 * [ ] make entity interface more formal
@@ -20,3 +19,4 @@
 * [x] support Reconnect() and share game state at specific tick
 * [ ] parallelize move commands
 * [x] add Run() which iterates through Tick()
+* [ ] *consider what to do with partial moves* -- refactor out commandQueue with cancellation, etc.

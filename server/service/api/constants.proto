@@ -1,3 +1,6 @@
+// constants.proto
+//
+// Constants that are useful for internal game engine processing.
 syntax = "proto3";
 
 package game.server.service.api.constants;
@@ -9,6 +12,8 @@ enum CommandType {
   COMMAND_TYPE_MOVE = 1;
 }
 
+// ClientStatus represents the internal game's awareness of the current
+// networking state of a connected client.
 enum ClientStatus {
   CLIENT_STATUS_UNKNOWN = 0;
   CLIENT_STATUS_NEW = 1;
