@@ -25,7 +25,7 @@ type List struct {
 	idLen int
 
 	// mux guards the clients iterable.
-	mux     sync.RWMutex
+	mux sync.RWMutex
 
 	// clients is an internal iterable of Client instances, hashed by the
 	// Client UUID.

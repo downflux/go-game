@@ -10,6 +10,9 @@ import (
 
 const idLen = 8
 
+// TODO(minkezhang): Migrate to typed string.
+type EntityID string
+
 type Entity interface {
 	ID() string
 	Type() gcpb.EntityType

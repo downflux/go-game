@@ -33,13 +33,15 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
+// TODO(minkezhang): Add ClientID string type.
+
 // dirtyCurve represents a Curve instance which was altered in the current
 // tick and will need to be broadcast to all clients.
 //
 // The Entity UUID and CurveCategory uniquely identifies a curve.
 type dirtyCurve struct {
 	// eid is the parent Entity UUID.
-	eid      string
+	eid string
 
 	// category is the Entity property for which this Curve instance
 	// represents.
@@ -70,14 +72,14 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 // Executor encapsulates logic for executing the core game loop.
 type Executor struct {
 	// tileMap is the underlying Map object used for the game.
-	tileMap       *tile.Map
+	tileMap *tile.Map
 
 	// abstractGraph is the underlying abstracted pathing logic data layer
 	// for the associated Map.
 	abstractGraph *graph.Graph
 
 	// statusImpl represents the current Executor state metadata.
-	statusImpl    *serverstatus.Status
+	statusImpl *serverstatus.Status
 
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
@@ -91,12 +93,12 @@ type Executor struct {
 	// TODO(minkezhang): Refactor this into a CommandQueue object, that
 	// hashes a command the tick it is scheduled at to run, and by a UUID
 	// for cancelling the command.
-	commandQueue    []command.Command
+	commandQueue []command.Command
 
 	// dataMux guards the entities property.
 	//
 	// This lock must be acquired first.
-	dataMux  sync.RWMutex
+	dataMux sync.RWMutex
 
 	// entities is an append-only set of game entities.
 	entities map[string]entity.Entity
@@ -110,7 +112,7 @@ type Executor struct {
 	//
 	// TODO(minkezhang): Determine if we can isolate this property and not
 	// rely on the entities property.
-	entityQueue    []string
+	entityQueue []string
 
 	// curveQueueMux protects the curveQueue property.
 	//
@@ -122,22 +124,22 @@ type Executor struct {
 	//
 	// TODO(minkezhang): Determine if we can isolate this property and not
 	// rely on the entities property.
-	curveQueue    []dirtyCurve
+	curveQueue []dirtyCurve
 }
 
 // Status returns the current Executor status.
-func (e *Executor) Status() *gdpb.ServerStatus             { return e.statusImpl.PB() }
+func (e *Executor) Status() *gdpb.ServerStatus { return e.statusImpl.PB() }
 
 // ClientExists tests for if the specified Client UUID is currently being
 // tracked by the Executor.
-func (e *Executor) ClientExists(cid string) bool           { return e.clients.In(cid) }
+func (e *Executor) ClientExists(cid string) bool { return e.clients.In(cid) }
 
 // AddClient creates a new Client to be tracked by the Executor.
-func (e *Executor) AddClient() (string, error)             { return e.clients.Add() }
+func (e *Executor) AddClient() (string, error) { return e.clients.Add() }
 
 // StartClientStream instructs the Executor to mark the associated client
 // ready for game state updates.
-func (e *Executor) StartClientStream(cid string) error     { return e.clients.Start(cid) }
+func (e *Executor) StartClientStream(cid string) error { return e.clients.Start(cid) }
 
 // StopClientStreamError instructs the Executor to mark the associated client
 // as having been disconnected, and stop broadcasting future game states to the

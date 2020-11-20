@@ -7,11 +7,11 @@ import (
 )
 
 type Connection struct {
-        done chan struct{}
+	done chan struct{}
 
-        mux           sync.Mutex
-        responses []*apipb.StreamDataResponse
-        status    bool
+	mux       sync.Mutex
+	responses []*apipb.StreamDataResponse
+	status    bool
 }
 
 func New() *Connection {
