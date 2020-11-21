@@ -4,6 +4,10 @@ go_library(
     name = "status",
     srcs = ["status.go"],
     importpath = "github.com/downflux/game/server/service/status",
+    visibility = [
+        "//server/service/visitor:__pkg__",
+        "//server/service/visitor/entity:__pkg__",
+    ],
     deps = [
         "//api:data_go_proto",
         "@org_golang_google_protobuf//types/known/durationpb:go_default_library",

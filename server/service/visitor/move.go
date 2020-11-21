@@ -9,6 +9,7 @@ import (
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/service/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -57,6 +58,8 @@ type Visitor struct {
 	// for the associated Map.
 	abstractGraph *graph.Graph
 
+	serverStatus *status.Status
+
 	// entities is an append-only set of game entities.
 	entities map[string]entity.Entity
 
@@ -64,10 +67,16 @@ type Visitor struct {
 	cache map[string]cacheRow
 }
 
-func New(entities map[string]entity.Entity) *Visitor {
+func New(tileMap *tile.Map, abstractGraph *graph.Graph, serverStatus *status.Status, entities map[string]entity.Entity) *Visitor {
+	if entities == nil {
+		entities = map[string]entity.Entity{}
+	}
 	return &Visitor{
-		entities: entities,
-		cache:    map[string]cacheRow{},
+		tileMap:       tileMap,
+		abstractGraph: abstractGraph,
+		serverStatus:  serverStatus,
+		entities:      entities,
+		cache:         map[string]cacheRow{},
 	}
 }
 
@@ -120,6 +129,7 @@ func (v *Visitor) Executor(tick float64) ([]curve.Curve, error) {
 			utils.MC(coordinate(cRow.destination)),
 			pathLength)
 		if err != nil {
+			// TODO(minkezhang): Handle error by logging and continuing.
 			return nil, err
 		}
 
@@ -134,6 +144,7 @@ func (v *Visitor) Executor(tick float64) ([]curve.Curve, error) {
 			delete(v.cache, eid)
 		} else {
 			if err := v.scheduleUnsafe(tick+float64(len(p)-1), eid, lastPosition); err != nil {
+				// TODO(minkezhang): Handle error by logging and continuing.
 				return nil, err
 			}
 		}

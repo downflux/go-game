@@ -1,6 +1,9 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
-package(default_visibility=["//server/service:__pkg__"])
+package(default_visibility=[
+	"//server/service:__pkg__",
+	"//server/service/visitor/entity:__pkg__",
+])
 
 go_library(
     name = "dirty",
@@ -16,6 +19,7 @@ go_library(
     srcs = ["visitor.go"],
     importpath = "github.com/downflux/game/server/service/visitor/visitor",
     deps = [
+        "//api:constants_go_proto",
         "//curve:curve",
     ],
 )
@@ -34,5 +38,6 @@ go_library(
         "//map:utils",
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
+	"//server/service:status",
     ],
 )
