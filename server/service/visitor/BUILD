@@ -33,6 +33,24 @@ go_library(
     ],
 )
 
+go_test(
+    name = "move_test",
+    srcs = ["move_test.go"],
+    importpath = "github.com/downflux/game/server/service/visitor/move_test",
+    embed = [":move"],
+    deps = [
+        "//api:constants_go_proto",
+        "//api:data_go_proto",
+        "//map/api:constants_go_proto",
+        "//map/api:data_go_proto",
+        "//map:map",
+        "//server/service:status",
+        "//server/service/visitor:dirty",
+        "//server/service/visitor/entity:tank",
+        "@org_golang_x_sync//errgroup:go_default_library",
+    ],
+)
+
 go_library(
     name = "move",
     srcs = ["move.go"],

@@ -19,8 +19,6 @@ import (
 )
 
 const (
-	pathLength = 0
-
 	// TODO(minkezhang): Make this a property of the entity.
 	ticksPerTile = float64(10)
 )
@@ -52,7 +50,7 @@ type cacheRow struct {
 }
 
 type Args struct {
-	EID         string
+	EntityID    string
 	Destination *gdpb.Position
 }
 
@@ -64,25 +62,33 @@ type Visitor struct {
 	// for the associated Map.
 	abstractGraph *graph.Graph
 
+	// dfStatus is a shared object with the game engine and indicates
+	// current tick, etc.
 	dfStatus *serverstatus.Status
 
+	// dirtyCurves is a shared object between the game engine and the
+	// Visitor.
 	dirtyCurves *dirty.List
 
-	mux   sync.Mutex
-	cache map[string]cacheRow
+	minPathLength int
+
+	cacheMux sync.Mutex
+	cache    map[string]cacheRow
 }
 
 func New(
 	tileMap *tile.Map,
 	abstractGraph *graph.Graph,
 	dfStatus *serverstatus.Status,
-	dirtyCurves *dirty.List) *Visitor {
+	dirtyCurves *dirty.List,
+	minPathLength int) *Visitor {
 	return &Visitor{
 		tileMap:       tileMap,
 		abstractGraph: abstractGraph,
 		dfStatus:      dfStatus,
 		dirtyCurves:   dirtyCurves,
 		cache:         map[string]cacheRow{},
+		minPathLength: minPathLength,
 	}
 }
 
@@ -91,7 +97,7 @@ func (v *Visitor) scheduleUnsafe(tick float64, eid string, dest *gdpb.Position) 
 		v.cache = map[string]cacheRow{}
 	}
 
-	if v.cache[eid].scheduledTick < tick {
+	if v.cache[eid].scheduledTick <= tick {
 		v.cache[eid] = cacheRow{
 			scheduledTick: tick,
 			destination:   dest,
@@ -102,12 +108,12 @@ func (v *Visitor) scheduleUnsafe(tick float64, eid string, dest *gdpb.Position) 
 }
 
 func (v *Visitor) Schedule(tick float64, args interface{}) error {
-	v.mux.Lock()
-	defer v.mux.Unlock()
+	v.cacheMux.Lock()
+	defer v.cacheMux.Unlock()
 
 	argsImpl := args.(Args)
 
-	return v.scheduleUnsafe(tick, argsImpl.EID, argsImpl.Destination)
+	return v.scheduleUnsafe(tick, argsImpl.EntityID, argsImpl.Destination)
 }
 
 func (v *Visitor) Visit(e entity.Entity) error {
@@ -118,8 +124,8 @@ func (v *Visitor) Visit(e entity.Entity) error {
 	tick := v.dfStatus.Tick()
 
 	// TODO(minkezhang): Make this concurrent.
-	v.mux.Lock()
-	defer v.mux.Unlock()
+	v.cacheMux.Lock()
+	defer v.cacheMux.Unlock()
 
 	cRow, found := v.cache[e.ID()]
 	if !found {
@@ -136,13 +142,14 @@ func (v *Visitor) Visit(e entity.Entity) error {
 	}
 
 	// TODO(minkezhang): proto.Clone the return values in map.astar.Path.
-	// TODO(minkezhang): Add additional infrastructure necessary to set pathLength > 0.
+	// TODO(minkezhang): Add additional infrastructure necessary to set
+	// minPathLength > 0.
 	p, _, err := astar.Path(
 		v.tileMap,
 		v.abstractGraph,
 		utils.MC(coordinate(c.Get(tick).(*gdpb.Position))),
 		utils.MC(coordinate(cRow.destination)),
-		pathLength)
+		v.minPathLength)
 	if err != nil {
 		// TODO(minkezhang): Handle error by logging and continuing.
 		return err
@@ -166,10 +173,11 @@ func (v *Visitor) Visit(e entity.Entity) error {
 	if lastPosition == cRow.destination {
 		delete(v.cache, e.ID())
 	} else {
-		if err := v.scheduleUnsafe(tick+float64(len(p)-1), e.ID(), lastPosition); err != nil {
+		if err := v.scheduleUnsafe(tick+ticksPerTile*float64(len(p)), e.ID(), cRow.destination); err != nil {
 			// TODO(minkezhang): Handle error by logging and continuing.
 			return err
 		}
 	}
+
 	return nil
 }
