@@ -22,8 +22,11 @@ func New() *EntityList {
 
 func (l *EntityList) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_ENTITY_LIST }
 func (l *EntityList) Accept(v visitor.Visitor) error {
+	if err := v.Visit(l); err != nil {
+		return err
+	}
+
 	var eg errgroup.Group
-	eg.Go(func() error { return v.Visit(l) })
 	for _, e := range l.entities {
 		e := e
 		eg.Go(func() error { return e.Accept(v) })
