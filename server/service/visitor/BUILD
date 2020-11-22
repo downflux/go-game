@@ -66,7 +66,5 @@ go_library(
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
 	"//server/service:status",
-        "@org_golang_google_grpc//codes:go_default_library",
-        "@org_golang_google_grpc//status:go_default_library",
     ],
 )

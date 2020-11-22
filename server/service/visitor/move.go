@@ -8,24 +8,18 @@ import (
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/service/visitor/dirty"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
-	serverstatus "github.com/downflux/game/server/service/status"
 )
 
 const (
 	// TODO(minkezhang): Make this a property of the entity.
 	ticksPerTile = float64(10)
 )
-
-func unsupportedError(entityType gcpb.EntityType) error {
-	return status.Errorf(codes.Unimplemented, "move not implemented for Entity type %v", entityType)
-}
 
 // coordinate transforms a gdpb.Position instance into a gdpb.Coordinate
 // instance. We're assuming the position values are sane and don't overflow
@@ -64,7 +58,7 @@ type Visitor struct {
 
 	// dfStatus is a shared object with the game engine and indicates
 	// current tick, etc.
-	dfStatus *serverstatus.Status
+	dfStatus *status.Status
 
 	// dirtyCurves is a shared object between the game engine and the
 	// Visitor.
@@ -79,7 +73,7 @@ type Visitor struct {
 func New(
 	tileMap *tile.Map,
 	abstractGraph *graph.Graph,
-	dfStatus *serverstatus.Status,
+	dfStatus *status.Status,
 	dirtyCurves *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
@@ -118,7 +112,7 @@ func (v *Visitor) Schedule(tick float64, args interface{}) error {
 
 func (v *Visitor) Visit(e entity.Entity) error {
 	if e.Type() != gcpb.EntityType_ENTITY_TYPE_TANK {
-		return unsupportedError(e.Type())
+		return nil
 	}
 
 	tick := v.dfStatus.Tick()

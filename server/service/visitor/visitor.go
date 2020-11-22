@@ -17,5 +17,9 @@ type Visitor interface {
 	// Visit will run appropriate commands for the current tick. If
 	// a timeout occurs, the function will return early. This function
 	// may be called concurrently by the game engine.
+	//
+	// Visitors should never return an unimplemented error -- return
+	// a no-op instead. This ensures Entity objects do not have to do
+	// conditional branches in the Accept function.
 	Visit(e Entity) error
 }
