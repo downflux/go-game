@@ -142,8 +142,6 @@ func (v *Visitor) Visit(e entity.Entity) error {
 	}
 
 	// TODO(minkezhang): proto.Clone the return values in map.astar.Path.
-	// TODO(minkezhang): Add additional infrastructure necessary to set
-	// minPathLength > 0.
 	p, _, err := astar.Path(
 		v.tileMap,
 		v.abstractGraph,
