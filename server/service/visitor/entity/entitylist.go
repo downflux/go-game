@@ -11,12 +11,12 @@ import (
 type EntityList struct {
 	entity.BaseEntity
 
-	entities map[string]visitor.Entity
+	entities map[string]entity.Entity
 }
 
 func New() *EntityList {
 	return &EntityList{
-		entities: map[string]visitor.Entity{},
+		entities: map[string]entity.Entity{},
 	}
 }
 

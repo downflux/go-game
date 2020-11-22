@@ -4,11 +4,14 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/curve"
+	"github.com/downflux/game/server/service/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 )
 
 type Entity interface {
+	visitor.Entity
+
 	ID() string
 	Curve(t gcpb.CurveCategory) curve.Curve
 

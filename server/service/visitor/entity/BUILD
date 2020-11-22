@@ -24,6 +24,7 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//curve:curve",
+        "//server/service/visitor:visitor",
     ],
 )
 

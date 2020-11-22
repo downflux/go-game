@@ -6,6 +6,10 @@ import (
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 )
 
+// Curve represents a curve.Curve instance which was altered in the current
+// tick and will need to be broadcast to all clients.
+//
+// The Entity UUID and CurveCategory uniquely identifies a curve.
 type Curve struct {
 	EntityID string
 	Category gcpb.CurveCategory
