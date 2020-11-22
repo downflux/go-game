@@ -1,8 +1,6 @@
 package visitor
 
 import (
-	"github.com/downflux/game/curve/curve"
-
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 )
 
@@ -19,5 +17,5 @@ type Visitor interface {
 	// Visit will run appropriate commands for the current tick. If
 	// a timeout occurs, the function will return early. This function
 	// may be called concurrently by the game engine.
-	Visit(e Entity) ([]curve.Curve, error)
+	Visit(e Entity) error
 }

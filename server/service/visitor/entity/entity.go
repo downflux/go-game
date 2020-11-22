@@ -24,8 +24,8 @@ type Entity interface {
 
 type BaseEntity struct {
 	lifetimeMux sync.RWMutex
-	start float64
-	end float64
+	start       float64
+	end         float64
 }
 
 func (e *BaseEntity) Start() float64 {

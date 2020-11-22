@@ -1,8 +1,8 @@
 package entitylist
 
 import (
-	"github.com/downflux/game/server/service/visitor/visitor"
 	"github.com/downflux/game/server/service/visitor/entity/entity"
+	"github.com/downflux/game/server/service/visitor/visitor"
 	"golang.org/x/sync/errgroup"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"

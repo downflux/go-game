@@ -5,6 +5,16 @@ package(default_visibility=[
 	"//server/service/visitor/entity:__pkg__",
 ])
 
+go_test(
+    name = "dirty_test",
+    srcs = ["dirty_test.go"],
+    embed = [":dirty"],
+    importpath = "github.com/downflux/game/server/service/visitor/dirty_test",
+    deps = [
+        "@org_golang_x_sync//errgroup:go_default_library",
+    ],
+)
+
 go_library(
     name = "dirty",
     srcs = ["dirty.go"],
@@ -20,7 +30,6 @@ go_library(
     importpath = "github.com/downflux/game/server/service/visitor/visitor",
     deps = [
         "//api:constants_go_proto",
-        "//curve:curve",
     ],
 )
 
@@ -29,9 +38,9 @@ go_library(
     srcs = ["move.go"],
     importpath = "github.com/downflux/game/server/service/visitor/move",
     deps = [
+        ":dirty",
         "//api:constants_go_proto",
         "//api:data_go_proto",
-        "//curve:curve",
 	"//curve:linearmove",
         "//entity:entity",
         "//map:map",
@@ -39,5 +48,7 @@ go_library(
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
 	"//server/service:status",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
     ],
 )
