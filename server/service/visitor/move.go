@@ -167,6 +167,8 @@ func (v *Visitor) Visit(e entity.Entity) error {
 		return err
 	}
 
+	// Check for partial moves and delay next lookup iteration until a
+	// suitable time in the future.
 	lastPosition := position(p[len(p)-1].Val.GetCoordinate())
 	if lastPosition == cRow.destination {
 		delete(v.cache, e.ID())
