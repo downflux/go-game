@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package game.server.service.visitor.api.constants;
+option go_package = "game.server.service.visitor.api.constants";
+option csharp_namespace = "DF.Game.Server.Service.Visitor.API.Constants";
+
+enum VisitorType {
+  VISITOR_TYPE_UNKNOWN = 0;
+  VISITOR_TYPE_MOVE = 1;
+  VISITOR_TYPE_PRODUCE = 2;
+}

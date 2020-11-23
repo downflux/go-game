@@ -4,6 +4,7 @@ import (
 	"github.com/downflux/game/curve/curve"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
+	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
 )
 
 type Entity interface {
@@ -24,6 +25,8 @@ type Entity interface {
 }
 
 type Visitor interface {
+	Type() vcpb.VisitorType
+
 	// Schedule adds a Visitor-specific command to the Visitor. This
 	// function will be called concurrently by the game engine.
 	Schedule(args interface{}) error

@@ -14,10 +14,13 @@ import (
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	serverstatus "github.com/downflux/game/server/service/status"
+	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
 )
 
 const (
 	entityIDLen = 8
+
+	visitorType = vcpb.VisitorType_VISITOR_TYPE_PRODUCE
 )
 
 func unsupportedEntityType(t gcpb.EntityType) error {
@@ -45,6 +48,8 @@ type Visitor struct {
 }
 
 func New(entities *entitylist.List) *Visitor { return &Visitor{} }
+
+func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
 func (v *Visitor) Schedule(args interface{}) error {
 	argsImpl := args.(Args)
