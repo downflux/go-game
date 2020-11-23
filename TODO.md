@@ -12,6 +12,9 @@
 * [x] make entity interface more formal
 * [x] broadcast entities along with curves in StreamCurves
 * [x] refactor server / executor
+* [ ] add ClientID, EntityID, CurveID data types
+* [ ] make Executor.visitors an ordered map object for easy referencing in code
+* [ ] rename CurveCategory to EntityProperty
 
 # Feature
 * [x] make channel send from server nonblocking

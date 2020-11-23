@@ -5,6 +5,8 @@ import (
 
 	"github.com/downflux/game/server/service/visitor/entity/entity"
 	"github.com/downflux/game/server/service/visitor/visitor"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"golang.org/x/sync/errgroup"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -53,6 +55,10 @@ func (l *List) Iter() []visitor.Entity {
 func (l *List) Add(e visitor.Entity) error {
 	l.entitiesMux.Lock()
 	defer l.entitiesMux.Unlock()
+
+	if _, found := l.entities[e.ID()]; found {
+		return status.Error(codes.AlreadyExists, "an entity already exists with the given ID")
+	}
 
 	l.entities[e.ID()] = e
 	return nil

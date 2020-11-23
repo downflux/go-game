@@ -103,10 +103,10 @@ func (v *Visitor) scheduleUnsafe(tick float64, eid string, dest *gdpb.Position) 
 }
 
 func (v *Visitor) Schedule(args interface{}) error {
+	argsImpl := args.(Args)
+
 	v.cacheMux.Lock()
 	defer v.cacheMux.Unlock()
-
-	argsImpl := args.(Args)
 
 	return v.scheduleUnsafe(argsImpl.Tick, argsImpl.EntityID, argsImpl.Destination)
 }
