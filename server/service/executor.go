@@ -10,7 +10,9 @@ import (
 	"github.com/downflux/game/server/service/visitor/dirty"
 	"github.com/downflux/game/server/service/visitor/entity/entitylist"
 	"github.com/downflux/game/server/service/visitor/move"
+	"github.com/downflux/game/server/service/visitor/produce"
 	"github.com/downflux/game/server/service/visitor/visitor"
+	"github.com/downflux/game/server/service/visitor/visitorlist"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -20,6 +22,7 @@ import (
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
 	serverstatus "github.com/downflux/game/server/service/status"
+	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
 )
 
 const (
@@ -50,8 +53,7 @@ type dirtyCurve struct {
 
 // Executor encapsulates logic for executing the core game loop.
 type Executor struct {
-	// TODO(minkezhang): Index visitors by type.
-	visitors []visitor.Visitor
+	visitors *visitorlist.List
 	entities *entitylist.List
 	dirties  *dirty.List
 
@@ -76,8 +78,14 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	dirties := dirty.New()
 	statusImpl := serverstatus.New(tickDuration)
 
-	visitors := []visitor.Visitor{
-		move.New(tm, g, statusImpl, dirties, 10),
+	visitors, err := visitorlist.New(
+		[]visitor.Visitor{
+			produce.New(statusImpl, dirties),
+			move.New(tm, g, statusImpl, dirties, 10),
+		},
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Executor{
@@ -201,17 +209,8 @@ func (e *Executor) Run() error {
 	e.statusImpl.SetStartTime()
 	e.statusImpl.SetIsStarted()
 	for !e.statusImpl.IsStopped() {
-		t := time.Now()
-		e.statusImpl.IncrementTick()
-
 		if err := e.doTick(); err != nil {
 			return err
-		}
-
-		// TODO(minkezhang): Add metrics collection here for tick
-		// distribution.
-		if d := time.Now().Sub(t); d < tickDuration {
-			time.Sleep(tickDuration - d)
 		}
 	}
 	return nil
@@ -219,7 +218,10 @@ func (e *Executor) Run() error {
 
 // doTick executes a single iteration of the core game loop.
 func (e *Executor) doTick() error {
-	for _, v := range e.visitors {
+	t := time.Now()
+	e.statusImpl.IncrementTick()
+
+	for _, v := range e.visitors.Iter() {
 		if err := e.entities.Accept(v); err != nil {
 			return err
 		}
@@ -229,31 +231,26 @@ func (e *Executor) doTick() error {
 		return err
 	}
 
+	// TODO(minkezhang): Add metrics collection here for tick
+	// distribution.
+	if d := time.Now().Sub(t); d < tickDuration {
+		time.Sleep(tickDuration - d)
+	}
 	return nil
 }
 
-// AddEntity creates a new entity.
+// AddEntity schedules a new entity.
 //
-// TODO(minkezhang): Make this method private -- this is currently public for
+// TODO(minkezhang): Delete this method -- this is currently public for
 // debugging purposes.
-//
-// TODO(minkezhang): Make this schedule a generated Command instead for the
-// next tick.
-func (e *Executor) AddEntity(en visitor.Entity) error {
-	if e.entities.Get(en.ID()) != nil {
-		return status.Errorf(codes.AlreadyExists, "given entity ID %v already exists in the entity list", en.ID())
-	}
-
-	if err := e.entities.Add(en); err != nil {
-		return err
-	}
-
-	e.dirties.AddEntity(dirty.Entity{ID: en.ID()})
-	for _, cat := range en.CurveCategories() {
-		e.dirties.Add(dirty.Curve{EntityID: en.ID(), Category: cat})
-	}
-
-	return nil
+func (e *Executor) AddEntity(entityType gcpb.EntityType, p *gdpb.Position) error {
+	return e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_PRODUCE).Schedule(
+		produce.Args{
+			ScheduledTick: e.statusImpl.Tick(),
+			EntityType:    entityType,
+			SpawnPosition: p,
+		},
+	)
 }
 
 // AddMoveCommands transforms the player MoveRequest input into a list of
@@ -262,7 +259,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 
 	for _, eid := range req.GetEntityIds() {
-		if err := e.visitors[0].Schedule(
+		if err := e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_MOVE).Schedule(
 			move.Args{
 				Tick:        e.statusImpl.Tick(),
 				EntityID:    eid,

@@ -4,7 +4,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/downflux/game/server/service/visitor/entity/tank"
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -72,7 +71,7 @@ func TestDoTick(t *testing.T) {
 		t.Fatalf("New() = _, %v, want = nil", err)
 	}
 
-	if err := e.AddEntity(tank.New(eid, t1, src)); err != nil {
+	if err := e.AddEntity(gcpb.EntityType_ENTITY_TYPE_TANK, src); err != nil {
 		t.Fatalf("AddEntity() = %v, want = nil", err)
 	}
 
@@ -142,20 +141,5 @@ func TestDoTick(t *testing.T) {
 		); diff != "" {
 			t.Errorf("<-e.ClientChannel() mismatch (-want +got):\n%v", diff)
 		}
-	}
-}
-
-func TestAddEntity(t *testing.T) {
-	e, err := New(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
-	if err != nil {
-		t.Fatalf("New() = _, %v, want = nil", err)
-	}
-
-	if err := e.AddEntity(tank.New("simple", 100, &gdpb.Position{X: 0, Y: 0})); err != nil {
-		t.Fatalf("AddEntity() = %v, want = nil", err)
-	}
-
-	if err := e.AddEntity(tank.New("simple", 0, nil)); err == nil {
-		t.Error("AddEntity() = nil, want a non-nil error")
 	}
 }

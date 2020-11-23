@@ -1,13 +1,11 @@
 package entitylist
 
 import (
-	"sync"
-
 	"github.com/downflux/game/server/service/visitor/entity/entity"
 	"github.com/downflux/game/server/service/visitor/visitor"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"golang.org/x/sync/errgroup"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 )
@@ -18,10 +16,7 @@ type List struct {
 
 	id string
 
-	// TODO(minkezhang): Remove this mutex and use visitor.Schedule
-	// instead.
-	entitiesMux sync.Mutex
-	entities    map[string]visitor.Entity
+	entities map[string]visitor.Entity
 }
 
 func New(id string) *List {
@@ -34,16 +29,10 @@ func New(id string) *List {
 func (l *List) ID() string { return l.id }
 
 func (l *List) Get(eid string) visitor.Entity {
-	l.entitiesMux.Lock()
-	defer l.entitiesMux.Unlock()
-
 	return l.entities[eid]
 }
 
 func (l *List) Iter() []visitor.Entity {
-	l.entitiesMux.Lock()
-	defer l.entitiesMux.Unlock()
-
 	var entities []visitor.Entity
 	for _, e := range l.entities {
 		entities = append(entities, e)
@@ -53,9 +42,6 @@ func (l *List) Iter() []visitor.Entity {
 }
 
 func (l *List) Add(e visitor.Entity) error {
-	l.entitiesMux.Lock()
-	defer l.entitiesMux.Unlock()
-
 	if _, found := l.entities[e.ID()]; found {
 		return status.Error(codes.AlreadyExists, "an entity already exists with the given ID")
 	}
@@ -66,9 +52,6 @@ func (l *List) Add(e visitor.Entity) error {
 
 func (l *List) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_ENTITY_LIST }
 func (l *List) Accept(v visitor.Visitor) error {
-	l.entitiesMux.Lock()
-	defer l.entitiesMux.Unlock()
-
 	if err := v.Visit(l); err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ import (
 
 type List struct {
 	visitors map[vcpb.VisitorType]visitor.Visitor
-	order []vcpb.VisitorType
+	order    []vcpb.VisitorType
 }
 
 func New(visitors []visitor.Visitor) (*List, error) {

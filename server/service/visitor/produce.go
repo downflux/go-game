@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/server/service/visitor/dirty"
 	"github.com/downflux/game/server/service/visitor/entity/entitylist"
 	"github.com/downflux/game/server/service/visitor/entity/tank"
-	"github.com/downflux/game/server/service/visitor/dirty"
 	"github.com/downflux/game/server/service/visitor/visitor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,25 +29,29 @@ func unsupportedEntityType(t gcpb.EntityType) error {
 
 type Args struct {
 	ScheduledTick float64
-	EntityType gcpb.EntityType
+	EntityType    gcpb.EntityType
 	SpawnPosition *gdpb.Position
 }
 
 type cacheRow struct {
-	entityType gcpb.EntityType
+	entityType    gcpb.EntityType
 	spawnPosition *gdpb.Position
 }
 
 type Visitor struct {
-	dirties *dirty.List
-        dfStatus *serverstatus.Status
-
+	dirties  *dirty.List
+	dfStatus *serverstatus.Status
 
 	cacheMux sync.Mutex
-	cache map[float64][]cacheRow
+	cache    map[float64][]cacheRow
 }
 
-func New(entities *entitylist.List) *Visitor { return &Visitor{} }
+func New(dfStatus *serverstatus.Status, dirties *dirty.List) *Visitor {
+	return &Visitor{
+		dirties:  dirties,
+		dfStatus: dfStatus,
+	}
+}
 
 func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
@@ -64,7 +68,7 @@ func (v *Visitor) Schedule(args interface{}) error {
 	v.cache[argsImpl.ScheduledTick] = append(
 		v.cache[argsImpl.ScheduledTick],
 		cacheRow{
-			entityType: argsImpl.EntityType,
+			entityType:    argsImpl.EntityType,
 			spawnPosition: argsImpl.SpawnPosition,
 		})
 
@@ -82,10 +86,11 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	tick := v.dfStatus.Tick()
 
 	var eid string
-	for eid = id.RandomString(entityIDLen); e.(*entitylist.List).Get(eid) != nil; eid = id.RandomString(entityIDLen) {}
+	for eid = id.RandomString(entityIDLen); e.(*entitylist.List).Get(eid) != nil; eid = id.RandomString(entityIDLen) {
+	}
 
-	var ne visitor.Entity
 	for _, cRow := range v.cache[tick] {
+		var ne visitor.Entity
 		switch t := cRow.entityType; t {
 		case gcpb.EntityType_ENTITY_TYPE_TANK:
 			ne = tank.New(eid, tick, cRow.spawnPosition)
@@ -98,11 +103,11 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 		default:
 			return unsupportedEntityType(t)
 		}
-	}
 
-	for _, curveCategory := range ne.CurveCategories() {
-		if err := v.dirties.Add(dirty.Curve{EntityID: eid, Category: curveCategory}); err != nil {
-			return err
+		for _, curveCategory := range ne.CurveCategories() {
+			if err := v.dirties.Add(dirty.Curve{EntityID: eid, Category: curveCategory}); err != nil {
+				return err
+			}
 		}
 	}
 
