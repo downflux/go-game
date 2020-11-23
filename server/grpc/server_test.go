@@ -8,8 +8,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/server/service/visitor/entity/tank"
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -103,7 +103,7 @@ func TestSendMoveCommand(t *testing.T) {
 			},
 		}},
 	}
-	e := entity.NewSimpleEntity(id.RandomString(idLen), 0, src)
+	e := tank.New(id.RandomString(idLen), 0, src)
 
 	s, err := newSUT()
 	if err != nil {

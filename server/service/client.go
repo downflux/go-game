@@ -27,12 +27,12 @@ type Client struct {
 
 	// mux guards ch and status, and must be acquired before any R/W
 	// operations occur.
-	mux    sync.Mutex
+	mux sync.Mutex
 
 	// ch is an open connection for streaming data -- this is hooked up to
 	// the gRPC server, which attempts to read from this channel as fast as
 	// possible. This channel should not be blocked on writes.
-	ch     chan *apipb.StreamDataResponse
+	ch chan *apipb.StreamDataResponse
 
 	// status surfaces the server view of a specific client connection
 	// state.

@@ -3,14 +3,14 @@ package executor
 
 import (
 	"log"
-	"sync"
 	"time"
 
-	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/service/clientlist"
-	"github.com/downflux/game/server/service/command/command"
-	"github.com/downflux/game/server/service/command/move"
+	"github.com/downflux/game/server/service/visitor/dirty"
+	"github.com/downflux/game/server/service/visitor/entity/entitylist"
+	"github.com/downflux/game/server/service/visitor/move"
+	"github.com/downflux/game/server/service/visitor/visitor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -19,13 +19,13 @@ import (
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
-	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 	serverstatus "github.com/downflux/game/server/service/status"
 )
 
 const (
 	idLen        = 8
 	tickDuration = 100 * time.Millisecond
+	entityListID = "entity-list"
 )
 
 var (
@@ -33,17 +33,33 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
+// TODO(minkezhang): Add ClientID string type.
+
 // dirtyCurve represents a Curve instance which was altered in the current
 // tick and will need to be broadcast to all clients.
 //
 // The Entity UUID and CurveCategory uniquely identifies a curve.
 type dirtyCurve struct {
 	// eid is the parent Entity UUID.
-	eid      string
+	eid string
 
 	// category is the Entity property for which this Curve instance
 	// represents.
 	category gcpb.CurveCategory
+}
+
+// Executor encapsulates logic for executing the core game loop.
+type Executor struct {
+	// TODO(minkezhang): Index visitors by type.
+	visitors []visitor.Visitor
+	entities *entitylist.List
+	dirties  *dirty.List
+
+	// statusImpl represents the current Executor state metadata.
+	statusImpl *serverstatus.Status
+
+	// clients is an append-only set of connected players / AI.
+	clients *clientlist.List
 }
 
 // New creates a new instance of the Executor.
@@ -57,87 +73,35 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		return nil, err
 	}
 
+	dirties := dirty.New()
+	statusImpl := serverstatus.New(tickDuration)
+
+	visitors := []visitor.Visitor{
+		move.New(tm, g, statusImpl, dirties, 10),
+	}
+
 	return &Executor{
-		tileMap:       tm,
-		abstractGraph: g,
-		entities:      map[string]entity.Entity{},
-		commandQueue:  nil,
-		clients:       clientlist.New(idLen),
-		statusImpl:    serverstatus.New(tickDuration),
+		visitors:   visitors,
+		entities:   entitylist.New(entityListID),
+		dirties:    dirties,
+		clients:    clientlist.New(idLen),
+		statusImpl: statusImpl,
 	}, nil
 }
 
-// Executor encapsulates logic for executing the core game loop.
-type Executor struct {
-	// tileMap is the underlying Map object used for the game.
-	tileMap       *tile.Map
-
-	// abstractGraph is the underlying abstracted pathing logic data layer
-	// for the associated Map.
-	abstractGraph *graph.Graph
-
-	// statusImpl represents the current Executor state metadata.
-	statusImpl    *serverstatus.Status
-
-	// clients is an append-only set of connected players / AI.
-	clients *clientlist.List
-
-	// commandQueueMux guards the commandQueue property.
-	commandQueueMux sync.Mutex
-
-	// commandQueue is a FIFO list of commands to be run per tick. This
-	// list is reset per tick.
-	//
-	// TODO(minkezhang): Refactor this into a CommandQueue object, that
-	// hashes a command the tick it is scheduled at to run, and by a UUID
-	// for cancelling the command.
-	commandQueue    []command.Command
-
-	// dataMux guards the entities property.
-	//
-	// This lock must be acquired first.
-	dataMux  sync.RWMutex
-
-	// entities is an append-only set of game entities.
-	entities map[string]entity.Entity
-
-	// entityQueueMux guards the entityQueue property.
-	// This lock must be acquired second.
-	entityQueueMux sync.RWMutex
-
-	// entityQueue is an unordered list of new entites created during the
-	// current game tick. This list is reset per tick.
-	//
-	// TODO(minkezhang): Determine if we can isolate this property and not
-	// rely on the entities property.
-	entityQueue    []string
-
-	// curveQueueMux protects the curveQueue property.
-	//
-	// This lock must be acquired third.
-	curveQueueMux sync.RWMutex
-
-	// curveQueue is an unordered list of curves that have been mutated
-	// during the current game tick. This list is reset per tick.
-	//
-	// TODO(minkezhang): Determine if we can isolate this property and not
-	// rely on the entities property.
-	curveQueue    []dirtyCurve
-}
-
 // Status returns the current Executor status.
-func (e *Executor) Status() *gdpb.ServerStatus             { return e.statusImpl.PB() }
+func (e *Executor) Status() *gdpb.ServerStatus { return e.statusImpl.PB() }
 
 // ClientExists tests for if the specified Client UUID is currently being
 // tracked by the Executor.
-func (e *Executor) ClientExists(cid string) bool           { return e.clients.In(cid) }
+func (e *Executor) ClientExists(cid string) bool { return e.clients.In(cid) }
 
 // AddClient creates a new Client to be tracked by the Executor.
-func (e *Executor) AddClient() (string, error)             { return e.clients.Add() }
+func (e *Executor) AddClient() (string, error) { return e.clients.Add() }
 
 // StartClientStream instructs the Executor to mark the associated client
 // ready for game state updates.
-func (e *Executor) StartClientStream(cid string) error     { return e.clients.Start(cid) }
+func (e *Executor) StartClientStream(cid string) error { return e.clients.Start(cid) }
 
 // StopClientStreamError instructs the Executor to mark the associated client
 // as having been disconnected, and stop broadcasting future game states to the
@@ -150,85 +114,25 @@ func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, 
 	return e.clients.Channel(cid)
 }
 
-// popCommandQueue returns the list of commands for the current server tick and
-// resets the internal list.
-func (e *Executor) popCommandQueue() ([]command.Command, error) {
-	e.commandQueueMux.Lock()
-	defer e.commandQueueMux.Unlock()
-
-	commands := e.commandQueue
-	e.commandQueue = nil
-	return commands, nil
-}
-
-// processCommand executes a single command with side-effects.
-func (e *Executor) processCommand(cmd command.Command) error {
-	if cmd.Type() == sscpb.CommandType_COMMAND_TYPE_MOVE {
-		c, err := cmd.Execute(move.Args{
-			Tick:   e.statusImpl.Tick(),
-			Source: e.entities[cmd.(*move.Command).EntityID()].Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE).Get(e.statusImpl.Tick()).(*gdpb.Position)})
-		if err != nil {
-			return err
-		}
-
-		if err := func() error {
-			e.dataMux.RLock()
-			defer e.dataMux.RUnlock()
-
-			if err := e.entities[c.EntityID()].Curve(c.Category()).ReplaceTail(c); err != nil {
-				return err
-			}
-
-			e.curveQueueMux.Lock()
-			e.curveQueue = append(e.curveQueue, dirtyCurve{
-				eid:      c.EntityID(),
-				category: c.Category(),
-			})
-			e.curveQueueMux.Unlock()
-
-			return nil
-		}(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // popTickQueue returns the list of curves and entity protos that will need to
 // be broadcast to all valid cliens for the current server tick.
 func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
-	e.dataMux.RLock()
-	e.entityQueueMux.Lock()
-	e.curveQueueMux.Lock()
-	defer e.curveQueueMux.Unlock()
-	defer e.entityQueueMux.Unlock()
-	defer e.dataMux.RUnlock()
-
-	var processedCurves = map[string]map[gcpb.CurveCategory]bool{}
-
 	var curves []*gdpb.Curve
 	var entities []*gdpb.Entity
 
 	// TODO(minkezhang): Make concurrent.
-	for _, eid := range e.entityQueue {
+	for _, de := range e.dirties.PopEntities() {
 		entities = append(entities, &gdpb.Entity{
-			EntityId: eid,
-			Type:     e.entities[eid].Type(),
+			EntityId: de.ID,
+			Type:     e.entities.Get(de.ID).Type(),
 		})
 	}
-	for _, dc := range e.curveQueue {
-		// Do not broadcast curve twice.
-		if _, found := processedCurves[dc.eid]; !found {
-			processedCurves[dc.eid] = map[gcpb.CurveCategory]bool{}
-		}
-		if _, found := processedCurves[dc.eid][dc.category]; !found {
-			processedCurves[dc.eid][dc.category] = true
-			curves = append(curves, e.entities[dc.eid].Curve(dc.category).ExportTail(e.statusImpl.Tick()))
-		}
+	for _, dc := range e.dirties.Pop() {
+		curves = append(
+			curves,
+			e.entities.Get(
+				dc.EntityID).Curve(dc.Category).ExportTail(e.statusImpl.Tick()))
 	}
-
-	e.curveQueue = nil
-	e.entityQueue = nil
 
 	return curves, entities
 }
@@ -237,9 +141,6 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 // current tick. This is used to broadcast the full game state to new or
 // reconnecting clients.
 func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
-	e.dataMux.RLock()
-	defer e.dataMux.RUnlock()
-
 	var curves []*gdpb.Curve
 	var entities []*gdpb.Entity
 
@@ -247,13 +148,13 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 	// past.
 	beginningTick := e.statusImpl.Tick()
 
-	for _, en := range e.entities {
+	for _, en := range e.entities.Iter() {
 		entities = append(entities, &gdpb.Entity{
 			EntityId: en.ID(),
 			Type:     en.Type(),
 		})
 		for _, cat := range en.CurveCategories() {
-			curves = append(curves, e.entities[en.ID()].Curve(cat).ExportTail(beginningTick))
+			curves = append(curves, en.Curve(cat).ExportTail(beginningTick))
 		}
 	}
 	return curves, entities
@@ -318,15 +219,8 @@ func (e *Executor) Run() error {
 
 // doTick executes a single iteration of the core game loop.
 func (e *Executor) doTick() error {
-	commands, err := e.popCommandQueue()
-	if err != nil {
-		return err
-	}
-
-	for _, cmd := range commands {
-		// TODO(minkezhang): Add actual error handling here -- only
-		// Only return early if error is very bad.
-		if err := e.processCommand(cmd); err != nil {
+	for _, v := range e.visitors {
+		if err := e.entities.Accept(v); err != nil {
 			return err
 		}
 	}
@@ -345,78 +239,39 @@ func (e *Executor) doTick() error {
 //
 // TODO(minkezhang): Make this schedule a generated Command instead for the
 // next tick.
-func (e *Executor) AddEntity(en entity.Entity) error {
-	e.dataMux.Lock()
-	e.entityQueueMux.Lock()
-	e.curveQueueMux.Lock()
-	defer e.curveQueueMux.Unlock()
-	defer e.entityQueueMux.Unlock()
-	defer e.dataMux.Unlock()
-
-	if _, found := e.entities[en.ID()]; found {
+func (e *Executor) AddEntity(en visitor.Entity) error {
+	if e.entities.Get(en.ID()) != nil {
 		return status.Errorf(codes.AlreadyExists, "given entity ID %v already exists in the entity list", en.ID())
 	}
 
-	e.entities[en.ID()] = en
+	if err := e.entities.Add(en); err != nil {
+		return err
+	}
 
-	e.entityQueue = append(e.entityQueue, en.ID())
+	e.dirties.AddEntity(dirty.Entity{ID: en.ID()})
 	for _, cat := range en.CurveCategories() {
-		e.curveQueue = append(e.curveQueue, dirtyCurve{
-			eid:      en.ID(),
-			category: cat,
-		})
+		e.dirties.Add(dirty.Curve{EntityID: en.ID(), Category: cat})
 	}
 
 	return nil
-}
-
-// addCommands extends the current tick-specific command queue with the input.
-func (e *Executor) addCommands(cs []command.Command) error {
-	e.commandQueueMux.Lock()
-	defer e.commandQueueMux.Unlock()
-
-	e.commandQueue = append(e.commandQueue, cs...)
-
-	// TODO(minkezhang): Add client validation as per design doc.
-	return nil
-}
-
-// buildMoveCommands constructs a list of command.Command instances.
-//
-// TODO(minkezhang): Decide how / when / if we want to deal with click
-// spamming (same eids, multiple move commands per tick).
-func (e *Executor) buildMoveCommands(cid string, dest *gdpb.Position, eids []string) []*move.Command {
-	e.dataMux.RLock()
-	defer e.dataMux.RUnlock()
-
-	var res []*move.Command
-	for _, eid := range eids {
-		_, found := e.entities[eid]
-		if found {
-			res = append(
-				res,
-				move.New(
-					e.tileMap,
-					e.abstractGraph,
-					cid,
-					eid,
-					dest))
-		} else {
-			log.Printf("entity ID %s not found in server entity lookup, could not build Move command", eid)
-		}
-	}
-	return res
 }
 
 // AddMoveCommands transforms the player MoveRequest input into a list of
 // Command instances, and schedules them to be executed in the next tick.
 func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
-	var cs []command.Command
 
-	for _, c := range e.buildMoveCommands(req.GetClientId(), req.GetDestination(), req.GetEntityIds()) {
-		cs = append(cs, c)
+	for _, eid := range req.GetEntityIds() {
+		if err := e.visitors[0].Schedule(
+			move.Args{
+				Tick:        e.statusImpl.Tick(),
+				EntityID:    eid,
+				Destination: req.GetDestination(),
+			},
+		); err != nil {
+			return err
+		}
 	}
 
-	return e.addCommands(cs)
+	return nil
 }

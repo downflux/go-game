@@ -16,7 +16,7 @@ import (
 type Status struct {
 	// tickDuration is the target maximum interval between successive
 	// ticks, typically ~10Hz. This is immutable.
-	tickDuration  time.Duration
+	tickDuration time.Duration
 
 	// isStoppedImpl represents the boolean value of if the Executor
 	// should stop running the core game loop logic. This boolean is set
@@ -32,10 +32,10 @@ type Status struct {
 
 	// tickImpl represents the internal server tick counter. This is
 	// advanced once per game loop.
-	tickImpl      int64
+	tickImpl int64
 
 	// startTimeMux guards the startTimeImpl variable.
-	startTimeMux  sync.Mutex
+	startTimeMux sync.Mutex
 
 	// startTimeImpl represents the time at which Executor.Run() was
 	// called. This is useful client-side along with the tick duration to

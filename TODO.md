@@ -9,7 +9,7 @@
 * [x] add server tests
 * [x] add AddClientResponse.Tick
 * [x] add oneof curve subclass
-* [ ] make entity interface more formal
+* [x] make entity interface more formal
 * [x] broadcast entities along with curves in StreamCurves
 * [x] refactor server / executor
 
@@ -19,4 +19,5 @@
 * [x] support Reconnect() and share game state at specific tick
 * [ ] parallelize move commands
 * [x] add Run() which iterates through Tick()
-* [ ] *consider what to do with partial moves* -- refactor out commandQueue with cancellation, etc.
+* [x] consider what to do with partial moves -- refactor out commandQueue with cancellation, etc.
+* [ ] **add Produce() Visitor**
