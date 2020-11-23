@@ -7,11 +7,6 @@ package game.server.service.api.constants;
 option go_package = "game.server.service.api.constants";
 option csharp_namespace = "DF.Game.Server.Service.API.Constants";
 
-enum CommandType {
-  COMMAND_TYPE_UNKNOWN = 0;
-  COMMAND_TYPE_MOVE = 1;
-}
-
 // ClientStatus represents the internal game's awareness of the current
 // networking state of a connected client.
 enum ClientStatus {

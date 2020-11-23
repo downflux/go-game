@@ -4,12 +4,12 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/linearmove"
-	"github.com/downflux/game/entity/entity"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/service/visitor/dirty"
+	"github.com/downflux/game/server/service/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -44,6 +44,7 @@ type cacheRow struct {
 }
 
 type Args struct {
+	Tick        float64
 	EntityID    string
 	Destination *gdpb.Position
 }
@@ -60,9 +61,9 @@ type Visitor struct {
 	// current tick, etc.
 	dfStatus *status.Status
 
-	// dirtyCurves is a shared object between the game engine and the
+	// dirties is a shared object between the game engine and the
 	// Visitor.
-	dirtyCurves *dirty.List
+	dirties *dirty.List
 
 	minPathLength int
 
@@ -74,13 +75,13 @@ func New(
 	tileMap *tile.Map,
 	abstractGraph *graph.Graph,
 	dfStatus *status.Status,
-	dirtyCurves *dirty.List,
+	dirties *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
 		tileMap:       tileMap,
 		abstractGraph: abstractGraph,
 		dfStatus:      dfStatus,
-		dirtyCurves:   dirtyCurves,
+		dirties:       dirties,
 		cache:         map[string]cacheRow{},
 		minPathLength: minPathLength,
 	}
@@ -101,16 +102,16 @@ func (v *Visitor) scheduleUnsafe(tick float64, eid string, dest *gdpb.Position) 
 	return nil
 }
 
-func (v *Visitor) Schedule(tick float64, args interface{}) error {
+func (v *Visitor) Schedule(args interface{}) error {
 	v.cacheMux.Lock()
 	defer v.cacheMux.Unlock()
 
 	argsImpl := args.(Args)
 
-	return v.scheduleUnsafe(tick, argsImpl.EntityID, argsImpl.Destination)
+	return v.scheduleUnsafe(argsImpl.Tick, argsImpl.EntityID, argsImpl.Destination)
 }
 
-func (v *Visitor) Visit(e entity.Entity) error {
+func (v *Visitor) Visit(e visitor.Entity) error {
 	if e.Type() != gcpb.EntityType_ENTITY_TYPE_TANK {
 		return nil
 	}
@@ -151,7 +152,7 @@ func (v *Visitor) Visit(e entity.Entity) error {
 	for i, tile := range p {
 		cv.Add(tick+float64(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
 	}
-	if err := v.dirtyCurves.Add(dirty.Curve{
+	if err := v.dirties.Add(dirty.Curve{
 		EntityID: e.ID(),
 		Category: c.Category(),
 	}); err != nil {

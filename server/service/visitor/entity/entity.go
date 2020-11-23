@@ -4,26 +4,14 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/curve"
-	"github.com/downflux/game/server/service/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 )
 
-type Entity interface {
-	visitor.Entity
+type NoCurveEntity struct{}
 
-	ID() string
-	Curve(t gcpb.CurveCategory) curve.Curve
-
-	// CurveCategories returns list of curve categories defined in a specific
-	// entity. This list is created at init time and is immutable.
-	CurveCategories() []gcpb.CurveCategory
-
-	Start() float64
-	End() float64
-
-	Delete(tick float64)
-}
+func (e *NoCurveEntity) Curve(c gcpb.CurveCategory) curve.Curve { return nil }
+func (e *NoCurveEntity) CurveCategories() []gcpb.CurveCategory  { return nil }
 
 type BaseEntity struct {
 	lifetimeMux sync.RWMutex

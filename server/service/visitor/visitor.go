@@ -1,12 +1,26 @@
 package visitor
 
 import (
+	"github.com/downflux/game/curve/curve"
+
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 )
 
 type Entity interface {
 	Accept(v Visitor) error
 	Type() gcpb.EntityType
+
+	ID() string
+	Curve(t gcpb.CurveCategory) curve.Curve
+
+	// CurveCategories returns list of curve categories defined in a specific
+	// entity. This list is created at init time and is immutable.
+	CurveCategories() []gcpb.CurveCategory
+
+	Start() float64
+	End() float64
+
+	Delete(tick float64)
 }
 
 type Visitor interface {

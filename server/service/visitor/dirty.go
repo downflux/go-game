@@ -15,18 +15,36 @@ type Curve struct {
 	Category gcpb.CurveCategory
 }
 
+type Entity struct {
+	ID string
+}
+
 type List struct {
-	curvesMux sync.Mutex
-	curves    map[string]map[gcpb.CurveCategory]bool
+	mux      sync.Mutex
+	curves   map[string]map[gcpb.CurveCategory]bool
+	entities map[string]bool
 }
 
 func New() *List {
 	return &List{}
 }
 
+func (l *List) AddEntity(e Entity) error {
+	l.mux.Lock()
+	defer l.mux.Unlock()
+
+	if l.entities == nil {
+		l.entities = map[string]bool{}
+	}
+
+	l.entities[e.ID] = true
+
+	return nil
+}
+
 func (l *List) Add(c Curve) error {
-	l.curvesMux.Lock()
-	defer l.curvesMux.Unlock()
+	l.mux.Lock()
+	defer l.mux.Unlock()
 
 	if l.curves == nil {
 		l.curves = map[string]map[gcpb.CurveCategory]bool{}
@@ -40,9 +58,21 @@ func (l *List) Add(c Curve) error {
 	return nil
 }
 
+func (l *List) PopEntities() []Entity {
+	l.mux.Lock()
+	defer l.mux.Unlock()
+
+	var entities []Entity
+	for eid := range l.entities {
+		entities = append(entities, Entity{ID: eid})
+	}
+
+	return entities
+}
+
 func (l *List) Pop() []Curve {
-	l.curvesMux.Lock()
-	defer l.curvesMux.Unlock()
+	l.mux.Lock()
+	defer l.mux.Unlock()
 
 	var curves []Curve
 	for eid, categories := range l.curves {

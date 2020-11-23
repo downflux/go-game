@@ -30,6 +30,7 @@ go_library(
     importpath = "github.com/downflux/game/server/service/visitor/visitor",
     deps = [
         "//api:constants_go_proto",
+        "//curve:curve",
     ],
 )
 
@@ -57,14 +58,14 @@ go_library(
     importpath = "github.com/downflux/game/server/service/visitor/move",
     deps = [
         ":dirty",
+        ":visitor",
         "//api:constants_go_proto",
         "//api:data_go_proto",
-	"//curve:linearmove",
-        "//entity:entity",
+        "//curve:linearmove",
         "//map:map",
-        "//map:utils",
+        "//map:utils", 
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
-	"//server/service:status",
+        "//server/service:status",
     ],
 )

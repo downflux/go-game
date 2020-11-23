@@ -54,7 +54,7 @@ func TestSchedule(t *testing.T) {
 	for i := 0; i < nClients; i++ {
 		i := i
 		eg.Go(func() error {
-			return v.Schedule(0, Args{EntityID: fmt.Sprintf("entity-%d", i)})
+			return v.Schedule(Args{Tick: 0, EntityID: fmt.Sprintf("entity-%d", i)})
 		})
 	}
 
@@ -95,7 +95,7 @@ func TestVisitNoSchedule(t *testing.T) {
 		t.Fatalf("Visit() = %v, want = nil", err)
 	}
 
-	if got := v.dirtyCurves.Pop(); got != nil {
+	if got := v.dirties.Pop(); got != nil {
 		t.Errorf("Pop() = %v, want = nil", got)
 	}
 }
@@ -107,13 +107,13 @@ func TestVisitFutureSchedule(t *testing.T) {
 
 	v := newVisitor(t)
 	e := tank.New(eid, t0, &gdpb.Position{X: 0, Y: 0})
-	v.Schedule(t0+1, Args{EntityID: eid, Destination: dest})
+	v.Schedule(Args{Tick: t0 + 1, EntityID: eid, Destination: dest})
 
 	if err := v.Visit(e); err != nil {
 		t.Fatalf("Visit() = %v, want = nil", err)
 	}
 
-	if got := v.dirtyCurves.Pop(); got != nil {
+	if got := v.dirties.Pop(); got != nil {
 		t.Errorf("Pop() = %v, want = nil", got)
 	}
 }
@@ -125,7 +125,7 @@ func TestVisit(t *testing.T) {
 
 	v := newVisitor(t)
 	e := tank.New(eid, t0, &gdpb.Position{X: 0, Y: 0})
-	v.Schedule(t0, Args{EntityID: eid, Destination: dest})
+	v.Schedule(Args{Tick: t0, EntityID: eid, Destination: dest})
 
 	if err := v.Visit(e); err != nil {
 		t.Fatalf("Visit() = %v, want = nil", err)
@@ -148,7 +148,7 @@ func TestVisit(t *testing.T) {
 		Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
 		EntityID: eid,
 	}
-	if got := v.dirtyCurves.Pop(); got[0] != want {
+	if got := v.dirties.Pop(); got[0] != want {
 		t.Errorf("Pop() = %v, want = %v", got[0], want)
 	}
 }
