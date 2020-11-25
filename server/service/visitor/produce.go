@@ -76,12 +76,12 @@ func (v *Visitor) Schedule(args interface{}) error {
 }
 
 func (v *Visitor) Visit(e visitor.Entity) error {
+	v.cacheMux.Lock()
+	defer v.cacheMux.Unlock()
+
 	if e.Type() != gcpb.EntityType_ENTITY_TYPE_ENTITY_LIST {
 		return nil
 	}
-
-	v.cacheMux.Lock()
-	defer v.cacheMux.Unlock()
 
 	tick := v.dfStatus.Tick()
 
@@ -89,27 +89,31 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	for eid = id.RandomString(entityIDLen); e.(*entitylist.List).Get(eid) != nil; eid = id.RandomString(entityIDLen) {
 	}
 
-	for _, cRow := range v.cache[tick] {
-		var ne visitor.Entity
-		switch t := cRow.entityType; t {
-		case gcpb.EntityType_ENTITY_TYPE_TANK:
-			ne = tank.New(eid, tick, cRow.spawnPosition)
-			if err := v.dirties.AddEntity(dirty.Entity{ID: eid}); err != nil {
-				return err
+	for t := float64(0); t <= tick; t++ {
+		for _, cRow := range v.cache[t] {
+			var ne visitor.Entity
+			switch t := cRow.entityType; t {
+			case gcpb.EntityType_ENTITY_TYPE_TANK:
+				ne = tank.New(eid, tick, cRow.spawnPosition)
+				if err := v.dirties.AddEntity(dirty.Entity{ID: eid}); err != nil {
+					return err
+				}
+				if err := e.(*entitylist.List).Add(ne); err != nil {
+					return err
+				}
+			default:
+				return unsupportedEntityType(t)
 			}
-			if err := e.(*entitylist.List).Add(ne); err != nil {
-				return err
+
+			for _, curveCategory := range ne.CurveCategories() {
+				if err := v.dirties.Add(dirty.Curve{EntityID: eid, Category: curveCategory}); err != nil {
+					return err
+				}
 			}
-		default:
-			return unsupportedEntityType(t)
 		}
 
-		for _, curveCategory := range ne.CurveCategories() {
-			if err := v.dirties.Add(dirty.Curve{EntityID: eid, Category: curveCategory}); err != nil {
-				return err
-			}
-		}
+		delete(v.cache, t)
+
 	}
-
 	return nil
 }
