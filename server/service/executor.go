@@ -210,6 +210,7 @@ func (e *Executor) Run() error {
 	e.statusImpl.SetIsStarted()
 	for !e.statusImpl.IsStopped() {
 		if err := e.doTick(); err != nil {
+			// TODO(minkezhang): Only return if error is fatal.
 			return err
 		}
 	}
