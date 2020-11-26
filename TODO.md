@@ -15,6 +15,8 @@
 * [ ] add API documentation
 * [ ] add client tests
 * [ ] rename CurveCategory to EntityProperty
+* [ ] add tests for Visitors
+* [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
 
 # Feature
 * [x] make channel send from server nonblocking
