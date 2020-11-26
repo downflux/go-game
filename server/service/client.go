@@ -163,8 +163,12 @@ func (c *Client) Send(m *apipb.StreamDataResponse) error {
 			c.status)
 	}
 
-	c.ch <- m
-	return c.setStatusUnsafe(sscpb.ClientStatus_CLIENT_STATUS_OK)
+	// Only send data if there is interesting data to send.
+	if m.GetEntities() != nil || m.GetCurves() != nil {
+		c.ch <- m
+		return c.setStatusUnsafe(sscpb.ClientStatus_CLIENT_STATUS_OK)
+	}
+	return nil
 }
 
 // New constructs a new Client instance.

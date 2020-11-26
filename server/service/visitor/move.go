@@ -14,11 +14,14 @@ import (
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
+	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
 )
 
 const (
 	// TODO(minkezhang): Make this a property of the entity.
 	ticksPerTile = float64(10)
+
+	visitorType = vcpb.VisitorType_VISITOR_TYPE_MOVE
 )
 
 // coordinate transforms a gdpb.Position instance into a gdpb.Coordinate
@@ -87,6 +90,8 @@ func New(
 	}
 }
 
+func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
+
 func (v *Visitor) scheduleUnsafe(tick float64, eid string, dest *gdpb.Position) error {
 	if v.cache == nil {
 		v.cache = map[string]cacheRow{}
@@ -103,10 +108,10 @@ func (v *Visitor) scheduleUnsafe(tick float64, eid string, dest *gdpb.Position) 
 }
 
 func (v *Visitor) Schedule(args interface{}) error {
+	argsImpl := args.(Args)
+
 	v.cacheMux.Lock()
 	defer v.cacheMux.Unlock()
-
-	argsImpl := args.(Args)
 
 	return v.scheduleUnsafe(argsImpl.Tick, argsImpl.EntityID, argsImpl.Destination)
 }

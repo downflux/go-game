@@ -19,9 +19,9 @@ go_binary(
     deps = [
         ":server",
         "//api:api_go_proto",
+        "//api:constants_go_proto",
         "//api:data_go_proto",
 	"//map/api:data_go_proto",
-        "//server/service/visitor/entity:tank",
         "@org_golang_google_grpc//:go_default_library",
         "@com_github_golang_protobuf//proto:go_default_library",
 
@@ -86,8 +86,6 @@ go_test(
         "//api:data_go_proto",
         "//map/api:constants_go_proto",
         "//map/api:data_go_proto",
-        "//server:id",
-        "//server/service/visitor/entity:tank",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",
         "@org_golang_google_grpc//:go_default_library",

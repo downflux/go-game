@@ -8,11 +8,11 @@ import (
 	"net"
 
 	"github.com/downflux/game/server/grpc/server"
-	"github.com/downflux/game/server/service/visitor/entity/tank"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
+	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 )
@@ -54,9 +54,7 @@ func main() {
 	s := grpc.NewServer()
 	apipb.RegisterDownFluxServer(s, downFluxServer)
 
-	downFluxServer.Executor().AddEntity(tank.New(
-		"example-entity", 0, &gdpb.Position{X: 0, Y: 0},
-	))
+	downFluxServer.Executor().AddEntity(gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0})
 
 	go s.Serve(lis)
 	downFluxServer.Executor().Run()

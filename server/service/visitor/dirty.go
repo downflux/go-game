@@ -67,6 +67,7 @@ func (l *List) PopEntities() []Entity {
 		entities = append(entities, Entity{ID: eid})
 	}
 
+	l.entities = nil
 	return entities
 }
 

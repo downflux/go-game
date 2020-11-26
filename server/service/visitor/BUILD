@@ -5,6 +5,37 @@ package(default_visibility=[
 	"//server/service/visitor/entity:__pkg__",
 ])
 
+go_library(
+    name = "visitorlist",
+    srcs = ["visitorlist.go"],
+    importpath = "github.com/downflux/game/server/service/visitor/visitorlist",
+    deps = [
+        ":visitor",
+	"//server/service/visitor/api:constants_go_proto",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+    ],
+)
+
+go_library(
+    name = "produce",
+    srcs = ["produce.go"],
+    importpath = "github.com/downflux/game/server/service/visitor/produce",
+    deps = [
+        ":dirty",
+        ":visitor",
+        "//api:constants_go_proto",
+        "//api:data_go_proto",
+        "//server:id",
+        "//server/service:status",
+	"//server/service/visitor/api:constants_go_proto",
+        "//server/service/visitor/entity:entitylist",
+        "//server/service/visitor/entity:tank",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+    ]
+)
+
 go_test(
     name = "dirty_test",
     srcs = ["dirty_test.go"],
@@ -31,6 +62,7 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//curve:curve",
+	"//server/service/visitor/api:constants_go_proto",
     ],
 )
 
@@ -67,5 +99,6 @@ go_library(
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
         "//server/service:status",
+	"//server/service/visitor/api:constants_go_proto",
     ],
 )

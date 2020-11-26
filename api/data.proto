@@ -70,6 +70,8 @@ message ServerStatus {
 // The entire list of entities, along with the property curves, represent
 // wholly the game state.
 message Entity {
+  // TODO(minkezhang): Rename to id instead.
   string entity_id = 1;
+
   game.api.constants.EntityType type = 2;  
 }
