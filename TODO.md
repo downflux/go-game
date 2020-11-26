@@ -17,6 +17,7 @@
 * [ ] rename CurveCategory to EntityProperty
 * [ ] add tests for Visitors
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
+* [ ] merge Executor.isStarted and isStopped
 
 # Feature
 * [x] make channel send from server nonblocking
