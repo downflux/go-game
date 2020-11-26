@@ -6,10 +6,13 @@ import (
 	"sync/atomic"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
+	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
 // Status represents the internal Executor state.
@@ -18,17 +21,11 @@ type Status struct {
 	// ticks, typically ~10Hz. This is immutable.
 	tickDuration time.Duration
 
-	// isStoppedImpl represents the boolean value of if the Executor
-	// should stop running the core game loop logic. This boolean is set
-	// to true at teardown.
-	//
-	// TODO(minkezhang): Remove this logic and combile with isStartedImpl.
-	isStoppedImpl int32
+	// statusEnumMux guards the statusEnum property.
+	statusEnumMux sync.Mutex
 
-	// isStartedImpl represents the boolean value of if the Executor
-	// has started running the core game loop logic. This boolean is set
-	// to true at the beginning of Executor.Run().
-	isStartedImpl int32
+	// statusEnum represents the current executor internal run-state.
+	statusEnum sscpb.ServerStatus
 
 	// tickImpl represents the internal server tick counter. This is
 	// advanced once per game loop.
@@ -51,6 +48,7 @@ type Status struct {
 func New(tickDuration time.Duration) *Status {
 	return &Status{
 		tickDuration: tickDuration,
+		statusEnum: sscpb.ServerStatus_SERVER_STATUS_NOT_STARTED,
 	}
 }
 
@@ -66,10 +64,38 @@ func (s *Status) PB() *gdpb.ServerStatus {
 
 func (s *Status) Tick() float64   { return float64(atomic.LoadInt64(&(s.tickImpl))) }
 func (s *Status) IncrementTick()  { atomic.AddInt64(&(s.tickImpl), 1) }
-func (s *Status) IsStarted() bool { return atomic.LoadInt32(&(s.isStartedImpl)) != 0 }
-func (s *Status) SetIsStarted()   { atomic.StoreInt32(&(s.isStartedImpl), 1) }
-func (s *Status) IsStopped() bool { return atomic.LoadInt32(&(s.isStoppedImpl)) != 0 }
-func (s *Status) SetIsStopped()   { atomic.StoreInt32(&(s.isStoppedImpl), 1) }
+
+func (s *Status) IsStarted() bool {
+	s.statusEnumMux.Lock()
+	defer s.statusEnumMux.Unlock()
+	return s.statusEnum == sscpb.ServerStatus_SERVER_STATUS_RUNNING
+}
+
+func (s *Status) SetIsStarted() error {
+	s.statusEnumMux.Lock()
+	defer s.statusEnumMux.Unlock()
+
+	target := sscpb.ServerStatus_SERVER_STATUS_RUNNING
+	if s.statusEnum != sscpb.ServerStatus_SERVER_STATUS_NOT_STARTED {
+		return status.Errorf(codes.Aborted, "cannot set server status to %v from %v")
+	}
+	s.statusEnum = target
+	return nil
+}
+
+func (s *Status) IsStopped() bool {
+	s.statusEnumMux.Lock()
+	defer s.statusEnumMux.Unlock()
+	return s.statusEnum == sscpb.ServerStatus_SERVER_STATUS_STOPPED
+}
+
+func (s *Status) SetIsStopped() error {
+	s.statusEnumMux.Lock()
+	defer s.statusEnumMux.Unlock()
+
+	s.statusEnum = sscpb.ServerStatus_SERVER_STATUS_STOPPED
+	return nil
+}
 
 func (s *Status) StartTime() time.Time {
 	s.startTimeMux.Lock()

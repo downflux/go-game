@@ -179,7 +179,9 @@ func TestSendMoveCommand(t *testing.T) {
 		time.Sleep(time.Second)
 	}
 
-	s.gRPCServerImpl.Executor().Stop()
+	if err := s.gRPCServerImpl.Executor().Stop(); err != nil {
+		t.Fatalf("Stop() = %v, want = nil", err)
+	}
 	s.gRPCServer.GracefulStop()
 
 	if err := eg.Wait(); err != nil {
