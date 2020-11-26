@@ -7,6 +7,13 @@ package game.server.service.api.constants;
 option go_package = "game.server.service.api.constants";
 option csharp_namespace = "DF.Game.Server.Service.API.Constants";
 
+enum ServerStatus {
+  SERVER_STATUS_UNKNOWN = 0;
+  SERVER_STATUS_NOT_STARTED = 1;
+  SERVER_STATUS_RUNNING = 2;
+  SERVER_STATUS_STOPPED = 3;
+}
+
 // ClientStatus represents the internal game's awareness of the current
 // networking state of a connected client.
 enum ClientStatus {

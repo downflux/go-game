@@ -63,7 +63,9 @@ func (s *ServerWrapper) Start(addr string) error {
 }
 
 func (s *ServerWrapper) Stop() error {
-	s.gRPCServerImpl.ex.Stop()
+	if err := s.gRPCServerImpl.ex.Stop(); err != nil {
+		return err
+	}
 	s.gRPCServer.GracefulStop()
 
 	return s.eg.Wait()

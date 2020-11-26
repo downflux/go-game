@@ -199,15 +199,20 @@ func (e *Executor) broadcastCurves() error {
 
 // Stop will teardown the Executor and close all client channels. This is
 // called at the end of the game.
-func (e *Executor) Stop() {
-	e.statusImpl.SetIsStopped()
+func (e *Executor) Stop() error {
+	if err := e.statusImpl.SetIsStopped(); err != nil {
+		return err
+	}
 	e.clients.StopAll()
+	return nil
 }
 
 // Run executes the core game loop.
 func (e *Executor) Run() error {
 	e.statusImpl.SetStartTime()
-	e.statusImpl.SetIsStarted()
+	if err := e.statusImpl.SetIsStarted(); err != nil {
+		return err
+	}
 	for !e.statusImpl.IsStopped() {
 		if err := e.doTick(); err != nil {
 			// TODO(minkezhang): Only return if error is fatal.

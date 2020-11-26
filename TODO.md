@@ -9,15 +9,16 @@
 * [x] broadcast entities along with curves in StreamCurves
 * [x] refactor server / executor
 * [x] make Executor.visitors an ordered map object for easy referencing in code
+* [x] merge Executor.isStarted and isStopped
 * [ ] **add server documentation**
 * [ ] add ClientID, EntityID, CurveID data types
 * [ ] add client documentation
 * [ ] add API documentation
 * [ ] add client tests
-* [ ] rename CurveCategory to EntityProperty
 * [ ] add tests for Visitors
+* [ ] add tests for Status
+* [ ] rename CurveCategory to EntityProperty
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
-* [ ] merge Executor.isStarted and isStopped
 
 # Feature
 * [x] make channel send from server nonblocking
