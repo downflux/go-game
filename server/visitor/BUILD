@@ -1,8 +1,8 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 package(default_visibility=[
+	"//server/entity:__pkg__",
 	"//server/service:__pkg__",
-	"//server/service/visitor/entity:__pkg__",
 ])
 
 go_library(
@@ -11,7 +11,7 @@ go_library(
     importpath = "github.com/downflux/game/server/service/visitor/visitorlist",
     deps = [
         ":visitor",
-	"//server/service/visitor/api:constants_go_proto",
+	"//server/visitor/api:constants_go_proto",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
     ],
@@ -27,10 +27,10 @@ go_library(
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//server:id",
+        "//server/entity:entitylist",
+        "//server/entity:tank",
         "//server/service:status",
-	"//server/service/visitor/api:constants_go_proto",
-        "//server/service/visitor/entity:entitylist",
-        "//server/service/visitor/entity:tank",
+	"//server/visitor/api:constants_go_proto",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
     ]
@@ -62,7 +62,7 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//curve:curve",
-	"//server/service/visitor/api:constants_go_proto",
+	"//server/visitor/api:constants_go_proto",
     ],
 )
 
@@ -77,9 +77,9 @@ go_test(
         "//map/api:constants_go_proto",
         "//map/api:data_go_proto",
         "//map:map",
+        "//server/entity:tank",
         "//server/service:status",
-        "//server/service/visitor:dirty",
-        "//server/service/visitor/entity:tank",
+        "//server/visitor:dirty",
         "@org_golang_x_sync//errgroup:go_default_library",
     ],
 )
@@ -99,6 +99,6 @@ go_library(
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
         "//server/service:status",
-	"//server/service/visitor/api:constants_go_proto",
+	"//server/visitor/api:constants_go_proto",
     ],
 )

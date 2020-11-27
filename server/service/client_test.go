@@ -1,6 +1,7 @@
 package client
 
 import (
+	"log"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -69,19 +70,27 @@ func TestSend(t *testing.T) {
 	var eg errgroup.Group
 	for i := 0; i < nClients; i++ {
 		i := i
-		eg.Go(func() error { return clients[i].Send(message) })
+		eg.Go(func() error {
+			err := clients[i].Send(message)
+			fmt.Println("DEBUG: ERR %v", err)
+			return err
+		})
 	}
 
 	for i := 0; i < nClients; i++ {
-		i := i
+		ch := channels[i]
 		eg.Go(func() error {
 			time.Sleep(time.Duration(rand.Int31n(1000)) * time.Millisecond)
-			if diff := cmp.Diff(<-channels[i], message, protocmp.Transform()); diff != "" {
+			m := <-ch
+			log.Println("DEBUG: MSG %v", m)
+			if diff := cmp.Diff(m, message, protocmp.Transform()); diff != "" {
 				return status.Errorf(codes.Internal, "<-ch mismatch (-want +got):\n%v", diff)
 			}
 			return nil
 		})
 	}
+
+	log.Println("DEBUG: Waiting...")
 
 	if err := eg.Wait(); err != nil {
 		t.Fatalf("Wait() = %v, want = nil", err)

@@ -6,7 +6,7 @@ package(default_visibility=[
     "//server/grpc:__pkg__",
 
     "//server/service:__pkg__",
-    "//server/service/visitor:__pkg__",
+    "//server/visitor:__pkg__",
 ])
 
 go_library(
@@ -18,8 +18,8 @@ go_library(
 	"//api:data_go_proto",
         "//curve:curve",
         "//curve:linearmove",
-        "//server/service/visitor:visitor",
-        "//server/service/visitor/entity:entity",
+        "//server/visitor:visitor",
+        "//server/entity:entity",
     ],
 )
 
@@ -39,8 +39,8 @@ go_library(
     importpath = "github.com/downflux/game/server/service/visitor/entity/entitylist",
     deps = [
         "//api:constants_go_proto",
-        "//server/service/visitor:visitor",
-        "//server/service/visitor/entity:entity",
+        "//server/visitor:visitor",
+        "//server/entity:entity",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",
