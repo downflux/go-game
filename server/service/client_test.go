@@ -1,7 +1,6 @@
 package client
 
 import (
-	"log"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -14,6 +13,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
 )
 
@@ -45,8 +45,12 @@ func TestGetChannelInvald(t *testing.T) {
 }
 
 func TestSend(t *testing.T) {
-	const nClients = 1000
-	message := &apipb.StreamDataResponse{}
+	const nClients = 1
+	message := &apipb.StreamDataResponse{
+		Entities: []*gdpb.Entity{
+			{EntityId: "eid"},
+		},
+	}
 
 	var clients []*Client
 	var channels []<-chan *apipb.StreamDataResponse
@@ -82,15 +86,12 @@ func TestSend(t *testing.T) {
 		eg.Go(func() error {
 			time.Sleep(time.Duration(rand.Int31n(1000)) * time.Millisecond)
 			m := <-ch
-			log.Println("DEBUG: MSG %v", m)
 			if diff := cmp.Diff(m, message, protocmp.Transform()); diff != "" {
 				return status.Errorf(codes.Internal, "<-ch mismatch (-want +got):\n%v", diff)
 			}
 			return nil
 		})
 	}
-
-	log.Println("DEBUG: Waiting...")
 
 	if err := eg.Wait(); err != nil {
 		t.Fatalf("Wait() = %v, want = nil", err)

@@ -52,6 +52,7 @@ go_test(
     embed = [":client"],
     deps = [
         "//api:api_go_proto",
+        "//api:data_go_proto",
         "//server/service/api:constants_go_proto",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",

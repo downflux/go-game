@@ -48,7 +48,7 @@ type Status struct {
 func New(tickDuration time.Duration) *Status {
 	return &Status{
 		tickDuration: tickDuration,
-		statusEnum: sscpb.ServerStatus_SERVER_STATUS_NOT_STARTED,
+		statusEnum:   sscpb.ServerStatus_SERVER_STATUS_NOT_STARTED,
 	}
 }
 
@@ -62,8 +62,8 @@ func (s *Status) PB() *gdpb.ServerStatus {
 	}
 }
 
-func (s *Status) Tick() float64   { return float64(atomic.LoadInt64(&(s.tickImpl))) }
-func (s *Status) IncrementTick()  { atomic.AddInt64(&(s.tickImpl), 1) }
+func (s *Status) Tick() float64  { return float64(atomic.LoadInt64(&(s.tickImpl))) }
+func (s *Status) IncrementTick() { atomic.AddInt64(&(s.tickImpl), 1) }
 
 func (s *Status) IsStarted() bool {
 	s.statusEnumMux.Lock()
