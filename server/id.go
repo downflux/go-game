@@ -16,6 +16,9 @@ func NewEntityID(id string) EntityID { return EntityID(id) }
 
 type ClientID ID
 
+func (id ClientID) Value() string    { return string(id) }
+func NewClientID(id string) ClientID { return ClientID(id) }
+
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 // RandomString returns a random string of the specified length.

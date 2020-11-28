@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/downflux/game/server/grpc/client"
+	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/executor"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -85,7 +86,7 @@ type DownFluxServer struct {
 	ex *executor.Executor
 }
 
-func (s *DownFluxServer) validateClient(cid string) error {
+func (s *DownFluxServer) validateClient(cid id.ClientID) error {
 	if !s.ex.ClientExists(cid) {
 		return status.Errorf(codes.NotFound, "client %v not found", cid)
 	}
@@ -105,7 +106,7 @@ func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequ
 }
 
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
-	if err := s.validateClient(req.GetClientId()); err != nil {
+	if err := s.validateClient(id.NewClientID(req.GetClientId())); err != nil {
 		return nil, err
 	}
 	return &apipb.MoveResponse{}, s.ex.AddMoveCommands(req)
@@ -118,27 +119,29 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 	}
 
 	resp := &apipb.AddClientResponse{
-		ClientId: cid,
+		ClientId: cid.Value(),
 	}
 	return resp, nil
 }
 
 func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
-	if err := s.validateClient(req.GetClientId()); err != nil {
+	cid := id.NewClientID(req.GetClientId())
+
+	if err := s.validateClient(cid); err != nil {
 		return err
 	}
 
 	md := client.New()
 	defer func() {
-		s.ex.StopClientStreamError(req.GetClientId())
+		s.ex.StopClientStreamError(cid)
 		md.Close()
 	}()
 
-	if err := s.ex.StartClientStream(req.GetClientId()); err != nil {
+	if err := s.ex.StartClientStream(cid); err != nil {
 		return err
 	}
 
-	ch, err := s.ex.ClientChannel(req.GetClientId())
+	ch, err := s.ex.ClientChannel(cid)
 	if err != nil {
 		return err
 	}

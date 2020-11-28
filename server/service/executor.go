@@ -37,8 +37,6 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-// TODO(minkezhang): Add ClientID string type.
-
 // dirtyCurve represents a Curve instance which was altered in the current
 // tick and will need to be broadcast to all clients.
 //
@@ -103,23 +101,23 @@ func (e *Executor) Status() *gdpb.ServerStatus { return e.statusImpl.PB() }
 
 // ClientExists tests for if the specified Client UUID is currently being
 // tracked by the Executor.
-func (e *Executor) ClientExists(cid string) bool { return e.clients.In(cid) }
+func (e *Executor) ClientExists(cid id.ClientID) bool { return e.clients.In(cid) }
 
 // AddClient creates a new Client to be tracked by the Executor.
-func (e *Executor) AddClient() (string, error) { return e.clients.Add() }
+func (e *Executor) AddClient() (id.ClientID, error) { return e.clients.Add() }
 
 // StartClientStream instructs the Executor to mark the associated client
 // ready for game state updates.
-func (e *Executor) StartClientStream(cid string) error { return e.clients.Start(cid) }
+func (e *Executor) StartClientStream(cid id.ClientID) error { return e.clients.Start(cid) }
 
 // StopClientStreamError instructs the Executor to mark the associated client
 // as having been disconnected, and stop broadcasting future game states to the
 // linked channel.
-func (e *Executor) StopClientStreamError(cid string) error { return e.clients.Stop(cid, false) }
+func (e *Executor) StopClientStreamError(cid id.ClientID) error { return e.clients.Stop(cid, false) }
 
 // ClientChannel returns a read-only game state channel. This is consumed by
 // the gRPC server and forwarded to the end-user.
-func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, error) {
+func (e *Executor) ClientChannel(cid id.ClientID) (<-chan *apipb.StreamDataResponse, error) {
 	return e.clients.Channel(cid)
 }
 

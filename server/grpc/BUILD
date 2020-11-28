@@ -37,6 +37,7 @@ go_library(
         "//api:api_go_proto",
         "//api:data_go_proto",
         "//map/api:data_go_proto",
+        "//server:id",
         "//server/service:executor",
         "@org_golang_google_grpc//:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",

@@ -7,6 +7,7 @@ go_library(
     visibility = [
         "//curve:__pkg__",
         "//server/entity:__pkg__",
+        "//server/grpc:__pkg__",
         "//server/service:__pkg__",
         "//server/visitor:__pkg__",
     ],

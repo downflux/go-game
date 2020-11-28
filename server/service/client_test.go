@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/downflux/game/server/id"
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
@@ -21,7 +22,7 @@ func TestNew(t *testing.T) {
 	const cid = "client-id"
 	const status = sscpb.ClientStatus_CLIENT_STATUS_NEW
 
-	c := New(cid)
+	c := New(id.NewClientID(cid))
 
 	if c.ID() != cid {
 		t.Fatalf("ID() = %v, want = %v", c.ID(), cid)
@@ -55,7 +56,7 @@ func TestSend(t *testing.T) {
 	var clients []*Client
 	var channels []<-chan *apipb.StreamDataResponse
 	for i := 0; i < nClients; i++ {
-		c := New(fmt.Sprintf("client-%d", i))
+		c := New(id.NewClientID(fmt.Sprintf("client-%d", i)))
 		if err := c.SetStatus(sscpb.ClientStatus_CLIENT_STATUS_DESYNCED); err != nil {
 			t.Fatalf("SetStatus() = %v, want = nil", err)
 		}
