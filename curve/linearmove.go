@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/curve"
+	"github.com/downflux/game/server/id"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -45,7 +46,7 @@ func insert(l []datum, d datum) []datum {
 
 // datum represents a specific metric at a specific tick.
 type datum struct {
-	tick float64
+	tick id.Tick
 
 	// value must be a clone of the input and is considered immutable
 	value *gdpb.Position
@@ -60,15 +61,15 @@ func datumBefore(d1, d2 datum) bool {
 // of a specific entity.
 type Curve struct {
 	// entityID is read-only and not alterable after construction.
-	entityID string
+	entityID id.EntityID
 
 	dataMux sync.RWMutex
-	tick    float64
+	tick    id.Tick
 	data    []datum
 }
 
 // New constructs an instance of a Curve.
-func New(eid string, tick float64) *Curve {
+func New(eid id.EntityID, tick id.Tick) *Curve {
 	return &Curve{
 		entityID: eid,
 		tick:     tick,
@@ -82,7 +83,7 @@ func (c *Curve) Type() gcpb.CurveType { return curveType }
 // Tick returns the last server tick at which the curve was updated and
 // current. Values along the parametric curve past this tick should be
 // considered non-authoritative.
-func (c *Curve) Tick() float64 {
+func (c *Curve) Tick() id.Tick {
 	c.dataMux.RLock()
 	defer c.dataMux.RUnlock()
 
@@ -93,7 +94,7 @@ func (c *Curve) Tick() float64 {
 func (c *Curve) Category() gcpb.CurveCategory { return categoryType }
 
 // EntityID returns the ID of the parent Entity.
-func (c *Curve) EntityID() string { return c.entityID }
+func (c *Curve) EntityID() id.EntityID { return c.entityID }
 
 // DatumType returns the type of the datum value.
 func (c *Curve) DatumType() reflect.Type { return datumType }
@@ -105,7 +106,7 @@ func (c *Curve) DatumType() reflect.Type { return datumType }
 //
 // TODO(minkezhang): Add point interpolation removal (if a < b < c have the
 // same slopes, remove b).
-func (c *Curve) addDatumUnsafe(t float64, v interface{}) error {
+func (c *Curve) addDatumUnsafe(t id.Tick, v interface{}) error {
 	d := datum{tick: t, value: proto.Clone(v.(*gdpb.Position)).(*gdpb.Position)}
 
 	c.data = insert(c.data, d)
@@ -126,7 +127,7 @@ func (c *Curve) cloneData() []datum {
 }
 
 // Add inserts a single datum point into the Curve.
-func (c *Curve) Add(t float64, v interface{}) error {
+func (c *Curve) Add(t id.Tick, v interface{}) error {
 	c.dataMux.Lock()
 	defer c.dataMux.Unlock()
 
@@ -172,7 +173,7 @@ func (c *Curve) ReplaceTail(o curve.Curve) error {
 }
 
 // Get queries the Curve at a specific point for an interpolated value.
-func (c *Curve) Get(t float64) interface{} {
+func (c *Curve) Get(t id.Tick) interface{} {
 	c.dataMux.RLock()
 	defer c.dataMux.RUnlock()
 
@@ -194,10 +195,10 @@ func (c *Curve) Get(t float64) interface{} {
 		return proto.Clone(c.data[0].value).(*gdpb.Position)
 	}
 
-	tickDelta := t - c.data[i-1].tick
+	tickDelta := t.Value() - c.data[i-1].tick.Value()
 	return &gdpb.Position{
-		X: c.data[i-1].value.GetX() + (c.data[i].value.GetX()-c.data[i-1].value.GetX())/(c.data[i].tick-c.data[i-1].tick)*tickDelta,
-		Y: c.data[i-1].value.GetY() + (c.data[i].value.GetY()-c.data[i-1].value.GetY())/(c.data[i].tick-c.data[i-1].tick)*tickDelta,
+		X: c.data[i-1].value.GetX() + (c.data[i].value.GetX()-c.data[i-1].value.GetX())/(c.data[i].tick.Value()-c.data[i-1].tick.Value())*tickDelta,
+		Y: c.data[i-1].value.GetY() + (c.data[i].value.GetY()-c.data[i-1].value.GetY())/(c.data[i].tick.Value()-c.data[i-1].tick.Value())*tickDelta,
 	}
 }
 
@@ -207,15 +208,15 @@ func (c *Curve) Get(t float64) interface{} {
 // Export tail will include in the Curve returned a single point before the
 // tick -- this allows clients to extrapolate the current position of an
 // entity if input tick does not fall on an exact data point.
-func (c *Curve) ExportTail(tick float64) *gdpb.Curve {
+func (c *Curve) ExportTail(tick id.Tick) *gdpb.Curve {
 	c.dataMux.RLock()
 	defer c.dataMux.RUnlock()
 
 	pb := &gdpb.Curve{
 		Type:     c.Type(),
 		Category: c.Category(),
-		EntityId: c.EntityID(),
-		Tick:     c.Tick(),
+		EntityId: c.EntityID().Value(),
+		Tick:     c.Tick().Value(),
 	}
 
 	i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: tick}) })
@@ -233,7 +234,7 @@ func (c *Curve) ExportTail(tick float64) *gdpb.Curve {
 
 	for i := i; i < len(c.data); i++ {
 		pb.Data = append(pb.GetData(), &gdpb.CurveDatum{
-			Tick:  c.data[i].tick,
+			Tick:  c.data[i].tick.Value(),
 			Datum: &gdpb.CurveDatum_PositionDatum{c.data[i].value},
 		})
 	}

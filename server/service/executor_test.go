@@ -4,6 +4,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/downflux/game/server/id"
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -66,7 +67,7 @@ func TestAddEntity(t *testing.T) {
 		t.Fatalf("AddEntity() = %v, want = nil", err)
 	}
 
-	var cids []string
+	var cids []id.ClientID
 	for i := 0; i < nClients; i++ {
 		cid, err := e.AddClient()
 		if err != nil {
@@ -146,8 +147,8 @@ func TestDoMove(t *testing.T) {
 	var eg errgroup.Group
 	var streamResponsesMux sync.Mutex
 	var streamResponses []*apipb.StreamDataResponse
-	var cids []string
-	chs := map[string]<-chan *apipb.StreamDataResponse{}
+	var cids []id.ClientID
+	chs := map[id.ClientID]<-chan *apipb.StreamDataResponse{}
 	for i := 0; i < nClients; i++ {
 		// Add client -- emulate AddClient gRPC call.
 		cid, err := e.AddClient()
@@ -216,7 +217,7 @@ func TestDoMove(t *testing.T) {
 
 	if err := e.AddMoveCommands(&apipb.MoveRequest{
 		Tick:        t0 + 2,
-		ClientId:    cids[0],
+		ClientId:    cids[0].Value(),
 		EntityIds:   []string{eid},
 		Destination: dest,
 		MoveType:    gcpb.MoveType_MOVE_TYPE_FORWARD,

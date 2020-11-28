@@ -6,13 +6,14 @@ import (
 	"time"
 
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/entity/entitylist"
+	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/clientlist"
-	"github.com/downflux/game/server/service/visitor/dirty"
-	"github.com/downflux/game/server/service/visitor/entity/entitylist"
-	"github.com/downflux/game/server/service/visitor/move"
-	"github.com/downflux/game/server/service/visitor/produce"
-	"github.com/downflux/game/server/service/visitor/visitor"
-	"github.com/downflux/game/server/service/visitor/visitorlist"
+	"github.com/downflux/game/server/visitor/dirty"
+	"github.com/downflux/game/server/visitor/move"
+	"github.com/downflux/game/server/visitor/produce"
+	"github.com/downflux/game/server/visitor/visitor"
+	"github.com/downflux/game/server/visitor/visitorlist"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -22,7 +23,7 @@ import (
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
 	serverstatus "github.com/downflux/game/server/service/status"
-	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
+	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (
@@ -36,15 +37,13 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-// TODO(minkezhang): Add ClientID string type.
-
 // dirtyCurve represents a Curve instance which was altered in the current
 // tick and will need to be broadcast to all clients.
 //
 // The Entity UUID and CurveCategory uniquely identifies a curve.
 type dirtyCurve struct {
 	// eid is the parent Entity UUID.
-	eid string
+	eid id.EntityID
 
 	// category is the Entity property for which this Curve instance
 	// represents.
@@ -102,23 +101,23 @@ func (e *Executor) Status() *gdpb.ServerStatus { return e.statusImpl.PB() }
 
 // ClientExists tests for if the specified Client UUID is currently being
 // tracked by the Executor.
-func (e *Executor) ClientExists(cid string) bool { return e.clients.In(cid) }
+func (e *Executor) ClientExists(cid id.ClientID) bool { return e.clients.In(cid) }
 
 // AddClient creates a new Client to be tracked by the Executor.
-func (e *Executor) AddClient() (string, error) { return e.clients.Add() }
+func (e *Executor) AddClient() (id.ClientID, error) { return e.clients.Add() }
 
 // StartClientStream instructs the Executor to mark the associated client
 // ready for game state updates.
-func (e *Executor) StartClientStream(cid string) error { return e.clients.Start(cid) }
+func (e *Executor) StartClientStream(cid id.ClientID) error { return e.clients.Start(cid) }
 
 // StopClientStreamError instructs the Executor to mark the associated client
 // as having been disconnected, and stop broadcasting future game states to the
 // linked channel.
-func (e *Executor) StopClientStreamError(cid string) error { return e.clients.Stop(cid, false) }
+func (e *Executor) StopClientStreamError(cid id.ClientID) error { return e.clients.Stop(cid, false) }
 
 // ClientChannel returns a read-only game state channel. This is consumed by
 // the gRPC server and forwarded to the end-user.
-func (e *Executor) ClientChannel(cid string) (<-chan *apipb.StreamDataResponse, error) {
+func (e *Executor) ClientChannel(cid id.ClientID) (<-chan *apipb.StreamDataResponse, error) {
 	return e.clients.Channel(cid)
 }
 
@@ -131,7 +130,7 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 	// TODO(minkezhang): Make concurrent.
 	for _, de := range e.dirties.PopEntities() {
 		entities = append(entities, &gdpb.Entity{
-			EntityId: de.ID,
+			EntityId: de.ID.Value(),
 			Type:     e.entities.Get(de.ID).Type(),
 		})
 	}
@@ -158,7 +157,7 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 
 	for _, en := range e.entities.Iter() {
 		entities = append(entities, &gdpb.Entity{
-			EntityId: en.ID(),
+			EntityId: en.ID().Value(),
 			Type:     en.Type(),
 		})
 		for _, cat := range en.CurveCategories() {
@@ -180,14 +179,14 @@ func (e *Executor) broadcastCurves() error {
 			// TODO(minkezhang): Decide if it's okay that the reported tick may not
 			// coincide with the ticks of the curve and entities.
 			return &apipb.StreamDataResponse{
-				Tick:     e.statusImpl.Tick(),
+				Tick:     e.statusImpl.Tick().Value(),
 				Curves:   curves,
 				Entities: entities,
 			}
 		},
 		func() *apipb.StreamDataResponse {
 			full := &apipb.StreamDataResponse{
-				Tick: e.statusImpl.Tick(),
+				Tick: e.statusImpl.Tick().Value(),
 			}
 			allCurves, allEntities := e.allCurvesAndEntities()
 			full.Curves = allCurves
@@ -268,7 +267,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 		if err := e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_MOVE).Schedule(
 			move.Args{
 				Tick:        e.statusImpl.Tick(),
-				EntityID:    eid,
+				EntityID:    id.EntityID(eid),
 				Destination: req.GetDestination(),
 			},
 		); err != nil {

@@ -3,8 +3,9 @@ package tank
 import (
 	"github.com/downflux/game/curve/curve"
 	"github.com/downflux/game/curve/linearmove"
-	"github.com/downflux/game/server/service/visitor/entity/entity"
-	"github.com/downflux/game/server/service/visitor/visitor"
+	"github.com/downflux/game/server/entity/entity"
+	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/server/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -13,23 +14,23 @@ import (
 type Tank struct {
 	entity.BaseEntity
 
-	id          string
+	eid         id.EntityID
 	curveLookup map[gcpb.CurveCategory]curve.Curve
 }
 
-func New(eid string, t float64, p *gdpb.Position) *Tank {
+func New(eid id.EntityID, t id.Tick, p *gdpb.Position) *Tank {
 	mc := linearmove.New(eid, t)
 	mc.Add(t, p)
 
 	return &Tank{
-		id: eid,
+		eid: eid,
 		curveLookup: map[gcpb.CurveCategory]curve.Curve{
 			gcpb.CurveCategory_CURVE_CATEGORY_MOVE: mc,
 		},
 	}
 }
 
-func (e *Tank) ID() string { return e.id }
+func (e *Tank) ID() id.EntityID { return e.eid }
 func (e *Tank) CurveCategories() []gcpb.CurveCategory {
 	return []gcpb.CurveCategory{gcpb.CurveCategory_CURVE_CATEGORY_MOVE}
 }

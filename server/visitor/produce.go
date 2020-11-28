@@ -3,18 +3,18 @@ package produce
 import (
 	"sync"
 
+	"github.com/downflux/game/server/entity/entitylist"
+	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/service/visitor/dirty"
-	"github.com/downflux/game/server/service/visitor/entity/entitylist"
-	"github.com/downflux/game/server/service/visitor/entity/tank"
-	"github.com/downflux/game/server/service/visitor/visitor"
+	"github.com/downflux/game/server/visitor/dirty"
+	"github.com/downflux/game/server/visitor/visitor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	serverstatus "github.com/downflux/game/server/service/status"
-	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
+	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (
@@ -28,7 +28,7 @@ func unsupportedEntityType(t gcpb.EntityType) error {
 }
 
 type Args struct {
-	ScheduledTick float64
+	ScheduledTick id.Tick
 	EntityType    gcpb.EntityType
 	SpawnPosition *gdpb.Position
 }
@@ -43,7 +43,7 @@ type Visitor struct {
 	dfStatus *serverstatus.Status
 
 	cacheMux sync.Mutex
-	cache    map[float64][]cacheRow
+	cache    map[id.Tick][]cacheRow
 }
 
 func New(dfStatus *serverstatus.Status, dirties *dirty.List) *Visitor {
@@ -62,7 +62,7 @@ func (v *Visitor) Schedule(args interface{}) error {
 	defer v.cacheMux.Unlock()
 
 	if v.cache == nil {
-		v.cache = map[float64][]cacheRow{}
+		v.cache = map[id.Tick][]cacheRow{}
 	}
 
 	v.cache[argsImpl.ScheduledTick] = append(
@@ -85,12 +85,12 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 
 	tick := v.dfStatus.Tick()
 
-	var eid string
-	for eid = id.RandomString(entityIDLen); e.(*entitylist.List).Get(eid) != nil; eid = id.RandomString(entityIDLen) {
+	var eid id.EntityID
+	for eid = id.EntityID(id.RandomString(entityIDLen)); e.(*entitylist.List).Get(eid) != nil; eid = id.EntityID(id.RandomString(entityIDLen)) {
 	}
 
 	var err error
-	for t := float64(0); t <= tick; t++ {
+	for t := id.Tick(0); t <= tick; t++ {
 		if te := func() error {
 			defer delete(v.cache, t)
 

@@ -1,8 +1,9 @@
 package entitylist
 
 import (
-	"github.com/downflux/game/server/service/visitor/entity/entity"
-	"github.com/downflux/game/server/service/visitor/visitor"
+	"github.com/downflux/game/server/entity/entity"
+	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/server/visitor/visitor"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,21 +15,21 @@ type List struct {
 	entity.BaseEntity
 	entity.NoCurveEntity
 
-	id string
+	eid id.EntityID
 
-	entities map[string]visitor.Entity
+	entities map[id.EntityID]visitor.Entity
 }
 
-func New(id string) *List {
+func New(eid id.EntityID) *List {
 	return &List{
-		entities: map[string]visitor.Entity{},
-		id:       id,
+		entities: map[id.EntityID]visitor.Entity{},
+		eid:      eid,
 	}
 }
 
-func (l *List) ID() string { return l.id }
+func (l *List) ID() id.EntityID { return l.eid }
 
-func (l *List) Get(eid string) visitor.Entity {
+func (l *List) Get(eid id.EntityID) visitor.Entity {
 	return l.entities[eid]
 }
 

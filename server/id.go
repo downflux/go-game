@@ -6,9 +6,25 @@ import (
 	"math/rand"
 )
 
+type Tick float64
+
+func (t Tick) Value() float64 { return float64(t) }
+
+type ID string
+
+// TODO(minkezhang): Migrate into separate directory.
+type EntityID ID
+
+func (id EntityID) Value() string { return string(id) }
+
+type ClientID ID
+
+func (id ClientID) Value() string { return string(id) }
+
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 // RandomString returns a random string of the specified length.
+// TODO(minkezhang): Rename to Generate.
 func RandomString(n int) string {
 	b := make([]byte, n)
 	for i := range b {

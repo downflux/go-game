@@ -7,6 +7,7 @@ package client
 import (
 	"sync"
 
+	"github.com/downflux/game/server/id"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -22,8 +23,8 @@ const (
 
 // Client is the server-specific representation of a player in a specific game.
 type Client struct {
-	// id is the UUID of the connecting client. This is immutable.
-	id string
+	// cid is the UUID of the connecting client. This is immutable.
+	cid id.ClientID
 
 	// mux guards ch and status, and must be acquired before any R/W
 	// operations occur.
@@ -51,7 +52,7 @@ func invalidTransitionError(clientStatus, targetStatus sscpb.ClientStatus) error
 }
 
 // ID returns the UUID of the client.
-func (c *Client) ID() string { return c.id }
+func (c *Client) ID() id.ClientID { return c.cid }
 
 // Status returns the current client connection state.
 func (c *Client) Status() sscpb.ClientStatus {
@@ -172,9 +173,9 @@ func (c *Client) Send(m *apipb.StreamDataResponse) error {
 }
 
 // New constructs a new Client instance.
-func New(cid string) *Client {
+func New(cid id.ClientID) *Client {
 	return &Client{
-		id:     cid,
+		cid:    cid,
 		status: sscpb.ClientStatus_CLIENT_STATUS_NEW,
 	}
 }

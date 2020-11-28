@@ -29,20 +29,20 @@ type List struct {
 
 	// clients is an internal iterable of Client instances, hashed by the
 	// Client UUID.
-	clients map[string]*client.Client
+	clients map[id.ClientID]*client.Client
 }
 
 // New returns a new List instance.
 func New(idLen int) *List {
 	return &List{
 		idLen:   idLen,
-		clients: map[string]*client.Client{},
+		clients: map[id.ClientID]*client.Client{},
 	}
 }
 
 // In atomically checks for if the given Client with corresponding UUID exists
 // in the List.
-func (l *List) In(cid string) bool {
+func (l *List) In(cid id.ClientID) bool {
 	l.mux.RLock()
 	defer l.mux.RUnlock()
 
@@ -88,7 +88,7 @@ func (l *List) Broadcast(partialGenerator, fullGenerator func() *apipb.StreamDat
 
 // Channel returns a read-only channel of game states. This is generally passed
 // to the gRPC server to be forwarded to the client.
-func (l *List) Channel(cid string) (<-chan *apipb.StreamDataResponse, error) {
+func (l *List) Channel(cid id.ClientID) (<-chan *apipb.StreamDataResponse, error) {
 	l.mux.RLock()
 	defer l.mux.RUnlock()
 
@@ -100,13 +100,13 @@ func (l *List) Channel(cid string) (<-chan *apipb.StreamDataResponse, error) {
 }
 
 // Add creates a new Client instance and inserts it into the List.
-func (l *List) Add() (string, error) {
+func (l *List) Add() (id.ClientID, error) {
 	// TODO(minkezhang): Add maxClients check.
 	l.mux.Lock()
 	defer l.mux.Unlock()
 
-	cid := id.RandomString(l.idLen)
-	for _, found := l.clients[cid]; found; cid = id.RandomString(l.idLen) {
+	cid := id.ClientID(id.RandomString(l.idLen))
+	for _, found := l.clients[cid]; found; cid = id.ClientID(id.RandomString(l.idLen)) {
 	}
 	l.clients[cid] = client.New(cid)
 
@@ -116,7 +116,7 @@ func (l *List) Add() (string, error) {
 
 // Start will indicate to the associated Client instance that a channel
 // instance should be created, and allows Client.Send() calls to occur.
-func (l *List) Start(cid string) error {
+func (l *List) Start(cid id.ClientID) error {
 	l.mux.RLock()
 	defer l.mux.RUnlock()
 
@@ -130,7 +130,7 @@ func (l *List) Start(cid string) error {
 // Stop will indicate to the associated Client that the game state channel
 // should be torn down, either because the game ended (success == true) or a
 // network disconnect has occurred (success == false).
-func (l *List) Stop(cid string, success bool) error {
+func (l *List) Stop(cid id.ClientID, success bool) error {
 	l.mux.RLock()
 	defer l.mux.RUnlock()
 
@@ -153,7 +153,7 @@ func (l *List) StopAll() error {
 }
 
 // stopUnsafe implements the Client channel disconnection logic.
-func (l *List) stopUnsafe(cid string, success bool) error {
+func (l *List) stopUnsafe(cid id.ClientID, success bool) error {
 	if !l.inUnsafe(cid) {
 		return notFound
 	}
@@ -165,15 +165,15 @@ func (l *List) stopUnsafe(cid string, success bool) error {
 }
 
 // inUnsafe implements the Client membership test logic.
-func (l *List) inUnsafe(cid string) bool {
+func (l *List) inUnsafe(cid id.ClientID) bool {
 	_, found := l.clients[cid]
 	return found
 }
 
 // filterUnsafe retuns a list of Client instances which are currently in the
 // specified ClientStatus.
-func (l *List) filterUnsafe(status sscpb.ClientStatus) map[string]bool {
-	cids := map[string]bool{}
+func (l *List) filterUnsafe(status sscpb.ClientStatus) map[id.ClientID]bool {
+	cids := map[id.ClientID]bool{}
 
 	for _, c := range l.clients {
 		if c.Status() == status {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/downflux/game/server/id"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -34,7 +35,7 @@ func TestAdd(t *testing.T) {
 	var eg errgroup.Group
 	for i := 0; i < nClients; i++ {
 		i := i
-		eg.Go(func() error { return l.Add(Curve{EntityID: fmt.Sprintf("entity-%d", i)}) })
+		eg.Go(func() error { return l.Add(Curve{EntityID: id.EntityID(fmt.Sprintf("entity-%d", i))}) })
 	}
 
 	if err := eg.Wait(); err != nil {

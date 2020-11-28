@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/downflux/game/server/id"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -48,22 +49,22 @@ type Status struct {
 func New(tickDuration time.Duration) *Status {
 	return &Status{
 		tickDuration: tickDuration,
-		statusEnum: sscpb.ServerStatus_SERVER_STATUS_NOT_STARTED,
+		statusEnum:   sscpb.ServerStatus_SERVER_STATUS_NOT_STARTED,
 	}
 }
 
 // PB exports the Status instance into an associated protobuf.
 func (s *Status) PB() *gdpb.ServerStatus {
 	return &gdpb.ServerStatus{
-		Tick:         s.Tick(),
+		Tick:         s.Tick().Value(),
 		IsStarted:    s.IsStarted(),
 		TickDuration: durationpb.New(s.tickDuration),
 		StartTime:    timestamppb.New(s.StartTime()),
 	}
 }
 
-func (s *Status) Tick() float64   { return float64(atomic.LoadInt64(&(s.tickImpl))) }
-func (s *Status) IncrementTick()  { atomic.AddInt64(&(s.tickImpl), 1) }
+func (s *Status) Tick() id.Tick  { return id.Tick(atomic.LoadInt64(&(s.tickImpl))) }
+func (s *Status) IncrementTick() { atomic.AddInt64(&(s.tickImpl), 1) }
 
 func (s *Status) IsStarted() bool {
 	s.statusEnumMux.Lock()

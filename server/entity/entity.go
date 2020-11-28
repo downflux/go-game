@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/curve"
+	"github.com/downflux/game/server/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 )
@@ -15,25 +16,25 @@ func (e *NoCurveEntity) CurveCategories() []gcpb.CurveCategory  { return nil }
 
 type BaseEntity struct {
 	lifetimeMux sync.RWMutex
-	start       float64
-	end         float64
+	start       id.Tick
+	end         id.Tick
 }
 
-func (e *BaseEntity) Start() float64 {
+func (e *BaseEntity) Start() id.Tick {
 	e.lifetimeMux.RLock()
 	defer e.lifetimeMux.RUnlock()
 
 	return e.start
 }
 
-func (e *BaseEntity) End() float64 {
+func (e *BaseEntity) End() id.Tick {
 	e.lifetimeMux.RLock()
 	defer e.lifetimeMux.RUnlock()
 
 	return e.end
 }
 
-func (e *BaseEntity) Delete(tick float64) {
+func (e *BaseEntity) Delete(tick id.Tick) {
 	e.lifetimeMux.Lock()
 	defer e.lifetimeMux.Unlock()
 
