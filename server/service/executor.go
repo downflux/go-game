@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/clientlist"
 	"github.com/downflux/game/server/service/visitor/dirty"
 	"github.com/downflux/game/server/service/visitor/entity/entitylist"
@@ -44,7 +45,7 @@ var (
 // The Entity UUID and CurveCategory uniquely identifies a curve.
 type dirtyCurve struct {
 	// eid is the parent Entity UUID.
-	eid string
+	eid id.EntityID
 
 	// category is the Entity property for which this Curve instance
 	// represents.
@@ -131,7 +132,7 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 	// TODO(minkezhang): Make concurrent.
 	for _, de := range e.dirties.PopEntities() {
 		entities = append(entities, &gdpb.Entity{
-			EntityId: de.ID,
+			EntityId: de.ID.Value(),
 			Type:     e.entities.Get(de.ID).Type(),
 		})
 	}
@@ -158,7 +159,7 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 
 	for _, en := range e.entities.Iter() {
 		entities = append(entities, &gdpb.Entity{
-			EntityId: en.ID(),
+			EntityId: en.ID().Value(),
 			Type:     en.Type(),
 		})
 		for _, cat := range en.CurveCategories() {
@@ -268,7 +269,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 		if err := e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_MOVE).Schedule(
 			move.Args{
 				Tick:        e.statusImpl.Tick(),
-				EntityID:    eid,
+				EntityID:    id.NewEntityID(eid),
 				Destination: req.GetDestination(),
 			},
 		); err != nil {

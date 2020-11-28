@@ -76,6 +76,7 @@ go_library(
         "//map:map",
         "//map/api:data_go_proto",
         "//pathing/hpf:graph",
+        "//server:id",
         "//server/entity:entitylist",
         "//server/visitor:dirty",
         "//server/visitor:move",

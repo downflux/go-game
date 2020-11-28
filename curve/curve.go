@@ -6,6 +6,8 @@ package curve
 import (
 	"reflect"
 
+	"github.com/downflux/game/server/id"
+
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
@@ -40,7 +42,7 @@ type Curve interface {
 	Tick() float64
 
 	// EntityID links back to the specific entity that uses this curve.
-	EntityID() string
+	EntityID() id.EntityID
 
 	// Add takes a value and copies it into the curve.
 	Add(t float64, v interface{}) error

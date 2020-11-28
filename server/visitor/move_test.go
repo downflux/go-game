@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/service/visitor/dirty"
 	"github.com/downflux/game/server/service/visitor/entity/tank"
@@ -54,7 +55,7 @@ func TestSchedule(t *testing.T) {
 	for i := 0; i < nClients; i++ {
 		i := i
 		eg.Go(func() error {
-			return v.Schedule(Args{Tick: 0, EntityID: fmt.Sprintf("entity-%d", i)})
+			return v.Schedule(Args{Tick: 0, EntityID: id.NewEntityID(fmt.Sprintf("entity-%d", i))})
 		})
 	}
 

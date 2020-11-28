@@ -42,6 +42,7 @@ go_test(
     embed = [":dirty"],
     importpath = "github.com/downflux/game/server/service/visitor/dirty_test",
     deps = [
+        "//server:id",
         "@org_golang_x_sync//errgroup:go_default_library",
     ],
 )
@@ -52,6 +53,7 @@ go_library(
     importpath = "github.com/downflux/game/server/service/visitor/dirty",
     deps = [
         "//api:constants_go_proto",
+        "//server:id",
     ],
 )
 
@@ -62,6 +64,7 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//curve:curve",
+        "//server:id",
 	"//server/visitor/api:constants_go_proto",
     ],
 )
@@ -77,6 +80,7 @@ go_test(
         "//map/api:constants_go_proto",
         "//map/api:data_go_proto",
         "//map:map",
+        "//server:id",
         "//server/entity:tank",
         "//server/service:status",
         "//server/visitor:dirty",
@@ -98,6 +102,7 @@ go_library(
         "//map:utils", 
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
+        "//server:id",
         "//server/service:status",
 	"//server/visitor/api:constants_go_proto",
     ],

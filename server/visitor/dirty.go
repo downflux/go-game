@@ -3,6 +3,8 @@ package dirty
 import (
 	"sync"
 
+	"github.com/downflux/game/server/id"
+
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 )
 
@@ -11,18 +13,18 @@ import (
 //
 // The Entity UUID and CurveCategory uniquely identifies a curve.
 type Curve struct {
-	EntityID string
+	EntityID id.EntityID
 	Category gcpb.CurveCategory
 }
 
 type Entity struct {
-	ID string
+	ID id.EntityID
 }
 
 type List struct {
 	mux      sync.Mutex
-	curves   map[string]map[gcpb.CurveCategory]bool
-	entities map[string]bool
+	curves   map[id.EntityID]map[gcpb.CurveCategory]bool
+	entities map[id.EntityID]bool
 }
 
 func New() *List {
@@ -34,7 +36,7 @@ func (l *List) AddEntity(e Entity) error {
 	defer l.mux.Unlock()
 
 	if l.entities == nil {
-		l.entities = map[string]bool{}
+		l.entities = map[id.EntityID]bool{}
 	}
 
 	l.entities[e.ID] = true
@@ -47,7 +49,7 @@ func (l *List) Add(c Curve) error {
 	defer l.mux.Unlock()
 
 	if l.curves == nil {
-		l.curves = map[string]map[gcpb.CurveCategory]bool{}
+		l.curves = map[id.EntityID]map[gcpb.CurveCategory]bool{}
 	}
 	if l.curves[c.EntityID] == nil {
 		l.curves[c.EntityID] = map[gcpb.CurveCategory]bool{}

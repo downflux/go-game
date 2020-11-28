@@ -7,6 +7,7 @@ import (
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/service/visitor/dirty"
 	"github.com/downflux/game/server/service/visitor/visitor"
@@ -48,7 +49,7 @@ type cacheRow struct {
 
 type Args struct {
 	Tick        float64
-	EntityID    string
+	EntityID    id.EntityID
 	Destination *gdpb.Position
 }
 
@@ -71,7 +72,7 @@ type Visitor struct {
 	minPathLength int
 
 	cacheMux sync.Mutex
-	cache    map[string]cacheRow
+	cache    map[id.EntityID]cacheRow
 }
 
 func New(
@@ -85,16 +86,16 @@ func New(
 		abstractGraph: abstractGraph,
 		dfStatus:      dfStatus,
 		dirties:       dirties,
-		cache:         map[string]cacheRow{},
+		cache:         map[id.EntityID]cacheRow{},
 		minPathLength: minPathLength,
 	}
 }
 
 func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
-func (v *Visitor) scheduleUnsafe(tick float64, eid string, dest *gdpb.Position) error {
+func (v *Visitor) scheduleUnsafe(tick float64, eid id.EntityID, dest *gdpb.Position) error {
 	if v.cache == nil {
-		v.cache = map[string]cacheRow{}
+		v.cache = map[id.EntityID]cacheRow{}
 	}
 
 	if v.cache[eid].scheduledTick <= tick {

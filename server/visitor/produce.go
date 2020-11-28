@@ -85,8 +85,8 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 
 	tick := v.dfStatus.Tick()
 
-	var eid string
-	for eid = id.RandomString(entityIDLen); e.(*entitylist.List).Get(eid) != nil; eid = id.RandomString(entityIDLen) {
+	var eid id.EntityID
+	for eid = id.NewEntityID(id.RandomString(entityIDLen)); e.(*entitylist.List).Get(eid) != nil; eid = id.NewEntityID(id.RandomString(entityIDLen)) {
 	}
 
 	var err error

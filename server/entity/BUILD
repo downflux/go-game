@@ -18,6 +18,7 @@ go_library(
 	"//api:data_go_proto",
         "//curve:curve",
         "//curve:linearmove",
+	"//server:id",
         "//server/visitor:visitor",
         "//server/entity:entity",
     ],
@@ -39,6 +40,7 @@ go_library(
     importpath = "github.com/downflux/game/server/service/visitor/entity/entitylist",
     deps = [
         "//api:constants_go_proto",
+	"//server:id",
         "//server/visitor:visitor",
         "//server/entity:entity",
         "@org_golang_google_grpc//codes:go_default_library",

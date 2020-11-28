@@ -5,8 +5,10 @@ go_library(
     srcs = ["id.go"],
     importpath = "github.com/downflux/game/server/id",
     visibility = [
-        "//entity:__pkg__",
-        "//server:__subpackages__",
+        "//curve:__pkg__",
+        "//server/entity:__pkg__",
+        "//server/service:__pkg__",
+        "//server/visitor:__pkg__",
     ],
     deps = [],
 )

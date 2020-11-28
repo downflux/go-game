@@ -14,6 +14,7 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//api:data_go_proto",
+        "//server:id",
     ],
 )
 
@@ -25,6 +26,7 @@ go_library(
         ":curve",
         "//api:data_go_proto",
         "//api:constants_go_proto",
+        "//server:id",
         "@com_github_golang_protobuf//proto:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",

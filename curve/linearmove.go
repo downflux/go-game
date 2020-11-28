@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/curve"
+	"github.com/downflux/game/server/id"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -60,7 +61,7 @@ func datumBefore(d1, d2 datum) bool {
 // of a specific entity.
 type Curve struct {
 	// entityID is read-only and not alterable after construction.
-	entityID string
+	entityID id.EntityID
 
 	dataMux sync.RWMutex
 	tick    float64
@@ -68,7 +69,7 @@ type Curve struct {
 }
 
 // New constructs an instance of a Curve.
-func New(eid string, tick float64) *Curve {
+func New(eid id.EntityID, tick float64) *Curve {
 	return &Curve{
 		entityID: eid,
 		tick:     tick,
@@ -93,7 +94,7 @@ func (c *Curve) Tick() float64 {
 func (c *Curve) Category() gcpb.CurveCategory { return categoryType }
 
 // EntityID returns the ID of the parent Entity.
-func (c *Curve) EntityID() string { return c.entityID }
+func (c *Curve) EntityID() id.EntityID { return c.entityID }
 
 // DatumType returns the type of the datum value.
 func (c *Curve) DatumType() reflect.Type { return datumType }
@@ -214,7 +215,7 @@ func (c *Curve) ExportTail(tick float64) *gdpb.Curve {
 	pb := &gdpb.Curve{
 		Type:     c.Type(),
 		Category: c.Category(),
-		EntityId: c.EntityID(),
+		EntityId: c.EntityID().Value(),
 		Tick:     c.Tick(),
 	}
 
