@@ -11,7 +11,7 @@
 * [x] make Executor.visitors an ordered map object for easy referencing in code
 * [x] merge Executor.isStarted and isStopped
 * [ ] **add server documentation**
-* [ ] add ClientID, EntityID, CurveID data types
+* [ ] add ClientID, EntityID, Tick data types
 * [ ] add client documentation
 * [ ] add API documentation
 * [ ] add client tests
