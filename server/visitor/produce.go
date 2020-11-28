@@ -3,18 +3,18 @@ package produce
 import (
 	"sync"
 
+	"github.com/downflux/game/server/entity/entitylist"
+	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/service/visitor/dirty"
-	"github.com/downflux/game/server/service/visitor/entity/entitylist"
-	"github.com/downflux/game/server/service/visitor/entity/tank"
-	"github.com/downflux/game/server/service/visitor/visitor"
+	"github.com/downflux/game/server/visitor/dirty"
+	"github.com/downflux/game/server/visitor/visitor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	serverstatus "github.com/downflux/game/server/service/status"
-	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
+	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (

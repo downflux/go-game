@@ -12,7 +12,7 @@ package(default_visibility=[
 go_library(
     name = "tank",
     srcs = ["tank.go"],
-    importpath = "github.com/downflux/game/server/service/visitor/entity/tank",
+    importpath = "github.com/downflux/game/server/entity/tank",
     deps = [
 	"//api:constants_go_proto",
 	"//api:data_go_proto",
@@ -27,7 +27,7 @@ go_library(
 go_library(
     name = "entity",
     srcs = ["entity.go"],
-    importpath = "github.com/downflux/game/server/service/visitor/entity/entity",
+    importpath = "github.com/downflux/game/server/entity/entity",
     deps = [
         "//api:constants_go_proto",
         "//curve:curve",
@@ -38,7 +38,7 @@ go_library(
 go_library(
     name = "entitylist",
     srcs = ["entitylist.go"],
-    importpath = "github.com/downflux/game/server/service/visitor/entity/entitylist",
+    importpath = "github.com/downflux/game/server/entity/entitylist",
     deps = [
         "//api:constants_go_proto",
 	"//server:id",

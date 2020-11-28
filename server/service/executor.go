@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/entity/entitylist"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/clientlist"
-	"github.com/downflux/game/server/service/visitor/dirty"
-	"github.com/downflux/game/server/service/visitor/entity/entitylist"
-	"github.com/downflux/game/server/service/visitor/move"
-	"github.com/downflux/game/server/service/visitor/produce"
-	"github.com/downflux/game/server/service/visitor/visitor"
-	"github.com/downflux/game/server/service/visitor/visitorlist"
+	"github.com/downflux/game/server/visitor/dirty"
+	"github.com/downflux/game/server/visitor/move"
+	"github.com/downflux/game/server/visitor/produce"
+	"github.com/downflux/game/server/visitor/visitor"
+	"github.com/downflux/game/server/visitor/visitorlist"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -23,7 +23,7 @@ import (
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
 	serverstatus "github.com/downflux/game/server/service/status"
-	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
+	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (

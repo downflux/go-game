@@ -9,13 +9,13 @@ import (
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
-	"github.com/downflux/game/server/service/visitor/dirty"
-	"github.com/downflux/game/server/service/visitor/visitor"
+	"github.com/downflux/game/server/visitor/dirty"
+	"github.com/downflux/game/server/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
-	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
+	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (

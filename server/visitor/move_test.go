@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
-	"github.com/downflux/game/server/service/visitor/dirty"
-	"github.com/downflux/game/server/service/visitor/entity/tank"
+	"github.com/downflux/game/server/visitor/dirty"
 	"golang.org/x/sync/errgroup"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"

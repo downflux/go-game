@@ -1,11 +1,11 @@
 package visitorlist
 
 import (
-	"github.com/downflux/game/server/service/visitor/visitor"
+	"github.com/downflux/game/server/visitor/visitor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	vcpb "github.com/downflux/game/server/service/visitor/api/constants_go_proto"
+	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 type List struct {

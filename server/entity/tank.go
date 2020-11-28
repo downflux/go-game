@@ -3,9 +3,9 @@ package tank
 import (
 	"github.com/downflux/game/curve/curve"
 	"github.com/downflux/game/curve/linearmove"
+	"github.com/downflux/game/server/entity/entity"
 	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/service/visitor/entity/entity"
-	"github.com/downflux/game/server/service/visitor/visitor"
+	"github.com/downflux/game/server/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
