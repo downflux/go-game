@@ -10,8 +10,8 @@
 * [x] refactor server / executor
 * [x] make Executor.visitors an ordered map object for easy referencing in code
 * [x] merge Executor.isStarted and isStopped
+* [x] add ClientID, EntityID, Tick data types
 * [ ] **add server documentation**
-* [ ] add ClientID, EntityID, Tick data types
 * [ ] add client documentation
 * [ ] add API documentation
 * [ ] add client tests
