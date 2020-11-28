@@ -19,10 +19,10 @@ type Entity interface {
 	// entity. This list is created at init time and is immutable.
 	CurveCategories() []gcpb.CurveCategory
 
-	Start() float64
-	End() float64
+	Start() id.Tick
+	End() id.Tick
 
-	Delete(tick float64)
+	Delete(tick id.Tick)
 }
 
 type Visitor interface {

@@ -28,7 +28,7 @@ func unsupportedEntityType(t gcpb.EntityType) error {
 }
 
 type Args struct {
-	ScheduledTick float64
+	ScheduledTick id.Tick
 	EntityType    gcpb.EntityType
 	SpawnPosition *gdpb.Position
 }
@@ -43,7 +43,7 @@ type Visitor struct {
 	dfStatus *serverstatus.Status
 
 	cacheMux sync.Mutex
-	cache    map[float64][]cacheRow
+	cache    map[id.Tick][]cacheRow
 }
 
 func New(dfStatus *serverstatus.Status, dirties *dirty.List) *Visitor {
@@ -62,7 +62,7 @@ func (v *Visitor) Schedule(args interface{}) error {
 	defer v.cacheMux.Unlock()
 
 	if v.cache == nil {
-		v.cache = map[float64][]cacheRow{}
+		v.cache = map[id.Tick][]cacheRow{}
 	}
 
 	v.cache[argsImpl.ScheduledTick] = append(
@@ -90,7 +90,7 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	}
 
 	var err error
-	for t := float64(0); t <= tick; t++ {
+	for t := id.Tick(0); t <= tick; t++ {
 		if te := func() error {
 			defer delete(v.cache, t)
 

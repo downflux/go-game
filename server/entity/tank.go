@@ -18,7 +18,7 @@ type Tank struct {
 	curveLookup map[gcpb.CurveCategory]curve.Curve
 }
 
-func New(eid id.EntityID, t float64, p *gdpb.Position) *Tank {
+func New(eid id.EntityID, t id.Tick, p *gdpb.Position) *Tank {
 	mc := linearmove.New(eid, t)
 	mc.Add(t, p)
 

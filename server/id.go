@@ -6,6 +6,10 @@ import (
 	"math/rand"
 )
 
+type Tick float64
+
+func (t Tick) Value() float64 { return float64(t) }
+
 type ID string
 
 // TODO(minkezhang): Migrate into separate directory.

@@ -179,14 +179,14 @@ func (e *Executor) broadcastCurves() error {
 			// TODO(minkezhang): Decide if it's okay that the reported tick may not
 			// coincide with the ticks of the curve and entities.
 			return &apipb.StreamDataResponse{
-				Tick:     e.statusImpl.Tick(),
+				Tick:     e.statusImpl.Tick().Value(),
 				Curves:   curves,
 				Entities: entities,
 			}
 		},
 		func() *apipb.StreamDataResponse {
 			full := &apipb.StreamDataResponse{
-				Tick: e.statusImpl.Tick(),
+				Tick: e.statusImpl.Tick().Value(),
 			}
 			allCurves, allEntities := e.allCurvesAndEntities()
 			full.Curves = allCurves

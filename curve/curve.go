@@ -19,7 +19,7 @@ import (
 // https://blog.golang.org/generics-next-step.
 //
 // type Curve[T any] interface {
-//   Get(t float64) T
+//   Get(t Tick) T
 // }
 //
 // We can remove the DatumType function once this is implemented.
@@ -39,16 +39,16 @@ type Curve interface {
 
 	// Tick indicates the last time at which the curve was updated by the
 	// server.
-	Tick() float64
+	Tick() id.Tick
 
 	// EntityID links back to the specific entity that uses this curve.
 	EntityID() id.EntityID
 
 	// Add takes a value and copies it into the curve.
-	Add(t float64, v interface{}) error
+	Add(t id.Tick, v interface{}) error
 
 	// Get returns a copy of the interal value at a given tick.
-	Get(t float64) interface{}
+	Get(t id.Tick) interface{}
 
 	// ReplaceTail conditionally mutates the last N values of the curve
 	// with the values specified in the input, as long as the input curve
@@ -58,5 +58,5 @@ type Curve interface {
 	// ExportTail returns the last N values of the curve as a protobuf,
 	// ready to be sent on wire. Setting tick = 0 will export the entire
 	// curve.
-	ExportTail(tick float64) *gdpb.Curve
+	ExportTail(t id.Tick) *gdpb.Curve
 }

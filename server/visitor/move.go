@@ -20,7 +20,7 @@ import (
 
 const (
 	// TODO(minkezhang): Make this a property of the entity.
-	ticksPerTile = float64(10)
+	ticksPerTile = id.Tick(10)
 
 	visitorType = vcpb.VisitorType_VISITOR_TYPE_MOVE
 )
@@ -43,12 +43,12 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 }
 
 type cacheRow struct {
-	scheduledTick float64
+	scheduledTick id.Tick
 	destination   *gdpb.Position
 }
 
 type Args struct {
-	Tick        float64
+	Tick        id.Tick
 	EntityID    id.EntityID
 	Destination *gdpb.Position
 }
@@ -93,7 +93,7 @@ func New(
 
 func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
-func (v *Visitor) scheduleUnsafe(tick float64, eid id.EntityID, dest *gdpb.Position) error {
+func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Position) error {
 	if v.cache == nil {
 		v.cache = map[id.EntityID]cacheRow{}
 	}
@@ -156,7 +156,7 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 
 	cv := linearmove.New(e.ID(), tick)
 	for i, tile := range p {
-		cv.Add(tick+float64(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
+		cv.Add(tick+id.Tick(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
 	}
 	if err := v.dirties.Add(dirty.Curve{
 		EntityID: e.ID(),
@@ -174,7 +174,7 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	if lastPosition == cRow.destination {
 		delete(v.cache, e.ID())
 	} else {
-		if err := v.scheduleUnsafe(tick+ticksPerTile*float64(len(p)), e.ID(), cRow.destination); err != nil {
+		if err := v.scheduleUnsafe(tick+ticksPerTile*id.Tick(len(p)), e.ID(), cRow.destination); err != nil {
 			// TODO(minkezhang): Handle error by logging and continuing.
 			return err
 		}
