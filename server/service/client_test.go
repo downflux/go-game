@@ -46,7 +46,7 @@ func TestGetChannelInvald(t *testing.T) {
 }
 
 func TestSend(t *testing.T) {
-	const nClients = 1
+	const nClients = 1000
 	message := &apipb.StreamDataResponse{
 		Entities: []*gdpb.Entity{
 			{EntityId: "eid"},
