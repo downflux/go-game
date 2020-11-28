@@ -105,8 +105,8 @@ func (l *List) Add() (id.ClientID, error) {
 	l.mux.Lock()
 	defer l.mux.Unlock()
 
-	cid := id.NewClientID(id.RandomString(l.idLen))
-	for _, found := l.clients[cid]; found; cid = id.NewClientID(id.RandomString(l.idLen)) {
+	cid := id.ClientID(id.RandomString(l.idLen))
+	for _, found := l.clients[cid]; found; cid = id.ClientID(id.RandomString(l.idLen)) {
 	}
 	l.clients[cid] = client.New(cid)
 

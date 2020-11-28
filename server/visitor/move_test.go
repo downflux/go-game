@@ -55,7 +55,7 @@ func TestSchedule(t *testing.T) {
 	for i := 0; i < nClients; i++ {
 		i := i
 		eg.Go(func() error {
-			return v.Schedule(Args{Tick: 0, EntityID: id.NewEntityID(fmt.Sprintf("entity-%d", i))})
+			return v.Schedule(Args{Tick: 0, EntityID: id.EntityID(fmt.Sprintf("entity-%d", i))})
 		})
 	}
 

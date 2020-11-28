@@ -267,7 +267,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 		if err := e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_MOVE).Schedule(
 			move.Args{
 				Tick:        e.statusImpl.Tick(),
-				EntityID:    id.NewEntityID(eid),
+				EntityID:    id.EntityID(eid),
 				Destination: req.GetDestination(),
 			},
 		); err != nil {

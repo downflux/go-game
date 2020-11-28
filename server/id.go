@@ -11,13 +11,11 @@ type ID string
 // TODO(minkezhang): Migrate into separate directory.
 type EntityID ID
 
-func (id EntityID) Value() string    { return string(id) }
-func NewEntityID(id string) EntityID { return EntityID(id) }
+func (id EntityID) Value() string { return string(id) }
 
 type ClientID ID
 
-func (id ClientID) Value() string    { return string(id) }
-func NewClientID(id string) ClientID { return ClientID(id) }
+func (id ClientID) Value() string { return string(id) }
 
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 

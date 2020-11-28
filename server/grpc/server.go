@@ -106,7 +106,7 @@ func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequ
 }
 
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
-	if err := s.validateClient(id.NewClientID(req.GetClientId())); err != nil {
+	if err := s.validateClient(id.ClientID(req.GetClientId())); err != nil {
 		return nil, err
 	}
 	return &apipb.MoveResponse{}, s.ex.AddMoveCommands(req)
@@ -125,7 +125,7 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 }
 
 func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
-	cid := id.NewClientID(req.GetClientId())
+	cid := id.ClientID(req.GetClientId())
 
 	if err := s.validateClient(cid); err != nil {
 		return err
