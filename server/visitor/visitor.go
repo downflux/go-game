@@ -13,6 +13,8 @@ type Entity interface {
 	Type() gcpb.EntityType
 
 	ID() id.EntityID
+
+	// TODO(minkezhang): Decide if we should return default value.
 	Curve(t gcpb.CurveCategory) curve.Curve
 
 	// CurveCategories returns list of curve categories defined in a specific
