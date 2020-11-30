@@ -2,7 +2,6 @@
 
 * [x] change MoveRequest.Destination to Coordinate
 * [x] replace tickID with tick for now
-* [x] add server tests
 * [x] add AddClientResponse.Tick
 * [x] add oneof curve subclass
 * [x] make entity interface more formal
@@ -12,6 +11,7 @@
 * [x] merge Executor.isStarted and isStopped
 * [x] add ClientID, EntityID, Tick data types
 * [ ] **add server documentation**
+* [ ] add server tests
 * [ ] add client documentation
 * [ ] add API documentation
 * [ ] add client tests
