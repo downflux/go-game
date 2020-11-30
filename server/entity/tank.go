@@ -1,4 +1,4 @@
-// Package tank does some stuff.
+// Package tank encapsulates logic for a basic tank unit.
 package tank
 
 import (

@@ -1,18 +1,23 @@
 // Package id generates random ID strings for server-side objects. This should
 // not be called by client-side logic.
+//
+// TODO(minkezhang): Migrate EntityID, ClientID into separate directory(s).
 package id
 
 import (
 	"math/rand"
 )
 
+// Tick represents the internal game time. This is incremented once per game
+// loop. Non-integer values of the Tick are used to mark special moments in
+// the game for Curves (e.g. inflection points, zero-values, etc.).
 type Tick float64
 
+// Value returns the basic value of the Tick.
 func (t Tick) Value() float64 { return float64(t) }
 
 type ID string
 
-// TODO(minkezhang): Migrate into separate directory.
 type EntityID ID
 
 func (id EntityID) Value() string { return string(id) }
