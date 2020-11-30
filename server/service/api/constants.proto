@@ -7,6 +7,8 @@ package game.server.service.api.constants;
 option go_package = "game.server.service.api.constants";
 option csharp_namespace = "DF.Game.Server.Service.API.Constants";
 
+// ServerStatus represents if the Executor currently is running the main tick
+// loop. This is not surfaced in the client / server API.
 enum ServerStatus {
   SERVER_STATUS_UNKNOWN = 0;
   SERVER_STATUS_NOT_STARTED = 1;

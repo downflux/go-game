@@ -63,15 +63,21 @@ func (s *Status) PB() *gdpb.ServerStatus {
 	}
 }
 
-func (s *Status) Tick() id.Tick  { return id.Tick(atomic.LoadInt64(&(s.tickImpl))) }
+// Tick returns the current game tick.
+func (s *Status) Tick() id.Tick { return id.Tick(atomic.LoadInt64(&(s.tickImpl))) }
+
+// IncrementTick adds one to the current game tick -- this is called at the
+// beginning of each tick loop.
 func (s *Status) IncrementTick() { atomic.AddInt64(&(s.tickImpl), 1) }
 
+// IsStarted returns if the Executor is currently executing ticks.
 func (s *Status) IsStarted() bool {
 	s.statusEnumMux.Lock()
 	defer s.statusEnumMux.Unlock()
 	return s.statusEnum == sscpb.ServerStatus_SERVER_STATUS_RUNNING
 }
 
+// SetIsStarted sets the internal Executor status as running the core loop.
 func (s *Status) SetIsStarted() error {
 	s.statusEnumMux.Lock()
 	defer s.statusEnumMux.Unlock()
@@ -84,12 +90,15 @@ func (s *Status) SetIsStarted() error {
 	return nil
 }
 
+// IsStopped returns if the Executor has finished running the game loop.
 func (s *Status) IsStopped() bool {
 	s.statusEnumMux.Lock()
 	defer s.statusEnumMux.Unlock()
 	return s.statusEnum == sscpb.ServerStatus_SERVER_STATUS_STOPPED
 }
 
+// SetIsStopped sets the internal Executor status as having finished the core
+// loop. This may be called because the game ended, or if it crashed.
 func (s *Status) SetIsStopped() error {
 	s.statusEnumMux.Lock()
 	defer s.statusEnumMux.Unlock()
@@ -98,6 +107,8 @@ func (s *Status) SetIsStopped() error {
 	return nil
 }
 
+// StartTime returns the wall-clock time at which the server started executing
+// the core loop.
 func (s *Status) StartTime() time.Time {
 	s.startTimeMux.Lock()
 	defer s.startTimeMux.Unlock()
@@ -105,6 +116,8 @@ func (s *Status) StartTime() time.Time {
 	return s.startTimeImpl
 }
 
+// SetStartTime sets the time at which the server initially started running the
+// core loop.
 func (s *Status) SetStartTime() {
 	s.startTimeMux.Lock()
 	defer s.startTimeMux.Unlock()
