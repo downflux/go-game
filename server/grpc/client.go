@@ -14,13 +14,13 @@ type Connection struct {
 	done chan struct{}
 
 	// mux guards the responses and status properties.
-	mux       sync.Mutex
+	mux sync.Mutex
 
 	// responses is a cache of upstream Executor responses.
 	responses []*apipb.StreamDataResponse
 
 	// status indicates if the client has closed gracefully.
-	status    bool
+	status bool
 }
 
 // New creates a new instance of the Connection object.

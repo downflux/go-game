@@ -12,7 +12,7 @@ import (
 const (
 	// ServerKeepAliveTime is the interval after which if no client traffic
 	// is detected, the server will initiate a heartbeat check.
-	ServerKeepAliveTime    = 1 * time.Second
+	ServerKeepAliveTime = 1 * time.Second
 
 	// ServerKeepAliveTimeout is the maximum interval the server will wait
 	// for the client to respond. The connection is closed if no traffic is
@@ -22,7 +22,7 @@ const (
 	// ClientKeepAliveTime is the time between heartbeat pings the client
 	// will wait between resending the ping. The minimum interval accepted
 	// by the grpc/keepalive package is 10s.
-	ClientKeepAliveTime    = 10 * time.Second
+	ClientKeepAliveTime = 10 * time.Second
 
 	// ClientKeepAliveTimeout is the client counterpart to
 	// ServerKeepAliveTimeout.
