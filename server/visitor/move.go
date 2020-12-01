@@ -1,3 +1,4 @@
+// Package move implements logic for entity position mutations.
 package move
 
 import (
@@ -19,9 +20,13 @@ import (
 )
 
 const (
+	// ticksPerTile represents the number of ticks necessary to move an
+	// Entity instance one full tile width.
+	//
 	// TODO(minkezhang): Make this a property of the entity.
 	ticksPerTile = id.Tick(10)
 
+	// visitorType is the registered VisitorType of the move visitor.
 	visitorType = vcpb.VisitorType_VISITOR_TYPE_MOVE
 )
 
@@ -35,6 +40,8 @@ func coordinate(p *gdpb.Position) *gdpb.Coordinate {
 	}
 }
 
+// position transforms a gdpb.Coordinate instance into a gdpb.Position
+// instance.
 func position(c *gdpb.Coordinate) *gdpb.Position {
 	return &gdpb.Position{
 		X: float64(c.GetX()),
@@ -42,17 +49,31 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 	}
 }
 
+// cacheRow represents a scheduled move command. The EntityID is stored in the
+// map key.
 type cacheRow struct {
+	// scheduledTick represents the tick at which the path should be
+	// calculated.
 	scheduledTick id.Tick
-	destination   *gdpb.Position
+
+	// destination represents the move target for the Entity.
+	destination *gdpb.Position
 }
 
+// Args is an external-facing struct used to specify the Entity being moved.
 type Args struct {
-	Tick        id.Tick
-	EntityID    id.EntityID
+	// Tick is the tick at which the entity should start moving.
+	Tick id.Tick
+
+	// EntityID is the UUID of the Entity instance.
+	EntityID id.EntityID
+
+	// Destination is the Entity move target.
 	Destination *gdpb.Position
 }
 
+// Visitor mutates the Entity position Curve. This struct implements the
+// visitor.Visitor interface.
 type Visitor struct {
 	// tileMap is the underlying Map object used for the game.
 	tileMap *tile.Map
@@ -69,12 +90,22 @@ type Visitor struct {
 	// Visitor.
 	dirties *dirty.List
 
+	// minPathLength represents the minimum lookahead path length to
+	// calculate, where the path is a list of tile.Map coordinates.
+	//
+	// Longer calculated paths is discouraged, as these paths become
+	// outdated once a new move command is issued for the Entity, which
+	// may happen frequently in an RTS game.
 	minPathLength int
 
+	// cacheMux guards the cache property from concurrent access.
 	cacheMux sync.Mutex
-	cache    map[id.EntityID]cacheRow
+
+	// cache is the list of scheduled move commands to execute.
+	cache map[id.EntityID]cacheRow
 }
 
+// New constructs a new move Visitor instance.
 func New(
 	tileMap *tile.Map,
 	abstractGraph *graph.Graph,
@@ -91,8 +122,10 @@ func New(
 	}
 }
 
+// Type returns the registered VisitorType.
 func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
+// scheduleUnsafe adds a move command to the cache.
 func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Position) error {
 	if v.cache == nil {
 		v.cache = map[id.EntityID]cacheRow{}
@@ -108,6 +141,7 @@ func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Posit
 	return nil
 }
 
+// Schedule adds a move command to the internal schedule.
 func (v *Visitor) Schedule(args interface{}) error {
 	argsImpl := args.(Args)
 
@@ -117,6 +151,7 @@ func (v *Visitor) Schedule(args interface{}) error {
 	return v.scheduleUnsafe(argsImpl.Tick, argsImpl.EntityID, argsImpl.Destination)
 }
 
+// Visit mutates the specified entity's position curve.
 func (v *Visitor) Visit(e visitor.Entity) error {
 	if e.Type() != gcpb.EntityType_ENTITY_TYPE_TANK {
 		return nil

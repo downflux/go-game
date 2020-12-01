@@ -1,3 +1,5 @@
+// Package dirty encapsulates logic necessary for marking specific Curve and
+// Entity instances as having been modified during the current game tick.
 package dirty
 
 import (
@@ -17,20 +19,25 @@ type Curve struct {
 	Category gcpb.CurveCategory
 }
 
+// Entity represents a visitor.Entity instance which was added in the current
+// tick. Curves which were altered do not need to create a dirty Entity entry.
 type Entity struct {
 	ID id.EntityID
 }
 
+// List is an abstract cache of game state mutations over a period of time.
 type List struct {
 	mux      sync.Mutex
 	curves   map[id.EntityID]map[gcpb.CurveCategory]bool
 	entities map[id.EntityID]bool
 }
 
+// New creates a new List instance.
 func New() *List {
 	return &List{}
 }
 
+// AddEntity marks the specified entity as dirty.
 func (l *List) AddEntity(e Entity) error {
 	l.mux.Lock()
 	defer l.mux.Unlock()
@@ -44,6 +51,7 @@ func (l *List) AddEntity(e Entity) error {
 	return nil
 }
 
+// Add marks the specified curve as dirty.
 func (l *List) Add(c Curve) error {
 	l.mux.Lock()
 	defer l.mux.Unlock()
@@ -60,6 +68,10 @@ func (l *List) Add(c Curve) error {
 	return nil
 }
 
+// PopEntities returns a list of all mutated entities for the given interval.
+// The internal cache is then cleared.
+//
+// TODO(minkezhang): Consolidate PopEntities and Pop.
 func (l *List) PopEntities() []Entity {
 	l.mux.Lock()
 	defer l.mux.Unlock()
@@ -73,6 +85,10 @@ func (l *List) PopEntities() []Entity {
 	return entities
 }
 
+// Pop returns a list of all mutated curves for the given interval.
+// The internal cache is then cleared.
+//
+// TODO(minkezhang): Consolidate PopEntities and Pop.
 func (l *List) Pop() []Curve {
 	l.mux.Lock()
 	defer l.mux.Unlock()

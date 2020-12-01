@@ -27,8 +27,19 @@ import (
 )
 
 const (
-	idLen        = 8
+	// idLen represents the default length of a UUID (e.g. ClientID,
+	// EntityID, etc.).
+	idLen = 8
+
+	// tickDuration is the targeted loop iteration time delta. If a tick
+	// loop exceeds this time, it should delay commands until the next
+	// cycle and ensure the dirty curves are being broadcasted instead.
+	//
+	// TODO(minkezhang): Ensure tick timeout actually occurs.
 	tickDuration = 100 * time.Millisecond
+
+	// entityListID is a preset ID for the global EntityList Entity
+	// instance.
 	entityListID = "entity-list"
 )
 
@@ -52,9 +63,26 @@ type dirtyCurve struct {
 
 // Executor encapsulates logic for executing the core game loop.
 type Executor struct {
+	// visitors is a list of all Visitor instances used by the Executor.
+	// A Visitor instance takes as state input an arbitrary subset of the
+	// game state and mutates some or all entities every tick.
+	//
+	// The Executor uses the Visitor pattern for the central tick loop.
+	// See https://en.wikipedia.org/wiki/Visitor_pattern.
 	visitors *visitorlist.List
+
+	// entities is a list of all Entity instances for the current game.
+	// An Entity is an arbitrary stateful object -- it may not be a
+	// physical game object like a tank; the entitylist.List object
+	// itself is implements the Entity interface.
+	//
+	// Entity object states are mutated by Visitor instances.
 	entities *entitylist.List
-	dirties  *dirty.List
+
+	// dirties is a list of Entity and Curve instances which have been
+	// modified during the current game tick. The Executor broadcasts this
+	// list to all clients to update the game state.
+	dirties *dirty.List
 
 	// statusImpl represents the current Executor state metadata.
 	statusImpl *serverstatus.Status
@@ -244,7 +272,7 @@ func (e *Executor) doTick() error {
 	return nil
 }
 
-// AddEntity schedules a new entity.
+// AddEntity schedules adding a new entity in the next game tick.
 //
 // TODO(minkezhang): Delete this method -- this is currently public for
 // debugging purposes.
