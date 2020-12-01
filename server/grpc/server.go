@@ -1,3 +1,9 @@
+// Package server implements the apipb.DownFluxServer server API.
+//
+// TODO(minkezhang): Add tests for connection flakiness handling:
+//
+// 1. if the server cannot send messages in N seconds, the server should close
+//    the client stream, and mark the client as dirty.
 package server
 
 import (
@@ -179,11 +185,3 @@ func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.D
 	}
 	return nil
 }
-
-// Failure modes to consider -- NOT latency
-// Server cannot send for N seconds -- close stream, mark client as dirty
-// IGNORE Server sends in (N - 1) seconds and needs to resync client
-// 	TODO(minkezhang): Skip messages in queue < current tick.
-//	This is actually okay -- we'll need to resync because messages are always deltas.
-// 	unless we were to merge all skipped messages.
-// Server sends normally (happy path)

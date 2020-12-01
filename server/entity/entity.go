@@ -2,14 +2,14 @@
 // visitor.Entity interface. Concrete implementations of the Entity interface
 // may inherit from this package as necessary.
 //
-// Example:
+// Example
 //
 //  type ConcreteEntity struct {
 //    entity.BaseEntity
 //    ...
 //  }
 //
-// func (e *ConcreteEntity) Curve(...) { ... }
+//  func (e *ConcreteEntity) Curve(...) { ... }
 package entity
 
 import (
