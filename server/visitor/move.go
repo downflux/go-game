@@ -72,8 +72,8 @@ type Args struct {
 	Destination *gdpb.Position
 }
 
-// Visitor implements the visitor.Visitor interface. This Visitor
-// implementation is in charge of mutating the Entity position Curve.
+// Visitor mutates the Entity position Curve. This struct implements the
+// visitor.Visitor interface.
 type Visitor struct {
 	// tileMap is the underlying Map object used for the game.
 	tileMap *tile.Map

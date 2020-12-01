@@ -1,3 +1,4 @@
+// Package produce impements logic for adding new Entity instances.
 package produce
 
 import (
@@ -18,34 +19,53 @@ import (
 )
 
 const (
+	// entityIDLen is the length of the randomly generated UUID of new
+	// Entity objects.
 	entityIDLen = 8
 
+	// visitorType is the registered VisitorType of the produce visitor.
 	visitorType = vcpb.VisitorType_VISITOR_TYPE_PRODUCE
 )
 
+// unsupportedEntityType creates an appropriate error to return when a given
+// function cannot handle the EntityType.
 func unsupportedEntityType(t gcpb.EntityType) error {
 	return status.Errorf(codes.Unimplemented, "creating a new %v entity is not supported", t)
 }
 
+// Args is an external-facing struct to be passed into Schedule. This
+// represents the scheduled time and Entity that will be created.
 type Args struct {
 	ScheduledTick id.Tick
 	EntityType    gcpb.EntityType
 	SpawnPosition *gdpb.Position
 }
 
+// cacheRow represents a scheduled add command. The tick at which this command
+// executes is stored in the wrapping map object.
 type cacheRow struct {
 	entityType    gcpb.EntityType
 	spawnPosition *gdpb.Position
 }
 
+// Visitor adds a new Entity to the global state. This struct implements the
+// visitor.Visitor interface.
 type Visitor struct {
-	dirties  *dirty.List
+	// dirties is a reference to the global cache of mutated Curve and
+	// Entity instances.
+	dirties *dirty.List
+
+	// dfStatus is reference to the global Executor status struct.
 	dfStatus *serverstatus.Status
 
+	// cacheMux guards the cache property.
 	cacheMux sync.Mutex
-	cache    map[id.Tick][]cacheRow
+
+	// cache is an internal collection of scheduled add Entity commands.
+	cache map[id.Tick][]cacheRow
 }
 
+// New creates a new instance of the Visitor struct.
 func New(dfStatus *serverstatus.Status, dirties *dirty.List) *Visitor {
 	return &Visitor{
 		dirties:  dirties,
@@ -53,8 +73,10 @@ func New(dfStatus *serverstatus.Status, dirties *dirty.List) *Visitor {
 	}
 }
 
+// Type returns the registered VisitorType.
 func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
+// Schedule adds an add Entity command to the internal cache.
 func (v *Visitor) Schedule(args interface{}) error {
 	argsImpl := args.(Args)
 
@@ -75,6 +97,7 @@ func (v *Visitor) Schedule(args interface{}) error {
 	return nil
 }
 
+// Visit mutates an EntityList with a new Entity.
 func (v *Visitor) Visit(e visitor.Entity) error {
 	v.cacheMux.Lock()
 	defer v.cacheMux.Unlock()
