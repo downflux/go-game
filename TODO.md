@@ -10,8 +10,8 @@
 * [x] make Executor.visitors an ordered map object for easy referencing in code
 * [x] merge Executor.isStarted and isStopped
 * [x] add ClientID, EntityID, Tick data types
-* [ ] rename CurveCategory to EntityProperty
-* [ ] **add server documentation**
+* [x] add server documentation
+* [ ] **rename CurveCategory to EntityProperty**
 * [ ] add API documentation
 * [ ] ensure client still works with refactors
 * [ ] add tests for Visitor
@@ -29,4 +29,4 @@
 * [x] add Produce() Visitor
 * [ ] parallelize move commands
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
-* [ ] add entity click-drag-select action
+* [ ] **add entity click-drag-select action**
