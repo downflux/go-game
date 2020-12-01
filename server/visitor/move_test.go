@@ -11,7 +11,10 @@ import (
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/visitor/dirty"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/protobuf/testing/protocmp"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -134,14 +137,20 @@ func TestVisit(t *testing.T) {
 
 	func(t *testing.T) {
 		want := cacheRow{
-			scheduledTick: t0 + ticksPerTile,
 			destination:   dest,
 		}
 
 		v.cacheMux.Lock()
 		defer v.cacheMux.Unlock()
-		if got := v.cache[eid]; got != want {
-			t.Fatalf("cache[] = %v, want = %v", got, dest)
+
+		got := v.cache[eid]
+		if diff := cmp.Diff(
+			want,
+			got,
+			cmp.AllowUnexported(cacheRow{}),
+			cmpopts.IgnoreFields(cacheRow{}, "scheduledTick"),
+			protocmp.Transform()); diff != "" {
+			t.Fatalf("cache[] mismatch (-want +got):\n%v", diff)
 		}
 	}(t)
 

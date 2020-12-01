@@ -84,6 +84,9 @@ go_test(
         "//server/entity:tank",
         "//server/service:status",
         "//server/visitor:dirty",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",
     ],
 )
@@ -105,5 +108,6 @@ go_library(
         "//server:id",
         "//server/service:status",
 	"//server/visitor/api:constants_go_proto",
+        "@org_golang_google_protobuf//proto:go_default_library",
     ],
 )

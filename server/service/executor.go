@@ -41,6 +41,10 @@ const (
 	// entityListID is a preset ID for the global EntityList Entity
 	// instance.
 	entityListID = "entity-list"
+
+	// minPathLength represents the minimum lookahead path length to
+	// calculate, where the path is a list of tile.Map coordinates.
+	minPathLength = 8
 )
 
 var (
@@ -108,7 +112,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	visitors, err := visitorlist.New(
 		[]visitor.Visitor{
 			produce.New(statusImpl, dirties),
-			move.New(tm, g, statusImpl, dirties, 10),
+			move.New(tm, g, statusImpl, dirties, minPathLength),
 		},
 	)
 	if err != nil {
@@ -198,8 +202,6 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 // broadcastCurves will send the current game state delta or full game state to
 // all connected clients. This is a blocking call.
 func (e *Executor) broadcastCurves() error {
-	log.Printf("[%.f]: broadcasting curves", e.statusImpl.Tick())
-
 	curves, entities := e.popTickQueue()
 
 	return e.clients.Broadcast(
@@ -268,6 +270,10 @@ func (e *Executor) doTick() error {
 	// distribution.
 	if d := time.Now().Sub(t); d < tickDuration {
 		time.Sleep(tickDuration - d)
+	} else {
+		log.Printf(
+			"[%.f] took too long: execution time %v > %v",
+			e.statusImpl.Tick(), d, tickDuration)
 	}
 	return nil
 }

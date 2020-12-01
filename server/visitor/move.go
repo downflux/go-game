@@ -2,6 +2,7 @@
 package move
 
 import (
+	"log"
 	"sync"
 
 	"github.com/downflux/game/curve/linearmove"
@@ -12,6 +13,7 @@ import (
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/downflux/game/server/visitor/visitor"
+	"google.golang.org/protobuf/proto"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -206,10 +208,11 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	// Check for partial moves and delay next lookup iteration until a
 	// suitable time in the future.
 	lastPosition := position(p[len(p)-1].Val.GetCoordinate())
-	if lastPosition == cRow.destination {
+	log.Println("MOVE: ", tick, proto.Equal(lastPosition, cRow.destination))
+	if proto.Equal(lastPosition, cRow.destination) {
 		delete(v.cache, e.ID())
 	} else {
-		if err := v.scheduleUnsafe(tick+ticksPerTile*id.Tick(len(p)), e.ID(), cRow.destination); err != nil {
+		if err := v.scheduleUnsafe(tick+ticksPerTile*id.Tick(len(p) - 1), e.ID(), cRow.destination); err != nil {
 			// TODO(minkezhang): Handle error by logging and continuing.
 			return err
 		}
