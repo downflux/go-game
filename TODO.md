@@ -12,6 +12,7 @@
 * [x] add ClientID, EntityID, Tick data types
 * [x] add server documentation
 * [ ] **rename CurveCategory to EntityProperty**
+* [ ] make `maps/astar.Path` take in `Position`; last move is to the Position offset
 * [ ] add API documentation
 * [ ] ensure client still works with refactors
 * [ ] add tests for Visitor
@@ -27,6 +28,10 @@
 * [x] add Run() which iterates through Tick()
 * [x] consider what to do with partial moves -- refactor out commandQueue with cancellation, etc.
 * [x] add Produce() Visitor
-* [ ] parallelize move commands
-* [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
 * [ ] **add entity click-drag-select action**
+* [ ] add game state export / import
+* [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
+* [ ] replace pathfinding with flow fields
+* [ ] parallelize move commands
+* [ ] make client load map from server (new API)
+* [ ] make map layered (terrain vs. rendering data; pathing data for size > `1x1` tiles)
