@@ -6,9 +6,15 @@ namespace DownFluxGL
 {
     public class DownFlux : Game
     {
+	private bool mouseIsDown;
+        private Microsoft.Xna.Framework.Point m0, m1;
+
         private static int tileWidth = 100;
 
         Texture2D ballTexture;
+        Texture2D boxTexture;
+        private Microsoft.Xna.Framework.Rectangle selectionBox;
+        private System.Collections.Generic.HashSet<string> _selectedEntities;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -36,6 +42,7 @@ namespace DownFluxGL
               DF.Curve.Curve>();
             _entities = new System.Collections.Generic.Dictionary<
               string, DF.Entity.Entity>();
+            _selectedEntities = new System.Collections.Generic.HashSet<string>();
 
             // TODO(minkezhang): Figure out why we can't control actual window
             // size here.
@@ -66,7 +73,7 @@ namespace DownFluxGL
             }
 
             // TODO(minkezhang): Make this async task actually have a Wait()
-            // somewhere.
+            // in destructor.
             // _c.StreamDataLoop(_tid).Start();
             System.Threading.Tasks.Task.Run(() => _c.StreamDataLoop(tick));
 
@@ -78,10 +85,39 @@ namespace DownFluxGL
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             ballTexture = Content.Load<Texture2D>("Assets/ball");
+            boxTexture = Content.Load<Texture2D>("Assets/blackpixel");
         }
 
         protected override void Update(GameTime gameTime)
         {
+            var mouseState = Mouse.GetState();
+            var recalculateBox = false;
+            if (
+              mouseState.LeftButton == ButtonState.Pressed && !mouseIsDown) { // Click
+              m0 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
+              m1 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
+              mouseIsDown = true;
+              recalculateBox = true;
+              _selectedEntities.Clear();
+            } else if (
+              mouseState.LeftButton == ButtonState.Pressed && mouseIsDown) { // Drag
+              m1 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
+              recalculateBox = true;
+            } else if (
+              mouseState.LeftButton == ButtonState.Released && mouseIsDown) { // Release
+              m1 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
+              mouseIsDown = false;
+              recalculateBox = true;
+            }
+
+            if (recalculateBox) {
+              selectionBox = new Microsoft.Xna.Framework.Rectangle(
+                System.Math.Min(m0.X, m1.X),
+                System.Math.Min(m0.Y, m1.Y),
+                System.Math.Abs(m1.X - m0.X),
+                System.Math.Abs(m1.Y - m0.Y));
+            }
+
             var tick = (System.DateTime.Now - _serverStartTime) / _serverTickDuration;
 
             // TODO(minkezhang): Determine if we need d to be a CurveStream
@@ -106,6 +142,7 @@ namespace DownFluxGL
                     _entities[simpleEntity.ID] = simpleEntity;
 
                     // TODO(minkezhang): Call Move() only when user clicks on map.
+/*
                     _c.Move(
                       tick,
                       new System.Collections.Generic.List<string>(){simpleEntity.ID},
@@ -115,11 +152,45 @@ namespace DownFluxGL
                       },
                       DF.Game.API.Constants.MoveType.Forward
                     );
+ */
                   }
                 }
               );
             }
 
+            foreach (var e in _entities) {
+              e.Value.Switch(
+                simpleEntity => {
+                  DF.Curve.Curve c;
+                  if (recalculateBox && !_selectedEntities.Contains(simpleEntity.ID)) {
+                    _curves.TryGetValue((simpleEntity.ID, DF.Game.API.Constants.CurveCategory.Move), out c);
+                    c.Switch(
+                      linearMove => {
+                        var p = linearMove.Get(tick);
+                        if (selectionBox.Contains(new Microsoft.Xna.Framework.Vector2((float) p.X, (float) p.Y))) {
+                          _selectedEntities.Add(simpleEntity.ID);
+                        }
+                      }
+                    );
+                  };
+                }
+              );
+            }
+
+            // TODO(minkezhang): Make this left mouse contexual click instead.
+            // TODO(minkezhang): Make the click a distinct event -- we may long
+            // press will fire off a bunch of move commands.
+            if (mouseState.RightButton == ButtonState.Pressed) {
+              _c.Move(
+                tick,
+                  new System.Collections.Generic.List<string>(_selectedEntities),
+                  new DF.Game.API.Data.Position{
+                    X = mouseState.X / tileWidth,
+                    Y = mouseState.Y / tileWidth
+                  },
+                  DF.Game.API.Constants.MoveType.Forward
+             );
+            }
             base.Update(gameTime);
         }
 
@@ -130,6 +201,10 @@ namespace DownFluxGL
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             _spriteBatch.Begin();
+
+            if (mouseIsDown) {
+              _spriteBatch.Draw(boxTexture, selectionBox, Color.White);
+            }
 
             foreach (var c in _curves) {
               c.Value.Switch(

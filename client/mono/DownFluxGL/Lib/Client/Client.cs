@@ -80,13 +80,16 @@ namespace DF {
         System.Collections.Generic.List<string> entityIDs,
         DF.Game.API.Data.Position destination,
         DF.Game.API.Constants.MoveType moveType) {
-        _client.Move(new DF.Game.API.API.MoveRequest{
+        var request = new DF.Game.API.API.MoveRequest{
           ClientId = ID,
           Tick = tick,
           EntityIds = { entityIDs },
           Destination = destination,
           MoveType = moveType,
-        });
+        };
+
+        System.Console.Error.WriteLine(request);
+        _client.Move(request);
       }
 
       public async System.Threading.Tasks.Task StreamDataLoop(double tick) {
