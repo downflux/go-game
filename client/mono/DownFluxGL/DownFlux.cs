@@ -6,7 +6,9 @@ namespace DownFluxGL
 {
     public class DownFlux : Game
     {
-	private bool mouseIsDown;
+        private DF.Input.Event.Mouse _mouseState;
+
+	private bool _mouseDown;
         private Microsoft.Xna.Framework.Point m0, m1;
 
         private static int tileWidth = 100;
@@ -43,6 +45,8 @@ namespace DownFluxGL
             _entities = new System.Collections.Generic.Dictionary<
               string, DF.Entity.Entity>();
             _selectedEntities = new System.Collections.Generic.HashSet<string>();
+
+            _mouseState = new DF.Input.Event.Mouse();
 
             // TODO(minkezhang): Figure out why we can't control actual window
             // size here.
@@ -90,26 +94,32 @@ namespace DownFluxGL
 
         protected override void Update(GameTime gameTime)
         {
-            var mouseState = Mouse.GetState();
+            var ms = _mouseState.GetState();
             var recalculateBox = false;
             var selectEntities = false;
-            if (
-              mouseState.LeftButton == ButtonState.Pressed && !mouseIsDown) { // Click
-              m0 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
-              m1 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
-              mouseIsDown = true;
-              recalculateBox = true;
-            } else if (
-              mouseState.LeftButton == ButtonState.Pressed && mouseIsDown) { // Drag
-              m1 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
-              recalculateBox = true;
-            } else if (
-              mouseState.LeftButton == ButtonState.Released && mouseIsDown) { // Release
-              m1 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
-              mouseIsDown = false;
-              recalculateBox = true;
-              selectEntities = true;
+            var doAction = false;
+            _mouseDown = ms.IsHeld();
+
+            if (ms.IsPressed()) {
+              System.Console.Error.WriteLine("Button is pressed");
+              m0 = new Microsoft.Xna.Framework.Point(ms.State.X, ms.State.Y);
+              m1 = new Microsoft.Xna.Framework.Point(ms.State.X, ms.State.Y);
+            } else if (ms.IsHeld()) {
+              System.Console.Error.WriteLine("Button is held");
+              m1 = new Microsoft.Xna.Framework.Point(ms.State.X, ms.State.Y);
+            } else if (ms.IsReleased()) {
+              System.Console.Error.WriteLine("Button is released");
+              // TODO(minkezhang): Add some leeway here -- fast clicks may
+              // accidentally turn into a drag motion.
+              if (m0 == m1) {
+                System.Console.Error.WriteLine("Interpreting as click");
+                doAction = true;
+              } else {
+                System.Console.Error.WriteLine("Interpreting as drag");
+                selectEntities = true;
+              }
             }
+            recalculateBox = ms.IsHeld();
 
             if (selectEntities) {
               System.Console.Error.WriteLine("clearing entities");
@@ -172,20 +182,19 @@ namespace DownFluxGL
               );
             }
 
-            // TODO(minkezhang): Make this left mouse contexual click instead.
-            // TODO(minkezhang): Make the click a distinct event -- we may long
-            // press will fire off a bunch of move commands.
-            if (mouseState.RightButton == ButtonState.Pressed) {
+            if (doAction) {
               System.Console.Error.WriteLine("ENTITIES: ", _selectedEntities);
-              _c.Move(
-                tick,
-                  new System.Collections.Generic.List<string>(_selectedEntities),
-                  new DF.Game.API.Data.Position{
-                    X = mouseState.X / tileWidth,
-                    Y = mouseState.Y / tileWidth
-                  },
-                  DF.Game.API.Constants.MoveType.Forward
-             );
+              if (_selectedEntities.Count > 0) {
+                _c.Move(
+                  tick,
+                    new System.Collections.Generic.List<string>(_selectedEntities),
+                    new DF.Game.API.Data.Position{
+                      X = ms.State.X / tileWidth,
+                      Y = ms.State.Y / tileWidth
+                    },
+                    DF.Game.API.Constants.MoveType.Forward
+                );
+              }
             }
             base.Update(gameTime);
         }
@@ -198,7 +207,7 @@ namespace DownFluxGL
 
             _spriteBatch.Begin();
 
-            if (mouseIsDown) {
+            if (_mouseDown) {
               _spriteBatch.Draw(boxTexture, selectionBox, Color.White);
             }
 
