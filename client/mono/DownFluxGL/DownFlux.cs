@@ -92,13 +92,13 @@ namespace DownFluxGL
         {
             var mouseState = Mouse.GetState();
             var recalculateBox = false;
+            var selectEntities = false;
             if (
               mouseState.LeftButton == ButtonState.Pressed && !mouseIsDown) { // Click
               m0 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
               m1 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
               mouseIsDown = true;
               recalculateBox = true;
-              _selectedEntities.Clear();
             } else if (
               mouseState.LeftButton == ButtonState.Pressed && mouseIsDown) { // Drag
               m1 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
@@ -108,6 +108,12 @@ namespace DownFluxGL
               m1 = new Microsoft.Xna.Framework.Point(mouseState.X, mouseState.Y);
               mouseIsDown = false;
               recalculateBox = true;
+              selectEntities = true;
+            }
+
+            if (selectEntities) {
+              System.Console.Error.WriteLine("clearing entities");
+              _selectedEntities.Clear();
             }
 
             if (recalculateBox) {
@@ -140,19 +146,6 @@ namespace DownFluxGL
                 simpleEntity => {
                   if (!_entities.ContainsKey(simpleEntity.ID)) {
                     _entities[simpleEntity.ID] = simpleEntity;
-
-                    // TODO(minkezhang): Call Move() only when user clicks on map.
-/*
-                    _c.Move(
-                      tick,
-                      new System.Collections.Generic.List<string>(){simpleEntity.ID},
-                      new DF.Game.API.Data.Position{
-                        X = 5,
-                        Y = 5
-                      },
-                      DF.Game.API.Constants.MoveType.Forward
-                    );
- */
                   }
                 }
               );
@@ -162,12 +155,14 @@ namespace DownFluxGL
               e.Value.Switch(
                 simpleEntity => {
                   DF.Curve.Curve c;
-                  if (recalculateBox && !_selectedEntities.Contains(simpleEntity.ID)) {
+                  if (selectEntities && !_selectedEntities.Contains(simpleEntity.ID)) {
                     _curves.TryGetValue((simpleEntity.ID, DF.Game.API.Constants.CurveCategory.Move), out c);
                     c.Switch(
                       linearMove => {
                         var p = linearMove.Get(tick);
-                        if (selectionBox.Contains(new Microsoft.Xna.Framework.Vector2((float) p.X, (float) p.Y))) {
+                        System.Console.Error.WriteLine(p);
+                        System.Console.Error.WriteLine(selectionBox);
+                        if (selectionBox.Contains(new Microsoft.Xna.Framework.Vector2((float) p.X * tileWidth, (float) p.Y * tileWidth))) {
                           _selectedEntities.Add(simpleEntity.ID);
                         }
                       }
@@ -181,6 +176,7 @@ namespace DownFluxGL
             // TODO(minkezhang): Make the click a distinct event -- we may long
             // press will fire off a bunch of move commands.
             if (mouseState.RightButton == ButtonState.Pressed) {
+              System.Console.Error.WriteLine("ENTITIES: ", _selectedEntities);
               _c.Move(
                 tick,
                   new System.Collections.Generic.List<string>(_selectedEntities),
