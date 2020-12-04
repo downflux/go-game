@@ -159,6 +159,9 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 	var curves []*gdpb.Curve
 	var entities []*gdpb.Entity
 
+	tailTick := e.statusImpl.Tick() - 100
+	if tailTick < 0 { tailTick = 0 }
+
 	// TODO(minkezhang): Make concurrent.
 	for _, de := range e.dirties.PopEntities() {
 		entities = append(entities, &gdpb.Entity{
@@ -170,7 +173,7 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 		curves = append(
 			curves,
 			e.entities.Get(
-				dc.EntityID).Curve(dc.Category).ExportTail(e.statusImpl.Tick()))
+				dc.EntityID).Curve(dc.Category).ExportTail(tailTick))
 	}
 
 	return curves, entities

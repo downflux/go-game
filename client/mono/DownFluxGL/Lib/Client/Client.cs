@@ -88,7 +88,7 @@ namespace DF {
           MoveType = moveType,
         };
 
-        System.Console.Error.WriteLine(request);
+        // System.Console.Error.WriteLine(request);
         _client.Move(request);
       }
 
@@ -102,7 +102,9 @@ namespace DF {
             while (await s.MoveNext(_ct)) {
               System.Console.Error.WriteLine("StreamDataLoop: RECEIVED");
               var resp = s.Current;
-              System.Console.Error.WriteLine(resp);
+              System.Console.Error.WriteLine(new Google.Protobuf.JsonFormatter(
+                Google.Protobuf.JsonFormatter.Settings.Default
+              ).Format(resp));
 
               _curvesMutex.AcquireWriterLock(1000);  // 1 sec
               try {

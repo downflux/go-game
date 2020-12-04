@@ -101,28 +101,22 @@ namespace DownFluxGL
             _mouseDown = ms.IsHeld();
 
             if (ms.IsPressed()) {
-              System.Console.Error.WriteLine("Button is pressed");
               m0 = new Microsoft.Xna.Framework.Point(ms.State.X, ms.State.Y);
               m1 = new Microsoft.Xna.Framework.Point(ms.State.X, ms.State.Y);
             } else if (ms.IsHeld()) {
-              System.Console.Error.WriteLine("Button is held");
               m1 = new Microsoft.Xna.Framework.Point(ms.State.X, ms.State.Y);
             } else if (ms.IsReleased()) {
-              System.Console.Error.WriteLine("Button is released");
               // TODO(minkezhang): Add some leeway here -- fast clicks may
               // accidentally turn into a drag motion.
               if (m0 == m1) {
-                System.Console.Error.WriteLine("Interpreting as click");
                 doAction = true;
               } else {
-                System.Console.Error.WriteLine("Interpreting as drag");
                 selectEntities = true;
               }
             }
             recalculateBox = ms.IsHeld();
 
             if (selectEntities) {
-              System.Console.Error.WriteLine("clearing entities");
               _selectedEntities.Clear();
             }
 
@@ -142,7 +136,10 @@ namespace DownFluxGL
               d.Item2.Switch(
                 linearMove => {
                   if (!_curves.ContainsKey((linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move))) {
-                    System.Console.Error.WriteLine(linearMove);
+                    System.Console.Error.WriteLine("DEBUG: ---------------- client tick: ");
+                    System.Console.Error.WriteLine(tick);
+                    System.Console.Error.WriteLine("DEBUG: ---------------- server tick: ");
+                    System.Console.Error.WriteLine(linearMove.Tick);
                     _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)] = linearMove;
                   } else {
                     _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)].AsT0.ReplaceTail(linearMove);
@@ -170,8 +167,6 @@ namespace DownFluxGL
                     c.Switch(
                       linearMove => {
                         var p = linearMove.Get(tick);
-                        System.Console.Error.WriteLine(p);
-                        System.Console.Error.WriteLine(selectionBox);
                         if (selectionBox.Contains(new Microsoft.Xna.Framework.Vector2((float) p.X * tileWidth, (float) p.Y * tileWidth))) {
                           _selectedEntities.Add(simpleEntity.ID);
                         }
@@ -183,7 +178,6 @@ namespace DownFluxGL
             }
 
             if (doAction) {
-              System.Console.Error.WriteLine("ENTITIES: ", _selectedEntities);
               if (_selectedEntities.Count > 0) {
                 _c.Move(
                   tick,
@@ -215,6 +209,9 @@ namespace DownFluxGL
               c.Value.Switch(
                 linearMove => {
                   var p = linearMove.Get(tick);
+                  System.Console.Error.WriteLine(
+                    "DEBUG: TICK " + tick.ToString() + ", pos: " + p.ToString());
+
 
                   _spriteBatch.Draw(
                     ballTexture,
