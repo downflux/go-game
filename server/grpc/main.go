@@ -55,7 +55,8 @@ func main() {
 	apipb.RegisterDownFluxServer(s, downFluxServer)
 
 	downFluxServer.Executor().AddEntity(gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 1, Y: 1})
+	downFluxServer.Executor().AddEntity(gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 2, Y: 1})
 
 	go s.Serve(lis)
-	downFluxServer.Executor().Run()
+	log.Println(downFluxServer.Executor().Run())
 }
