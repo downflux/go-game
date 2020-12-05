@@ -271,12 +271,14 @@ func (e *Executor) doTick() error {
 
 	// TODO(minkezhang): Add metrics collection here for tick
 	// distribution.
-	if d := time.Now().Sub(t); d < tickDuration {
-		time.Sleep(tickDuration - d)
+	u := e.statusImpl.StartTime().Add(
+		time.Duration(e.statusImpl.Tick()) * tickDuration).Sub(t)
+	if u < tickDuration {
+		time.Sleep(u)
 	} else {
 		log.Printf(
 			"[%.f] took too long: execution time %v > %v",
-			e.statusImpl.Tick(), d, tickDuration)
+			e.statusImpl.Tick(), u, tickDuration)
 	}
 	return nil
 }
