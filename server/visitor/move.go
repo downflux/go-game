@@ -3,6 +3,7 @@ package move
 
 import (
 	"log"
+	"math"
 	"sync"
 
 	"github.com/downflux/game/curve/linearmove"
@@ -40,6 +41,10 @@ func coordinate(p *gdpb.Position) *gdpb.Coordinate {
 		X: int32(p.GetX()),
 		Y: int32(p.GetY()),
 	}
+}
+
+func d(a, b *gdpb.Position) float64 {
+	return math.Sqrt(math.Pow(a.GetX() - b.GetX(), 2) + math.Pow(a.GetY() - b.GetY(), 2))
 }
 
 // position transforms a gdpb.Coordinate instance into a gdpb.Position
@@ -154,6 +159,9 @@ func (v *Visitor) Schedule(args interface{}) error {
 }
 
 // Visit mutates the specified entity's position curve.
+//
+// TODO(minkezhang): Observe "spam clicking behavior" and find out why client
+// keeps "jumping" the coordinate.
 func (v *Visitor) Visit(e visitor.Entity) error {
 	if e.Type() != gcpb.EntityType_ENTITY_TYPE_TANK {
 		return nil
@@ -183,6 +191,8 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	p, _, err := astar.Path(
 		v.tileMap,
 		v.abstractGraph,
+		// TODO(minkezhang): Investigate / decide if we should use
+		// cRow.scheduledTick instead.
 		utils.MC(coordinate(c.Get(tick).(*gdpb.Position))),
 		utils.MC(coordinate(cRow.destination)),
 		v.minPathLength)
@@ -191,9 +201,20 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 		return err
 	}
 
+	if p == nil {
+		return nil
+	}
+
+	// Add to the existing curve, while smoothing out the existing
+	// trajectory.
+	prevPos := c.Get(tick).(*gdpb.Position)
 	cv := linearmove.New(e.ID(), tick)
+	cv.Add(tick, prevPos)
 	for i, tile := range p {
-		cv.Add(tick+id.Tick(i)*ticksPerTile, position(tile.Val.GetCoordinate()))
+		curPos := position(tile.Val.GetCoordinate())
+		tickDelta := id.Tick(ticksPerTile.Value() * d(prevPos, curPos))
+		cv.Add(tick+id.Tick(i)*ticksPerTile+tickDelta, curPos)
+		prevPos = curPos
 	}
 	if err := v.dirties.Add(dirty.Curve{
 		EntityID: e.ID(),
