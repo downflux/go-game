@@ -56,23 +56,6 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 	}
 }
 
-// cacheRow represents a scheduled move command. The EntityID is stored in the
-// map key.
-type cacheRow struct {
-	// scheduledTick represents the tick at which the path should be
-	// calculated.
-	scheduledTick id.Tick
-
-	// destination represents the move target for the Entity.
-	destination *gdpb.Position
-
-	partialDestination *gdpb.Position
-
-	// isExternal represents if the move was scheduled by an external or
-	// internal process.
-	isExternal bool
-}
-
 // Args is an external-facing struct used to specify the Entity being moved.
 type Args struct {
 	// Tick is the tick at which the entity should start moving.
@@ -118,8 +101,8 @@ type Visitor struct {
 	// cacheMux guards the cache property from concurrent access.
 	cacheMux sync.Mutex
 
-	// cache is the list of scheduled move commands to execute.
-	cache map[id.EntityID]cacheRow
+	scheduledTickCache map[id.EntityID]id.Tick
+	destinationCache map[id.EntityID]*gdpb.Position
 }
 
 // New constructs a new move Visitor instance.
@@ -134,8 +117,9 @@ func New(
 		abstractGraph: abstractGraph,
 		dfStatus:      dfStatus,
 		dirties:       dirties,
-		cache:         map[id.EntityID]cacheRow{},
 		minPathLength: minPathLength,
+		scheduledTickCache: map[id.EntityID]id.Tick{},
+		destinationCache: map[id.EntityID]*gdpb.Position{},
 	}
 }
 
@@ -144,36 +128,36 @@ func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
 // scheduleUnsafe adds a move command to the cache.
 func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Position, isExternal bool) error {
-	if v.cache == nil {
-		v.cache = map[id.EntityID]cacheRow{}
+	if v.scheduledTickCache == nil {
+		v.scheduledTickCache = map[id.EntityID]id.Tick{}
+	}
+	if v.destinationCache == nil {
+		v.destinationCache = map[id.EntityID]*gdpb.Position{}
 	}
 
-	log.Printf("[%.f] Scheduling: (%.f, %v), cache[%v] == %v", v.dfStatus.Tick(), tick, dest, eid, v.cache[eid])
+	log.Printf("[%.f] Scheduling: (%.f, %v), scheduledTickCache[%v] == %v, destination == %v", v.dfStatus.Tick(), tick, dest, eid, v.scheduledTickCache[eid], v.destinationCache[eid])
 	log.Printf("%v, %v, new \"%v\", orig \"%v\"",
 		(
 			isExternal &&
-			!proto.Equal(dest, v.cache[eid].destination) &&
+			!proto.Equal(dest, v.destinationCache[eid]) &&
 			v.dfStatus.Tick() >= tick),
 		(
 			!isExternal &&
-			tick >= v.cache[eid].scheduledTick),
+			tick >= v.scheduledTickCache[eid]),
 		dest,
-		v.cache[eid].destination)
+		v.destinationCache[eid])
 
 	if (
 		(
 			isExternal &&
-			!proto.Equal(dest, v.cache[eid].destination) &&
+			!proto.Equal(dest, v.destinationCache[eid]) &&
 			v.dfStatus.Tick() >= tick) ||
 		(
 			!isExternal &&
-			tick >= v.cache[eid].scheduledTick)) {
+			tick >= v.scheduledTickCache[eid])) {
 		log.Printf("Scheduled")
-		v.cache[eid] = cacheRow{
-			scheduledTick: tick,
-			destination: dest,
-			// isExternal: isExternal,
-		}
+		v.scheduledTickCache[eid] = tick
+		v.destinationCache[eid] = dest
 	} else { log.Printf("NO Scheduled") }
 
 	return nil
@@ -204,14 +188,15 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	v.cacheMux.Lock()
 	defer v.cacheMux.Unlock()
 
-	cRow, found := v.cache[e.ID()]
+	scheduledTick, found := v.scheduledTickCache[e.ID()]
 	if !found {
 		return nil
 	}
-
-	if cRow.scheduledTick > tick {
+	if scheduledTick > tick {
 		return nil
 	}
+
+	destination := v.destinationCache[e.ID()]
 
 	c := e.Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE)
 	if c == nil {
@@ -220,16 +205,16 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 
 	log.Printf(
 		"[%.f] (client tick %.f) Move to %v, current pos == %v",
-		tick, cRow.scheduledTick, cRow.destination, c.Get(tick))
+		tick, scheduledTick, destination, c.Get(tick))
 
 	// TODO(minkezhang): proto.Clone the return values in map.astar.Path.
 	p, _, err := astar.Path(
 		v.tileMap,
 		v.abstractGraph,
 		// TODO(minkezhang): Investigate / decide if we should use
-		// cRow.scheduledTick instead.
+		// scheduledTick instead.
 		utils.MC(coordinate(c.Get(tick).(*gdpb.Position))),
-		utils.MC(coordinate(cRow.destination)),
+		utils.MC(coordinate(destination)),
 		v.minPathLength)
 	if err != nil {
 		// TODO(minkezhang): Handle error by logging and continuing.
@@ -264,19 +249,16 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	// Check for partial moves and delay next lookup iteration until a
 	// suitable time in the future.
 	lastPosition := position(p[len(p)-1].Val.GetCoordinate())
-	log.Println("MOVE: ", tick, proto.Equal(lastPosition, cRow.destination))
-	if proto.Equal(lastPosition, cRow.destination) {
-		// TODO(minkezhang): We need to keep track of current
-		// pending destination. Deleting here allows spam clicking.
-		// Consider two caches -- one for scheduling tick, and one for
-		// destination; delete scheduling tick here, and ignore
-		// destination cache. We iterate through less rows this way.
-		delete(v.cache, e.ID())
+	log.Println("MOVE: ", tick, proto.Equal(lastPosition, destination))
+	if proto.Equal(lastPosition, destination) {
+		// We need to keep track of current pending destination.
+		// Deleting the destination cache here allows spam clicking.
+		delete(v.scheduledTickCache, e.ID())
 	} else {
 		if err := v.scheduleUnsafe(
 			tick+ticksPerTile*id.Tick(len(p) - 1),
 			e.ID(),
-			cRow.destination,
+			destination,
 			false); err != nil {
 			// TODO(minkezhang): Handle error by logging and continuing.
 			return err
