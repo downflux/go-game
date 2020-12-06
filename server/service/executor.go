@@ -308,6 +308,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 				Tick:        e.statusImpl.Tick(),
 				EntityID:    id.EntityID(eid),
 				Destination: req.GetDestination(),
+				IsExternal: true,
 			},
 		); err != nil {
 			return err
