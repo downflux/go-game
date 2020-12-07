@@ -69,6 +69,7 @@ func getCache(v *Visitor, eid id.EntityID) cacheRow {
 
 func TestScheduleIdempotency(t *testing.T) {
 	const eid = "entity-id"
+	p0 := &gdpb.Position{X: 0, Y: 0}
 	p1 := &gdpb.Position{X: 1, Y: 1}
 	p2 := &gdpb.Position{X: 2, Y: 2}
 
@@ -94,12 +95,29 @@ func TestScheduleIdempotency(t *testing.T) {
 			v: newVisitor(t),
 		},
 		{
+			name: "TestScheduleDefaultPositionOverride",
+			moves: []Args{
+				Args{ EntityID: eid, Tick: 0, Destination: p0, IsExternal: true },
+			},
+			want: cacheRow{ scheduledTick: 0, destination: p0, isExternal: true },
+			v: newVisitor(t),
+		},
+		{
 			name: "TestSpamClickIdempotence",
 			moves: []Args{
 				Args{ EntityID: eid, Tick: 0, Destination: p1, IsExternal: true },
 				Args{ EntityID: eid, Tick: 1, Destination: p1, IsExternal: true },
 			},
 			want: cacheRow{ scheduledTick: 0, destination: p1, isExternal: true },
+			v: newVisitor(t),
+		},
+		{
+			name: "TestUpdatePartialMove",
+			moves: []Args{
+				Args{ EntityID: eid, Tick: 0, Destination: p1, IsExternal: true },
+				Args{ EntityID: eid, Tick: 1, Destination: p1, IsExternal: false },
+			},
+			want: cacheRow{ scheduledTick: 1, destination: p1, isExternal: false },
 			v: newVisitor(t),
 		},
 		{
@@ -189,7 +207,7 @@ func TestScheduleIdempotency(t *testing.T) {
 
 func TestSchedule(t *testing.T) {
 	const nClients = 1000
-	v := New(nil, nil, nil, nil, 0)
+	v := newVisitor(t)
 
 	var eg errgroup.Group
 	for i := 0; i < nClients; i++ {
@@ -198,6 +216,7 @@ func TestSchedule(t *testing.T) {
 			return v.Schedule(Args{
 				Tick: 0,
 				EntityID: id.EntityID(fmt.Sprintf("entity-%d", i)),
+				Destination: &gdpb.Position{X: 1, Y: 1},
 				IsExternal: true,
 			})
 		})

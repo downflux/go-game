@@ -142,18 +142,32 @@ func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Posit
 
 	_, isScheduled := v.partialCache[eid]
 
+	// log.Println(dest, v.destinationCache[eid])
+
 	if (
-		(
-			isExternal &&
-			!proto.Equal(dest, v.destinationCache[eid]) &&
-			v.dfStatus.Tick() >= tick &&
-			(
+		isExternal &&
+		// Only schedule an external move if the scheduled position
+		// is different from the previously scheduled one. Partial
+		// moves may bypass this check because the point is to update
+		// the execution tick.
+		!proto.Equal(dest, v.destinationCache[eid]) && (
+		// External moves may not be scheduled for the
+		// future.
+		v.dfStatus.Tick() >= tick && (
+			// External moves override all
+			// scheduled partial moves.
+			!v.partialCache[eid].isExternal || (
+				// External moves override all
+				// external moves, if those
+				// moves were scheduled for an
+				// earlier tick.
 				isScheduled &&
-				tick > v.partialCache[eid].scheduledTick ||
-				!v.partialCache[eid].isExternal)) ||
-		(
-			!isExternal &&
-			tick > v.partialCache[eid].scheduledTick)) {
+				tick > v.partialCache[eid].scheduledTick))) || (
+		!isExternal &&
+		// Internal moves only override existing
+		// internal move scheduled to execute at an
+		// earlier tick.
+		tick > v.partialCache[eid].scheduledTick)) {
 		v.partialCache[eid] = partialCacheRow{
 			scheduledTick: tick,
 			isExternal: isExternal,
