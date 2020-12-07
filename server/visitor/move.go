@@ -44,7 +44,7 @@ func coordinate(p *gdpb.Position) *gdpb.Coordinate {
 }
 
 func d(a, b *gdpb.Position) float64 {
-	return math.Sqrt(math.Pow(a.GetX() - b.GetX(), 2) + math.Pow(a.GetY() - b.GetY(), 2))
+	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
 }
 
 // position transforms a gdpb.Coordinate instance into a gdpb.Position
@@ -111,7 +111,7 @@ type Visitor struct {
 	// cacheMux guards the cache property from concurrent access.
 	cacheMux sync.Mutex
 
-	partialCache map[id.EntityID]partialCacheRow
+	partialCache     map[id.EntityID]partialCacheRow
 	destinationCache map[id.EntityID]*gdpb.Position
 }
 
@@ -123,12 +123,12 @@ func New(
 	dirties *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
-		tileMap:       tileMap,
-		abstractGraph: abstractGraph,
-		dfStatus:      dfStatus,
-		dirties:       dirties,
-		minPathLength: minPathLength,
-		partialCache: map[id.EntityID]partialCacheRow{},
+		tileMap:          tileMap,
+		abstractGraph:    abstractGraph,
+		dfStatus:         dfStatus,
+		dirties:          dirties,
+		minPathLength:    minPathLength,
+		partialCache:     map[id.EntityID]partialCacheRow{},
 		destinationCache: map[id.EntityID]*gdpb.Position{},
 	}
 }
@@ -149,29 +149,27 @@ func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Posit
 
 	// log.Println(dest, v.destinationCache[eid])
 
-	if (
-		isExternal &&
+	if isExternal &&
 		// Only schedule an external move if the scheduled position
 		// is different from the previously scheduled one. Partial
 		// moves may bypass this check because the point is to update
 		// the execution tick.
 		!proto.Equal(dest, v.destinationCache[eid]) && (
-		// External moves may not be scheduled for the future.
-		v.dfStatus.Tick() >= tick && (
-			// External moves override all scheduled partial moves.
-			!v.partialCache[eid].isExternal || (
-				// External moves override all external moves,
-				// if those moves were scheduled for an earlier
-				// tick.
-				isScheduled &&
-				tick > v.partialCache[eid].scheduledTick))) || (
-		!isExternal &&
+	// External moves may not be scheduled for the future.
+	v.dfStatus.Tick() >= tick && (
+	// External moves override all scheduled partial moves.
+	!v.partialCache[eid].isExternal || (
+	// External moves override all external moves,
+	// if those moves were scheduled for an earlier
+	// tick.
+	isScheduled &&
+		tick > v.partialCache[eid].scheduledTick))) || (!isExternal &&
 		// Internal moves only override existing internal move
 		// scheduled to execute at an earlier tick.
-		tick > v.partialCache[eid].scheduledTick)) {
+		tick > v.partialCache[eid].scheduledTick) {
 		v.partialCache[eid] = partialCacheRow{
 			scheduledTick: tick,
-			isExternal: isExternal,
+			isExternal:    isExternal,
 		}
 		v.destinationCache[eid] = dest
 	}
@@ -268,7 +266,7 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 		delete(v.partialCache, e.ID())
 	} else {
 		if err := v.scheduleUnsafe(
-			tick+ticksPerTile*id.Tick(len(p) - 1),
+			tick+ticksPerTile*id.Tick(len(p)-1),
 			e.ID(),
 			destination,
 			false); err != nil {

@@ -52,8 +52,8 @@ var (
 
 type cacheRow struct {
 	scheduledTick id.Tick
-	destination *gdpb.Position
-	isExternal bool
+	destination   *gdpb.Position
+	isExternal    bool
 }
 
 func getCache(v *Visitor, eid id.EntityID) cacheRow {
@@ -62,8 +62,8 @@ func getCache(v *Visitor, eid id.EntityID) cacheRow {
 
 	return cacheRow{
 		scheduledTick: v.partialCache[eid].scheduledTick,
-		destination: v.destinationCache[eid],
-		isExternal: v.partialCache[eid].isExternal,
+		destination:   v.destinationCache[eid],
+		isExternal:    v.partialCache[eid].isExternal,
 	}
 }
 
@@ -79,108 +79,108 @@ func TestScheduleIdempotency(t *testing.T) {
 	outOfOrderExternalMoveIdempotence := newVisitor(t)
 	outOfOrderExternalMoveIdempotence.dfStatus.IncrementTick()
 
-	testConfigs := []struct{
-		name string
+	testConfigs := []struct {
+		name  string
 		moves []Args
-		want cacheRow
-		v *Visitor
+		want  cacheRow
+		v     *Visitor
 	}{
 		{
 			name: "TestTrivialIdempotence",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 0, Destination: p1, IsExternal: true },
-				Args{ EntityID: eid, Tick: 0, Destination: p1, IsExternal: true },
+				{EntityID: eid, Tick: 0, Destination: p1, IsExternal: true},
+				{EntityID: eid, Tick: 0, Destination: p1, IsExternal: true},
 			},
-			want: cacheRow{ scheduledTick: 0, destination: p1, isExternal: true },
-			v: newVisitor(t),
+			want: cacheRow{scheduledTick: 0, destination: p1, isExternal: true},
+			v:    newVisitor(t),
 		},
 		{
 			name: "TestScheduleDefaultPositionOverride",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 0, Destination: p0, IsExternal: true },
+				{EntityID: eid, Tick: 0, Destination: p0, IsExternal: true},
 			},
-			want: cacheRow{ scheduledTick: 0, destination: p0, isExternal: true },
-			v: newVisitor(t),
+			want: cacheRow{scheduledTick: 0, destination: p0, isExternal: true},
+			v:    newVisitor(t),
 		},
 		{
 			name: "TestSpamClickIdempotence",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 0, Destination: p1, IsExternal: true },
-				Args{ EntityID: eid, Tick: 1, Destination: p1, IsExternal: true },
+				{EntityID: eid, Tick: 0, Destination: p1, IsExternal: true},
+				{EntityID: eid, Tick: 1, Destination: p1, IsExternal: true},
 			},
-			want: cacheRow{ scheduledTick: 0, destination: p1, isExternal: true },
-			v: newVisitor(t),
+			want: cacheRow{scheduledTick: 0, destination: p1, isExternal: true},
+			v:    newVisitor(t),
 		},
 		{
 			name: "TestUpdatePartialMove",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 0, Destination: p1, IsExternal: true },
-				Args{ EntityID: eid, Tick: 1, Destination: p1, IsExternal: false },
+				{EntityID: eid, Tick: 0, Destination: p1, IsExternal: true},
+				{EntityID: eid, Tick: 1, Destination: p1, IsExternal: false},
 			},
-			want: cacheRow{ scheduledTick: 1, destination: p1, isExternal: false },
-			v: newVisitor(t),
+			want: cacheRow{scheduledTick: 1, destination: p1, isExternal: false},
+			v:    newVisitor(t),
 		},
 		{
 			name: "TestExternalFutureScheduleNoOp",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 1, Destination: p1, IsExternal: true },
+				{EntityID: eid, Tick: 1, Destination: p1, IsExternal: true},
 			},
-			want: cacheRow{ scheduledTick: 0, destination: nil, isExternal: false },
-			v: newVisitor(t),
+			want: cacheRow{scheduledTick: 0, destination: nil, isExternal: false},
+			v:    newVisitor(t),
 		},
 		{
 			name: "TestInOrderExternalMoveUpdate",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 0, Destination: p1, IsExternal: true },
-				Args{ EntityID: eid, Tick: 1, Destination: p2, IsExternal: true },
+				{EntityID: eid, Tick: 0, Destination: p1, IsExternal: true},
+				{EntityID: eid, Tick: 1, Destination: p2, IsExternal: true},
 			},
-			want: cacheRow{ scheduledTick: 1, destination: p2, isExternal: true },
-			v: inOrderExternalMoveUpdate,
+			want: cacheRow{scheduledTick: 1, destination: p2, isExternal: true},
+			v:    inOrderExternalMoveUpdate,
 		},
 		{
 			name: "TestInternalMovePastNoOp",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 1, Destination: p1, IsExternal: false },
-				Args{ EntityID: eid, Tick: 0, Destination: p2, IsExternal: false },
+				{EntityID: eid, Tick: 1, Destination: p1, IsExternal: false},
+				{EntityID: eid, Tick: 0, Destination: p2, IsExternal: false},
 			},
-			want: cacheRow{ scheduledTick: 1, destination: p1, isExternal: false },
-			v: newVisitor(t),
+			want: cacheRow{scheduledTick: 1, destination: p1, isExternal: false},
+			v:    newVisitor(t),
 		},
 		{
 			name: "TestInternalMove",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 0, Destination: p1, IsExternal: false },
-				Args{ EntityID: eid, Tick: 1, Destination: p2, IsExternal: false },
+				{EntityID: eid, Tick: 0, Destination: p1, IsExternal: false},
+				{EntityID: eid, Tick: 1, Destination: p2, IsExternal: false},
 			},
-			want: cacheRow{ scheduledTick: 1, destination: p2, isExternal: false },
-			v: newVisitor(t),
+			want: cacheRow{scheduledTick: 1, destination: p2, isExternal: false},
+			v:    newVisitor(t),
 		},
 		{
 			name: "TestExternalMovePastPrecedence",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 1, Destination: p1, IsExternal: false },
-				Args{ EntityID: eid, Tick: 0, Destination: p2, IsExternal: true },
+				{EntityID: eid, Tick: 1, Destination: p1, IsExternal: false},
+				{EntityID: eid, Tick: 0, Destination: p2, IsExternal: true},
 			},
-			want: cacheRow{ scheduledTick: 0, destination: p2, isExternal: true },
-			v: outOfOrderExternalMoveIdempotence,
+			want: cacheRow{scheduledTick: 0, destination: p2, isExternal: true},
+			v:    outOfOrderExternalMoveIdempotence,
 		},
 		{
 			name: "TestExternalMovePastNoOp",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 1, Destination: p1, IsExternal: true },
-				Args{ EntityID: eid, Tick: 0, Destination: p2, IsExternal: true },
+				{EntityID: eid, Tick: 1, Destination: p1, IsExternal: true},
+				{EntityID: eid, Tick: 0, Destination: p2, IsExternal: true},
 			},
-			want: cacheRow{ scheduledTick: 1, destination: p1, isExternal: true },
-			v: outOfOrderExternalMoveIdempotence,
+			want: cacheRow{scheduledTick: 1, destination: p1, isExternal: true},
+			v:    outOfOrderExternalMoveIdempotence,
 		},
 		{
 			name: "TestExternalMoveSameTickNoOp",
 			moves: []Args{
-				Args{ EntityID: eid, Tick: 0, Destination: p1, IsExternal: true },
-				Args{ EntityID: eid, Tick: 0, Destination: p2, IsExternal: true },
+				{EntityID: eid, Tick: 0, Destination: p1, IsExternal: true},
+				{EntityID: eid, Tick: 0, Destination: p2, IsExternal: true},
 			},
-			want: cacheRow{ scheduledTick: 0, destination: p1, isExternal: true },
-			v: newVisitor(t),
+			want: cacheRow{scheduledTick: 0, destination: p1, isExternal: true},
+			v:    newVisitor(t),
 		},
 	}
 
@@ -214,10 +214,10 @@ func TestSchedule(t *testing.T) {
 		i := i
 		eg.Go(func() error {
 			return v.Schedule(Args{
-				Tick: 0,
-				EntityID: id.EntityID(fmt.Sprintf("entity-%d", i)),
+				Tick:        0,
+				EntityID:    id.EntityID(fmt.Sprintf("entity-%d", i)),
 				Destination: &gdpb.Position{X: 1, Y: 1},
-				IsExternal: true,
+				IsExternal:  true,
 			})
 		})
 	}

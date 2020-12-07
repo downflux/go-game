@@ -160,7 +160,9 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 	var entities []*gdpb.Entity
 
 	tailTick := e.statusImpl.Tick() - 100
-	if tailTick < 0 { tailTick = 0 }
+	if tailTick < 0 {
+		tailTick = 0
+	}
 
 	// TODO(minkezhang): Make concurrent.
 	for _, de := range e.dirties.PopEntities() {
@@ -308,7 +310,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 				Tick:        e.statusImpl.Tick(),
 				EntityID:    id.EntityID(eid),
 				Destination: req.GetDestination(),
-				IsExternal: true,
+				IsExternal:  true,
 			},
 		); err != nil {
 			return err
