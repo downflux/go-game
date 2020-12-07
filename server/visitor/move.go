@@ -156,22 +156,18 @@ func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Posit
 		// moves may bypass this check because the point is to update
 		// the execution tick.
 		!proto.Equal(dest, v.destinationCache[eid]) && (
-		// External moves may not be scheduled for the
-		// future.
+		// External moves may not be scheduled for the future.
 		v.dfStatus.Tick() >= tick && (
-			// External moves override all
-			// scheduled partial moves.
+			// External moves override all scheduled partial moves.
 			!v.partialCache[eid].isExternal || (
-				// External moves override all
-				// external moves, if those
-				// moves were scheduled for an
-				// earlier tick.
+				// External moves override all external moves,
+				// if those moves were scheduled for an earlier
+				// tick.
 				isScheduled &&
 				tick > v.partialCache[eid].scheduledTick))) || (
 		!isExternal &&
-		// Internal moves only override existing
-		// internal move scheduled to execute at an
-		// earlier tick.
+		// Internal moves only override existing internal move
+		// scheduled to execute at an earlier tick.
 		tick > v.partialCache[eid].scheduledTick)) {
 		v.partialCache[eid] = partialCacheRow{
 			scheduledTick: tick,
