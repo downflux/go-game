@@ -72,6 +72,11 @@ type Args struct {
 	IsExternal bool
 }
 
+type partialCacheRow struct {
+	scheduledTick id.Tick
+	isExternal bool
+}
+
 // Visitor mutates the Entity position Curve. This struct implements the
 // visitor.Visitor interface.
 type Visitor struct {
@@ -101,7 +106,7 @@ type Visitor struct {
 	// cacheMux guards the cache property from concurrent access.
 	cacheMux sync.Mutex
 
-	scheduledTickCache map[id.EntityID]id.Tick
+	partialCache map[id.EntityID]partialCacheRow
 	destinationCache map[id.EntityID]*gdpb.Position
 }
 
@@ -118,7 +123,7 @@ func New(
 		dfStatus:      dfStatus,
 		dirties:       dirties,
 		minPathLength: minPathLength,
-		scheduledTickCache: map[id.EntityID]id.Tick{},
+		partialCache: map[id.EntityID]partialCacheRow{},
 		destinationCache: map[id.EntityID]*gdpb.Position{},
 	}
 }
@@ -128,37 +133,33 @@ func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
 // scheduleUnsafe adds a move command to the cache.
 func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Position, isExternal bool) error {
-	if v.scheduledTickCache == nil {
-		v.scheduledTickCache = map[id.EntityID]id.Tick{}
+	if v.partialCache == nil {
+		v.partialCache = map[id.EntityID]partialCacheRow{}
 	}
 	if v.destinationCache == nil {
 		v.destinationCache = map[id.EntityID]*gdpb.Position{}
 	}
 
-	log.Printf("[%.f] Scheduling: (%.f, %v), scheduledTickCache[%v] == %v, destination == %v", v.dfStatus.Tick(), tick, dest, eid, v.scheduledTickCache[eid], v.destinationCache[eid])
-	log.Printf("%v, %v, new \"%v\", orig \"%v\"",
-		(
-			isExternal &&
-			!proto.Equal(dest, v.destinationCache[eid]) &&
-			v.dfStatus.Tick() >= tick),
-		(
-			!isExternal &&
-			tick >= v.scheduledTickCache[eid]),
-		dest,
-		v.destinationCache[eid])
+	_, isScheduled := v.partialCache[eid]
 
 	if (
 		(
 			isExternal &&
 			!proto.Equal(dest, v.destinationCache[eid]) &&
-			v.dfStatus.Tick() >= tick) ||
+			v.dfStatus.Tick() >= tick &&
+			(
+				isScheduled &&
+				tick > v.partialCache[eid].scheduledTick ||
+				!v.partialCache[eid].isExternal)) ||
 		(
 			!isExternal &&
-			tick >= v.scheduledTickCache[eid])) {
-		log.Printf("Scheduled")
-		v.scheduledTickCache[eid] = tick
+			tick > v.partialCache[eid].scheduledTick)) {
+		v.partialCache[eid] = partialCacheRow{
+			scheduledTick: tick,
+			isExternal: isExternal,
+		}
 		v.destinationCache[eid] = dest
-	} else { log.Printf("NO Scheduled") }
+	}
 
 	return nil
 }
@@ -188,11 +189,11 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	v.cacheMux.Lock()
 	defer v.cacheMux.Unlock()
 
-	scheduledTick, found := v.scheduledTickCache[e.ID()]
+	partialCache, found := v.partialCache[e.ID()]
 	if !found {
 		return nil
 	}
-	if scheduledTick > tick {
+	if partialCache.scheduledTick > tick {
 		return nil
 	}
 
@@ -202,10 +203,6 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	if c == nil {
 		return nil
 	}
-
-	log.Printf(
-		"[%.f] (client tick %.f) Move to %v, current pos == %v",
-		tick, scheduledTick, destination, c.Get(tick))
 
 	// TODO(minkezhang): proto.Clone the return values in map.astar.Path.
 	p, _, err := astar.Path(
@@ -253,7 +250,7 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	if proto.Equal(lastPosition, destination) {
 		// We need to keep track of current pending destination.
 		// Deleting the destination cache here allows spam clicking.
-		delete(v.scheduledTickCache, e.ID())
+		delete(v.partialCache, e.ID())
 	} else {
 		if err := v.scheduleUnsafe(
 			tick+ticksPerTile*id.Tick(len(p) - 1),
