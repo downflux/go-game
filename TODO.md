@@ -11,11 +11,12 @@
 * [x] merge Executor.isStarted and isStopped
 * [x] add ClientID, EntityID, Tick data types
 * [x] add server documentation
+* [x] make `maps/astar.Path` take in `Position`; last move is to the Position offset
+* [x] ensure client still works with refactors
+* [x] add tests for move.Visitor
 * [ ] **rename CurveCategory to EntityProperty**
-* [ ] make `maps/astar.Path` take in `Position`; last move is to the Position offset
 * [ ] add API documentation
-* [ ] ensure client still works with refactors
-* [ ] add tests for Visitor
+* [ ] add tests for produce.Visitor
 * [ ] add tests for Status
 * [ ] add tests for Entity
 * [ ] add client documentation
@@ -28,7 +29,7 @@
 * [x] add Run() which iterates through Tick()
 * [x] consider what to do with partial moves -- refactor out commandQueue with cancellation, etc.
 * [x] add Produce() Visitor
-* [ ] **add entity click-drag-select action**
+* [x] add entity click-drag-select action
 * [ ] add game state export / import
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
 * [ ] replace pathfinding with flow fields
