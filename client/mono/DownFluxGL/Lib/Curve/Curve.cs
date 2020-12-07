@@ -37,6 +37,7 @@ namespace DF {
         return _tick.CompareTo(d._tick);
       }
 
+      public override string ToString() { return _tick.ToString() + ": " + _value.ToString(); }
       public static bool operator <(datum a, datum b) => a.Tick < b.Tick;
       public static bool operator >(datum a, datum b) => a.Tick > b.Tick;
     }
@@ -70,6 +71,10 @@ namespace DF {
       public double Tick { get => _tick; }
 
       public void ReplaceTail(LinearMove curve) {
+        System.Console.Error.WriteLine("--------------------- DEBUG: REPLACETAIL _tick");
+        System.Console.Error.WriteLine(_tick);
+        System.Console.Error.WriteLine("--------------------- DEBUG: REPLACETAIL curve.Tick");
+        System.Console.Error.WriteLine(curve.Tick);
         if (_tick > curve.Tick) {
           return;
         }
@@ -90,6 +95,8 @@ namespace DF {
         }
 
         _data.AddRange(curve._data);
+
+        System.Console.Error.WriteLine(string.Join(", ", _data));
       }
 
       public DF.Game.API.Data.Position Get(double tick) {

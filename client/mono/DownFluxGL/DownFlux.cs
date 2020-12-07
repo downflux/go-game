@@ -6,9 +6,17 @@ namespace DownFluxGL
 {
     public class DownFlux : Game
     {
+        private DF.Input.Event.Mouse _mouseState;
+
+	private bool _mouseDown;
+        private Microsoft.Xna.Framework.Point m0, m1;
+
         private static int tileWidth = 100;
 
         Texture2D ballTexture;
+        Texture2D boxTexture;
+        private Microsoft.Xna.Framework.Rectangle selectionBox;
+        private System.Collections.Generic.HashSet<string> _selectedEntities;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -36,6 +44,9 @@ namespace DownFluxGL
               DF.Curve.Curve>();
             _entities = new System.Collections.Generic.Dictionary<
               string, DF.Entity.Entity>();
+            _selectedEntities = new System.Collections.Generic.HashSet<string>();
+
+            _mouseState = new DF.Input.Event.Mouse();
 
             // TODO(minkezhang): Figure out why we can't control actual window
             // size here.
@@ -66,7 +77,7 @@ namespace DownFluxGL
             }
 
             // TODO(minkezhang): Make this async task actually have a Wait()
-            // somewhere.
+            // in destructor.
             // _c.StreamDataLoop(_tid).Start();
             System.Threading.Tasks.Task.Run(() => _c.StreamDataLoop(tick));
 
@@ -78,10 +89,45 @@ namespace DownFluxGL
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             ballTexture = Content.Load<Texture2D>("Assets/ball");
+            boxTexture = Content.Load<Texture2D>("Assets/blackpixel");
         }
 
         protected override void Update(GameTime gameTime)
         {
+            var ms = _mouseState.GetState();
+            var recalculateBox = false;
+            var selectEntities = false;
+            var doAction = false;
+            _mouseDown = ms.IsHeld();
+
+            if (ms.IsPressed()) {
+              m0 = new Microsoft.Xna.Framework.Point(ms.State.X, ms.State.Y);
+              m1 = new Microsoft.Xna.Framework.Point(ms.State.X, ms.State.Y);
+            } else if (ms.IsHeld()) {
+              m1 = new Microsoft.Xna.Framework.Point(ms.State.X, ms.State.Y);
+            } else if (ms.IsReleased()) {
+              // TODO(minkezhang): Add some leeway here -- fast clicks may
+              // accidentally turn into a drag motion.
+              if (m0 == m1) {
+                doAction = true;
+              } else {
+                selectEntities = true;
+              }
+            }
+            recalculateBox = ms.IsHeld();
+
+            if (selectEntities) {
+              _selectedEntities.Clear();
+            }
+
+            if (recalculateBox) {
+              selectionBox = new Microsoft.Xna.Framework.Rectangle(
+                System.Math.Min(m0.X, m1.X),
+                System.Math.Min(m0.Y, m1.Y),
+                System.Math.Abs(m1.X - m0.X),
+                System.Math.Abs(m1.Y - m0.Y));
+            }
+
             var tick = (System.DateTime.Now - _serverStartTime) / _serverTickDuration;
 
             // TODO(minkezhang): Determine if we need d to be a CurveStream
@@ -90,7 +136,10 @@ namespace DownFluxGL
               d.Item2.Switch(
                 linearMove => {
                   if (!_curves.ContainsKey((linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move))) {
-                    System.Console.Error.WriteLine(linearMove);
+                    System.Console.Error.WriteLine("DEBUG: ---------------- client tick: ");
+                    System.Console.Error.WriteLine(tick);
+                    System.Console.Error.WriteLine("DEBUG: ---------------- server tick: ");
+                    System.Console.Error.WriteLine(linearMove.Tick);
                     _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)] = linearMove;
                   } else {
                     _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)].AsT0.ReplaceTail(linearMove);
@@ -104,22 +153,43 @@ namespace DownFluxGL
                 simpleEntity => {
                   if (!_entities.ContainsKey(simpleEntity.ID)) {
                     _entities[simpleEntity.ID] = simpleEntity;
-
-                    // TODO(minkezhang): Call Move() only when user clicks on map.
-                    _c.Move(
-                      tick,
-                      new System.Collections.Generic.List<string>(){simpleEntity.ID},
-                      new DF.Game.API.Data.Position{
-                        X = 5,
-                        Y = 5
-                      },
-                      DF.Game.API.Constants.MoveType.Forward
-                    );
                   }
                 }
               );
             }
 
+            foreach (var e in _entities) {
+              e.Value.Switch(
+                simpleEntity => {
+                  DF.Curve.Curve c;
+                  if (selectEntities && !_selectedEntities.Contains(simpleEntity.ID)) {
+                    _curves.TryGetValue((simpleEntity.ID, DF.Game.API.Constants.CurveCategory.Move), out c);
+                    c.Switch(
+                      linearMove => {
+                        var p = linearMove.Get(tick);
+                        if (selectionBox.Contains(new Microsoft.Xna.Framework.Vector2((float) p.X * tileWidth, (float) p.Y * tileWidth))) {
+                          _selectedEntities.Add(simpleEntity.ID);
+                        }
+                      }
+                    );
+                  };
+                }
+              );
+            }
+
+            if (doAction) {
+              if (_selectedEntities.Count > 0) {
+                _c.Move(
+                  tick,
+                    new System.Collections.Generic.List<string>(_selectedEntities),
+                    new DF.Game.API.Data.Position{
+                      X = ms.State.X / tileWidth,
+                      Y = ms.State.Y / tileWidth
+                    },
+                    DF.Game.API.Constants.MoveType.Forward
+                );
+              }
+            }
             base.Update(gameTime);
         }
 
@@ -131,10 +201,17 @@ namespace DownFluxGL
 
             _spriteBatch.Begin();
 
+            if (_mouseDown) {
+              _spriteBatch.Draw(boxTexture, selectionBox, Color.White);
+            }
+
             foreach (var c in _curves) {
               c.Value.Switch(
                 linearMove => {
                   var p = linearMove.Get(tick);
+                  System.Console.Error.WriteLine(
+                    "DEBUG: TICK " + tick.ToString() + ", pos: " + p.ToString());
+
 
                   _spriteBatch.Draw(
                     ballTexture,

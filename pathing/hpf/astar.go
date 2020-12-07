@@ -134,10 +134,10 @@ func Path(tm *tile.Map, g *graph.Graph, src, dest utils.MapCoordinate, l int) ([
 			p = append(p, tm.TileFromCoordinate(utils.PB(t2)))
 		}
 
-		for _, n := range p {
-			if l == 0 || len(path) < l {
-				path = append(path, n)
-			}
+		// Append the entire cluster path here to potentially save some
+		// cycles in the future.
+		if l == 0 || len(path) < l {
+			path = append(path, p...)
 		}
 	}
 

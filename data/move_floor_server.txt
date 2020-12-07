@@ -1,0 +1,6 @@
+2020/12/03 22:25:55 server.go:116: DEBUG: got Move(tick:515.974712  client_id:"JJjKWZdK"  entity_ids:"bPlNFGdS"  destination:{x:6  y:2}  move_type:MOVE_TYPE_FORWARD)
+2020/12/03 22:25:55 move.go:211: MOVE:  513 true
+2020/12/03 22:25:56 server.go:116: DEBUG: got Move(tick:525.307959  client_id:"JJjKWZdK"  entity_ids:"bPlNFGdS"  destination:{x:6  y:2}  move_type:MOVE_TYPE_FORWARD)
+2020/12/03 22:25:56 move.go:211: MOVE:  522 true
+2020/12/03 22:26:02 server.go:116: DEBUG: got Move(tick:585.641412  client_id:"JJjKWZdK"  entity_ids:"bPlNFGdS"  destination:{x:1  y:2}  move_type:MOVE_TYPE_FORWARD)
+2020/12/03 22:26:02 move.go:211: MOVE:  581 true

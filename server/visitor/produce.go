@@ -108,10 +108,6 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 
 	tick := v.dfStatus.Tick()
 
-	var eid id.EntityID
-	for eid = id.EntityID(id.RandomString(entityIDLen)); e.(*entitylist.List).Get(eid) != nil; eid = id.EntityID(id.RandomString(entityIDLen)) {
-	}
-
 	var err error
 	for t := id.Tick(0); t <= tick; t++ {
 		if te := func() error {
@@ -119,6 +115,11 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 
 			var err error
 			for i, cRow := range v.cache[t] {
+				var eid id.EntityID = id.EntityID(id.RandomString(entityIDLen))
+				for e.(*entitylist.List).Get(eid) != nil {
+					eid = id.EntityID(id.RandomString(entityIDLen))
+				}
+
 				if te := func() error {
 					defer func() { v.cache[t][i] = cacheRow{} }()
 

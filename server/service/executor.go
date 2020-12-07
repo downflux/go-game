@@ -41,6 +41,10 @@ const (
 	// entityListID is a preset ID for the global EntityList Entity
 	// instance.
 	entityListID = "entity-list"
+
+	// minPathLength represents the minimum lookahead path length to
+	// calculate, where the path is a list of tile.Map coordinates.
+	minPathLength = 8
 )
 
 var (
@@ -108,7 +112,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	visitors, err := visitorlist.New(
 		[]visitor.Visitor{
 			produce.New(statusImpl, dirties),
-			move.New(tm, g, statusImpl, dirties, 10),
+			move.New(tm, g, statusImpl, dirties, minPathLength),
 		},
 	)
 	if err != nil {
@@ -155,6 +159,11 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 	var curves []*gdpb.Curve
 	var entities []*gdpb.Entity
 
+	tailTick := e.statusImpl.Tick() - 100
+	if tailTick < 0 {
+		tailTick = 0
+	}
+
 	// TODO(minkezhang): Make concurrent.
 	for _, de := range e.dirties.PopEntities() {
 		entities = append(entities, &gdpb.Entity{
@@ -166,7 +175,7 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 		curves = append(
 			curves,
 			e.entities.Get(
-				dc.EntityID).Curve(dc.Category).ExportTail(e.statusImpl.Tick()))
+				dc.EntityID).Curve(dc.Category).ExportTail(tailTick))
 	}
 
 	return curves, entities
@@ -198,8 +207,6 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 // broadcastCurves will send the current game state delta or full game state to
 // all connected clients. This is a blocking call.
 func (e *Executor) broadcastCurves() error {
-	log.Printf("[%.f]: broadcasting curves", e.statusImpl.Tick())
-
 	curves, entities := e.popTickQueue()
 
 	return e.clients.Broadcast(
@@ -266,8 +273,14 @@ func (e *Executor) doTick() error {
 
 	// TODO(minkezhang): Add metrics collection here for tick
 	// distribution.
-	if d := time.Now().Sub(t); d < tickDuration {
-		time.Sleep(tickDuration - d)
+	u := e.statusImpl.StartTime().Add(
+		time.Duration(e.statusImpl.Tick()) * tickDuration).Sub(t)
+	if u < tickDuration {
+		time.Sleep(u)
+	} else {
+		log.Printf(
+			"[%.f] took too long: execution time %v > %v",
+			e.statusImpl.Tick(), u, tickDuration)
 	}
 	return nil
 }
@@ -297,6 +310,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 				Tick:        e.statusImpl.Tick(),
 				EntityID:    id.EntityID(eid),
 				Destination: req.GetDestination(),
+				IsExternal:  true,
 			},
 		); err != nil {
 			return err

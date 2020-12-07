@@ -80,13 +80,16 @@ namespace DF {
         System.Collections.Generic.List<string> entityIDs,
         DF.Game.API.Data.Position destination,
         DF.Game.API.Constants.MoveType moveType) {
-        _client.Move(new DF.Game.API.API.MoveRequest{
+        var request = new DF.Game.API.API.MoveRequest{
           ClientId = ID,
           Tick = tick,
           EntityIds = { entityIDs },
           Destination = destination,
           MoveType = moveType,
-        });
+        };
+
+        // System.Console.Error.WriteLine(request);
+        _client.Move(request);
       }
 
       public async System.Threading.Tasks.Task StreamDataLoop(double tick) {
@@ -99,7 +102,9 @@ namespace DF {
             while (await s.MoveNext(_ct)) {
               System.Console.Error.WriteLine("StreamDataLoop: RECEIVED");
               var resp = s.Current;
-              System.Console.Error.WriteLine(resp);
+              System.Console.Error.WriteLine(new Google.Protobuf.JsonFormatter(
+                Google.Protobuf.JsonFormatter.Settings.Default
+              ).Format(resp));
 
               _curvesMutex.AcquireWriterLock(1000);  // 1 sec
               try {
