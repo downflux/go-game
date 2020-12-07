@@ -12,11 +12,11 @@ import (
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/google/go-cmp/cmp"
-	// "github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/testing/protocmp"
 
-	// gcpb "github.com/downflux/game/api/constants_go_proto"
+	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	mcpb "github.com/downflux/game/map/api/constants_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
@@ -282,48 +282,6 @@ func TestVisitFutureSchedule(t *testing.T) {
 	}
 }
 
-/*
-func TestVisitSpam(t *testing.T) {
-	const eid = "entity-id"
-	dest := &gdpb.Position{X: 2, Y: 0}
-	const t0 = 0
-
-	v := newVisitor(t)
-	e := tank.New(eid, t0, &gdpb.Position{X: 0, Y: 0})
-	v.Schedule(Args{Tick: t0, EntityID: eid, Destination: dest})
-
-	if err := v.Visit(e); err != nil {
-		t.Fatalf("Visit() = %v, want = nil", err)
-	}
-
-	func(t *testing.T) {
-		want := cacheRow{
-			destination:   dest,
-		}
-
-		v.cacheMux.Lock()
-		defer v.cacheMux.Unlock()
-
-		got := v.cache[eid]
-		if diff := cmp.Diff(
-			want,
-			got,
-			cmp.AllowUnexported(cacheRow{}),
-			cmpopts.IgnoreFields(cacheRow{}, "scheduledTick"),
-			protocmp.Transform()); diff != "" {
-			t.Fatalf("cache[] mismatch (-want +got):\n%v", diff)
-		}
-	}(t)
-
-	want := dirty.Curve{
-		Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
-		EntityID: eid,
-	}
-	if got := v.dirties.Pop(); got[0] != want {
-		t.Errorf("Pop() = %v, want = %v", got[0], want)
-	}
-}
-
 func TestVisit(t *testing.T) {
 	const eid = "entity-id"
 	dest := &gdpb.Position{X: 2, Y: 0}
@@ -331,23 +289,19 @@ func TestVisit(t *testing.T) {
 
 	v := newVisitor(t)
 	e := tank.New(eid, t0, &gdpb.Position{X: 0, Y: 0})
-	v.Schedule(Args{Tick: t0, EntityID: eid, Destination: dest})
+	v.Schedule(Args{Tick: t0, EntityID: eid, Destination: dest, IsExternal: true})
 
 	if err := v.Visit(e); err != nil {
 		t.Fatalf("Visit() = %v, want = nil", err)
 	}
 
 	func(t *testing.T) {
-		want := cacheRow{
-			destination:   dest,
-		}
-
 		v.cacheMux.Lock()
 		defer v.cacheMux.Unlock()
 
-		got := v.cache[eid]
+		got := v.destinationCache[eid]
 		if diff := cmp.Diff(
-			want,
+			dest,
 			got,
 			cmp.AllowUnexported(cacheRow{}),
 			cmpopts.IgnoreFields(cacheRow{}, "scheduledTick"),
@@ -364,4 +318,3 @@ func TestVisit(t *testing.T) {
 		t.Errorf("Pop() = %v, want = %v", got[0], want)
 	}
 }
- */

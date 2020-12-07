@@ -69,11 +69,16 @@ type Args struct {
 
 	// IsExternal indicates if the move request was issued by an external
 	// client.
+	// TODO(minkezhang): Delete this. This is an alias for IsPartial, which
+	// may only be scheduled by the move Visitor itself. If we want a IsBot
+	// bool, we should add that separately.
 	IsExternal bool
 }
 
 type partialCacheRow struct {
 	scheduledTick id.Tick
+
+	// TODO(minkezhang): Rename to isPartial.
 	isExternal bool
 }
 
