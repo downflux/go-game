@@ -194,6 +194,13 @@ func TestSendMoveCommand(t *testing.T) {
 			Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
 			Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
 			Data: []*gdpb.CurveDatum{
+				// First element is the current position of
+				// the entity. This is necessary for the client
+				// to do a smooth interpolation.
+				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+
+				// Following elements relate to the actual tile
+				// coordinates for the path.
 				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
 				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 1, Y: 0}}},
 				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 2, Y: 0}}},

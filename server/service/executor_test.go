@@ -124,9 +124,6 @@ func TestAddEntity(t *testing.T) {
 	}
 }
 
-// TODO(minkezhang): Test sending Move request on a stale tick -- what should
-// actually occur in the response?
-
 func TestDoMove(t *testing.T) {
 	const (
 		t0       = float64(0)
