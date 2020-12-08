@@ -2,7 +2,6 @@
 package move
 
 import (
-	"log"
 	"math"
 	"sync"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/entity/entity"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/visitor/dirty"
@@ -85,6 +85,9 @@ type partialCacheRow struct {
 // Visitor mutates the Entity position Curve. This struct implements the
 // visitor.Visitor interface.
 type Visitor struct {
+	visitor.Base
+	visitor.Leaf
+
 	// tileMap is the underlying Map object used for the game.
 	tileMap *tile.Map
 
@@ -147,8 +150,6 @@ func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Posit
 
 	_, isScheduled := v.partialCache[eid]
 
-	// log.Println(dest, v.destinationCache[eid])
-
 	if isExternal &&
 		// Only schedule an external move if the scheduled position
 		// is different from the previously scheduled one. Partial
@@ -191,7 +192,12 @@ func (v *Visitor) Schedule(args interface{}) error {
 //
 // TODO(minkezhang): Observe "spam clicking behavior" and find out why client
 // keeps "jumping" the coordinate.
-func (v *Visitor) Visit(e visitor.Entity) error {
+func (v *Visitor) Visit(a visitor.Agent) error {
+	if a.AgentType() != vcpb.AgentType_AGENT_TYPE_ENTITY {
+		return nil
+	}
+
+	e := a.(entity.Entity)
 	if e.Type() != gcpb.EntityType_ENTITY_TYPE_TANK {
 		return nil
 	}
@@ -259,7 +265,6 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 	// Check for partial moves and delay next lookup iteration until a
 	// suitable time in the future.
 	lastPosition := position(p[len(p)-1].Val.GetCoordinate())
-	log.Println("MOVE: ", tick, proto.Equal(lastPosition, destination))
 	if proto.Equal(lastPosition, destination) {
 		// We need to keep track of current pending destination.
 		// Deleting the destination cache here allows spam clicking.

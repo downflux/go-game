@@ -15,7 +15,7 @@ import (
 // Tank implements the visitor.Entity interface and represents a simple armored
 // unit.
 type Tank struct {
-	entity.BaseEntity
+	entity.Base
 
 	// eid is a UUID of the Entity.
 	eid id.EntityID

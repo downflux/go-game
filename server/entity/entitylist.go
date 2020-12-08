@@ -1,5 +1,5 @@
-// Package entitylist implements the visitor.Entity interface for a list
-// tracking all game Entity instances.
+// Package entitylist implements the Entity interface for a list tracking all
+// game Entity instances.
 package entitylist
 
 import (
@@ -15,21 +15,21 @@ import (
 
 // List implements the Entity interface for tracking all entities in a game.
 type List struct {
-	entity.BaseEntity
-	entity.NoCurveEntity
+	entity.Base
+	entity.NoCurve
 
 	// eid is the UUID of the entity.
 	eid id.EntityID
 
 	// entities is the list of all registered game entities, other than the
 	// List instance itself.
-	entities map[id.EntityID]visitor.Entity
+	entities map[id.EntityID]entity.Entity
 }
 
 // New constructs a new instance of the List.
 func New(eid id.EntityID) *List {
 	return &List{
-		entities: map[id.EntityID]visitor.Entity{},
+		entities: map[id.EntityID]entity.Entity{},
 		eid:      eid,
 	}
 }
@@ -39,14 +39,14 @@ func (l *List) ID() id.EntityID { return l.eid }
 
 // Get returns a specific Entity instance, given the UUID. Get returns nil if
 // the UUID specified is the ID of the List.
-func (l *List) Get(eid id.EntityID) visitor.Entity {
+func (l *List) Get(eid id.EntityID) entity.Entity {
 	return l.entities[eid]
 }
 
 // Iter returns the list of Entity instances tracked by the List. This is used
 // for loop ranges.
-func (l *List) Iter() []visitor.Entity {
-	var entities []visitor.Entity
+func (l *List) Iter() []entity.Entity {
+	var entities []entity.Entity
 	for _, e := range l.entities {
 		entities = append(entities, e)
 	}
@@ -57,7 +57,7 @@ func (l *List) Iter() []visitor.Entity {
 // Add tracks a new Entity instance.
 //
 // TODO(minkezhang): Rename to Append.
-func (l *List) Add(e visitor.Entity) error {
+func (l *List) Add(e entity.Entity) error {
 	if _, found := l.entities[e.ID()]; found {
 		return status.Error(codes.AlreadyExists, "an entity already exists with the given ID")
 	}

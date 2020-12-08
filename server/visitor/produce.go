@@ -4,6 +4,7 @@ package produce
 import (
 	"sync"
 
+	"github.com/downflux/game/server/entity/entity"
 	"github.com/downflux/game/server/entity/entitylist"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/id"
@@ -51,6 +52,9 @@ type cacheRow struct {
 // Visitor adds a new Entity to the global state. This struct implements the
 // visitor.Visitor interface.
 type Visitor struct {
+	visitor.Base
+	visitor.Leaf
+
 	// dirties is a reference to the global cache of mutated Curve and
 	// Entity instances.
 	dirties *dirty.List
@@ -98,15 +102,19 @@ func (v *Visitor) Schedule(args interface{}) error {
 }
 
 // Visit mutates an EntityList with a new Entity.
-func (v *Visitor) Visit(e visitor.Entity) error {
-	v.cacheMux.Lock()
-	defer v.cacheMux.Unlock()
-
-	if e.Type() != gcpb.EntityType_ENTITY_TYPE_ENTITY_LIST {
+func (v *Visitor) Visit(a visitor.Agent) error {
+	if a.AgentType() != vcpb.AgentType_AGENT_TYPE_ENTITY {
 		return nil
 	}
 
+	e := a.(entity.Entity)
+	if e.Type() != gcpb.EntityType_ENTITY_TYPE_ENTITY_LIST {
+		return nil
+	}
 	tick := v.dfStatus.Tick()
+
+	v.cacheMux.Lock()
+	defer v.cacheMux.Unlock()
 
 	var err error
 	for t := id.Tick(0); t <= tick; t++ {
@@ -123,7 +131,7 @@ func (v *Visitor) Visit(e visitor.Entity) error {
 				if te := func() error {
 					defer func() { v.cache[t][i] = cacheRow{} }()
 
-					var ne visitor.Entity
+					var ne entity.Entity
 					switch entityType := cRow.entityType; entityType {
 					case gcpb.EntityType_ENTITY_TYPE_TANK:
 						ne = tank.New(eid, tick, cRow.spawnPosition)

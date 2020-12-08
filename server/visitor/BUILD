@@ -27,6 +27,7 @@ go_library(
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//server:id",
+        "//server/entity:entity",
         "//server/entity:entitylist",
         "//server/entity:tank",
         "//server/service:status",
@@ -62,9 +63,6 @@ go_library(
     srcs = ["visitor.go"],
     importpath = "github.com/downflux/game/server/visitor/visitor",
     deps = [
-        "//api:constants_go_proto",
-        "//curve:curve",
-        "//server:id",
 	"//server/visitor/api:constants_go_proto",
     ],
 )
@@ -106,6 +104,7 @@ go_library(
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
         "//server:id",
+        "//server/entity:entity",
         "//server/service:status",
 	"//server/visitor/api:constants_go_proto",
         "@org_golang_google_protobuf//proto:go_default_library",

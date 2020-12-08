@@ -4,6 +4,12 @@ package game.server.service.visitor.api.constants;
 option go_package = "game.server.service.visitor.api.constants";
 option csharp_namespace = "DF.Game.Server.Service.Visitor.API.Constants";
 
+enum AgentType {
+  AGENT_TYPE_UNKNOWN = 0;
+  AGENT_TYPE_ENTITY = 1;
+  AGENT_TYPE_VISITOR = 2;
+}
+
 enum VisitorType {
   VISITOR_TYPE_UNKNOWN = 0;
   VISITOR_TYPE_MOVE = 1;

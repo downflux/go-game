@@ -32,6 +32,8 @@ go_library(
         "//api:constants_go_proto",
         "//curve:curve",
         "//server:id",
+        "//server/visitor:visitor",
+        "//server/visitor/api:constants_go_proto",
     ],
 )
 

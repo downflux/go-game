@@ -314,7 +314,11 @@ func TestVisit(t *testing.T) {
 		Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
 		EntityID: eid,
 	}
-	if got := v.dirties.Pop(); got[0] != want {
+	got := v.dirties.Pop()
+	if len(got) != 1 {
+		t.Fatalf("len(got) = %v, want = %v", len(got), 1)
+	}
+	if got[0] != want {
 		t.Errorf("Pop() = %v, want = %v", got[0], want)
 	}
 }
