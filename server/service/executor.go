@@ -52,19 +52,6 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-// dirtyCurve represents a Curve instance which was altered in the current
-// tick and will need to be broadcast to all clients.
-//
-// The Entity UUID and CurveCategory uniquely identifies a curve.
-type dirtyCurve struct {
-	// eid is the parent Entity UUID.
-	eid id.EntityID
-
-	// category is the Entity property for which this Curve instance
-	// represents.
-	category gcpb.CurveCategory
-}
-
 // Executor encapsulates logic for executing the core game loop.
 type Executor struct {
 	// visitors is a list of all Visitor instances used by the Executor.
@@ -175,7 +162,7 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 		curves = append(
 			curves,
 			e.entities.Get(
-				dc.EntityID).Curve(dc.Category).ExportTail(tailTick))
+				dc.EntityID).Curve(dc.Property).ExportTail(tailTick))
 	}
 
 	return curves, entities
@@ -197,8 +184,8 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 			EntityId: en.ID().Value(),
 			Type:     en.Type(),
 		})
-		for _, cat := range en.CurveCategories() {
-			curves = append(curves, en.Curve(cat).ExportTail(beginningTick))
+		for _, p := range en.Properties() {
+			curves = append(curves, en.Curve(p).ExportTail(beginningTick))
 		}
 	}
 	return curves, entities

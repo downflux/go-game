@@ -51,7 +51,7 @@ func TestAddEntity(t *testing.T) {
 		Entities: []*gdpb.Entity{{Type: gcpb.EntityType_ENTITY_TYPE_TANK}},
 		Curves: []*gdpb.Curve{{
 			Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
-			Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
+			Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
 			Data: []*gdpb.CurveDatum{
 				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
 			},
@@ -201,7 +201,7 @@ func TestDoMove(t *testing.T) {
 		Curves: []*gdpb.Curve{{
 			EntityId: eid,
 			Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
-			Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
+			Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
 			Data: []*gdpb.CurveDatum{
 				// First element is the current position of
 				// the entity. This is necessary for the client

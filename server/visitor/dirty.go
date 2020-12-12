@@ -13,10 +13,10 @@ import (
 // Curve represents a curve.Curve instance which was altered in the current
 // tick and will need to be broadcast to all clients.
 //
-// The Entity UUID and CurveCategory uniquely identifies a curve.
+// The Entity UUID and EntityProperty uniquely identifies a curve.
 type Curve struct {
 	EntityID id.EntityID
-	Category gcpb.CurveCategory
+	Property gcpb.EntityProperty
 }
 
 // Entity represents a visitor.Entity instance which was added in the current
@@ -28,7 +28,7 @@ type Entity struct {
 // List is an abstract cache of game state mutations over a period of time.
 type List struct {
 	mux      sync.Mutex
-	curves   map[id.EntityID]map[gcpb.CurveCategory]bool
+	curves   map[id.EntityID]map[gcpb.EntityProperty]bool
 	entities map[id.EntityID]bool
 }
 
@@ -57,13 +57,13 @@ func (l *List) Add(c Curve) error {
 	defer l.mux.Unlock()
 
 	if l.curves == nil {
-		l.curves = map[id.EntityID]map[gcpb.CurveCategory]bool{}
+		l.curves = map[id.EntityID]map[gcpb.EntityProperty]bool{}
 	}
 	if l.curves[c.EntityID] == nil {
-		l.curves[c.EntityID] = map[gcpb.CurveCategory]bool{}
+		l.curves[c.EntityID] = map[gcpb.EntityProperty]bool{}
 	}
 
-	l.curves[c.EntityID][c.Category] = true
+	l.curves[c.EntityID][c.Property] = true
 
 	return nil
 }
@@ -94,11 +94,11 @@ func (l *List) Pop() []Curve {
 	defer l.mux.Unlock()
 
 	var curves []Curve
-	for eid, categories := range l.curves {
-		for category := range categories {
+	for eid, properties := range l.curves {
+		for property := range properties {
 			curves = append(curves, Curve{
 				EntityID: eid,
-				Category: category,
+				Property: property,
 			})
 		}
 	}

@@ -311,8 +311,8 @@ func TestVisit(t *testing.T) {
 	}(t)
 
 	want := dirty.Curve{
-		Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
 		EntityID: eid,
+		Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
 	}
 	got := v.dirties.Pop()
 	if len(got) != 1 {

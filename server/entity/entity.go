@@ -40,11 +40,11 @@ type Entity interface {
 	// per game tick.
 	//
 	// TODO(minkezhang): Decide if we should return default value.
-	Curve(t gcpb.CurveCategory) curve.Curve
+	Curve(t gcpb.EntityProperty) curve.Curve
 
-	// CurveCategories returns list of curve categories defined in a specific
+	// Properties() returns list of entity properties defined in a specific
 	// entity. This list is created at init time and is immutable.
-	CurveCategories() []gcpb.CurveCategory
+	Properties() []gcpb.EntityProperty
 
 	// Start returns the game tick at which the Entity was created.
 	Start() id.Tick
@@ -66,14 +66,14 @@ type Entity interface {
 // by curves.
 type NoCurve struct{}
 
-// Curve returns a Curve instance for the given CurveCategory. In the
+// Curve returns a Curve instance for the given EntityProperty. In the
 // NoCurve implementation, this returns a trivially true nil value for
 // all categories.
-func (e *NoCurve) Curve(c gcpb.CurveCategory) curve.Curve { return nil }
+func (e *NoCurve) Curve(c gcpb.EntityProperty) curve.Curve { return nil }
 
-// CurveCategory returns a list of registered CurveCategory instances tracked
+// Properties returns a list of registered CurveCategory instances tracked
 // by the Entity implementation. NoCurve will return an empty list.
-func (e *NoCurve) CurveCategories() []gcpb.CurveCategory { return nil }
+func (e *NoCurve) Properties() []gcpb.EntityProperty { return nil }
 
 // Base implements a subset of the Entity interface concerned with
 // tracking the lifecycle of the Entity. Entities such as tanks are created

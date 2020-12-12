@@ -218,7 +218,7 @@ func (v *Visitor) Visit(a visitor.Agent) error {
 
 	destination := v.destinationCache[e.ID()]
 
-	c := e.Curve(gcpb.CurveCategory_CURVE_CATEGORY_MOVE)
+	c := e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
 	if c == nil {
 		return nil
 	}
@@ -254,7 +254,7 @@ func (v *Visitor) Visit(a visitor.Agent) error {
 	}
 	if err := v.dirties.Add(dirty.Curve{
 		EntityID: e.ID(),
-		Category: c.Category(),
+		Property: c.Property(),
 	}); err != nil {
 		return err
 	}

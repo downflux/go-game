@@ -145,8 +145,8 @@ func (v *Visitor) Visit(a visitor.Agent) error {
 						return unsupportedEntityType(entityType)
 					}
 
-					for _, curveCategory := range ne.CurveCategories() {
-						if err := v.dirties.Add(dirty.Curve{EntityID: eid, Category: curveCategory}); err != nil {
+					for _, property := range ne.Properties() {
+						if err := v.dirties.Add(dirty.Curve{EntityID: eid, Property: property}); err != nil {
 							return err
 						}
 					}

@@ -41,7 +41,7 @@ message CurveDatum {
 // to a specific entity.
 message Curve {
   string entity_id = 1;
-  game.api.constants.CurveCategory category = 2;
+  game.api.constants.EntityProperty property = 2;
   game.api.constants.CurveType type = 3;
   repeated CurveDatum data = 4;
 
