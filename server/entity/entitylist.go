@@ -3,6 +3,7 @@
 package entitylist
 
 import (
+	"github.com/downflux/game/entity/implement/implement"
 	"github.com/downflux/game/server/entity/entity"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/visitor/visitor"
@@ -11,11 +12,17 @@ import (
 	"google.golang.org/grpc/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
+	icpb "github.com/downflux/game/entity/implement/api/constants_go_proto"
+)
+
+var (
+	implements = implement.New([]icpb.Implement{})
 )
 
 // List implements the Entity interface for tracking all entities in a game.
 type List struct {
 	entity.Base
+	entity.LifeCycle
 	entity.NoCurve
 
 	// eid is the UUID of the entity.
@@ -29,6 +36,8 @@ type List struct {
 // New constructs a new instance of the List.
 func New(eid id.EntityID) *List {
 	return &List{
+		Base: *entity.NewBase(implements),
+
 		entities: map[id.EntityID]entity.Entity{},
 		eid:      eid,
 	}

@@ -16,10 +16,12 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/curve"
+	"github.com/downflux/game/entity/implement/implement"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
+	icpb "github.com/downflux/game/entity/implement/api/constants_go_proto"
 	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
@@ -33,6 +35,8 @@ type Entity interface {
 
 	// ID returns the UUID of the Entity.
 	ID() id.EntityID
+
+	Implements(i icpb.Implement) bool
 
 	// Curve returns a Curve instance of a specific mutable property,
 	// e.g. HP or position. Visitors mutate these curves to reflect an
@@ -75,23 +79,30 @@ func (e *NoCurve) Curve(c gcpb.EntityProperty) curve.Curve { return nil }
 // by the Entity implementation. NoCurve will return an empty list.
 func (e *NoCurve) Properties() []gcpb.EntityProperty { return nil }
 
-// Base implements a subset of the Entity interface concerned with
+type Base struct {
+	implements *implement.List
+}
+
+func NewBase(implements *implement.List) *Base {
+	return &Base{implements: implements}
+}
+
+func (e *Base) Implements(i icpb.Implement) bool { return e.implements.Implements(i) }
+func (e *Base) AgentType() vcpb.AgentType        { return vcpb.AgentType_AGENT_TYPE_ENTITY }
+
+// LifeCycle implements a subset of the Entity interface concerned with
 // tracking the lifecycle of the Entity. Entities such as tanks are created
 // inside a factory, and are destroyed at the end of the game or when attacked
 // by another Entity.
-//
-// TODO(minkezhang): Rename Lifecycle.
-type Base struct {
+type LifeCycle struct {
 	lifetimeMux sync.RWMutex
 	start       id.Tick
 	end         id.Tick
 }
 
-func (e *Base) AgentType() vcpb.AgentType { return vcpb.AgentType_AGENT_TYPE_ENTITY }
-
 // Start returns the tick at which the Entity is spawned. The tick is set in
 // the constructor (delegated to each concrete impementation).
-func (e *Base) Start() id.Tick {
+func (e *LifeCycle) Start() id.Tick {
 	e.lifetimeMux.RLock()
 	defer e.lifetimeMux.RUnlock()
 
@@ -101,7 +112,7 @@ func (e *Base) Start() id.Tick {
 // End returns the tick at which the Entity was destroyed. Since the game state
 // is append-only, the instance itself is not removed from the internal list,
 // hence the need for this marker.
-func (e *Base) End() id.Tick {
+func (e *LifeCycle) End() id.Tick {
 	e.lifetimeMux.RLock()
 	defer e.lifetimeMux.RUnlock()
 
@@ -109,7 +120,7 @@ func (e *Base) End() id.Tick {
 }
 
 // Delete marks the target Entity as having been destroyed.
-func (e *Base) Delete(tick id.Tick) {
+func (e *LifeCycle) Delete(tick id.Tick) {
 	e.lifetimeMux.Lock()
 	defer e.lifetimeMux.Unlock()
 

@@ -18,6 +18,9 @@ go_library(
 	"//api:data_go_proto",
         "//curve:curve",
         "//curve:linearmove",
+        "//entity/implement:implement",
+        "//entity/implement:moveable",
+        "//entity/implement/api:constants_go_proto",
 	"//server:id",
         "//server/visitor:visitor",
         "//server/entity:entity",
@@ -31,6 +34,8 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//curve:curve",
+        "//entity/implement:implement",
+        "//entity/implement/api:constants_go_proto",
         "//server:id",
         "//server/visitor:visitor",
         "//server/visitor/api:constants_go_proto",
@@ -43,6 +48,8 @@ go_library(
     importpath = "github.com/downflux/game/server/entity/entitylist",
     deps = [
         "//api:constants_go_proto",
+        "//entity/implement:implement",
+        "//entity/implement/api:constants_go_proto",
 	"//server:id",
         "//server/visitor:visitor",
         "//server/entity:entity",
