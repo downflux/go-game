@@ -14,7 +14,8 @@
 * [x] make `maps/astar.Path` take in `Position`; last move is to the Position offset
 * [x] ensure client still works with refactors
 * [x] add tests for move.Visitor
-* [ ] **rename CurveCategory to EntityProperty**
+* [x] rename CurveCategory to EntityProperty
+* [ ] **add Entity Implements layer**
 * [ ] add API documentation
 * [ ] add tests for produce.Visitor
 * [ ] add tests for Status
@@ -30,6 +31,7 @@
 * [x] consider what to do with partial moves -- refactor out commandQueue with cancellation, etc.
 * [x] add Produce() Visitor
 * [x] add entity click-drag-select action
+* [ ] **add Attack command**
 * [ ] add game state export / import
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
 * [ ] replace pathfinding with flow fields
