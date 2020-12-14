@@ -37,8 +37,10 @@ type Instance struct {
 
 	// mux guards e, dfStatus, scheduledTick, and destination properties
 	mux      sync.Mutex
-	e        entity.Entity
 	dfStatus *status.Status
+
+	// TODO(minkezhang): Use moveable.Moveable instead.
+	e entity.Entity
 
 	// TODO(minkezhang): Move eid, scheduledTick, and destination into
 	// separate external cache.
@@ -47,11 +49,15 @@ type Instance struct {
 }
 
 func New(
-	eid id.EntityID,
+	e entity.Entity,
 	dfStatus *status.Status,
 	destination *gdpb.Position) *Instance {
 	return &Instance{
-		Base: instance.New(FSM, pending),
+		Base:          instance.New(FSM, pending),
+		e:             e,
+		dfStatus:      dfStatus,
+		scheduledTick: dfStatus.Tick(),
+		destination:   destination,
 	}
 }
 
