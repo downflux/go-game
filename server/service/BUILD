@@ -5,6 +5,7 @@ go_library(
     srcs = ["status.go"],
     importpath = "github.com/downflux/game/server/service/status",
     visibility = [
+        "//fsm:__pkg__",
         "//server/entity:__pkg__",
         "//server/visitor:__pkg__",
     ],

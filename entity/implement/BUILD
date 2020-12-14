@@ -18,7 +18,7 @@ go_library(
     srcs = ["moveable.go"],
     importpath = "github.com/downflux/game/entity/implement/moveable",
     deps = [
-        "//server:id",
         "//api:data_go_proto",
+        "//server:id",
     ],
 )
