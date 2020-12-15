@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/downflux/game/fsm/fsm"
+	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/visitor/visitor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,6 +16,7 @@ import (
 type Instance interface {
 	visitor.Agent
 
+	ID() id.InstanceID
 	Type() fcpb.FSMType
 	State() (fsm.State, error)
 	To(t fsm.State, virtual bool) error

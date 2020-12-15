@@ -18,13 +18,11 @@ func (t Tick) Value() float64 { return float64(t) }
 
 type ID string
 
+func (id ID) Value() string { return string(id) }
+
+type InstanceID ID
 type EntityID ID
-
-func (id EntityID) Value() string { return string(id) }
-
 type ClientID ID
-
-func (id ClientID) Value() string { return string(id) }
 
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 

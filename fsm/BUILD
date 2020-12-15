@@ -5,12 +5,29 @@ package(default_visibility=[
 ])
 
 go_library(
+    name = "list",
+    srcs = ["list.go"],
+    importpath = "github.com/downflux/game/fsm/list",
+    deps = [
+        ":instance",
+        "//fsm/api:constants_go_proto",
+        "//server:id",
+        "//server/visitor/api:constants_go_proto",
+        "//server/visitor:visitor",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
+    ],
+)
+
+go_library(
     name = "instance",
     srcs = ["instance.go"],
     importpath = "github.com/downflux/game/fsm/instance",
     deps = [
         "//fsm/api:constants_go_proto",
         "//fsm:fsm",
+        "//server:id",
         "//server/visitor/api:constants_go_proto",
         "//server/visitor:visitor",
         "@org_golang_google_grpc//codes:go_default_library",

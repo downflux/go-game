@@ -64,6 +64,8 @@ func New(
 	}
 }
 
+func (n *Instance) ID() id.InstanceID { return id.InstanceID(n.e.ID()) }
+
 func (n *Instance) Cancel() error {
 	n.mux.Lock()
 	defer n.mux.Unlock()
