@@ -12,9 +12,12 @@ import (
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
+	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 )
 
 const (
+	fsmType = fcpb.FSMType_FSM_TYPE_MOVE
+
 	pending   = "PENDING"
 	executing = "EXECUTING"
 	canceled  = "CANCELED"
@@ -29,7 +32,7 @@ var (
 		{From: executing, To: pending, VirtualOnly: true},
 	}
 
-	FSM = fsm.New(transitions)
+	FSM = fsm.New(transitions, fsmType)
 )
 
 type Instance struct {
@@ -60,11 +63,6 @@ func New(
 		destination:   destination,
 	}
 }
-
-/**
- * // TODO(minkezhang): Implement.
- * func (n *Instance) Accept(v visitor.Visitor) error { return v.Visit(n) }
- */
 
 func (n *Instance) Cancel() error {
 	n.mux.Lock()

@@ -1,5 +1,9 @@
 package fsm
 
+import (
+	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
+)
+
 type State string
 
 type Transition struct {
@@ -9,20 +13,14 @@ type Transition struct {
 }
 
 type FSM struct {
+	fsmType     fcpb.FSMType
 	transitions map[State]map[State]bool
 }
 
-func (f *FSM) Exists(from State, to State) (bool, bool) {
-	if _, found := f.transitions[from]; !found {
-		return false, false
-	}
-	virtualOnly, found := f.transitions[from][to]
-	return found, virtualOnly
-}
-
-func New(transitions []Transition) *FSM {
+func New(transitions []Transition, fsmType fcpb.FSMType) *FSM {
 	fsm := &FSM{
 		transitions: map[State]map[State]bool{},
+		fsmType:     fsmType,
 	}
 
 	for _, t := range transitions {
@@ -33,4 +31,14 @@ func New(transitions []Transition) *FSM {
 	}
 
 	return fsm
+}
+
+func (f *FSM) Type() fcpb.FSMType { return f.fsmType }
+
+func (f *FSM) Exists(from State, to State) (bool, bool) {
+	if _, found := f.transitions[from]; !found {
+		return false, false
+	}
+	virtualOnly, found := f.transitions[from][to]
+	return found, virtualOnly
 }

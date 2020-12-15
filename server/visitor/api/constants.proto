@@ -8,6 +8,7 @@ enum AgentType {
   AGENT_TYPE_UNKNOWN = 0;
   AGENT_TYPE_ENTITY = 1;
   AGENT_TYPE_VISITOR = 2;
+  AGENT_TYPE_FSM = 3;
 }
 
 enum VisitorType {

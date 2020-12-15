@@ -9,7 +9,10 @@ go_library(
     srcs = ["instance.go"],
     importpath = "github.com/downflux/game/fsm/instance",
     deps = [
+        "//fsm/api:constants_go_proto",
         "//fsm:fsm",
+        "//server/visitor/api:constants_go_proto",
+        "//server/visitor:visitor",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
     ],
@@ -24,6 +27,7 @@ go_library(
         ":instance",
         "//api:constants_go_proto",
         "//api:data_go_proto",
+        "//fsm/api:constants_go_proto",
         "//server:id",
         "//server/entity:entity",
         "//server/service:status",
@@ -35,4 +39,7 @@ go_library(
     name = "fsm",
     srcs = ["fsm.go"],
     importpath = "github.com/downflux/game/fsm/fsm",
+    deps = [
+        "//fsm/api:constants_go_proto",
+    ],
 )
