@@ -23,10 +23,10 @@ const (
 
 var (
 	transitions = []fsm.Transition{
-		{From: pending, To: executing},
+		{From: pending, To: executing, VirtualOnly: true},
 		{From: pending, To: canceled},
-		{From: pending, To: finished},
-		{From: executing, To: pending},
+		{From: pending, To: finished, VirtualOnly: true},
+		{From: executing, To: pending, VirtualOnly: true},
 	}
 
 	FSM = fsm.New(transitions)
@@ -66,6 +66,13 @@ func New(
  * func (n *Instance) Accept(v visitor.Visitor) error { return v.Visit(n) }
  */
 
+func (n *Instance) Cancel() error {
+	n.mux.Lock()
+	defer n.mux.Unlock()
+
+	return n.To(canceled, false)
+}
+
 func (n *Instance) State() (fsm.State, error) {
 	n.mux.Lock()
 	defer n.mux.Unlock()
@@ -80,15 +87,21 @@ func (n *Instance) State() (fsm.State, error) {
 	switch s {
 	case pending:
 		c := n.e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
+		var t fsm.State
+
 		if proto.Equal(n.destination, c.Get(tick).(*gdpb.Position)) {
-			return finished, nil
+			t = finished
+		} else if n.scheduledTick <= tick {
+			t = executing
 		}
-		if n.scheduledTick <= tick {
-			return executing, nil
+
+		if t != "" {
+			if err := n.To(t, true); err != nil {
+				return "", err
+			}
+			return t, nil
 		}
-		if n.destination == nil {
-			return canceled, nil
-		}
+
 		return pending, nil
 	default:
 		return s, nil

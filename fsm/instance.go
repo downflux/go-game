@@ -10,7 +10,7 @@ import (
 
 type Instance interface {
 	State() (fsm.State, error)
-	To(t fsm.State) error
+	To(t fsm.State, virtual bool) error
 }
 
 type Base struct {
@@ -27,15 +27,26 @@ func New(fsm *fsm.FSM, state fsm.State) *Base {
 	}
 }
 
-func (n *Base) To(t fsm.State) error {
+func (n *Base) To(t fsm.State, virtual bool) error {
 	n.mux.Lock()
 	defer n.mux.Unlock()
 
 	f := n.state
-	if !n.fsm.Exists(f, t) {
+	exists, virtualOnly := n.fsm.Exists(f, t)
+	if !exists {
 		return status.Errorf(codes.FailedPrecondition, "no transition exists between the %v and %v states", f, t)
 	}
 
+	if !virtual && virtualOnly {
+		return status.Errorf(
+			codes.FailedPrecondition,
+			"real transition between %v -> %v cannot occur for a virtual-only edge",
+		)
+	}
+
+	if !virtual {
+		n.state = t
+	}
 	return nil
 }
 
