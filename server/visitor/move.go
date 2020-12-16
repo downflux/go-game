@@ -189,9 +189,6 @@ func (v *Visitor) Schedule(args interface{}) error {
 }
 
 // Visit mutates the specified entity's position curve.
-//
-// TODO(minkezhang): Observe "spam clicking behavior" and find out why client
-// keeps "jumping" the coordinate.
 func (v *Visitor) Visit(a visitor.Agent) error {
 	if a.AgentType() != vcpb.AgentType_AGENT_TYPE_ENTITY {
 		return nil

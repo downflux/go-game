@@ -54,6 +54,8 @@ func (l *List) Get(eid id.EntityID) entity.Entity {
 
 // Iter returns the list of Entity instances tracked by the List. This is used
 // for loop ranges.
+//
+// TODO(minkezhang): Determine if this is deprecated or not.
 func (l *List) Iter() []entity.Entity {
 	var entities []entity.Entity
 	for _, e := range l.entities {

@@ -17,11 +17,14 @@ import (
 
 const (
 	fsmType = fcpb.FSMType_FSM_TYPE_MOVE
+)
 
-	pending   = "PENDING"
-	executing = "EXECUTING"
-	canceled  = "CANCELED"
-	finished  = "FINISHED"
+var (
+	unknown   = fsm.State(fcpb.MoveState_MOVE_STATE_UNKNOWN)
+	pending   = fsm.State(fcpb.MoveState_MOVE_STATE_PENDING)
+	executing = fsm.State(fcpb.MoveState_MOVE_STATE_EXECUTING)
+	canceled  = fsm.State(fcpb.MoveState_MOVE_STATE_CANCELED)
+	finished  = fsm.State(fcpb.MoveState_MOVE_STATE_FINISHED)
 )
 
 var (
@@ -29,7 +32,8 @@ var (
 		{From: pending, To: executing, VirtualOnly: true},
 		{From: pending, To: canceled},
 		{From: pending, To: finished, VirtualOnly: true},
-		{From: executing, To: pending, VirtualOnly: true},
+		{From: executing, To: pending},
+		{From: executing, To: canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
@@ -38,50 +42,93 @@ var (
 type Instance struct {
 	*instance.Base
 
-	// mux guards e, dfStatus, scheduledTick, and destination properties
-	mux      sync.Mutex
-	dfStatus *status.Status
+	scheduledTick id.Tick        // Read-only.
+	dfStatus      *status.Status // Read-only.
+	destination   *gdpb.Position // Read-only.
 
 	// TODO(minkezhang): Use moveable.Moveable instead.
-	e entity.Entity
+	e entity.Entity // Read-only.
 
-	// TODO(minkezhang): Move eid, scheduledTick, and destination into
+	// mux guards the Base and nextTick properties.
+	mux sync.Mutex
+
+	// TODO(minkezhang): Move nextTick and destination into
 	// separate external cache.
-	scheduledTick id.Tick
-	destination   *gdpb.Position
+	nextTick id.Tick
 }
 
 func New(
 	e entity.Entity,
 	dfStatus *status.Status,
 	destination *gdpb.Position) *Instance {
+	t := dfStatus.Tick()
 	return &Instance{
 		Base:          instance.New(FSM, pending),
 		e:             e,
 		dfStatus:      dfStatus,
-		scheduledTick: dfStatus.Tick(),
+		scheduledTick: t,
+		nextTick:      t,
 		destination:   destination,
 	}
 }
 
+func (n *Instance) Entity() entity.Entity { return n.e }
+
 func (n *Instance) ID() id.InstanceID { return id.InstanceID(n.e.ID()) }
+
+func (n *Instance) Schedule(t id.Tick) error {
+	n.mux.Lock()
+	defer n.mux.Unlock()
+
+	s, err := n.stateUnsafe()
+	if err != nil {
+		return err
+	}
+
+	if err := n.To(s, pending, false); err != nil {
+		return err
+	}
+
+	n.nextTick = t
+	return nil
+}
+
+func (n *Instance) Precedence(i instance.Instance) bool {
+	if i.Type() != fcpb.FSMType_FSM_TYPE_MOVE {
+		return false
+	}
+
+	return !proto.Equal(n.destination, i.(*Instance).destination)
+}
+
+// TODO(minkezhang): Return a cloned instance instead.
+func (n *Instance) Destination() *gdpb.Position { return n.destination }
 
 func (n *Instance) Cancel() error {
 	n.mux.Lock()
 	defer n.mux.Unlock()
 
-	return n.To(canceled, false)
+	s, err := n.stateUnsafe()
+	if err != nil {
+		return err
+	}
+
+	return n.To(s, canceled, false)
 }
 
 func (n *Instance) State() (fsm.State, error) {
 	n.mux.Lock()
 	defer n.mux.Unlock()
 
+	return n.stateUnsafe()
+}
+
+func (n *Instance) stateUnsafe() (fsm.State, error) {
 	tick := n.dfStatus.Tick()
 
 	s, err := n.Base.State()
 	if err != nil {
-		return "", err
+		return unknown, err
 	}
 
 	switch s {
@@ -91,13 +138,13 @@ func (n *Instance) State() (fsm.State, error) {
 
 		if proto.Equal(n.destination, c.Get(tick).(*gdpb.Position)) {
 			t = finished
-		} else if n.scheduledTick <= tick {
+		} else if n.nextTick <= tick {
 			t = executing
 		}
 
-		if t != "" {
-			if err := n.To(t, true); err != nil {
-				return "", err
+		if t != unknown {
+			if err := n.To(s, t, true); err != nil {
+				return unknown, err
 			}
 			return t, nil
 		}

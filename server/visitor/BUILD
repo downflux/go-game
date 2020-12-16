@@ -111,3 +111,30 @@ go_library(
         "@org_golang_google_protobuf//proto:go_default_library",
     ],
 )
+
+go_library(
+    name = "movefsm",
+    srcs = ["movefsm.go"],
+    importpath = "github.com/downflux/game/server/visitor/movefsm",
+    deps = [
+        ":dirty",
+        ":visitor",
+        "//api:constants_go_proto",
+        "//api:data_go_proto",
+        "//curve:linearmove",
+        "//fsm/api:constants_go_proto",
+        "//fsm:fsm",
+        "//fsm:instance",
+        "//fsm:list",
+        "//fsm:move",
+        "//map:map",
+        "//map:utils", 
+        "//pathing/hpf:astar",
+        "//pathing/hpf:graph",
+        "//server:id",
+        "//server/entity:entity",
+        "//server/service:status",
+	"//server/visitor/api:constants_go_proto",
+        "@org_golang_google_protobuf//proto:go_default_library",
+    ],
+)

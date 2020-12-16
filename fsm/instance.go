@@ -16,10 +16,12 @@ import (
 type Instance interface {
 	visitor.Agent
 
+	Cancel() error
 	ID() id.InstanceID
-	Type() fcpb.FSMType
+	Precedence(i Instance) bool
 	State() (fsm.State, error)
-	To(t fsm.State, virtual bool) error
+	To(f fsm.State, t fsm.State, virtual bool) error
+	Type() fcpb.FSMType
 }
 
 type Base struct {
@@ -40,11 +42,10 @@ func (n *Base) AgentType() vcpb.AgentType      { return vcpb.AgentType_AGENT_TYP
 func (n *Base) Type() fcpb.FSMType             { return n.fsm.Type() }
 func (n *Base) Accept(v visitor.Visitor) error { return v.Visit(n) }
 
-func (n *Base) To(t fsm.State, virtual bool) error {
+func (n *Base) To(f fsm.State, t fsm.State, virtual bool) error {
 	n.mux.Lock()
 	defer n.mux.Unlock()
 
-	f := n.state
 	exists, virtualOnly := n.fsm.Exists(f, t)
 	if !exists {
 		return status.Errorf(codes.FailedPrecondition, "no transition exists between the %v and %v states", f, t)

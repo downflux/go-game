@@ -21,8 +21,16 @@ type ID string
 func (id ID) Value() string { return string(id) }
 
 type InstanceID ID
+
+func (id InstanceID) Value() string { return string(id) }
+
 type EntityID ID
+
+func (id EntityID) Value() string { return string(id) }
+
 type ClientID ID
+
+func (id ClientID) Value() string { return string(id) }
 
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 

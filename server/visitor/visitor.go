@@ -19,13 +19,16 @@ type Agent interface {
 // Visitor defines the list of functions necessary for a process regularly
 // mutating arbitrary Entity instances.
 type Visitor interface {
+	// TODO(minkezhang): Remove this inherited interface.
 	Agent
 
 	// Type returns a registered VisitorType.
+	// TODO(minkezhang): Consider if we need this method.
 	Type() vcpb.VisitorType
 
 	// Schedule adds a Visitor-specific command to the Visitor. This
 	// function will be called concurrently by the game engine.
+	// TODO(minkezhang): Consider if we need this method.
 	Schedule(args interface{}) error
 
 	// Visit will run appropriate commands for the current tick. If
@@ -39,6 +42,8 @@ type Visitor interface {
 	// conditional branches in the Accept function.
 	Visit(a Agent) error
 }
+
+// TODO(minkezhang): Remove Base, Leaf structs.
 
 type Base struct{}
 

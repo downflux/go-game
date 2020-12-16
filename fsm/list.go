@@ -16,6 +16,11 @@ const (
 	agentType = vcpb.AgentType_AGENT_TYPE_FSM_LIST
 )
 
+var (
+	notImplemented = status.Errorf(
+		codes.Unimplemented, "given function has not been implemented yet")
+)
+
 type List struct {
 	fsmType   fcpb.FSMType
 	instances map[id.InstanceID]instance.Instance
@@ -31,6 +36,8 @@ func New(fsmType fcpb.FSMType) *List {
 func (l *List) AgentType() vcpb.AgentType               { return agentType }
 func (l *List) Type() fcpb.FSMType                      { return l.fsmType }
 func (l *List) Get(iid id.InstanceID) instance.Instance { return l.instances[iid] }
+
+func (l *List) Clear(v visitor.Visitor) error { return notImplemented }
 
 func (l *List) Accept(v visitor.Visitor) error {
 	if err := v.Visit(l); err != nil {
@@ -58,6 +65,13 @@ func (l *List) Add(i instance.Instance) error {
 		l.instances = map[id.InstanceID]instance.Instance{}
 	}
 
+	j, found := l.instances[i.ID()]
+	if found && i.Precedence(j) {
+		if err := j.Cancel(); err != nil {
+			return err
+		}
+		l.instances[i.ID()] = i
+	}
 	l.instances[i.ID()] = i
 	return nil
 }
