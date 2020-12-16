@@ -52,6 +52,16 @@ func (l *List) Accept(v visitor.Visitor) error {
 	return eg.Wait()
 }
 
+func (l *List) Merge(j *List) error {
+	// TODO(minkezhang): Consider making this concurrent.
+	for _, i := range j.instances {
+		if err := l.Add(i); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (l *List) Add(i instance.Instance) error {
 	if i.Type() != l.Type() {
 		status.Errorf(
