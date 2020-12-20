@@ -76,50 +76,6 @@ go_test(
     deps = [
         "//api:constants_go_proto",
         "//api:data_go_proto",
-        "//map/api:constants_go_proto",
-        "//map/api:data_go_proto",
-        "//map:map",
-        "//server:id",
-        "//server/entity:tank",
-        "//server/service:status",
-        "//server/visitor:dirty",
-        "@com_github_google_go_cmp//cmp:go_default_library",
-        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
-        "@org_golang_x_sync//errgroup:go_default_library",
-    ],
-)
-
-go_library(
-    name = "move",
-    srcs = ["move.go"],
-    importpath = "github.com/downflux/game/server/visitor/move",
-    deps = [
-        ":dirty",
-        ":visitor",
-        "//api:constants_go_proto",
-        "//api:data_go_proto",
-        "//curve:linearmove",
-        "//map:map",
-        "//map:utils", 
-        "//pathing/hpf:astar",
-        "//pathing/hpf:graph",
-        "//server:id",
-        "//server/entity:entity",
-        "//server/service:status",
-	"//server/visitor/api:constants_go_proto",
-        "@org_golang_google_protobuf//proto:go_default_library",
-    ],
-)
-
-go_test(
-    name = "movefsm_test",
-    srcs = ["movefsm_test.go"],
-    importpath = "github.com/downflux/game/server/visitor/movefsm_test",
-    embed = [":movefsm"],
-    deps = [
-        "//api:constants_go_proto",
-        "//api:data_go_proto",
         "//fsm:instance",
         "//fsm:move",
         "//map/api:constants_go_proto",
@@ -134,9 +90,9 @@ go_test(
 )
 
 go_library(
-    name = "movefsm",
-    srcs = ["movefsm.go"],
-    importpath = "github.com/downflux/game/server/visitor/movefsm",
+    name = "move",
+    srcs = ["move.go"],
+    importpath = "github.com/downflux/game/server/visitor/move",
     deps = [
         ":dirty",
         ":visitor",
@@ -152,9 +108,7 @@ go_library(
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
         "//server:id",
-        "//server/entity:entity",
         "//server/service:status",
 	"//server/visitor/api:constants_go_proto",
-        "@org_golang_google_protobuf//proto:go_default_library",
     ],
 )

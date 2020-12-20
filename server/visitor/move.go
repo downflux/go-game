@@ -1,4 +1,3 @@
-// Package move implements logic for entity position mutations.
 package move
 
 import (
@@ -6,18 +5,20 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/linearmove"
+	"github.com/downflux/game/fsm/fsm"
+	"github.com/downflux/game/fsm/instance"
+	"github.com/downflux/game/fsm/move"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/server/entity/entity"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/downflux/game/server/visitor/visitor"
-	"google.golang.org/protobuf/proto"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
+	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 	tile "github.com/downflux/game/map/map"
 	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
@@ -33,6 +34,10 @@ const (
 	visitorType = vcpb.VisitorType_VISITOR_TYPE_MOVE
 )
 
+func d(a, b *gdpb.Position) float64 {
+	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
+}
+
 // coordinate transforms a gdpb.Position instance into a gdpb.Coordinate
 // instance. We're assuming the position values are sane and don't overflow
 // int32.
@@ -41,10 +46,6 @@ func coordinate(p *gdpb.Position) *gdpb.Coordinate {
 		X: int32(p.GetX()),
 		Y: int32(p.GetY()),
 	}
-}
-
-func d(a, b *gdpb.Position) float64 {
-	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
 }
 
 // position transforms a gdpb.Coordinate instance into a gdpb.Position
@@ -56,35 +57,11 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 	}
 }
 
-// Args is an external-facing struct used to specify the Entity being moved.
-type Args struct {
-	// Tick is the tick at which the entity should start moving.
-	Tick id.Tick
-
-	// EntityID is the UUID of the Entity instance.
-	EntityID id.EntityID
-
-	// Destination is the Entity move target.
-	Destination *gdpb.Position
-
-	// IsExternal indicates if the move request was issued by an external
-	// client.
-	// TODO(minkezhang): Delete this. This is an alias for IsPartial, which
-	// may only be scheduled by the move Visitor itself. If we want a IsBot
-	// bool, we should add that separately.
-	IsExternal bool
-}
-
-type partialCacheRow struct {
-	scheduledTick id.Tick
-
-	// TODO(minkezhang): Rename to isPartial.
-	isExternal bool
-}
-
-// Visitor mutates the Entity position Curve. This struct implements the
-// visitor.Visitor interface.
 type Visitor struct {
+	// mux guarantees we're running only one tile.Map astar at a time.
+	// TODO(minkezhang): Make this concurrent.
+	mux sync.Mutex
+
 	// tileMap is the underlying Map object used for the game.
 	tileMap *tile.Map
 
@@ -107,12 +84,6 @@ type Visitor struct {
 	// outdated once a new move command is issued for the Entity, which
 	// may happen frequently in an RTS game.
 	minPathLength int
-
-	// cacheMux guards the cache property from concurrent access.
-	cacheMux sync.Mutex
-
-	partialCache     map[id.EntityID]partialCacheRow
-	destinationCache map[id.EntityID]*gdpb.Position
 }
 
 // New constructs a new move Visitor instance.
@@ -123,156 +94,99 @@ func New(
 	dirties *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
-		tileMap:          tileMap,
-		abstractGraph:    abstractGraph,
-		dfStatus:         dfStatus,
-		dirties:          dirties,
-		minPathLength:    minPathLength,
-		partialCache:     map[id.EntityID]partialCacheRow{},
-		destinationCache: map[id.EntityID]*gdpb.Position{},
+		tileMap:       tileMap,
+		abstractGraph: abstractGraph,
+		dfStatus:      dfStatus,
+		dirties:       dirties,
+		minPathLength: minPathLength,
 	}
 }
 
 // Type returns the registered VisitorType.
 func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
-// scheduleUnsafe adds a move command to the cache.
-func (v *Visitor) scheduleUnsafe(tick id.Tick, eid id.EntityID, dest *gdpb.Position, isExternal bool) error {
-	if v.partialCache == nil {
-		v.partialCache = map[id.EntityID]partialCacheRow{}
-	}
-	if v.destinationCache == nil {
-		v.destinationCache = map[id.EntityID]*gdpb.Position{}
+// TODO(minkezhang): Remove function.
+func (v *Visitor) Schedule(interface{}) error { return nil }
+
+func (v *Visitor) visitFSM(i instance.Instance) error {
+	if i.Type() != fcpb.FSMType_FSM_TYPE_MOVE {
+		return nil
 	}
 
-	_, isScheduled := v.partialCache[eid]
+	s, err := i.State()
+	if err != nil {
+		return err
+	}
 
-	if isExternal &&
-		// Only schedule an external move if the scheduled position
-		// is different from the previously scheduled one. Partial
-		// moves may bypass this check because the point is to update
-		// the execution tick.
-		!proto.Equal(dest, v.destinationCache[eid]) && (
-	// External moves may not be scheduled for the future.
-	v.dfStatus.Tick() >= tick && (
-	// External moves override all scheduled partial moves.
-	!v.partialCache[eid].isExternal || (
-	// External moves override all external moves,
-	// if those moves were scheduled for an earlier
-	// tick.
-	isScheduled &&
-		tick > v.partialCache[eid].scheduledTick))) || (!isExternal &&
-		// Internal moves only override existing internal move
-		// scheduled to execute at an earlier tick.
-		tick > v.partialCache[eid].scheduledTick) {
-		v.partialCache[eid] = partialCacheRow{
-			scheduledTick: tick,
-			isExternal:    isExternal,
+	m := i.(*move.Instance)
+
+	tick := v.dfStatus.Tick()
+
+	switch s {
+	case fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String()):
+		e := m.Entity()
+		c := e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
+		if c == nil {
+			return nil
 		}
-		v.destinationCache[eid] = dest
+
+		p, _, err := astar.Path(
+			v.tileMap,
+			v.abstractGraph,
+			utils.MC(coordinate(c.Get(tick).(*gdpb.Position))),
+			utils.MC(coordinate(m.Destination())),
+			v.minPathLength,
+		)
+		if err != nil {
+			// TODO(minkezhang): Handle error by logging and continuing.
+			return err
+		}
+
+		// Add to the existing curve, while smoothing out the existing
+		// trajectory.
+		prevPos := c.Get(tick).(*gdpb.Position)
+		cv := linearmove.New(e.ID(), tick)
+		cv.Add(tick, prevPos)
+		for i, tile := range p {
+			curPos := position(tile.Val.GetCoordinate())
+			tickDelta := id.Tick(ticksPerTile.Value() * d(prevPos, curPos))
+			cv.Add(tick+id.Tick(i)*ticksPerTile+tickDelta, curPos)
+			prevPos = curPos
+		}
+		if err := v.dirties.Add(dirty.Curve{
+			EntityID: e.ID(),
+			Property: c.Property(),
+		}); err != nil {
+			return err
+		}
+		if err := c.ReplaceTail(cv); err != nil {
+			return err
+		}
+
+		// Delay next lookup iteration until a suitable time in the
+		// future.
+		//
+		// TODO(minkezhang): Add test for scheduling here.
+		if err := m.Schedule(tick + ticksPerTile*id.Tick(len(p))); err != nil {
+			// TODO(minkezhang): Handle error by logging and continuing.
+			return err
+		}
+	default:
+		return nil
 	}
 
 	return nil
-}
-
-// Schedule adds a move command to the internal schedule.
-func (v *Visitor) Schedule(args interface{}) error {
-	argsImpl := args.(Args)
-
-	v.cacheMux.Lock()
-	defer v.cacheMux.Unlock()
-
-	return v.scheduleUnsafe(argsImpl.Tick, argsImpl.EntityID, argsImpl.Destination, argsImpl.IsExternal)
 }
 
 // Visit mutates the specified entity's position curve.
 func (v *Visitor) Visit(a visitor.Agent) error {
-	if a.AgentType() != vcpb.AgentType_AGENT_TYPE_ENTITY {
+	v.mux.Lock()
+	defer v.mux.Unlock()
+
+	switch t := a.AgentType(); t {
+	case vcpb.AgentType_AGENT_TYPE_FSM:
+		return v.visitFSM(a.(instance.Instance))
+	default:
 		return nil
 	}
-
-	e := a.(entity.Entity)
-	if e.Type() != gcpb.EntityType_ENTITY_TYPE_TANK {
-		return nil
-	}
-
-	tick := v.dfStatus.Tick()
-
-	// TODO(minkezhang): Make this concurrent.
-	v.cacheMux.Lock()
-	defer v.cacheMux.Unlock()
-
-	partialCache, found := v.partialCache[e.ID()]
-	if !found {
-		return nil
-	}
-	if partialCache.scheduledTick > tick {
-		return nil
-	}
-
-	destination := v.destinationCache[e.ID()]
-
-	c := e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
-	if c == nil {
-		return nil
-	}
-
-	// TODO(minkezhang): proto.Clone the return values in map.astar.Path.
-	p, _, err := astar.Path(
-		v.tileMap,
-		v.abstractGraph,
-		// TODO(minkezhang): Investigate / decide if we should use
-		// scheduledTick instead.
-		utils.MC(coordinate(c.Get(tick).(*gdpb.Position))),
-		utils.MC(coordinate(destination)),
-		v.minPathLength)
-	if err != nil {
-		// TODO(minkezhang): Handle error by logging and continuing.
-		return err
-	}
-
-	if p == nil {
-		return nil
-	}
-
-	// Add to the existing curve, while smoothing out the existing
-	// trajectory.
-	prevPos := c.Get(tick).(*gdpb.Position)
-	cv := linearmove.New(e.ID(), tick)
-	cv.Add(tick, prevPos)
-	for i, tile := range p {
-		curPos := position(tile.Val.GetCoordinate())
-		tickDelta := id.Tick(ticksPerTile.Value() * d(prevPos, curPos))
-		cv.Add(tick+id.Tick(i)*ticksPerTile+tickDelta, curPos)
-		prevPos = curPos
-	}
-	if err := v.dirties.Add(dirty.Curve{
-		EntityID: e.ID(),
-		Property: c.Property(),
-	}); err != nil {
-		return err
-	}
-	if err := c.ReplaceTail(cv); err != nil {
-		return err
-	}
-
-	// Check for partial moves and delay next lookup iteration until a
-	// suitable time in the future.
-	lastPosition := position(p[len(p)-1].Val.GetCoordinate())
-	if proto.Equal(lastPosition, destination) {
-		// We need to keep track of current pending destination.
-		// Deleting the destination cache here allows spam clicking.
-		delete(v.partialCache, e.ID())
-	} else {
-		if err := v.scheduleUnsafe(
-			tick+ticksPerTile*id.Tick(len(p)-1),
-			e.ID(),
-			destination,
-			false); err != nil {
-			// TODO(minkezhang): Handle error by logging and continuing.
-			return err
-		}
-	}
-
-	return nil
 }

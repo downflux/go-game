@@ -87,7 +87,6 @@ go_library(
         "//server/entity:entitylist",
         "//server/visitor:dirty",
         "//server/visitor:move",
-        "//server/visitor:movefsm",
         "//server/visitor:produce",
         "//server/visitor:visitor",
         "//server/visitor:visitorlist",

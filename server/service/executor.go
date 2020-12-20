@@ -11,8 +11,7 @@ import (
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/clientlist"
 	"github.com/downflux/game/server/visitor/dirty"
-	// "github.com/downflux/game/server/visitor/move"
-	"github.com/downflux/game/server/visitor/movefsm"
+	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
 	"github.com/downflux/game/server/visitor/visitor"
 	"github.com/downflux/game/server/visitor/visitorlist"
@@ -87,7 +86,7 @@ type Executor struct {
 
 	sot   *schedule.Schedule
 	cache *schedule.Schedule
-	vmove *movefsm.Visitor
+	move  *move.Visitor
 }
 
 // New creates a new instance of the Executor.
@@ -107,7 +106,6 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	visitors, err := visitorlist.New(
 		[]visitor.Visitor{
 			produce.New(statusImpl, dirties),
-			// move.New(tm, g, statusImpl, dirties, minPathLength),
 		},
 	)
 	if err != nil {
@@ -122,7 +120,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		statusImpl: statusImpl,
 		sot:        schedule.New(schedule.FSMTypes),
 		cache:      schedule.New(schedule.FSMTypes),
-		vmove:      movefsm.New(tm, g, statusImpl, dirties, minPathLength),
+		move:       move.New(tm, g, statusImpl, dirties, minPathLength),
 	}, nil
 }
 
@@ -266,7 +264,7 @@ func (e *Executor) doTick() error {
 	}
 	// TODO(minkezhang): Clear CANCELED or FINISHED instances in a Visitor.
 	e.sot.Clear()
-	if err := e.sot.Get(fcpb.FSMType_FSM_TYPE_MOVE).Accept(e.vmove); err != nil {
+	if err := e.sot.Get(fcpb.FSMType_FSM_TYPE_MOVE).Accept(e.move); err != nil {
 		return err
 	}
 
@@ -314,18 +312,6 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 
 	for _, eid := range req.GetEntityIds() {
-		/*
-			if err := e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_MOVE).Schedule(
-				move.Args{
-					Tick:        e.statusImpl.Tick(),
-					EntityID:    id.EntityID(eid),
-					Destination: req.GetDestination(),
-					IsExternal:  true,
-				},
-			); err != nil {
-				return err
-			}*/
-
 		i := moveinstance.New(
 			e.entities.Get(id.EntityID(eid)),
 			e.statusImpl,
