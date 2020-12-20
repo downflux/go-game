@@ -52,9 +52,6 @@ type cacheRow struct {
 // Visitor adds a new Entity to the global state. This struct implements the
 // visitor.Visitor interface.
 type Visitor struct {
-	visitor.Base
-	visitor.Leaf
-
 	// dirties is a reference to the global cache of mutated Curve and
 	// Entity instances.
 	dirties *dirty.List

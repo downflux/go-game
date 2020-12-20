@@ -1,13 +1,12 @@
-package move
+package movefsm
 
 import (
 	"math"
-	_ "sync"
+	"sync"
 
 	"github.com/downflux/game/curve/linearmove"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
-	"github.com/downflux/game/fsm/list"
 	"github.com/downflux/game/fsm/move"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
@@ -37,6 +36,10 @@ const (
 	visitorType = vcpb.VisitorType_VISITOR_TYPE_MOVE
 )
 
+func d(a, b *gdpb.Position) float64 {
+	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
+}
+
 // coordinate transforms a gdpb.Position instance into a gdpb.Coordinate
 // instance. We're assuming the position values are sane and don't overflow
 // int32.
@@ -45,10 +48,6 @@ func coordinate(p *gdpb.Position) *gdpb.Coordinate {
 		X: int32(p.GetX()),
 		Y: int32(p.GetY()),
 	}
-}
-
-func d(a, b *gdpb.Position) float64 {
-	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
 }
 
 // position transforms a gdpb.Coordinate instance into a gdpb.Position
@@ -61,8 +60,9 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 }
 
 type Visitor struct {
-	visitor.Base
-	visitor.Leaf
+	// mux guarantees we're running only one tile.Map astar at a time.
+	// TODO(minkezhang): Make this concurrent.
+	mux sync.Mutex
 
 	// tileMap is the underlying Map object used for the game.
 	tileMap *tile.Map
@@ -107,10 +107,8 @@ func New(
 // Type returns the registered VisitorType.
 func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
-// Schedule adds a move command to the internal schedule.
-func (v *Visitor) Schedule(args interface{}) error { return nil }
-
-func (v *Visitor) visitFSMList(l *list.List) error { return nil }
+// TODO(minkezhang): Remove function.
+func (v *Visitor) Schedule(interface{}) error { return nil }
 
 func (v *Visitor) visitFSM(i instance.Instance) error {
 	if i.Type() != fcpb.FSMType_FSM_TYPE_MOVE {
@@ -127,7 +125,7 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 	tick := v.dfStatus.Tick()
 
 	switch s {
-	case fsm.State(fcpb.MoveState_MOVE_STATE_EXECUTING):
+	case fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String()):
 		e := m.Entity()
 		c := e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
 		if c == nil {
@@ -139,7 +137,7 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 			v.abstractGraph,
 			utils.MC(coordinate(c.Get(tick).(*gdpb.Position))),
 			utils.MC(coordinate(m.Destination())),
-			5,
+			v.minPathLength,
 		)
 		if err != nil {
 			// TODO(minkezhang): Handle error by logging and continuing.
@@ -169,7 +167,9 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 
 		// Delay next lookup iteration until a suitable time in the
 		// future.
-		if err := m.Schedule(tick + ticksPerTile*id.Tick(len(p)-1)); err != nil {
+		//
+		// TODO(minkezhang): Add test for scheduling here.
+		if err := m.Schedule(tick + ticksPerTile*id.Tick(len(p))); err != nil {
 			// TODO(minkezhang): Handle error by logging and continuing.
 			return err
 		}
@@ -182,11 +182,12 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 
 // Visit mutates the specified entity's position curve.
 func (v *Visitor) Visit(a visitor.Agent) error {
+	v.mux.Lock()
+	defer v.mux.Unlock()
+
 	switch t := a.AgentType(); t {
 	case vcpb.AgentType_AGENT_TYPE_FSM:
 		return v.visitFSM(a.(instance.Instance))
-	case vcpb.AgentType_AGENT_TYPE_FSM_LIST:
-		return v.visitFSMList(a.(*list.List))
 	default:
 		return nil
 	}

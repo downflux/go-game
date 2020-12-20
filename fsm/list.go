@@ -1,6 +1,7 @@
 package list
 
 import (
+	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/visitor/visitor"
@@ -37,7 +38,19 @@ func (l *List) AgentType() vcpb.AgentType               { return agentType }
 func (l *List) Type() fcpb.FSMType                      { return l.fsmType }
 func (l *List) Get(iid id.InstanceID) instance.Instance { return l.instances[iid] }
 
-func (l *List) Clear(v visitor.Visitor) error { return notImplemented }
+func (l *List) Clear() error {
+	for iid, i := range l.instances {
+		s, err := i.State()
+		if err != nil {
+			// TODO(minkezhang): Log and move on here.
+			return err
+		}
+		if s == fsm.State(fcpb.CommonState_COMMON_STATE_CANCELED.String()) || s == fsm.State(fcpb.CommonState_COMMON_STATE_FINISHED.String()) {
+			delete(l.instances, iid)
+		}
+	}
+	return nil
+}
 
 func (l *List) Accept(v visitor.Visitor) error {
 	if err := v.Visit(l); err != nil {
@@ -63,12 +76,8 @@ func (l *List) Merge(j *List) error {
 }
 
 func (l *List) Add(i instance.Instance) error {
-	if i.Type() != l.Type() {
-		status.Errorf(
-			codes.FailedPrecondition,
-			"cannot add instance of type %v to a list of type %v",
-			i.Type(),
-			l.Type())
+	if l.Type() != i.Type() {
+		return status.Errorf(codes.FailedPrecondition, "cannot add instance of type %v to a list of type %v", i.Type(), l.Type())
 	}
 
 	if l.instances == nil {
@@ -76,13 +85,15 @@ func (l *List) Add(i instance.Instance) error {
 	}
 
 	j, found := l.instances[i.ID()]
-	if found && i.Precedence(j) {
-		if err := j.Cancel(); err != nil {
-			return err
+	if !found || (found && i.Precedence(j)) {
+		// Cancel any conflicting move commands.
+		if found {
+			if err := j.Cancel(); err != nil {
+				return err
+			}
 		}
 		l.instances[i.ID()] = i
 	}
-	l.instances[i.ID()] = i
 	return nil
 }
 

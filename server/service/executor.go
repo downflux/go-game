@@ -5,12 +5,14 @@ import (
 	"log"
 	"time"
 
+	"github.com/downflux/game/fsm/schedule"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/entitylist"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/clientlist"
 	"github.com/downflux/game/server/visitor/dirty"
-	"github.com/downflux/game/server/visitor/move"
+	// "github.com/downflux/game/server/visitor/move"
+	"github.com/downflux/game/server/visitor/movefsm"
 	"github.com/downflux/game/server/visitor/produce"
 	"github.com/downflux/game/server/visitor/visitor"
 	"github.com/downflux/game/server/visitor/visitorlist"
@@ -20,6 +22,8 @@ import (
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
+	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
+	moveinstance "github.com/downflux/game/fsm/move"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
 	serverstatus "github.com/downflux/game/server/service/status"
@@ -80,6 +84,10 @@ type Executor struct {
 
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
+
+	sot   *schedule.Schedule
+	cache *schedule.Schedule
+	vmove *movefsm.Visitor
 }
 
 // New creates a new instance of the Executor.
@@ -99,7 +107,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	visitors, err := visitorlist.New(
 		[]visitor.Visitor{
 			produce.New(statusImpl, dirties),
-			move.New(tm, g, statusImpl, dirties, minPathLength),
+			// move.New(tm, g, statusImpl, dirties, minPathLength),
 		},
 	)
 	if err != nil {
@@ -112,6 +120,9 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		dirties:    dirties,
 		clients:    clientlist.New(idLen),
 		statusImpl: statusImpl,
+		sot:        schedule.New(schedule.FSMTypes),
+		cache:      schedule.New(schedule.FSMTypes),
+		vmove:      movefsm.New(tm, g, statusImpl, dirties, minPathLength),
 	}, nil
 }
 
@@ -248,6 +259,17 @@ func (e *Executor) doTick() error {
 	t := time.Now()
 	e.statusImpl.IncrementTick()
 
+	x := e.cache.Pop()
+
+	if err := e.sot.Merge(x); err != nil {
+		return err
+	}
+	// TODO(minkezhang): Clear CANCELED or FINISHED instances in a Visitor.
+	e.sot.Clear()
+	if err := e.sot.Get(fcpb.FSMType_FSM_TYPE_MOVE).Accept(e.vmove); err != nil {
+		return err
+	}
+
 	for _, v := range e.visitors.Iter() {
 		if err := e.entities.Accept(v); err != nil {
 			return err
@@ -292,14 +314,23 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 
 	for _, eid := range req.GetEntityIds() {
-		if err := e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_MOVE).Schedule(
-			move.Args{
-				Tick:        e.statusImpl.Tick(),
-				EntityID:    id.EntityID(eid),
-				Destination: req.GetDestination(),
-				IsExternal:  true,
-			},
-		); err != nil {
+		/*
+			if err := e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_MOVE).Schedule(
+				move.Args{
+					Tick:        e.statusImpl.Tick(),
+					EntityID:    id.EntityID(eid),
+					Destination: req.GetDestination(),
+					IsExternal:  true,
+				},
+			); err != nil {
+				return err
+			}*/
+
+		i := moveinstance.New(
+			e.entities.Get(id.EntityID(eid)),
+			e.statusImpl,
+			req.GetDestination())
+		if err := e.cache.Add(i); err != nil {
 			return err
 		}
 	}

@@ -112,6 +112,27 @@ go_library(
     ],
 )
 
+go_test(
+    name = "movefsm_test",
+    srcs = ["movefsm_test.go"],
+    importpath = "github.com/downflux/game/server/visitor/movefsm_test",
+    embed = [":movefsm"],
+    deps = [
+        "//api:constants_go_proto",
+        "//api:data_go_proto",
+        "//fsm:instance",
+        "//fsm:move",
+        "//map/api:constants_go_proto",
+        "//map/api:data_go_proto",
+        "//map:map",
+        "//server/entity:tank",
+        "//server/service:status",
+        "//server/visitor:dirty",
+        "@com_github_google_go_cmp//cmp:go_default_library",
+        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
+    ],
+)
+
 go_library(
     name = "movefsm",
     srcs = ["movefsm.go"],
@@ -125,7 +146,6 @@ go_library(
         "//fsm/api:constants_go_proto",
         "//fsm:fsm",
         "//fsm:instance",
-        "//fsm:list",
         "//fsm:move",
         "//map:map",
         "//map:utils", 

@@ -1,6 +1,8 @@
 package move
 
 import (
+	"log"
+
 	"sync"
 
 	"github.com/downflux/game/fsm/fsm"
@@ -8,6 +10,7 @@ import (
 	"github.com/downflux/game/server/entity/entity"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
+	"github.com/downflux/game/server/visitor/visitor"
 	"google.golang.org/protobuf/proto"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -20,11 +23,13 @@ const (
 )
 
 var (
-	unknown   = fsm.State(fcpb.MoveState_MOVE_STATE_UNKNOWN)
-	pending   = fsm.State(fcpb.MoveState_MOVE_STATE_PENDING)
-	executing = fsm.State(fcpb.MoveState_MOVE_STATE_EXECUTING)
-	canceled  = fsm.State(fcpb.MoveState_MOVE_STATE_CANCELED)
-	finished  = fsm.State(fcpb.MoveState_MOVE_STATE_FINISHED)
+	unknown   = fsm.State(fcpb.CommonState_COMMON_STATE_UNKNOWN.String())
+	pending   = fsm.State(fcpb.CommonState_COMMON_STATE_PENDING.String())
+	executing = fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String())
+	canceled  = fsm.State(fcpb.CommonState_COMMON_STATE_CANCELED.String())
+	finished  = fsm.State(fcpb.CommonState_COMMON_STATE_FINISHED.String())
+
+	_ instance.Instance = &Instance{}
 )
 
 var (
@@ -42,9 +47,12 @@ var (
 type Instance struct {
 	*instance.Base
 
-	scheduledTick id.Tick        // Read-only.
-	dfStatus      *status.Status // Read-only.
-	destination   *gdpb.Position // Read-only.
+	// scheduledTick is the tick at which the command was originally
+	// scheduled.
+	scheduledTick id.Tick // Read-only.
+
+	dfStatus    *status.Status // Read-only.
+	destination *gdpb.Position // Read-only.
 
 	// TODO(minkezhang): Use moveable.Moveable instead.
 	e entity.Entity // Read-only.
@@ -72,7 +80,8 @@ func New(
 	}
 }
 
-func (n *Instance) Entity() entity.Entity { return n.e }
+func (n *Instance) Accept(v visitor.Visitor) error { return v.Visit(n) }
+func (n *Instance) Entity() entity.Entity          { return n.e }
 
 func (n *Instance) ID() id.InstanceID { return id.InstanceID(n.e.ID()) }
 
@@ -85,6 +94,8 @@ func (n *Instance) Schedule(t id.Tick) error {
 		return err
 	}
 
+	log.Printf("DEBUG: [%v] eid %v with state %v schedule partial move: %v -> %v", n.dfStatus.Tick(), n.e.ID(), s, n.nextTick, t)
+
 	if err := n.To(s, pending, false); err != nil {
 		return err
 	}
@@ -93,12 +104,13 @@ func (n *Instance) Schedule(t id.Tick) error {
 	return nil
 }
 
+// TODO(minkezhang): Add test.
 func (n *Instance) Precedence(i instance.Instance) bool {
 	if i.Type() != fcpb.FSMType_FSM_TYPE_MOVE {
 		return false
 	}
 
-	return !proto.Equal(n.destination, i.(*Instance).destination)
+	return n.scheduledTick > i.(*Instance).scheduledTick && !proto.Equal(n.Destination(), i.(*Instance).Destination())
 }
 
 // TODO(minkezhang): Return a cloned instance instead.
@@ -134,12 +146,13 @@ func (n *Instance) stateUnsafe() (fsm.State, error) {
 	switch s {
 	case pending:
 		c := n.e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
-		var t fsm.State
+		var t fsm.State = unknown
 
-		if proto.Equal(n.destination, c.Get(tick).(*gdpb.Position)) {
-			t = finished
-		} else if n.nextTick <= tick {
+		if n.nextTick <= tick {
 			t = executing
+			if proto.Equal(n.destination, c.Get(tick).(*gdpb.Position)) {
+				t = finished
+			}
 		}
 
 		if t != unknown {

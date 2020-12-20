@@ -4,7 +4,7 @@ import (
 	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 )
 
-type State int32
+type State string
 
 type Transition struct {
 	From        State

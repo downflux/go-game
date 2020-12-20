@@ -38,9 +38,8 @@ func New(fsm *fsm.FSM, state fsm.State) *Base {
 	}
 }
 
-func (n *Base) AgentType() vcpb.AgentType      { return vcpb.AgentType_AGENT_TYPE_FSM }
-func (n *Base) Type() fcpb.FSMType             { return n.fsm.Type() }
-func (n *Base) Accept(v visitor.Visitor) error { return v.Visit(n) }
+func (n *Base) AgentType() vcpb.AgentType { return vcpb.AgentType_AGENT_TYPE_FSM }
+func (n *Base) Type() fcpb.FSMType        { return n.fsm.Type() }
 
 func (n *Base) To(f fsm.State, t fsm.State, virtual bool) error {
 	n.mux.Lock()

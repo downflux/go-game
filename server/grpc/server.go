@@ -8,7 +8,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"net"
 	"time"
 
@@ -113,7 +112,6 @@ func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequ
 }
 
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
-	log.Printf("DEBUG: got Move(%v)", req)
 	if err := s.validateClient(id.ClientID(req.GetClientId())); err != nil {
 		return nil, err
 	}

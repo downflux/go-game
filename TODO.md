@@ -15,7 +15,8 @@
 * [x] ensure client still works with refactors
 * [x] add tests for move.Visitor
 * [x] rename CurveCategory to EntityProperty
-* [ ] **add Entity Implements layer**
+* [ ] **migrate to FSM Visitor model**
+* [ ] add Entity Implements layer
 * [ ] add API documentation
 * [ ] add tests for produce.Visitor
 * [ ] add tests for Status

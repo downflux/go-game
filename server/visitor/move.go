@@ -85,9 +85,6 @@ type partialCacheRow struct {
 // Visitor mutates the Entity position Curve. This struct implements the
 // visitor.Visitor interface.
 type Visitor struct {
-	visitor.Base
-	visitor.Leaf
-
 	// tileMap is the underlying Map object used for the game.
 	tileMap *tile.Map
 
