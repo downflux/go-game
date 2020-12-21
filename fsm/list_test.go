@@ -35,7 +35,8 @@ func TestNew(t *testing.T) {
 
 func TestAddError(t *testing.T) {
 	l := New(fcpb.FSMType_FSM_TYPE_UNKNOWN)
-	i := move.New(tank.New("entity-id", 0, nil), status.New(0), nil)
+	s := status.New(0)
+	i := move.New(tank.New("entity-id", 0, nil), s, s.Tick(), nil)
 
 	log.Println(l.Type(), i.Type())
 
@@ -48,7 +49,8 @@ func TestAdd(t *testing.T) {
 	const iid = "entity-id"
 
 	l := New(fsmType)
-	i := move.New(tank.New(iid, 0, nil), status.New(0), nil)
+	s := status.New(0)
+	i := move.New(tank.New(iid, 0, nil), s, s.Tick(), nil)
 
 	if err := l.Add(i); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
@@ -66,9 +68,9 @@ func TestAddCancel(t *testing.T) {
 
 	e := tank.New(iid, 0, nil)
 	dfStatus := status.New(0)
-	i1 := move.New(e, dfStatus, &gdpb.Position{X: 0, Y: 0})
+	i1 := move.New(e, dfStatus, dfStatus.Tick(), &gdpb.Position{X: 0, Y: 0})
 	dfStatus.IncrementTick()
-	i2 := move.New(e, dfStatus, &gdpb.Position{X: 1, Y: 1})
+	i2 := move.New(e, dfStatus, dfStatus.Tick(), &gdpb.Position{X: 1, Y: 1})
 
 	if err := l.Add(i1); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/downflux/game/fsm/instance"
-	"github.com/downflux/game/fsm/move"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/service/status"
@@ -15,6 +14,7 @@ import (
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
+	moveinstance "github.com/downflux/game/fsm/move"
 	mcpb "github.com/downflux/game/map/api/constants_go_proto"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
@@ -82,17 +82,21 @@ func TestVisit(t *testing.T) {
 		{
 			name: "TestNoMove",
 			v:    testNoMoveVisitor,
-			i: move.New(
+			i: moveinstance.New(
 				tank.New(eid, t0, p0),
-				testNoMoveVisitor.dfStatus, p0),
+				testNoMoveVisitor.dfStatus,
+				testNoMoveVisitor.dfStatus.Tick(),
+				p0),
 			want: nil,
 		},
 		{
 			name: "TestSimpleMove",
 			v:    testSimpleMoveVisitor,
-			i: move.New(
+			i: moveinstance.New(
 				tank.New(eid, t0, p0),
-				testSimpleMoveVisitor.dfStatus, p1),
+				testSimpleMoveVisitor.dfStatus,
+				testSimpleMoveVisitor.dfStatus.Tick(),
+				p1),
 			want: []dirty.Curve{
 				{EntityID: eid, Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION},
 			},

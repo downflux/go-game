@@ -22,25 +22,24 @@ func TestState(t *testing.T) {
 
 	executingNewEntity := tank.New(eid, t0, p0)
 	executingNewStatus := status.New(0)
-	executingNewI1 := New(executingNewEntity, executingNewStatus, &gdpb.Position{X: 1, Y: 1})
+	executingNewI1 := New(executingNewEntity, executingNewStatus, executingNewStatus.Tick(), &gdpb.Position{X: 1, Y: 1})
 
 	scheduleEntity := tank.New(eid, t0, p0)
 	scheduleStatus := status.New(0)
-	scheduleI1 := New(scheduleEntity, scheduleStatus, &gdpb.Position{X: 1, Y: 1})
-	scheduleI1.SchedulePartialMove(100)
+	scheduleI1 := New(scheduleEntity, scheduleStatus, scheduleStatus.Tick() + 100, &gdpb.Position{X: 1, Y: 1})
 
 	cancelEntity := tank.New(eid, t0, p0)
 	cancelStatus := status.New(0)
-	cancelI1 := New(cancelEntity, cancelStatus, &gdpb.Position{X: 1, Y: 1})
+	cancelI1 := New(cancelEntity, cancelStatus, cancelStatus.Tick(), &gdpb.Position{X: 1, Y: 1})
 	cancelI1.Cancel()
 
 	finishedEntity := tank.New(eid, t0, p0)
 	finishedStatus := status.New(0)
-	finishedI1 := New(finishedEntity, finishedStatus, p0)
+	finishedI1 := New(finishedEntity, finishedStatus, finishedStatus.Tick(), p0)
 
 	pendingCanceledEntity := tank.New(eid, t0, p0)
 	pendingCanceledStatus := status.New(0)
-	pendingCanceledI1 := New(pendingCanceledEntity, pendingCanceledStatus, &gdpb.Position{X: 1, Y: 1})
+	pendingCanceledI1 := New(pendingCanceledEntity, pendingCanceledStatus, pendingCanceledStatus.Tick(), &gdpb.Position{X: 1, Y: 1})
 	pendingCanceledI1.SchedulePartialMove(100)
 	pendingCanceledI1.Cancel()
 
@@ -73,20 +72,19 @@ func TestPrecedence(t *testing.T) {
 
 	sameTickEntity := tank.New(eid, t0, p0)
 	sameTickStatus := status.New(0)
-	sameTickI1 := New(sameTickEntity, sameTickStatus, &gdpb.Position{X: 1, Y: 1})
-	sameTickI2 := New(sameTickEntity, sameTickStatus, &gdpb.Position{X: 2, Y: 2})
+	sameTickI1 := New(sameTickEntity, sameTickStatus, sameTickStatus.Tick(), &gdpb.Position{X: 1, Y: 1})
+	sameTickI2 := New(sameTickEntity, sameTickStatus, sameTickStatus.Tick(), &gdpb.Position{X: 2, Y: 2})
 
 	diffTickSamePosEntity := tank.New(eid, t0, p0)
 	diffTickSamePosStatus := status.New(0)
-	diffTickSamePosI1 := New(diffTickSamePosEntity, diffTickSamePosStatus, &gdpb.Position{X: 1, Y: 1})
-	diffTickSamePosStatus.IncrementTick()
-	diffTickSamePosI2 := New(diffTickSamePosEntity, diffTickSamePosStatus, &gdpb.Position{X: 1, Y: 1})
+	diffTickSamePosI1 := New(diffTickSamePosEntity, diffTickSamePosStatus, diffTickSamePosStatus.Tick(), &gdpb.Position{X: 1, Y: 1})
+	diffTickSamePosI2 := New(diffTickSamePosEntity, diffTickSamePosStatus, diffTickSamePosStatus.Tick() + 1, &gdpb.Position{X: 1, Y: 1})
 
 	precedenceEntity := tank.New(eid, t0, p0)
 	precedenceStatus := status.New(0)
-	precedenceI1 := New(precedenceEntity, precedenceStatus, &gdpb.Position{X: 1, Y: 1})
+	precedenceI1 := New(precedenceEntity, precedenceStatus, precedenceStatus.Tick(), &gdpb.Position{X: 1, Y: 1})
 	precedenceStatus.IncrementTick()
-	precedenceI2 := New(precedenceEntity, precedenceStatus, &gdpb.Position{X: 2, Y: 2})
+	precedenceI2 := New(precedenceEntity, precedenceStatus, precedenceStatus.Tick(), &gdpb.Position{X: 2, Y: 2})
 
 	// We are testing if i1 < i2.
 	testConfigs := []struct {
