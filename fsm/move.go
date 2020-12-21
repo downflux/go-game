@@ -1,8 +1,6 @@
 package move
 
 import (
-	"log"
-
 	"sync"
 
 	"github.com/downflux/game/fsm/fsm"
@@ -86,13 +84,10 @@ func (n *Instance) Accept(v visitor.Visitor) error { return v.Visit(n) }
 func (n *Instance) Entity() entity.Entity          { return n.e }
 func (n *Instance) ID() id.InstanceID              { return id.InstanceID(n.e.ID()) }
 
-// Schedule allows us to mutate the FSM instance to deal with partial moves.
-// This allows us to know when the visitor should make the next meaningful
-// calculation.
-//
-// TODO(minkezhang): Rename this to be more descriptive. This should not be
-// lifted to the interface and therefore should be named appropriately.
-func (n *Instance) Schedule(t id.Tick) error {
+// SchedulePartialMove allows us to mutate the FSM instance to deal with
+// partial moves. This allows us to know when the visitor should make the next
+// meaningful calculation.
+func (n *Instance) SchedulePartialMove(t id.Tick) error {
 	n.mux.Lock()
 	defer n.mux.Unlock()
 
@@ -100,8 +95,6 @@ func (n *Instance) Schedule(t id.Tick) error {
 	if err != nil {
 		return err
 	}
-
-	log.Printf("DEBUG: [%v] eid %v with state %v schedule partial move: %v -> %v", n.dfStatus.Tick(), n.e.ID(), s, n.nextTick, t)
 
 	if err := n.To(s, pending, false); err != nil {
 		return err

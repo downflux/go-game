@@ -27,7 +27,7 @@ func TestState(t *testing.T) {
 	scheduleEntity := tank.New(eid, t0, p0)
 	scheduleStatus := status.New(0)
 	scheduleI1 := New(scheduleEntity, scheduleStatus, &gdpb.Position{X: 1, Y: 1})
-	scheduleI1.Schedule(100)
+	scheduleI1.SchedulePartialMove(100)
 
 	cancelEntity := tank.New(eid, t0, p0)
 	cancelStatus := status.New(0)
@@ -41,7 +41,7 @@ func TestState(t *testing.T) {
 	pendingCanceledEntity := tank.New(eid, t0, p0)
 	pendingCanceledStatus := status.New(0)
 	pendingCanceledI1 := New(pendingCanceledEntity, pendingCanceledStatus, &gdpb.Position{X: 1, Y: 1})
-	pendingCanceledI1.Schedule(100)
+	pendingCanceledI1.SchedulePartialMove(100)
 	pendingCanceledI1.Cancel()
 
 	testConfigs := []struct {

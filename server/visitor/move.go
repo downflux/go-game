@@ -167,7 +167,7 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 		// future.
 		//
 		// TODO(minkezhang): Add test for scheduling here.
-		if err := m.Schedule(tick + ticksPerTile*id.Tick(len(p))); err != nil {
+		if err := m.SchedulePartialMove(tick + ticksPerTile*id.Tick(len(p))); err != nil {
 			// TODO(minkezhang): Handle error by logging and continuing.
 			return err
 		}
