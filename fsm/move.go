@@ -43,9 +43,9 @@ var (
 type Instance struct {
 	*instance.Base
 
-	// scheduledTick is the tick at which the command was originally
+	// tick is the tick at which the command was originally
 	// scheduled.
-	scheduledTick id.Tick // Read-only.
+	tick id.Tick // Read-only.
 
 	dfStatus    *status.Status // Read-only.
 	destination *gdpb.Position // Read-only.
@@ -53,17 +53,17 @@ type Instance struct {
 	// TODO(minkezhang): Use moveable.Moveable instead.
 	e entity.Entity // Read-only.
 
-	// mux guards the Base and nextTick properties.
+	// mux guards the Base and executionTick properties.
 	mux sync.Mutex
 
-	// TODO(minkezhang): Move nextTick and destination into
+	// TODO(minkezhang): Move executionTick and destination into
 	// separate external cache.
-	nextTick id.Tick
+	executionTick id.Tick
 }
 
 // New constructs a new Instance FSM instance.
 //
-// TODO(minkezhang): Add scheduledTick arg to allow for scheduling in the
+// TODO(minkezhang): Add executionTick arg to allow for scheduling in the
 // future.
 func New(
 	e entity.Entity,
@@ -74,8 +74,8 @@ func New(
 		Base:          instance.New(FSM, pending),
 		e:             e,
 		dfStatus:      dfStatus,
-		scheduledTick: t,
-		nextTick:      t,
+		tick: t,
+		executionTick:      t,
 		destination:   destination,
 	}
 }
@@ -100,7 +100,7 @@ func (n *Instance) SchedulePartialMove(t id.Tick) error {
 		return err
 	}
 
-	n.nextTick = t
+	n.executionTick = t
 	return nil
 }
 
@@ -109,7 +109,7 @@ func (n *Instance) Precedence(i instance.Instance) bool {
 		return false
 	}
 
-	return n.scheduledTick > i.(*Instance).scheduledTick && !proto.Equal(n.Destination(), i.(*Instance).Destination())
+	return n.tick > i.(*Instance).tick && !proto.Equal(n.Destination(), i.(*Instance).Destination())
 }
 
 // TODO(minkezhang): Return a cloned instance instead.
@@ -147,7 +147,7 @@ func (n *Instance) stateUnsafe() (fsm.State, error) {
 		c := n.e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
 		var t fsm.State = unknown
 
-		if n.nextTick <= tick {
+		if n.executionTick <= tick {
 			t = executing
 			if proto.Equal(n.destination, c.Get(tick).(*gdpb.Position)) {
 				t = finished
