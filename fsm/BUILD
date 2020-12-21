@@ -85,6 +85,20 @@ go_library(
     ],
 )
 
+go_test(
+    name = "move_test",
+    srcs = ["move_test.go"],
+    importpath = "github.com/downflux/game/fsm/move_test",
+    embed = [":move"],
+    deps = [
+        ":fsm",
+        ":instance",
+        "//api:data_go_proto",
+        "//server/entity:tank",
+        "//server/service:status",
+    ],
+)
+
 go_library(
     name = "move",
     srcs = ["move.go"],

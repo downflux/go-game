@@ -28,8 +28,6 @@ var (
 	executing = fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String())
 	canceled  = fsm.State(fcpb.CommonState_COMMON_STATE_CANCELED.String())
 	finished  = fsm.State(fcpb.CommonState_COMMON_STATE_FINISHED.String())
-
-	_ instance.Instance = &Instance{}
 )
 
 var (
@@ -65,6 +63,10 @@ type Instance struct {
 	nextTick id.Tick
 }
 
+// New constructs a new Instance FSM instance.
+//
+// TODO(minkezhang): Add scheduledTick arg to allow for scheduling in the
+// future.
 func New(
 	e entity.Entity,
 	dfStatus *status.Status,
@@ -82,9 +84,14 @@ func New(
 
 func (n *Instance) Accept(v visitor.Visitor) error { return v.Visit(n) }
 func (n *Instance) Entity() entity.Entity          { return n.e }
+func (n *Instance) ID() id.InstanceID              { return id.InstanceID(n.e.ID()) }
 
-func (n *Instance) ID() id.InstanceID { return id.InstanceID(n.e.ID()) }
-
+// Schedule allows us to mutate the FSM instance to deal with partial moves.
+// This allows us to know when the visitor should make the next meaningful
+// calculation.
+//
+// TODO(minkezhang): Rename this to be more descriptive. This should not be
+// lifted to the interface and therefore should be named appropriately.
 func (n *Instance) Schedule(t id.Tick) error {
 	n.mux.Lock()
 	defer n.mux.Unlock()
@@ -104,7 +111,6 @@ func (n *Instance) Schedule(t id.Tick) error {
 	return nil
 }
 
-// TODO(minkezhang): Add test.
 func (n *Instance) Precedence(i instance.Instance) bool {
 	if i.Type() != fcpb.FSMType_FSM_TYPE_MOVE {
 		return false

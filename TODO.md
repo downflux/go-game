@@ -16,6 +16,8 @@
 * [x] add tests for move.Visitor
 * [x] rename CurveCategory to EntityProperty
 * [ ] **migrate to FSM Visitor model**
+* [ ] migrate engine components
+* [ ] add server / engine documentation
 * [ ] add Entity Implements layer
 * [ ] add API documentation
 * [ ] add tests for produce.Visitor
@@ -33,6 +35,7 @@
 * [x] add Produce() Visitor
 * [x] add entity click-drag-select action
 * [ ] **add Attack command**
+* [ ] add FSM design document
 * [ ] add game state export / import
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
 * [ ] replace pathfinding with flow fields
