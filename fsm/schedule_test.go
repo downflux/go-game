@@ -13,9 +13,8 @@ import (
 
 func TestAddError(t *testing.T) {
 	s := New(nil)
-	stat := status.New(0)
 
-	i := move.New(tank.New("entity-id", 0, nil), status.New(0), stat.Tick(), nil)
+	i := move.New(tank.New("entity-id", 0, nil), status.New(0), nil)
 	if err := s.Add(i); err == nil {
 		t.Errorf("Add() = nil, want a non-nil error")
 	}
@@ -25,9 +24,7 @@ func TestAdd(t *testing.T) {
 	const iid = "entity-id"
 
 	s := New([]fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE})
-	stat := status.New(0)
-
-	i := move.New(tank.New(iid, 0, nil), status.New(0), stat.Tick(), nil)
+	i := move.New(tank.New(iid, 0, nil), status.New(0), nil)
 	if err := s.Add(i); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
@@ -39,9 +36,6 @@ func TestAdd(t *testing.T) {
 
 func TestMerge(t *testing.T) {
 	const iid = "entity-id"
-
-	simpleMergeStat := status.New(0)
-	mergeFilterStat := status.New(0)
 
 	testConfigs := []struct {
 		name      string
@@ -55,10 +49,10 @@ func TestMerge(t *testing.T) {
 			s1Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
 			s2Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
 			instances: []instance.Instance{
-				move.New(tank.New(iid, 0, nil), simpleMergeStat, simpleMergeStat.Tick(), nil),
+				move.New(tank.New(iid, 0, nil), status.New(0), nil),
 			},
 			want: []instance.Instance{
-				move.New(tank.New(iid, 0, nil), simpleMergeStat, simpleMergeStat.Tick(), nil),
+				move.New(tank.New(iid, 0, nil), status.New(0), nil),
 			},
 		},
 		{
@@ -66,7 +60,7 @@ func TestMerge(t *testing.T) {
 			s1Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
 			s2Types: nil,
 			instances: []instance.Instance{
-				move.New(tank.New(iid, 0, nil), mergeFilterStat, mergeFilterStat.Tick(), nil),
+				move.New(tank.New(iid, 0, nil), status.New(0), nil),
 			},
 			want: nil,
 		},
@@ -100,9 +94,7 @@ func TestPop(t *testing.T) {
 	const iid = "entity-id"
 
 	s1 := New([]fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE})
-	stat := status.New(0)
-
-	i := move.New(tank.New(iid, 0, nil), stat, stat.Tick(), nil)
+	i := move.New(tank.New(iid, 0, nil), status.New(0), nil)
 	if err := s1.Add(i); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}

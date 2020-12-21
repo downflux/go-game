@@ -62,18 +62,20 @@ type Instance struct {
 }
 
 // New constructs a new Instance FSM instance.
+//
+// TODO(minkezhang): Add executionTick arg to allow for scheduling in the
+// future.
 func New(
 	e entity.Entity,
 	dfStatus *status.Status,
-	executionTick id.Tick,
 	destination *gdpb.Position) *Instance {
 	t := dfStatus.Tick()
 	return &Instance{
 		Base:          instance.New(FSM, pending),
 		e:             e,
 		dfStatus:      dfStatus,
-		tick:          t,
-		executionTick: executionTick,
+		tick: t,
+		executionTick:      t,
 		destination:   destination,
 	}
 }

@@ -315,7 +315,6 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 		i := moveinstance.New(
 			e.entities.Get(id.EntityID(eid)),
 			e.statusImpl,
-			e.statusImpl.Tick(),
 			req.GetDestination())
 		if err := e.cache.Add(i); err != nil {
 			return err
