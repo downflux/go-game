@@ -74,8 +74,8 @@ func New(
 		Base:          instance.New(FSM, pending),
 		e:             e,
 		dfStatus:      dfStatus,
-		tick: t,
-		executionTick:      t,
+		tick:          t,
+		executionTick: t,
 		destination:   destination,
 	}
 }
