@@ -15,6 +15,7 @@
 * [x] ensure client still works with refactors
 * [x] add tests for move.Visitor
 * [x] rename CurveCategory to EntityProperty
+* [ ] add generator for IDs instead of manually testing for random string
 * [ ] **migrate to FSM Visitor model**
 * [ ] migrate engine components
 * [ ] add server / engine documentation

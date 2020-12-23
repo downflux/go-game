@@ -58,8 +58,10 @@ func New(
 	}
 }
 
+func (n *Instance) EntityType() gcpb.EntityType    { return n.entityType }
 func (n *Instance) Accept(v visitor.Visitor) error { return v.Visit(n) }
 func (n *Instance) ID() id.InstanceID              { return n.id }
+func (n *Instance) SpawnPosition() *gdpb.Position  { return n.spawnPosition }
 
 func (n *Instance) Precedence(i instance.Instance) bool {
 	if i.Type() != fsmType {

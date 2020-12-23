@@ -38,6 +38,29 @@ go_library(
     ]
 )
 
+go_library(
+    name = "producefsm",
+    srcs = ["producefsm.go"],
+    importpath = "github.com/downflux/game/server/visitor/producefsm",
+    deps = [
+        ":dirty",
+        ":visitor",
+        "//api:constants_go_proto",
+        "//fsm:fsm",
+        "//fsm:instance",
+        "//fsm:produce",
+        "//fsm/api:constants_go_proto",
+        "//server:id",
+        "//server/entity:entity",
+        "//server/entity:entitylist",
+        "//server/entity:tank",
+        "//server/service:status",
+	"//server/visitor/api:constants_go_proto",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+    ]
+)
+
 go_test(
     name = "dirty_test",
     srcs = ["dirty_test.go"],
