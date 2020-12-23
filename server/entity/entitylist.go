@@ -1,5 +1,7 @@
 // Package entitylist implements the Entity interface for a list tracking all
 // game Entity instances.
+//
+// TODO(minkezhang): Rename list.
 package entitylist
 
 import (

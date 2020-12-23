@@ -26,9 +26,7 @@ var (
 	executing = fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String())
 	canceled  = fsm.State(fcpb.CommonState_COMMON_STATE_CANCELED.String())
 	finished  = fsm.State(fcpb.CommonState_COMMON_STATE_FINISHED.String())
-)
 
-var (
 	transitions = []fsm.Transition{
 		{From: pending, To: executing, VirtualOnly: true},
 		{From: pending, To: canceled},
@@ -105,7 +103,7 @@ func (n *Instance) SchedulePartialMove(t id.Tick) error {
 }
 
 func (n *Instance) Precedence(i instance.Instance) bool {
-	if i.Type() != fcpb.FSMType_FSM_TYPE_MOVE {
+	if i.Type() != fsmType {
 		return false
 	}
 

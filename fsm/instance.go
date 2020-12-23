@@ -54,6 +54,8 @@ func (n *Base) To(f fsm.State, t fsm.State, virtual bool) error {
 		return status.Errorf(
 			codes.FailedPrecondition,
 			"real transition between %v -> %v cannot occur for a virtual-only edge",
+			f,
+			t,
 		)
 	}
 

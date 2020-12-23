@@ -10,6 +10,7 @@ option csharp_namespace = "DF.Game.FSM.API.Constants";
 enum FSMType {
   FSM_TYPE_UNKNOWN = 0;
   FSM_TYPE_MOVE = 1;
+  FSM_TYPE_PRODUCE = 2;
 }
 
 enum CommonState {

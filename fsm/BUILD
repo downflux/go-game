@@ -125,3 +125,34 @@ go_library(
         "//fsm/api:constants_go_proto",
     ],
 )
+
+go_library(
+    name = "produce",
+    srcs = ["produce.go"],
+    importpath = "github.com/downflux/game/fsm/produce",
+    deps = [
+        ":fsm",
+        ":instance",
+        "//api:constants_go_proto",
+        "//api:data_go_proto",
+        "//fsm/api:constants_go_proto",
+        "//server:id",
+        "//server/service:status",
+        "//server/visitor:visitor",
+    ],
+)
+
+go_test(
+    name = "produce_test",
+    srcs = ["produce_test.go"],
+    importpath = "github.com/downflux/game/fsm/produce_test",
+    embed = [":produce"],
+    deps = [
+        ":fsm",
+        ":instance",
+        "//api:constants_go_proto",
+        "//api:data_go_proto",
+        "//fsm/api:constants_go_proto",
+        "//server/service:status",
+    ],
+)
