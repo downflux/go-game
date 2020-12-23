@@ -2,6 +2,7 @@
 // game Entity instances.
 //
 // TODO(minkezhang): Rename list.
+// TODO(minkezhang): Make this not implement the Entity interface.
 package entitylist
 
 import (

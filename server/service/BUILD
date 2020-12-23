@@ -80,6 +80,7 @@ go_library(
         "//fsm/api:constants_go_proto",
         "//fsm:move",
         "//fsm:schedule",
+        "//fsm:produce",
         "//map:map",
         "//map/api:data_go_proto",
         "//pathing/hpf:graph",

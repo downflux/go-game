@@ -14,6 +14,7 @@ import (
 var (
 	FSMTypes = []fcpb.FSMType{
 		fcpb.FSMType_FSM_TYPE_MOVE,
+		fcpb.FSMType_FSM_TYPE_PRODUCE,
 	}
 )
 

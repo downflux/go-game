@@ -13,7 +13,7 @@ import (
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
-	"github.com/downflux/game/server/visitor/visitor"
+	// "github.com/downflux/game/server/visitor/visitor"
 	"github.com/downflux/game/server/visitor/visitorlist"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,10 +23,11 @@ import (
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 	moveinstance "github.com/downflux/game/fsm/move"
+	produceinstance "github.com/downflux/game/fsm/produce"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
 	serverstatus "github.com/downflux/game/server/service/status"
-	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
+	// vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (
@@ -84,9 +85,10 @@ type Executor struct {
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
 
-	sot   *schedule.Schedule
-	cache *schedule.Schedule
-	move  *move.Visitor
+	sot     *schedule.Schedule
+	cache   *schedule.Schedule
+	move    *move.Visitor
+	produce *produce.Visitor
 }
 
 // New creates a new instance of the Executor.
@@ -103,24 +105,17 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	dirties := dirty.New()
 	statusImpl := serverstatus.New(tickDuration)
 
-	visitors, err := visitorlist.New(
-		[]visitor.Visitor{
-			produce.New(statusImpl, dirties),
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
+	entities := entitylist.New(entityListID)
 
 	return &Executor{
-		visitors:   visitors,
-		entities:   entitylist.New(entityListID),
+		entities:   entities,
 		dirties:    dirties,
 		clients:    clientlist.New(idLen),
 		statusImpl: statusImpl,
 		sot:        schedule.New(schedule.FSMTypes),
 		cache:      schedule.New(schedule.FSMTypes),
 		move:       move.New(tm, g, statusImpl, dirties, minPathLength),
+		produce:    produce.New(statusImpl, entities, dirties),
 	}, nil
 }
 
@@ -262,16 +257,14 @@ func (e *Executor) doTick() error {
 	if err := e.sot.Merge(x); err != nil {
 		return err
 	}
+
 	// TODO(minkezhang): Clear CANCELED or FINISHED instances in a Visitor.
 	e.sot.Clear()
-	if err := e.sot.Get(fcpb.FSMType_FSM_TYPE_MOVE).Accept(e.move); err != nil {
+	if err := e.sot.Get(fcpb.FSMType_FSM_TYPE_PRODUCE).Accept(e.produce); err != nil {
 		return err
 	}
-
-	for _, v := range e.visitors.Iter() {
-		if err := e.entities.Accept(v); err != nil {
-			return err
-		}
+	if err := e.sot.Get(fcpb.FSMType_FSM_TYPE_MOVE).Accept(e.move); err != nil {
+		return err
 	}
 
 	if err := e.broadcastCurves(); err != nil {
@@ -297,12 +290,8 @@ func (e *Executor) doTick() error {
 // TODO(minkezhang): Delete this method -- this is currently public for
 // debugging purposes.
 func (e *Executor) AddEntity(entityType gcpb.EntityType, p *gdpb.Position) error {
-	return e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_PRODUCE).Schedule(
-		produce.Args{
-			ScheduledTick: e.statusImpl.Tick(),
-			EntityType:    entityType,
-			SpawnPosition: p,
-		},
+	return e.cache.Add(
+		produceinstance.New(e.statusImpl, e.statusImpl.Tick(), entityType, p),
 	)
 }
 
@@ -312,11 +301,9 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 
 	for _, eid := range req.GetEntityIds() {
-		i := moveinstance.New(
-			e.entities.Get(id.EntityID(eid)),
-			e.statusImpl,
-			req.GetDestination())
-		if err := e.cache.Add(i); err != nil {
+		if err := e.cache.Add(
+			moveinstance.New(e.entities.Get(id.EntityID(eid)), e.statusImpl, req.GetDestination()),
+		); err != nil {
 			return err
 		}
 	}
