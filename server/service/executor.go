@@ -90,8 +90,8 @@ type Executor struct {
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
 
-	sot     *schedule.Schedule
-	cache   *schedule.Schedule
+	sot   *schedule.Schedule
+	cache *schedule.Schedule
 }
 
 // New creates a new instance of the Executor.

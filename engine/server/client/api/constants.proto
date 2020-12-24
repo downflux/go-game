@@ -1,0 +1,18 @@
+// constants.proto
+//
+// Constants that are useful for tracking client status.
+syntax = "proto3";
+
+package game.engine.server.client.api.constants;
+option go_package = "game.engine.server.client.api.constants";
+option csharp_namespace = "DF.Game.Engine.Server.Client.API.Constants";
+
+// ClientState represents the internal game's awareness of the current
+// networking state of a connected client.
+enum ClientState {
+  CLIENT_STATE_UNKNOWN = 0;
+  CLIENT_STATE_NEW = 1;
+  CLIENT_STATE_DESYNCED = 2;
+  CLIENT_STATE_OK = 3;
+  CLIENT_STATE_TEARDOWN = 4;
+}
