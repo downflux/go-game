@@ -9,7 +9,6 @@ import (
 	"github.com/downflux/game/fsm/schedule"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/service/clientlist"
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
@@ -28,6 +27,7 @@ import (
 	produceinstance "github.com/downflux/game/fsm/produce"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
+	clientlist "github.com/downflux/game/server/service/list"
 )
 
 const (

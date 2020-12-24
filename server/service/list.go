@@ -1,5 +1,5 @@
-// Package clientlist encapsulates logic for managing multiple clients.
-package clientlist
+// Package list encapsulates logic for managing multiple clients.
+package list
 
 import (
 	"sync"

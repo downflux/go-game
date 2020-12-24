@@ -1,9 +1,9 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
-    name = "clientlist",
-    srcs = ["clientlist.go"],
-    importpath = "github.com/downflux/game/server/service/clientlist",
+    name = "list",
+    srcs = ["list.go"],
+    importpath = "github.com/downflux/game/server/service/list",
     deps = [
         ":client",
         "//api:api_go_proto",
@@ -52,7 +52,7 @@ go_library(
     importpath = "github.com/downflux/game/server/service/executor",
     visibility = ["//server/grpc:__pkg__"],
     deps = [
-        ":clientlist",
+        ":list",
         "//api:api_go_proto",
         "//api:constants_go_proto",
         "//api:data_go_proto",
