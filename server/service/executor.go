@@ -5,25 +5,29 @@ import (
 	"log"
 	"time"
 
+	"github.com/downflux/game/engine/fsm/schedule"
+	"github.com/downflux/game/engine/id/id"
+	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/server/entity/entitylist"
-	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/service/clientlist"
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
-	"github.com/downflux/game/server/visitor/visitor"
-	"github.com/downflux/game/server/visitor/visitorlist"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
+	entitylist "github.com/downflux/game/engine/entity/list"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
+	serverstatus "github.com/downflux/game/engine/status/status"
+	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
+	visitorlist "github.com/downflux/game/engine/visitor/list"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
-	serverstatus "github.com/downflux/game/server/service/status"
-	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
+	moveinstance "github.com/downflux/game/server/fsm/move"
+	produceinstance "github.com/downflux/game/server/fsm/produce"
+	clientlist "github.com/downflux/game/server/service/list"
 )
 
 const (
@@ -50,20 +54,12 @@ const (
 var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
+
+	fsmVisitorTypeLookup = map[vcpb.VisitorType]fcpb.FSMType{
+		vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
+		vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
+	}
 )
-
-// dirtyCurve represents a Curve instance which was altered in the current
-// tick and will need to be broadcast to all clients.
-//
-// The Entity UUID and CurveCategory uniquely identifies a curve.
-type dirtyCurve struct {
-	// eid is the parent Entity UUID.
-	eid id.EntityID
-
-	// category is the Entity property for which this Curve instance
-	// represents.
-	category gcpb.CurveCategory
-}
 
 // Executor encapsulates logic for executing the core game loop.
 type Executor struct {
@@ -93,6 +89,11 @@ type Executor struct {
 
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
+
+	sot     *schedule.Schedule
+	cache   *schedule.Schedule
+	move    *move.Visitor
+	produce *produce.Visitor
 }
 
 // New creates a new instance of the Executor.
@@ -109,22 +110,24 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	dirties := dirty.New()
 	statusImpl := serverstatus.New(tickDuration)
 
-	visitors, err := visitorlist.New(
-		[]visitor.Visitor{
-			produce.New(statusImpl, dirties),
-			move.New(tm, g, statusImpl, dirties, minPathLength),
-		},
-	)
+	entities := entitylist.New(entityListID)
+
+	visitors, err := visitorlist.New([]visitor.Visitor{
+		produce.New(statusImpl, entities, dirties),
+		move.New(tm, g, statusImpl, dirties, minPathLength),
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &Executor{
 		visitors:   visitors,
-		entities:   entitylist.New(entityListID),
+		entities:   entities,
 		dirties:    dirties,
 		clients:    clientlist.New(idLen),
 		statusImpl: statusImpl,
+		sot:        schedule.New(schedule.FSMTypes),
+		cache:      schedule.New(schedule.FSMTypes),
 	}, nil
 }
 
@@ -175,7 +178,7 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 		curves = append(
 			curves,
 			e.entities.Get(
-				dc.EntityID).Curve(dc.Category).ExportTail(tailTick))
+				dc.EntityID).Curve(dc.Property).ExportTail(tailTick))
 	}
 
 	return curves, entities
@@ -197,8 +200,8 @@ func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
 			EntityId: en.ID().Value(),
 			Type:     en.Type(),
 		})
-		for _, cat := range en.CurveCategories() {
-			curves = append(curves, en.Curve(cat).ExportTail(beginningTick))
+		for _, p := range en.Properties() {
+			curves = append(curves, en.Curve(p).ExportTail(beginningTick))
 		}
 	}
 	return curves, entities
@@ -261,9 +264,19 @@ func (e *Executor) doTick() error {
 	t := time.Now()
 	e.statusImpl.IncrementTick()
 
+	x := e.cache.Pop()
+
+	if err := e.sot.Merge(x); err != nil {
+		return err
+	}
+
+	// TODO(minkezhang): Clear CANCELED or FINISHED instances in a Visitor.
+	e.sot.Clear()
 	for _, v := range e.visitors.Iter() {
-		if err := e.entities.Accept(v); err != nil {
-			return err
+		if fsmType, found := fsmVisitorTypeLookup[v.Type()]; found {
+			if err := e.sot.Get(fsmType).Accept(v); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -290,12 +303,8 @@ func (e *Executor) doTick() error {
 // TODO(minkezhang): Delete this method -- this is currently public for
 // debugging purposes.
 func (e *Executor) AddEntity(entityType gcpb.EntityType, p *gdpb.Position) error {
-	return e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_PRODUCE).Schedule(
-		produce.Args{
-			ScheduledTick: e.statusImpl.Tick(),
-			EntityType:    entityType,
-			SpawnPosition: p,
-		},
+	return e.cache.Add(
+		produceinstance.New(e.statusImpl, e.statusImpl.Tick(), entityType, p),
 	)
 }
 
@@ -305,13 +314,8 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 
 	for _, eid := range req.GetEntityIds() {
-		if err := e.visitors.Get(vcpb.VisitorType_VISITOR_TYPE_MOVE).Schedule(
-			move.Args{
-				Tick:        e.statusImpl.Tick(),
-				EntityID:    id.EntityID(eid),
-				Destination: req.GetDestination(),
-				IsExternal:  true,
-			},
+		if err := e.cache.Add(
+			moveinstance.New(e.entities.Get(id.EntityID(eid)), e.statusImpl, req.GetDestination()),
 		); err != nil {
 			return err
 		}

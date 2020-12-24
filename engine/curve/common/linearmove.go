@@ -7,8 +7,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/downflux/game/curve/curve"
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/curve/curve"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	categoryType = gcpb.CurveCategory_CURVE_CATEGORY_MOVE
-	curveType    = gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE
+	property  = gcpb.EntityProperty_ENTITY_PROPERTY_POSITION
+	curveType = gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE
 )
 
 var (
@@ -90,8 +90,8 @@ func (c *Curve) Tick() id.Tick {
 	return c.tick
 }
 
-// Category returns the entity property that this curve represents.
-func (c *Curve) Category() gcpb.CurveCategory { return categoryType }
+// Property returns the entity property that this curve represents.
+func (c *Curve) Property() gcpb.EntityProperty { return property }
 
 // EntityID returns the ID of the parent Entity.
 func (c *Curve) EntityID() id.EntityID { return c.entityID }
@@ -214,7 +214,7 @@ func (c *Curve) ExportTail(tick id.Tick) *gdpb.Curve {
 
 	pb := &gdpb.Curve{
 		Type:     c.Type(),
-		Category: c.Category(),
+		Property: c.Property(),
 		EntityId: c.EntityID().Value(),
 		Tick:     c.Tick().Value(),
 	}

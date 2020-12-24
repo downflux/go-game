@@ -8,12 +8,11 @@ package server
 
 import (
 	"context"
-	"log"
 	"net"
 	"time"
 
+	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/server/grpc/client"
-	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/executor"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -113,7 +112,6 @@ func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequ
 }
 
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
-	log.Printf("DEBUG: got Move(%v)", req)
 	if err := s.validateClient(id.ClientID(req.GetClientId())); err != nil {
 		return nil, err
 	}

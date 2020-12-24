@@ -3,7 +3,7 @@ package linearmove
 import (
 	"testing"
 
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -158,7 +158,7 @@ func TestExportTail(t *testing.T) {
 			want: &gdpb.Curve{
 				EntityId: eid,
 				Tick:     cSimple.Tick().Value(),
-				Category: cSimple.Category(),
+				Property: cSimple.Property(),
 				Type:     cSimple.Type(),
 				Data: []*gdpb.CurveDatum{
 					{
@@ -183,7 +183,7 @@ func TestExportTail(t *testing.T) {
 			want: &gdpb.Curve{
 				EntityId: eid,
 				Tick:     cSimple.Tick().Value(),
-				Category: cSimple.Category(),
+				Property: cSimple.Property(),
 				Type:     cSimple.Type(),
 				Data: []*gdpb.CurveDatum{
 					{
@@ -204,7 +204,7 @@ func TestExportTail(t *testing.T) {
 			want: &gdpb.Curve{
 				EntityId: eid,
 				Tick:     cSimple.Tick().Value(),
-				Category: cSimple.Category(),
+				Property: cSimple.Property(),
 				Type:     cSimple.Type(),
 				Data: []*gdpb.CurveDatum{
 					{
@@ -225,7 +225,7 @@ func TestExportTail(t *testing.T) {
 			want: &gdpb.Curve{
 				EntityId: eid,
 				Tick:     cSimple.Tick().Value(),
-				Category: cSimple.Category(),
+				Property: cSimple.Property(),
 				Type:     cSimple.Type(),
 				Data: []*gdpb.CurveDatum{
 					{

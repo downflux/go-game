@@ -29,7 +29,7 @@ namespace DownFluxGL
         private System.Collections.Generic.Dictionary<
           string, DF.Entity.Entity> _entities;
         private System.Collections.Generic.Dictionary<
-          (string, DF.Game.API.Constants.CurveCategory),
+          (string, DF.Game.API.Constants.EntityProperty),
           DF.Curve.Curve> _curves;
 
         private System.TimeSpan _serverTickDuration;
@@ -40,7 +40,7 @@ namespace DownFluxGL
             _server = server;
             _graphics = new GraphicsDeviceManager(this);
             _curves = new System.Collections.Generic.Dictionary<
-              (string, DF.Game.API.Constants.CurveCategory),
+              (string, DF.Game.API.Constants.EntityProperty),
               DF.Curve.Curve>();
             _entities = new System.Collections.Generic.Dictionary<
               string, DF.Entity.Entity>();
@@ -135,14 +135,14 @@ namespace DownFluxGL
             foreach (var d in _c.Data) {
               d.Item2.Switch(
                 linearMove => {
-                  if (!_curves.ContainsKey((linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move))) {
+                  if (!_curves.ContainsKey((linearMove.EntityID, DF.Game.API.Constants.EntityProperty.Position))) {
                     System.Console.Error.WriteLine("DEBUG: ---------------- client tick: ");
                     System.Console.Error.WriteLine(tick);
                     System.Console.Error.WriteLine("DEBUG: ---------------- server tick: ");
                     System.Console.Error.WriteLine(linearMove.Tick);
-                    _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)] = linearMove;
+                    _curves[(linearMove.EntityID, DF.Game.API.Constants.EntityProperty.Position)] = linearMove;
                   } else {
-                    _curves[(linearMove.EntityID, DF.Game.API.Constants.CurveCategory.Move)].AsT0.ReplaceTail(linearMove);
+                    _curves[(linearMove.EntityID, DF.Game.API.Constants.EntityProperty.Position)].AsT0.ReplaceTail(linearMove);
                   }
                 }
               );
@@ -163,7 +163,7 @@ namespace DownFluxGL
                 simpleEntity => {
                   DF.Curve.Curve c;
                   if (selectEntities && !_selectedEntities.Contains(simpleEntity.ID)) {
-                    _curves.TryGetValue((simpleEntity.ID, DF.Game.API.Constants.CurveCategory.Move), out c);
+                    _curves.TryGetValue((simpleEntity.ID, DF.Game.API.Constants.EntityProperty.Position), out c);
                     c.Switch(
                       linearMove => {
                         var p = linearMove.Get(tick);

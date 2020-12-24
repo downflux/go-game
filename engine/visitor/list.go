@@ -1,13 +1,13 @@
-// Package visitorlist encapsulates logic for a managed list of Visitor
+// Package list encapsulates logic for a managed list of Visitor
 // instances.
-package visitorlist
+package list
 
 import (
-	"github.com/downflux/game/server/visitor/visitor"
+	"github.com/downflux/game/engine/visitor/visitor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
+	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 )
 
 // List implements a managed list of Visitor instances.
@@ -30,9 +30,7 @@ func New(visitors []visitor.Visitor) (*List, error) {
 }
 
 // Get returns a concrete Visitor instance given the registered VisitorType.
-//
-// TODO(minkezhang): Rename to Visitor instead.
-func (l *List) Get(visitorType vcpb.VisitorType) visitor.Visitor {
+func (l *List) Visitor(visitorType vcpb.VisitorType) visitor.Visitor {
 	return l.visitors[visitorType]
 }
 
@@ -41,7 +39,7 @@ func (l *List) Get(visitorType vcpb.VisitorType) visitor.Visitor {
 func (l *List) Iter() []visitor.Visitor {
 	var visitors []visitor.Visitor
 	for _, visitorType := range l.order {
-		visitors = append(visitors, l.Get(visitorType))
+		visitors = append(visitors, l.Visitor(visitorType))
 	}
 
 	return visitors

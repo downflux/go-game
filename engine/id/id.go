@@ -2,6 +2,7 @@
 // not be called by client-side logic.
 //
 // TODO(minkezhang): Migrate EntityID, ClientID into separate directory(s).
+// TODO(minkezhang): Add a generator which guarantees uniqueness.
 package id
 
 import (
@@ -17,6 +18,12 @@ type Tick float64
 func (t Tick) Value() float64 { return float64(t) }
 
 type ID string
+
+func (id ID) Value() string { return string(id) }
+
+type InstanceID ID
+
+func (id InstanceID) Value() string { return string(id) }
 
 type EntityID ID
 

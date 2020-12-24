@@ -14,7 +14,13 @@
 * [x] make `maps/astar.Path` take in `Position`; last move is to the Position offset
 * [x] ensure client still works with refactors
 * [x] add tests for move.Visitor
-* [ ] **rename CurveCategory to EntityProperty**
+* [x] rename CurveCategory to EntityProperty
+* [x] migrate to FSM Visitor model
+* [x] migrate engine components
+* [ ] migrate instance -> action
+* [ ] add generator for IDs instead of manually testing for random string
+* [ ] add server / engine documentation
+* [ ] add Entity Implements layer
 * [ ] add API documentation
 * [ ] add tests for produce.Visitor
 * [ ] add tests for Status
@@ -30,6 +36,8 @@
 * [x] consider what to do with partial moves -- refactor out commandQueue with cancellation, etc.
 * [x] add Produce() Visitor
 * [x] add entity click-drag-select action
+* [ ] **add Attack command**
+* [ ] add FSM design document
 * [ ] add game state export / import
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
 * [ ] replace pathfinding with flow fields

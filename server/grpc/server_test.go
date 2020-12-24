@@ -192,7 +192,7 @@ func TestSendMoveCommand(t *testing.T) {
 		Curves: []*gdpb.Curve{{
 			EntityId: eid,
 			Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
-			Category: gcpb.CurveCategory_CURVE_CATEGORY_MOVE,
+			Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
 			Data: []*gdpb.CurveDatum{
 				// First element is the current position of
 				// the entity. This is necessary for the client

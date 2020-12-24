@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 	"golang.org/x/sync/errgroup"
 )
 

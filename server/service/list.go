@@ -1,10 +1,10 @@
-// Package clientlist encapsulates logic for managing multiple clients.
-package clientlist
+// Package list encapsulates logic for managing multiple clients.
+package list
 
 import (
 	"sync"
 
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/server/service/client"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"

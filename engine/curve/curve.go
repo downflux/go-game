@@ -6,7 +6,7 @@ package curve
 import (
 	"reflect"
 
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -29,9 +29,9 @@ type Curve interface {
 	// a linear interpolation, a delta graph, or else.
 	Type() gcpb.CurveType
 
-	// Category indicates the property type of the curve, e.g. if this is
-	// should be interpreted as an HP curve, position, or else.
-	Category() gcpb.CurveCategory
+	// Property indicates the property type of the curve, e.g. if
+	// this should be interpreted as an HP curve, position, etc.
+	Property() gcpb.EntityProperty
 
 	// DatumType indicates the data type of the time-series values,
 	// e.g. Coordinates, bool, etc.
