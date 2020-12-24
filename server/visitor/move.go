@@ -9,10 +9,10 @@ import (
 	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
-	"github.com/downflux/game/fsm/move"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/fsm/move"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/visitor/dirty"
 

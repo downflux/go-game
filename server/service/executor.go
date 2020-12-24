@@ -23,10 +23,10 @@ import (
 	serverstatus "github.com/downflux/game/engine/status/status"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	visitorlist "github.com/downflux/game/engine/visitor/list"
-	moveinstance "github.com/downflux/game/fsm/move"
-	produceinstance "github.com/downflux/game/fsm/produce"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
+	moveinstance "github.com/downflux/game/server/fsm/move"
+	produceinstance "github.com/downflux/game/server/fsm/produce"
 	clientlist "github.com/downflux/game/server/service/list"
 )
 

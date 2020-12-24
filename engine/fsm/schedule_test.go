@@ -5,8 +5,8 @@ import (
 
 	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/status/status"
-	"github.com/downflux/game/fsm/move"
 	"github.com/downflux/game/server/entity/tank"
+	"github.com/downflux/game/server/fsm/move"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )

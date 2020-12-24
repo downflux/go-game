@@ -7,9 +7,9 @@ import (
 
 	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/status/status"
-	"github.com/downflux/game/fsm/move"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/tank"
+	"github.com/downflux/game/server/fsm/move"
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/google/go-cmp/cmp"
 

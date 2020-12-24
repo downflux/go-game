@@ -10,7 +10,7 @@ package(default_visibility=[
 go_test(
     name = "move_test",
     srcs = ["move_test.go"],
-    importpath = "github.com/downflux/game/fsm/move_test",
+    importpath = "github.com/downflux/game/server/fsm/move_test",
     embed = [":move"],
     deps = [
         "//api:data_go_proto",
@@ -24,7 +24,7 @@ go_test(
 go_library(
     name = "move",
     srcs = ["move.go"],
-    importpath = "github.com/downflux/game/fsm/move",
+    importpath = "github.com/downflux/game/server/fsm/move",
     deps = [
         "//api:constants_go_proto",
         "//api:data_go_proto",
@@ -42,7 +42,7 @@ go_library(
 go_library(
     name = "produce",
     srcs = ["produce.go"],
-    importpath = "github.com/downflux/game/fsm/produce",
+    importpath = "github.com/downflux/game/server/fsm/produce",
     deps = [
         "//api:constants_go_proto",
         "//api:data_go_proto",
@@ -58,7 +58,7 @@ go_library(
 go_test(
     name = "produce_test",
     srcs = ["produce_test.go"],
-    importpath = "github.com/downflux/game/fsm/produce_test",
+    importpath = "github.com/downflux/game/server/fsm/produce_test",
     embed = [":produce"],
     deps = [
         "//api:constants_go_proto",

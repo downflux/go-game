@@ -11,7 +11,7 @@ go_test(
 	":instance",
         "//engine/fsm/api:constants_go_proto",
         "//engine/status:status",
-        "//fsm:move",
+        "//server/fsm:move",
         "//server/entity:tank",
     ],
 )
@@ -40,7 +40,7 @@ go_test(
         "//api:data_go_proto",
         "//engine/fsm/api:constants_go_proto",
         "//engine/status:status",
-        "//fsm:move",
+        "//server/fsm:move",
         "//server/entity:tank",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
