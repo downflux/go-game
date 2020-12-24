@@ -3,9 +3,9 @@
 // Constants that are useful for finite state automata.
 syntax = "proto3";
 
-package game.fsm.api.constants;
-option go_package = "game.fsm.api.constants";
-option csharp_namespace = "DF.Game.FSM.API.Constants";
+package game.engine.fsm.api.constants;
+option go_package = "game.engine.fsm.api.constants";
+option csharp_namespace = "DF.Game.Engine.FSM.API.Constants";
 
 enum FSMType {
   FSM_TYPE_UNKNOWN = 0;

@@ -6,6 +6,7 @@ package(default_visibility=[
     "//server/grpc:__pkg__",
 
     "//fsm:__pkg__",
+    "//engine/fsm:__pkg__",
     "//server/service:__pkg__",
     "//server/visitor:__pkg__",
 ])

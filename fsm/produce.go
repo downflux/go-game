@@ -1,15 +1,15 @@
 package produce
 
 import (
+	"github.com/downflux/game/engine/fsm/fsm"
+	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
-	"github.com/downflux/game/fsm/fsm"
-	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/server/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 const (

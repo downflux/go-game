@@ -1,7 +1,7 @@
 package fsm
 
 import (
-	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 type State string

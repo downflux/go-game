@@ -3,12 +3,12 @@ package schedule
 import (
 	"testing"
 
+	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/status/status"
-	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/fsm/move"
 	"github.com/downflux/game/server/entity/tank"
 
-	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 func TestAddError(t *testing.T) {

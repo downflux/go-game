@@ -1,16 +1,16 @@
 package list
 
 import (
+	"github.com/downflux/game/engine/fsm/fsm"
+	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/visitor/visitor"
-	"github.com/downflux/game/fsm/fsm"
-	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/server/id"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
-	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 )
 
 const (

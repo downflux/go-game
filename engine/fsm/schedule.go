@@ -3,12 +3,12 @@ package schedule
 import (
 	"sync"
 
-	"github.com/downflux/game/fsm/instance"
-	"github.com/downflux/game/fsm/list"
+	"github.com/downflux/game/engine/fsm/instance"
+	"github.com/downflux/game/engine/fsm/list"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 var (
