@@ -90,8 +90,8 @@ type Executor struct {
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
 
-	sot   *schedule.Schedule
-	cache *schedule.Schedule
+	schedule      *schedule.Schedule
+	scheduleCache *schedule.Schedule
 }
 
 // New creates a new instance of the Executor.
@@ -119,13 +119,13 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	}
 
 	return &Executor{
-		visitors:   visitors,
-		entities:   entities,
-		dirties:    dirties,
-		clients:    clientlist.New(idLen),
-		statusImpl: statusImpl,
-		sot:        schedule.New(schedule.FSMTypes),
-		cache:      schedule.New(schedule.FSMTypes),
+		visitors:      visitors,
+		entities:      entities,
+		dirties:       dirties,
+		clients:       clientlist.New(idLen),
+		statusImpl:    statusImpl,
+		schedule:      schedule.New(schedule.FSMTypes),
+		scheduleCache: schedule.New(schedule.FSMTypes),
 	}, nil
 }
 
@@ -264,17 +264,17 @@ func (e *Executor) doTick() error {
 	t := time.Now()
 	e.statusImpl.IncrementTick()
 
-	x := e.cache.Pop()
+	x := e.scheduleCache.Pop()
 
-	if err := e.sot.Merge(x); err != nil {
+	if err := e.schedule.Merge(x); err != nil {
 		return err
 	}
 
 	// TODO(minkezhang): Clear CANCELED or FINISHED instances in a Visitor.
-	e.sot.Clear()
+	e.schedule.Clear()
 	for _, v := range e.visitors.Iter() {
 		if fsmType, found := fsmVisitorTypeLookup[v.Type()]; found {
-			if err := e.sot.Get(fsmType).Accept(v); err != nil {
+			if err := e.schedule.Get(fsmType).Accept(v); err != nil {
 				return err
 			}
 		}
@@ -303,7 +303,7 @@ func (e *Executor) doTick() error {
 // TODO(minkezhang): Delete this method -- this is currently public for
 // debugging purposes.
 func (e *Executor) AddEntity(entityType gcpb.EntityType, p *gdpb.Position) error {
-	return e.cache.Add(
+	return e.scheduleCache.Add(
 		produceinstance.New(e.statusImpl, e.statusImpl.Tick(), entityType, p),
 	)
 }
@@ -314,7 +314,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 
 	for _, eid := range req.GetEntityIds() {
-		if err := e.cache.Add(
+		if err := e.scheduleCache.Add(
 			moveinstance.New(e.entities.Get(id.EntityID(eid)), e.statusImpl, req.GetDestination()),
 		); err != nil {
 			return err
