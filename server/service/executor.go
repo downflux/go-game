@@ -13,7 +13,7 @@ import (
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
-	// "github.com/downflux/game/server/visitor/visitor"
+	"github.com/downflux/game/server/visitor/visitor"
 	"github.com/downflux/game/server/visitor/visitorlist"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,7 +27,7 @@ import (
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
 	serverstatus "github.com/downflux/game/server/service/status"
-	// vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
+	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (
@@ -54,6 +54,11 @@ const (
 var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
+
+	fsmVisitorTypeLookup = map[vcpb.VisitorType]fcpb.FSMType{
+		vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
+		vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
+	}
 )
 
 // Executor encapsulates logic for executing the core game loop.
@@ -107,15 +112,22 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 
 	entities := entitylist.New(entityListID)
 
+	visitors, err := visitorlist.New([]visitor.Visitor{
+		produce.New(statusImpl, entities, dirties),
+		move.New(tm, g, statusImpl, dirties, minPathLength),
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &Executor{
+		visitors:   visitors,
 		entities:   entities,
 		dirties:    dirties,
 		clients:    clientlist.New(idLen),
 		statusImpl: statusImpl,
 		sot:        schedule.New(schedule.FSMTypes),
 		cache:      schedule.New(schedule.FSMTypes),
-		move:       move.New(tm, g, statusImpl, dirties, minPathLength),
-		produce:    produce.New(statusImpl, entities, dirties),
 	}, nil
 }
 
@@ -260,11 +272,12 @@ func (e *Executor) doTick() error {
 
 	// TODO(minkezhang): Clear CANCELED or FINISHED instances in a Visitor.
 	e.sot.Clear()
-	if err := e.sot.Get(fcpb.FSMType_FSM_TYPE_PRODUCE).Accept(e.produce); err != nil {
-		return err
-	}
-	if err := e.sot.Get(fcpb.FSMType_FSM_TYPE_MOVE).Accept(e.move); err != nil {
-		return err
+	for _, v := range e.visitors.Iter() {
+		if fsmType, found := fsmVisitorTypeLookup[v.Type()]; found {
+			if err := e.sot.Get(fsmType).Accept(v); err != nil {
+				return err
+			}
+		}
 	}
 
 	if err := e.broadcastCurves(); err != nil {

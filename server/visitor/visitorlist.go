@@ -1,5 +1,7 @@
 // Package visitorlist encapsulates logic for a managed list of Visitor
 // instances.
+//
+// TODO(minkezhang): Rename visitorlist -> list.
 package visitorlist
 
 import (
