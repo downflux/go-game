@@ -32,9 +32,9 @@ go_library(
         "//engine/fsm:fsm",
         "//engine/fsm:instance",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/id:id",
         "//engine/status:status",
         "//engine/visitor:visitor",
-        "//server:id",
         "@org_golang_google_protobuf//proto:go_default_library",
     ],
 )
@@ -49,9 +49,9 @@ go_library(
         "//engine/fsm:fsm",
         "//engine/fsm:instance",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/id:id",
         "//engine/status:status",
         "//engine/visitor:visitor",
-        "//server:id",
     ],
 )
 

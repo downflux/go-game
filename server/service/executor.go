@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/downflux/game/engine/fsm/schedule"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"

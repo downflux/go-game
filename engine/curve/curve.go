@@ -6,7 +6,7 @@ package curve
 import (
 	"reflect"
 
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"

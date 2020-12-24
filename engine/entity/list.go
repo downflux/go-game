@@ -4,7 +4,7 @@ package list
 
 import (
 	"github.com/downflux/game/engine/entity/entity"
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

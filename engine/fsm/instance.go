@@ -4,8 +4,8 @@ import (
 	"sync"
 
 	"github.com/downflux/game/engine/fsm/fsm"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
-	"github.com/downflux/game/server/id"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 

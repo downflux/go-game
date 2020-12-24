@@ -3,7 +3,7 @@ package linearmove
 import (
 	"testing"
 
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"

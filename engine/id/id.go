@@ -2,6 +2,7 @@
 // not be called by client-side logic.
 //
 // TODO(minkezhang): Migrate EntityID, ClientID into separate directory(s).
+// TODO(minkezhang): Add a generator which guarantees uniqueness.
 package id
 
 import (

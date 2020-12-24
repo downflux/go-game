@@ -9,7 +9,7 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//engine/curve:curve",
-        "//server:id",
+        "//engine/id:id",
     ],
 )
 
@@ -19,7 +19,7 @@ go_library(
     importpath = "github.com/downflux/game/engine/entity/list",
     deps = [
         ":entity",
-	"//server:id",
+	"//engine/id:id",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
     ],

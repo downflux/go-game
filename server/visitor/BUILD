@@ -18,10 +18,10 @@ go_library(
         "//engine/fsm:fsm",
         "//engine/fsm:instance",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/id:id",
         "//engine/status:status",
         "//engine/visitor:visitor",
 	"//engine/visitor/api:constants_go_proto",
-        "//server:id",
         "//server/entity:tank",
         "//server/fsm:produce",
         "@org_golang_google_grpc//codes:go_default_library",
@@ -35,7 +35,7 @@ go_test(
     embed = [":dirty"],
     importpath = "github.com/downflux/game/server/visitor/dirty_test",
     deps = [
-        "//server:id",
+        "//engine/id:id",
         "@org_golang_x_sync//errgroup:go_default_library",
     ],
 )
@@ -46,7 +46,7 @@ go_library(
     importpath = "github.com/downflux/game/server/visitor/dirty",
     deps = [
         "//api:constants_go_proto",
-        "//server:id",
+        "//engine/id:id",
     ],
 )
 
@@ -91,7 +91,7 @@ go_library(
         "//map:utils", 
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
-        "//server:id",
+        "//engine/id:id",
         "//server/fsm:move",
     ],
 )

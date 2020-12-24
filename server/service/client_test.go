@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"

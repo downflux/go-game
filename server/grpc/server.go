@@ -11,8 +11,8 @@ import (
 	"net"
 	"time"
 
+	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/server/grpc/client"
-	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/executor"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"

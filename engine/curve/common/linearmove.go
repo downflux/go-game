@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/downflux/game/engine/curve/curve"
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

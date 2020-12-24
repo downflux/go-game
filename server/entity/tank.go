@@ -5,7 +5,7 @@ import (
 	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/engine/entity/entity"
-	"github.com/downflux/game/server/id"
+	"github.com/downflux/game/engine/id/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
