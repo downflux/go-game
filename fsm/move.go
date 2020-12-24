@@ -4,11 +4,11 @@ import (
 	"sync"
 
 	"github.com/downflux/game/engine/entity/entity"
+	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
-	"github.com/downflux/game/server/visitor/visitor"
 	"google.golang.org/protobuf/proto"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"

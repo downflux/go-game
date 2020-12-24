@@ -7,27 +7,16 @@ package(default_visibility=[
 ])
 
 go_library(
-    name = "visitorlist",
-    srcs = ["visitorlist.go"],
-    importpath = "github.com/downflux/game/server/visitor/visitorlist",
-    deps = [
-        ":visitor",
-	"//server/visitor/api:constants_go_proto",
-        "@org_golang_google_grpc//codes:go_default_library",
-        "@org_golang_google_grpc//status:go_default_library",
-    ],
-)
-
-go_library(
     name = "produce",
     srcs = ["produce.go"],
     importpath = "github.com/downflux/game/server/visitor/produce",
     deps = [
         ":dirty",
-        ":visitor",
         "//api:constants_go_proto",
         "//engine/entity:entity",
         "//engine/entity:list",
+        "//engine/visitor:visitor",
+	"//engine/visitor/api:constants_go_proto",
         "//fsm:fsm",
         "//fsm:instance",
         "//fsm:produce",
@@ -35,7 +24,6 @@ go_library(
         "//server:id",
         "//server/entity:tank",
         "//server/service:status",
-	"//server/visitor/api:constants_go_proto",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
     ]
@@ -59,15 +47,6 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//server:id",
-    ],
-)
-
-go_library(
-    name = "visitor",
-    srcs = ["visitor.go"],
-    importpath = "github.com/downflux/game/server/visitor/visitor",
-    deps = [
-	"//server/visitor/api:constants_go_proto",
     ],
 )
 
@@ -98,11 +77,12 @@ go_library(
     importpath = "github.com/downflux/game/server/visitor/move",
     deps = [
         ":dirty",
-        ":visitor",
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//curve:linearmove",
         "//engine/entity:entity",
+        "//engine/visitor:visitor",
+	"//engine/visitor/api:constants_go_proto",
         "//fsm/api:constants_go_proto",
         "//fsm:fsm",
         "//fsm:instance",
@@ -113,6 +93,5 @@ go_library(
         "//pathing/hpf:graph",
         "//server:id",
         "//server/service:status",
-	"//server/visitor/api:constants_go_proto",
     ],
 )

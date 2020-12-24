@@ -3,20 +3,20 @@ package produce
 import (
 	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/entity/list"
+	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/fsm/produce"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/visitor/dirty"
-	"github.com/downflux/game/server/visitor/visitor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
+	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 	serverstatus "github.com/downflux/game/server/service/status"
-	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (

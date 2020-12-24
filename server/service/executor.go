@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/fsm/schedule"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/id"
@@ -12,8 +13,6 @@ import (
 	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
-	"github.com/downflux/game/server/visitor/visitor"
-	"github.com/downflux/game/server/visitor/visitorlist"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -21,13 +20,14 @@ import (
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	entitylist "github.com/downflux/game/engine/entity/list"
+	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
+	visitorlist "github.com/downflux/game/engine/visitor/list"
 	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 	moveinstance "github.com/downflux/game/fsm/move"
 	produceinstance "github.com/downflux/game/fsm/produce"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
 	serverstatus "github.com/downflux/game/server/service/status"
-	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (

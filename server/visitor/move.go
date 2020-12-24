@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/linearmove"
+	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/fsm/move"
@@ -14,13 +15,12 @@ import (
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/visitor/dirty"
-	"github.com/downflux/game/server/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
+	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 	tile "github.com/downflux/game/map/map"
-	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 const (

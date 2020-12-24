@@ -39,7 +39,7 @@ func (l *List) Visitor(visitorType vcpb.VisitorType) visitor.Visitor {
 func (l *List) Iter() []visitor.Visitor {
 	var visitors []visitor.Visitor
 	for _, visitorType := range l.order {
-		visitors = append(visitors, l.Get(visitorType))
+		visitors = append(visitors, l.Visitor(visitorType))
 	}
 
 	return visitors
