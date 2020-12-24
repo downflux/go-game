@@ -4,29 +4,17 @@ package tank
 import (
 	"github.com/downflux/game/curve/curve"
 	"github.com/downflux/game/curve/linearmove"
-	"github.com/downflux/game/entity/implement/implement"
-	"github.com/downflux/game/entity/implement/moveable"
-	"github.com/downflux/game/server/entity/entity"
+	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	icpb "github.com/downflux/game/entity/implement/api/constants_go_proto"
 )
 
-var (
-	implements = implement.New([]icpb.Implement{
-		icpb.Implement_IMPLEMENT_MOVEABLE,
-	})
-)
-
-// Tank implements the visitor.Entity interface and represents a simple armored
+// Tank implements the entity.Entity interface and represents a simple armored
 // unit.
 type Tank struct {
-	entity.Base
 	entity.LifeCycle
-	moveable.Moveable
 
 	// eid is a UUID of the Entity.
 	eid id.EntityID
@@ -41,8 +29,7 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) *Tank {
 	mc.Add(t, p)
 
 	return &Tank{
-		Base: *entity.NewBase(implements),
-		eid:  eid,
+		eid: eid,
 		curveLookup: map[gcpb.EntityProperty]curve.Curve{
 			gcpb.EntityProperty_ENTITY_PROPERTY_POSITION: mc,
 		},
@@ -63,7 +50,3 @@ func (e *Tank) Curve(t gcpb.EntityProperty) curve.Curve { return e.curveLookup[t
 
 // Type returns the registered EntityType.
 func (e *Tank) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }
-
-// Accept allows the input Visitor instance to mutate the internal state of the
-// Tank.
-func (e *Tank) Accept(v visitor.Visitor) error { return v.Visit(e) }

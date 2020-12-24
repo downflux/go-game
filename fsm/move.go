@@ -3,9 +3,9 @@ package move
 import (
 	"sync"
 
+	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
-	"github.com/downflux/game/server/entity/entity"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/visitor/visitor"

@@ -1,11 +1,11 @@
 package produce
 
 import (
+	"github.com/downflux/game/engine/entity/entity"
+	"github.com/downflux/game/engine/entity/list"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/fsm/produce"
-	"github.com/downflux/game/server/entity/entity"
-	"github.com/downflux/game/server/entity/entitylist"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/visitor/dirty"
@@ -37,7 +37,7 @@ func unsupportedEntityType(t gcpb.EntityType) error {
 // Visitor adds a new Entity to the global state. This struct implements the
 // visitor.Visitor interface.
 type Visitor struct {
-	entities *entitylist.List
+	entities *list.List
 
 	// dirties is a reference to the global cache of mutated Curve and
 	// Entity instances.
@@ -48,7 +48,7 @@ type Visitor struct {
 }
 
 // New creates a new instance of the Visitor struct.
-func New(dfStatus *serverstatus.Status, entities *entitylist.List, dirties *dirty.List) *Visitor {
+func New(dfStatus *serverstatus.Status, entities *list.List, dirties *dirty.List) *Visitor {
 	return &Visitor{
 		entities: entities,
 		dirties:  dirties,
@@ -92,7 +92,7 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 			if err := v.dirties.AddEntity(dirty.Entity{ID: eid}); err != nil {
 				return err
 			}
-			if err := v.entities.Add(ne); err != nil {
+			if err := v.entities.Append(ne); err != nil {
 				return err
 			}
 		default:
@@ -110,7 +110,7 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 	return nil
 }
 
-// Visit mutates an EntityList with a new Entity.
+// Visit mutates an entity.List with a new Entity.
 func (v *Visitor) Visit(a visitor.Agent) error {
 	switch t := a.AgentType(); t {
 	case vcpb.AgentType_AGENT_TYPE_FSM:

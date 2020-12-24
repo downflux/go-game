@@ -16,6 +16,7 @@ go_library(
         "//api:data_go_proto",
         "//server:id",
     ],
+    visibility = ["//visibility:public"],
 )
 
 go_library(

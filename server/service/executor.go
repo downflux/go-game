@@ -7,7 +7,6 @@ import (
 
 	"github.com/downflux/game/fsm/schedule"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/server/entity/entitylist"
 	"github.com/downflux/game/server/id"
 	"github.com/downflux/game/server/service/clientlist"
 	"github.com/downflux/game/server/visitor/dirty"
@@ -21,6 +20,7 @@ import (
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
+	entitylist "github.com/downflux/game/engine/entity/list"
 	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 	moveinstance "github.com/downflux/game/fsm/move"
 	produceinstance "github.com/downflux/game/fsm/produce"

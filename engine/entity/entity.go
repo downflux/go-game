@@ -1,11 +1,10 @@
-// Package entity is a shared utility library for common implementations of the
-// visitor.Entity interface. Concrete implementations of the Entity interface
-// may inherit from this package as necessary.
+// Package entity declares the game Entity interface and common shared
+// implementation details.
 //
 // Example
 //
 //  type ConcreteEntity struct {
-//    entity.Base
+//    entity.LifeCycle
 //    ...
 //  }
 //
@@ -16,32 +15,20 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/curve"
-	"github.com/downflux/game/entity/implement/implement"
 	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/visitor/visitor"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
-	icpb "github.com/downflux/game/entity/implement/api/constants_go_proto"
-	vcpb "github.com/downflux/game/server/visitor/api/constants_go_proto"
 )
 
 type Entity interface {
-	visitor.Agent
-
-	// Type returns the registered EntityType of the Entity. This is useful
-	// for the Visitor when determining Entity-specific mutations,
-	// e.g. attacking infantry vs. attacking tank.
+	// Type returns the registered EntityType of the Entity.
 	Type() gcpb.EntityType
 
 	// ID returns the UUID of the Entity.
 	ID() id.EntityID
 
-	Implements(i icpb.Implement) bool
-
 	// Curve returns a Curve instance of a specific mutable property,
-	// e.g. HP or position. Visitors mutate these curves to reflect an
-	// Entity change. The Curve changes are broadcasted to all clients once
-	// per game tick.
+	// e.g. HP or position.
 	//
 	// TODO(minkezhang): Decide if we should return default value.
 	Curve(t gcpb.EntityProperty) curve.Curve
@@ -78,17 +65,6 @@ func (e *NoCurve) Curve(c gcpb.EntityProperty) curve.Curve { return nil }
 // Properties returns a list of registered CurveCategory instances tracked
 // by the Entity implementation. NoCurve will return an empty list.
 func (e *NoCurve) Properties() []gcpb.EntityProperty { return nil }
-
-type Base struct {
-	implements *implement.List
-}
-
-func NewBase(implements *implement.List) *Base {
-	return &Base{implements: implements}
-}
-
-func (e *Base) Implements(i icpb.Implement) bool { return e.implements.Implements(i) }
-func (e *Base) AgentType() vcpb.AgentType        { return vcpb.AgentType_AGENT_TYPE_ENTITY }
 
 // LifeCycle implements a subset of the Entity interface concerned with
 // tracking the lifecycle of the Entity. Entities such as tanks are created
