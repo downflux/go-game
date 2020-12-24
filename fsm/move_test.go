@@ -3,10 +3,10 @@ package move
 import (
 	"testing"
 
+	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/server/entity/tank"
-	"github.com/downflux/game/server/service/status"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )

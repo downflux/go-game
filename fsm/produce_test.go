@@ -3,9 +3,9 @@ package produce
 import (
 	"testing"
 
+	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
-	"github.com/downflux/game/server/service/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"

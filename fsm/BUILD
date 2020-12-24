@@ -15,9 +15,9 @@ go_test(
     deps = [
 	":instance",
         ":move",
+        "//engine/status:status",
         "//fsm/api:constants_go_proto",
         "//server/entity:tank",
-        "//server/service:status",
     ],
 )
 
@@ -44,9 +44,9 @@ go_test(
         ":instance",
         ":move",
         "//api:data_go_proto",
+        "//engine/status:status",
         "//fsm/api:constants_go_proto",
         "//server/entity:tank",
-        "//server/service:status",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
         "@org_golang_google_protobuf//testing/protocmp:go_default_library",
@@ -94,8 +94,8 @@ go_test(
         ":fsm",
         ":instance",
         "//api:data_go_proto",
+        "//engine/status:status",
         "//server/entity:tank",
-        "//server/service:status",
     ],
 )
 
@@ -109,10 +109,10 @@ go_library(
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/entity:entity",
+        "//engine/status:status",
         "//engine/visitor:visitor",
         "//fsm/api:constants_go_proto",
         "//server:id",
-        "//server/service:status",
         "@org_golang_google_protobuf//proto:go_default_library",
     ],
 )
@@ -135,10 +135,10 @@ go_library(
         ":instance",
         "//api:constants_go_proto",
         "//api:data_go_proto",
+        "//engine/status:status",
         "//engine/visitor:visitor",
         "//fsm/api:constants_go_proto",
         "//server:id",
-        "//server/service:status",
     ],
 )
 
@@ -152,7 +152,7 @@ go_test(
         ":instance",
         "//api:constants_go_proto",
         "//api:data_go_proto",
+        "//engine/status:status",
         "//fsm/api:constants_go_proto",
-        "//server/service:status",
     ],
 )

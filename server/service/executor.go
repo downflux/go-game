@@ -20,6 +20,7 @@ import (
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	entitylist "github.com/downflux/game/engine/entity/list"
+	serverstatus "github.com/downflux/game/engine/status/status"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	visitorlist "github.com/downflux/game/engine/visitor/list"
 	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
@@ -27,7 +28,6 @@ import (
 	produceinstance "github.com/downflux/game/fsm/produce"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
-	serverstatus "github.com/downflux/game/server/service/status"
 )
 
 const (

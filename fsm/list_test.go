@@ -4,11 +4,11 @@ import (
 	"log"
 	"testing"
 
+	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/fsm/move"
 	"github.com/downflux/game/server/entity/tank"
-	"github.com/downflux/game/server/service/status"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"

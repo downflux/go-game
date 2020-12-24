@@ -3,10 +3,10 @@ package schedule
 import (
 	"testing"
 
+	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/fsm/instance"
 	"github.com/downflux/game/fsm/move"
 	"github.com/downflux/game/server/entity/tank"
-	"github.com/downflux/game/server/service/status"
 
 	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
 )

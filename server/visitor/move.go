@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/downflux/game/curve/linearmove"
+	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/fsm/fsm"
 	"github.com/downflux/game/fsm/instance"
@@ -13,7 +14,6 @@ import (
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/id"
-	"github.com/downflux/game/server/service/status"
 	"github.com/downflux/game/server/visitor/dirty"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"

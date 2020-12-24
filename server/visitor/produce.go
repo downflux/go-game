@@ -14,9 +14,9 @@ import (
 	"google.golang.org/grpc/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
+	serverstatus "github.com/downflux/game/engine/status/status"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	fcpb "github.com/downflux/game/fsm/api/constants_go_proto"
-	serverstatus "github.com/downflux/game/server/service/status"
 )
 
 const (
