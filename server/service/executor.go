@@ -154,9 +154,9 @@ func (e *Executor) ClientChannel(cid id.ClientID) (<-chan *apipb.StreamDataRespo
 	return e.clients.Channel(cid)
 }
 
-// popTickQueue returns the list of curves and entity protos that will need to
-// be broadcast to all valid clients for the current server tick.
-func (e *Executor) popTickQueue() *gdpb.GameState {
+// partialState returns the game state update that will need to be broadcast
+// to all valid clients for the current server tick.
+func (e *Executor) partialState() *gdpb.GameState {
 	state := &gdpb.GameState{}
 
 	tailTick := e.statusImpl.Tick() - 100
@@ -166,7 +166,6 @@ func (e *Executor) popTickQueue() *gdpb.GameState {
 
 	dirtyClone := e.dirties.Pop()
 
-	// TODO(minkezhang): Make concurrent.
 	for _, de := range dirtyClone.Entities() {
 		state.Entities = append(state.GetEntities(), &gdpb.Entity{
 			EntityId: de.ID.Value(),
@@ -181,10 +180,10 @@ func (e *Executor) popTickQueue() *gdpb.GameState {
 	return state
 }
 
-// allCurvesAndEntities returns a list of all Curve and Entity protos as of the
+// fullState returns a list of all Curve and Entity protos as of the
 // current tick. This is used to broadcast the full game state to new or
 // reconnecting clients.
-func (e *Executor) allCurvesAndEntities() *gdpb.GameState {
+func (e *Executor) fullState() *gdpb.GameState {
 	state := &gdpb.GameState{}
 
 	// TODO(minkezhang): Give some leeway here, broadcast a bit in the
@@ -203,24 +202,24 @@ func (e *Executor) allCurvesAndEntities() *gdpb.GameState {
 	return state
 }
 
-// broadcastCurves will send the current game state delta or full game state to
+// broadcast will send the current game state delta or full game state to
 // all connected clients. This is a blocking call.
-//
-// TODO(minkezhang): Rename broadcastState.
-func (e *Executor) broadcastCurves() error {
+func (e *Executor) broadcast() error {
+	state := e.partialState()
+
 	return e.clients.Broadcast(
 		func() *apipb.StreamDataResponse {
 			// TODO(minkezhang): Decide if it's okay that the reported tick may not
 			// coincide with the ticks of the curve and entities.
 			return &apipb.StreamDataResponse{
 				Tick:  e.statusImpl.Tick().Value(),
-				State: e.popTickQueue(),
+				State: state,
 			}
 		},
 		func() *apipb.StreamDataResponse {
 			return &apipb.StreamDataResponse{
 				Tick:  e.statusImpl.Tick().Value(),
-				State: e.allCurvesAndEntities(),
+				State: e.fullState(),
 			}
 		},
 	)
@@ -272,7 +271,7 @@ func (e *Executor) doTick() error {
 		}
 	}
 
-	if err := e.broadcastCurves(); err != nil {
+	if err := e.broadcast(); err != nil {
 		return err
 	}
 
