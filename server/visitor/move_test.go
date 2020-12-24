@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/downflux/game/engine/fsm/action"
+	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/fsm/move"
-	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/google/go-cmp/cmp"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -104,7 +104,7 @@ func TestVisit(t *testing.T) {
 			if err := c.v.Visit(c.i); err != nil {
 				t.Fatalf("Visit() = %v, want = nil", err)
 			}
-			got := c.v.dirties.Pop()
+			got := c.v.dirties.Pop().Curves()
 			if diff := cmp.Diff(c.want, got); diff != "" {
 				t.Errorf("Pop() mismatch (-want +got):\n%v", diff)
 			}

@@ -7,6 +7,7 @@ import (
 	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
+	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
@@ -14,7 +15,6 @@ import (
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/fsm/move"
-	"github.com/downflux/game/server/visitor/dirty"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -153,7 +153,7 @@ func (v *Visitor) visitFSM(i action.Action) error {
 			cv.Add(tick+id.Tick(i)*ticksPerTile+tickDelta, curPos)
 			prevPos = curPos
 		}
-		if err := v.dirties.Add(dirty.Curve{
+		if err := v.dirties.AddCurve(dirty.Curve{
 			EntityID: e.ID(),
 			Property: c.Property(),
 		}); err != nil {

@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/downflux/game/engine/fsm/schedule"
+	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/server/visitor/dirty"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
 	"google.golang.org/grpc/codes"
@@ -165,14 +165,16 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 		tailTick = 0
 	}
 
+	dirtyClone := e.dirties.Pop()
+
 	// TODO(minkezhang): Make concurrent.
-	for _, de := range e.dirties.PopEntities() {
+	for _, de := range dirtyClone.Entities() {
 		entities = append(entities, &gdpb.Entity{
 			EntityId: de.ID.Value(),
 			Type:     e.entities.Get(de.ID).Type(),
 		})
 	}
-	for _, dc := range e.dirties.Pop() {
+	for _, dc := range dirtyClone.Curves() {
 		curves = append(
 			curves,
 			e.entities.Get(

@@ -11,13 +11,13 @@ go_library(
     srcs = ["produce.go"],
     importpath = "github.com/downflux/game/server/visitor/produce",
     deps = [
-        ":dirty",
         "//api:constants_go_proto",
         "//engine/entity:entity",
         "//engine/entity:list",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/gamestate:dirty",
         "//engine/id:id",
         "//engine/status:status",
         "//engine/visitor:visitor",
@@ -30,27 +30,6 @@ go_library(
 )
 
 go_test(
-    name = "dirty_test",
-    srcs = ["dirty_test.go"],
-    embed = [":dirty"],
-    importpath = "github.com/downflux/game/server/visitor/dirty_test",
-    deps = [
-        "//engine/id:id",
-        "@org_golang_x_sync//errgroup:go_default_library",
-    ],
-)
-
-go_library(
-    name = "dirty",
-    srcs = ["dirty.go"],
-    importpath = "github.com/downflux/game/server/visitor/dirty",
-    deps = [
-        "//api:constants_go_proto",
-        "//engine/id:id",
-    ],
-)
-
-go_test(
     name = "move_test",
     srcs = ["move_test.go"],
     importpath = "github.com/downflux/game/server/visitor/move_test",
@@ -59,13 +38,13 @@ go_test(
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/fsm:action",
+        "//engine/gamestate:dirty",
         "//engine/status:status",
         "//map/api:constants_go_proto",
         "//map/api:data_go_proto",
         "//map:map",
         "//server/entity:tank",
         "//server/fsm:move",
-        "//server/visitor:dirty",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
@@ -76,11 +55,11 @@ go_library(
     srcs = ["move.go"],
     importpath = "github.com/downflux/game/server/visitor/move",
     deps = [
-        ":dirty",
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/curve/common:linearmove",
         "//engine/entity:entity",
+        "//engine/gamestate:dirty",
         "//engine/status:status",
         "//engine/visitor:visitor",
 	"//engine/visitor/api:constants_go_proto",

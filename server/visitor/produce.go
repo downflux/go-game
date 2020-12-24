@@ -5,11 +5,11 @@ import (
 	"github.com/downflux/game/engine/entity/list"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
+	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/fsm/produce"
-	"github.com/downflux/game/server/visitor/dirty"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -99,7 +99,7 @@ func (v *Visitor) visitFSM(i action.Action) error {
 			return unsupportedEntityType(entityType)
 		}
 		for _, property := range ne.Properties() {
-			if err := v.dirties.Add(dirty.Curve{EntityID: eid, Property: property}); err != nil {
+			if err := v.dirties.AddCurve(dirty.Curve{EntityID: eid, Property: property}); err != nil {
 				return err
 			}
 		}
