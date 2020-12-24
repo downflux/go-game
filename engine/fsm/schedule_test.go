@@ -3,7 +3,7 @@ package schedule
 import (
 	"testing"
 
-	"github.com/downflux/game/engine/fsm/instance"
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/fsm/move"
@@ -38,20 +38,20 @@ func TestMerge(t *testing.T) {
 	const iid = "entity-id"
 
 	testConfigs := []struct {
-		name      string
-		s1Types   []fcpb.FSMType
-		s2Types   []fcpb.FSMType
-		instances []instance.Instance
-		want      []instance.Instance
+		name    string
+		s1Types []fcpb.FSMType
+		s2Types []fcpb.FSMType
+		actions []action.Action
+		want    []action.Action
 	}{
 		{
 			name:    "TestSimpleMerge",
 			s1Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
 			s2Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
-			instances: []instance.Instance{
+			actions: []action.Action{
 				move.New(tank.New(iid, 0, nil), status.New(0), nil),
 			},
-			want: []instance.Instance{
+			want: []action.Action{
 				move.New(tank.New(iid, 0, nil), status.New(0), nil),
 			},
 		},
@@ -59,7 +59,7 @@ func TestMerge(t *testing.T) {
 			name:    "TestMergeFilter",
 			s1Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
 			s2Types: nil,
-			instances: []instance.Instance{
+			actions: []action.Action{
 				move.New(tank.New(iid, 0, nil), status.New(0), nil),
 			},
 			want: nil,
@@ -71,7 +71,7 @@ func TestMerge(t *testing.T) {
 			s1 := New(c.s1Types)
 			s2 := New(c.s2Types)
 
-			for _, i := range c.instances {
+			for _, i := range c.actions {
 				if err := s1.Add(i); err != nil {
 					t.Fatalf("Add() = %v, want = nil", err)
 				}

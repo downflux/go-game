@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/downflux/game/engine/curve/common/linearmove"
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
-	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
@@ -108,7 +108,7 @@ func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 // TODO(minkezhang): Remove function.
 func (v *Visitor) Schedule(interface{}) error { return nil }
 
-func (v *Visitor) visitFSM(i instance.Instance) error {
+func (v *Visitor) visitFSM(i action.Action) error {
 	if i.Type() != fcpb.FSMType_FSM_TYPE_MOVE {
 		return nil
 	}
@@ -118,7 +118,7 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 		return err
 	}
 
-	m := i.(*move.Instance)
+	m := i.(*move.Action)
 
 	tick := v.dfStatus.Tick()
 
@@ -185,7 +185,7 @@ func (v *Visitor) Visit(a visitor.Agent) error {
 
 	switch t := a.AgentType(); t {
 	case vcpb.AgentType_AGENT_TYPE_FSM:
-		return v.visitFSM(a.(instance.Instance))
+		return v.visitFSM(a.(action.Action))
 	default:
 		return nil
 	}

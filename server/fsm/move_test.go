@@ -3,8 +3,8 @@ package move
 import (
 	"testing"
 
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
-	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/server/entity/tank"
 
@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	_ instance.Instance = &Instance{}
+	_ action.Action = &Action{}
 )
 
 func TestState(t *testing.T) {
@@ -46,7 +46,7 @@ func TestState(t *testing.T) {
 
 	testConfigs := []struct {
 		name string
-		i    *Instance
+		i    *Action
 		want fsm.State
 	}{
 		{name: "NewExecutingTest", i: executingNewI1, want: executing},
@@ -91,8 +91,8 @@ func TestPrecedence(t *testing.T) {
 	// We are testing if i1 < i2.
 	testConfigs := []struct {
 		name string
-		i1   *Instance
-		i2   *Instance
+		i1   *Action
+		i2   *Action
 		want bool
 	}{
 		{name: "SameTickNoPrecedenceTest", i1: sameTickI1, i2: sameTickI2, want: false},

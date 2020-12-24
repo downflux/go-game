@@ -3,8 +3,8 @@ package produce
 import (
 	"testing"
 
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
-	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/status/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	_ instance.Instance = &Instance{}
+	_ action.Action = &Action{}
 )
 
 func TestConstructor(t *testing.T) {
@@ -21,7 +21,7 @@ func TestConstructor(t *testing.T) {
 
 	testConfigs := []struct {
 		name string
-		i    instance.Instance
+		i    action.Action
 		want fsm.State
 	}{
 		{
