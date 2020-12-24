@@ -159,7 +159,7 @@ func (c *Client) Send(m *apipb.StreamDataResponse) error {
 	}
 
 	// Only send data if there is interesting data to send.
-	if m.GetEntities() != nil || m.GetCurves() != nil {
+	if m.GetState().GetEntities() != nil || m.GetState().GetCurves() != nil {
 		c.ch <- m
 		return c.setStateUnsafe(ccpb.ClientState_CLIENT_STATE_OK)
 	}

@@ -139,7 +139,7 @@ func TestSendMoveCommand(t *testing.T) {
 		t.Fatalf("Recv() == %v, want = nil", err)
 	}
 
-	eid := m.GetEntities()[0].GetEntityId()
+	eid := m.GetState().GetEntities()[0].GetEntityId()
 
 	if _, err := client.Move(s.ctx, &apipb.MoveRequest{
 		ClientId:    cid,
@@ -189,24 +189,26 @@ func TestSendMoveCommand(t *testing.T) {
 	}
 
 	want := &apipb.StreamDataResponse{
-		Curves: []*gdpb.Curve{{
-			EntityId: eid,
-			Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
-			Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
-			Data: []*gdpb.CurveDatum{
-				// First element is the current position of
-				// the entity. This is necessary for the client
-				// to do a smooth interpolation.
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+		State: &gdpb.GameState{
+			Curves: []*gdpb.Curve{{
+				EntityId: eid,
+				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+				Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
+				Data: []*gdpb.CurveDatum{
+					// First element is the current position of
+					// the entity. This is necessary for the client
+					// to do a smooth interpolation.
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
 
-				// Following elements relate to the actual tile
-				// coordinates for the path.
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 1, Y: 0}}},
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 2, Y: 0}}},
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 3, Y: 0}}},
+					// Following elements relate to the actual tile
+					// coordinates for the path.
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 1, Y: 0}}},
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 2, Y: 0}}},
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 3, Y: 0}}},
+				},
 			},
-		}},
+			}},
 	}
 
 	streamRespMux.Lock()

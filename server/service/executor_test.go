@@ -47,16 +47,18 @@ func TestAddEntity(t *testing.T) {
 	src := &gdpb.Position{X: 0, Y: 0}
 
 	want := &apipb.StreamDataResponse{
-		Tick:     t0 + 1,
-		Entities: []*gdpb.Entity{{Type: gcpb.EntityType_ENTITY_TYPE_TANK}},
-		Curves: []*gdpb.Curve{{
-			Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
-			Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
-			Data: []*gdpb.CurveDatum{
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+		Tick: t0 + 1,
+		State: &gdpb.GameState{
+			Entities: []*gdpb.Entity{{Type: gcpb.EntityType_ENTITY_TYPE_TANK}},
+			Curves: []*gdpb.Curve{{
+				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+				Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
+				Data: []*gdpb.CurveDatum{
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+				},
+				Tick: t0 + 1,
 			},
-			Tick: t0 + 1,
-		}},
+			}},
 	}
 
 	e, err := New(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
@@ -193,30 +195,32 @@ func TestDoMove(t *testing.T) {
 		t.Fatalf("len() = %v, want = %v", gotLen, nClients)
 	}
 
-	eid := streamResponses[0].GetEntities()[0].GetEntityId()
+	eid := streamResponses[0].GetState().GetEntities()[0].GetEntityId()
 	streamResponses = nil
 
 	want := &apipb.StreamDataResponse{
 		Tick: t0 + 2,
-		Curves: []*gdpb.Curve{{
-			EntityId: eid,
-			Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
-			Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
-			Data: []*gdpb.CurveDatum{
-				// First element is the current position of
-				// the entity. This is necessary for the client
-				// to do a smooth interpolation.
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+		State: &gdpb.GameState{
+			Curves: []*gdpb.Curve{{
+				EntityId: eid,
+				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+				Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
+				Data: []*gdpb.CurveDatum{
+					// First element is the current position of
+					// the entity. This is necessary for the client
+					// to do a smooth interpolation.
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
 
-				// Following elements relate to the actual tile
-				// coordinates for the path.
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 1, Y: 0}}},
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 2, Y: 0}}},
-				{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 3, Y: 0}}},
+					// Following elements relate to the actual tile
+					// coordinates for the path.
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 1, Y: 0}}},
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 2, Y: 0}}},
+					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 3, Y: 0}}},
+				},
+				Tick: t0 + 2,
 			},
-			Tick: t0 + 2,
-		}},
+			}},
 	}
 
 	if err := e.AddMoveCommands(&apipb.MoveRequest{

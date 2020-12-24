@@ -155,10 +155,9 @@ func (e *Executor) ClientChannel(cid id.ClientID) (<-chan *apipb.StreamDataRespo
 }
 
 // popTickQueue returns the list of curves and entity protos that will need to
-// be broadcast to all valid cliens for the current server tick.
-func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
-	var curves []*gdpb.Curve
-	var entities []*gdpb.Entity
+// be broadcast to all valid clients for the current server tick.
+func (e *Executor) popTickQueue() *gdpb.GameState {
+	state := &gdpb.GameState{}
 
 	tailTick := e.statusImpl.Tick() - 100
 	if tailTick < 0 {
@@ -169,67 +168,60 @@ func (e *Executor) popTickQueue() ([]*gdpb.Curve, []*gdpb.Entity) {
 
 	// TODO(minkezhang): Make concurrent.
 	for _, de := range dirtyClone.Entities() {
-		entities = append(entities, &gdpb.Entity{
+		state.Entities = append(state.GetEntities(), &gdpb.Entity{
 			EntityId: de.ID.Value(),
 			Type:     e.entities.Get(de.ID).Type(),
 		})
 	}
 	for _, dc := range dirtyClone.Curves() {
-		curves = append(
-			curves,
-			e.entities.Get(
-				dc.EntityID).Curve(dc.Property).ExportTail(tailTick))
+		state.Curves = append(state.GetCurves(),
+			e.entities.Get(dc.EntityID).Curve(dc.Property).ExportTail(tailTick))
 	}
 
-	return curves, entities
+	return state
 }
 
 // allCurvesAndEntities returns a list of all Curve and Entity protos as of the
 // current tick. This is used to broadcast the full game state to new or
 // reconnecting clients.
-func (e *Executor) allCurvesAndEntities() ([]*gdpb.Curve, []*gdpb.Entity) {
-	var curves []*gdpb.Curve
-	var entities []*gdpb.Entity
+func (e *Executor) allCurvesAndEntities() *gdpb.GameState {
+	state := &gdpb.GameState{}
 
 	// TODO(minkezhang): Give some leeway here, broadcast a bit in the
 	// past.
 	beginningTick := e.statusImpl.Tick()
 
 	for _, en := range e.entities.Iter() {
-		entities = append(entities, &gdpb.Entity{
+		state.Entities = append(state.GetEntities(), &gdpb.Entity{
 			EntityId: en.ID().Value(),
 			Type:     en.Type(),
 		})
 		for _, p := range en.Properties() {
-			curves = append(curves, en.Curve(p).ExportTail(beginningTick))
+			state.Curves = append(state.GetCurves(), en.Curve(p).ExportTail(beginningTick))
 		}
 	}
-	return curves, entities
+	return state
 }
 
 // broadcastCurves will send the current game state delta or full game state to
 // all connected clients. This is a blocking call.
+//
+// TODO(minkezhang): Rename broadcastState.
 func (e *Executor) broadcastCurves() error {
-	curves, entities := e.popTickQueue()
-
 	return e.clients.Broadcast(
 		func() *apipb.StreamDataResponse {
 			// TODO(minkezhang): Decide if it's okay that the reported tick may not
 			// coincide with the ticks of the curve and entities.
 			return &apipb.StreamDataResponse{
-				Tick:     e.statusImpl.Tick().Value(),
-				Curves:   curves,
-				Entities: entities,
+				Tick:  e.statusImpl.Tick().Value(),
+				State: e.popTickQueue(),
 			}
 		},
 		func() *apipb.StreamDataResponse {
-			full := &apipb.StreamDataResponse{
-				Tick: e.statusImpl.Tick().Value(),
+			return &apipb.StreamDataResponse{
+				Tick:  e.statusImpl.Tick().Value(),
+				State: e.allCurvesAndEntities(),
 			}
-			allCurves, allEntities := e.allCurvesAndEntities()
-			full.Curves = allCurves
-			full.Entities = allEntities
-			return full
 		},
 	)
 }

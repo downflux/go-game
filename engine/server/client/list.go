@@ -67,7 +67,7 @@ func (l *List) Broadcast(partialGenerator, fullGenerator func() *apipb.StreamDat
 	var full *apipb.StreamDataResponse
 
 	desyncedClients := l.filterUnsafe(ccpb.ClientState_CLIENT_STATE_DESYNCED)
-	if desyncedClients == nil && partial.GetCurves() == nil && partial.GetEntities() == nil {
+	if desyncedClients == nil && partial.GetState().GetCurves() == nil && partial.GetState().GetEntities() == nil {
 		return nil
 	}
 	if desyncedClients != nil {
