@@ -117,7 +117,7 @@ func (c *Client) setStateUnsafe(s ccpb.ClientState) error {
 			c.ch = make(chan *apipb.StreamDataResponse, clientBufSize)
 		}
 	case fsm.State(ccpb.ClientState_CLIENT_STATE_TEARDOWN.String()):
-		if f == fsm.State(ccpb.ClientState_CLIENT_STATE_NEW.String()) || f == fsm.State(ccpb.ClientState_CLIENT_STATE_DESYNCED.String()) {
+		if f == fsm.State(ccpb.ClientState_CLIENT_STATE_OK.String()) || f == fsm.State(ccpb.ClientState_CLIENT_STATE_DESYNCED.String()) {
 			close(c.ch)
 			c.ch = nil
 		}
