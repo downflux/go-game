@@ -7,7 +7,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/downflux/game/curve/curve"
+	"github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/server/id"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"

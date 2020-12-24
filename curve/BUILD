@@ -8,25 +8,13 @@ package(default_visibility=[
 ])
 
 go_library(
-    name = "curve",
-    srcs = ["curve.go"],
-    importpath = "github.com/downflux/game/curve/curve",
-    deps = [
-        "//api:constants_go_proto",
-        "//api:data_go_proto",
-        "//server:id",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-go_library(
     name = "linearmove",
     srcs = ["linearmove.go"],
     importpath = "github.com/downflux/game/curve/linearmove",
     deps = [
-        ":curve",
         "//api:data_go_proto",
         "//api:constants_go_proto",
+        "//engine/curve:curve",
         "//server:id",
         "@com_github_golang_protobuf//proto:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",

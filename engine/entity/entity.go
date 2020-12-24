@@ -14,7 +14,7 @@ package entity
 import (
 	"sync"
 
-	"github.com/downflux/game/curve/curve"
+	"github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/server/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
