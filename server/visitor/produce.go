@@ -3,8 +3,8 @@ package produce
 import (
 	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/entity/list"
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
-	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/entity/tank"
@@ -62,7 +62,7 @@ func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 // TODO(minkezhang): Delete this function.
 func (v *Visitor) Schedule(args interface{}) error { return nil }
 
-func (v *Visitor) visitFSM(i instance.Instance) error {
+func (v *Visitor) visitFSM(i action.Action) error {
 	if i.Type() != fcpb.FSMType_FSM_TYPE_PRODUCE {
 		return nil
 	}
@@ -72,7 +72,7 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 		return err
 	}
 
-	p := i.(*produce.Instance)
+	p := i.(*produce.Action)
 
 	tick := v.dfStatus.Tick()
 
@@ -114,7 +114,7 @@ func (v *Visitor) visitFSM(i instance.Instance) error {
 func (v *Visitor) Visit(a visitor.Agent) error {
 	switch t := a.AgentType(); t {
 	case vcpb.AgentType_AGENT_TYPE_FSM:
-		return v.visitFSM(a.(instance.Instance))
+		return v.visitFSM(a.(action.Action))
 	default:
 		return nil
 	}

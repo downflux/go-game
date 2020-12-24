@@ -1,4 +1,4 @@
-package instance
+package action
 
 import (
 	"sync"
@@ -13,12 +13,12 @@ import (
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 )
 
-type Instance interface {
+type Action interface {
 	visitor.Agent
 
 	Cancel() error
-	ID() id.InstanceID
-	Precedence(i Instance) bool
+	ID() id.ActionID
+	Precedence(i Action) bool
 	State() (fsm.State, error)
 	To(f fsm.State, t fsm.State, virtual bool) error
 	Type() fcpb.FSMType

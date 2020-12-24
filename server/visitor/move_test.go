@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/downflux/game/engine/fsm/instance"
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/tank"
@@ -76,7 +76,7 @@ func TestVisit(t *testing.T) {
 	testConfigs := []struct {
 		name string
 		v    *Visitor
-		i    instance.Instance
+		i    action.Action
 		want []dirty.Curve
 	}{
 		{

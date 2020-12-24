@@ -8,7 +8,7 @@ go_test(
     importpath = "github.com/downflux/game/engine/fsm/schedule_test",
     embed = [":schedule"],
     deps = [
-	":instance",
+	":action",
         "//engine/fsm/api:constants_go_proto",
         "//engine/status:status",
         "//server/fsm:move",
@@ -21,7 +21,7 @@ go_library(
     srcs = ["schedule.go"],
     importpath = "github.com/downflux/game/engine/fsm/schedule",
     deps = [
-        ":instance",
+        ":action",
         ":list",
         "//engine/fsm/api:constants_go_proto",
         "@org_golang_google_grpc//codes:go_default_library",
@@ -35,8 +35,8 @@ go_test(
     importpath = "github.com/downflux/game/engine/fsm/list_test",
     embed = [":list"],
     deps = [
+        ":action",
         ":fsm",
-        ":instance",
         "//api:data_go_proto",
         "//engine/fsm/api:constants_go_proto",
         "//engine/status:status",
@@ -53,8 +53,8 @@ go_library(
     srcs = ["list.go"],
     importpath = "github.com/downflux/game/engine/fsm/list",
     deps = [
+        ":action",
         ":fsm",
-        ":instance",
         "//engine/id:id",
         "//engine/fsm/api:constants_go_proto",
         "//engine/visitor:visitor",
@@ -66,9 +66,9 @@ go_library(
 )
 
 go_library(
-    name = "instance",
-    srcs = ["instance.go"],
-    importpath = "github.com/downflux/game/engine/fsm/instance",
+    name = "action",
+    srcs = ["action.go"],
+    importpath = "github.com/downflux/game/engine/fsm/action",
     deps = [
         "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",

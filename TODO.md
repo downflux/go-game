@@ -17,7 +17,7 @@
 * [x] rename CurveCategory to EntityProperty
 * [x] migrate to FSM Visitor model
 * [x] migrate engine components
-* [ ] migrate instance -> action
+* [x] migrate instance -> action
 * [ ] add generator for IDs instead of manually testing for random string
 * [ ] add server / engine documentation
 * [ ] add Entity Implements layer

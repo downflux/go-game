@@ -1,8 +1,8 @@
 package list
 
 import (
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
-	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"golang.org/x/sync/errgroup"
@@ -23,30 +23,30 @@ var (
 )
 
 type List struct {
-	fsmType   fcpb.FSMType
-	instances map[id.InstanceID]instance.Instance
+	fsmType fcpb.FSMType
+	actions map[id.ActionID]action.Action
 }
 
 func New(fsmType fcpb.FSMType) *List {
 	return &List{
-		instances: map[id.InstanceID]instance.Instance{},
-		fsmType:   fsmType,
+		actions: map[id.ActionID]action.Action{},
+		fsmType: fsmType,
 	}
 }
 
-func (l *List) AgentType() vcpb.AgentType               { return agentType }
-func (l *List) Type() fcpb.FSMType                      { return l.fsmType }
-func (l *List) Get(iid id.InstanceID) instance.Instance { return l.instances[iid] }
+func (l *List) AgentType() vcpb.AgentType         { return agentType }
+func (l *List) Type() fcpb.FSMType                { return l.fsmType }
+func (l *List) Get(iid id.ActionID) action.Action { return l.actions[iid] }
 
 func (l *List) Clear() error {
-	for iid, i := range l.instances {
+	for iid, i := range l.actions {
 		s, err := i.State()
 		if err != nil {
 			// TODO(minkezhang): Log and move on here.
 			return err
 		}
 		if s == fsm.State(fcpb.CommonState_COMMON_STATE_CANCELED.String()) || s == fsm.State(fcpb.CommonState_COMMON_STATE_FINISHED.String()) {
-			delete(l.instances, iid)
+			delete(l.actions, iid)
 		}
 	}
 	return nil
@@ -58,7 +58,7 @@ func (l *List) Accept(v visitor.Visitor) error {
 	}
 
 	var eg errgroup.Group
-	for _, i := range l.instances {
+	for _, i := range l.actions {
 		i := i
 		eg.Go(func() error { return i.Accept(v) })
 	}
@@ -67,7 +67,7 @@ func (l *List) Accept(v visitor.Visitor) error {
 
 func (l *List) Merge(j *List) error {
 	// TODO(minkezhang): Consider making this concurrent.
-	for _, i := range j.instances {
+	for _, i := range j.actions {
 		if err := l.Add(i); err != nil {
 			return err
 		}
@@ -75,16 +75,16 @@ func (l *List) Merge(j *List) error {
 	return nil
 }
 
-func (l *List) Add(i instance.Instance) error {
+func (l *List) Add(i action.Action) error {
 	if l.Type() != i.Type() {
 		return status.Errorf(codes.FailedPrecondition, "cannot add instance of type %v to a list of type %v", i.Type(), l.Type())
 	}
 
-	if l.instances == nil {
-		l.instances = map[id.InstanceID]instance.Instance{}
+	if l.actions == nil {
+		l.actions = map[id.ActionID]action.Action{}
 	}
 
-	j, found := l.instances[i.ID()]
+	j, found := l.actions[i.ID()]
 	if !found || (found && i.Precedence(j)) {
 		// Cancel any conflicting move commands.
 		if found {
@@ -92,12 +92,12 @@ func (l *List) Add(i instance.Instance) error {
 				return err
 			}
 		}
-		l.instances[i.ID()] = i
+		l.actions[i.ID()] = i
 	}
 	return nil
 }
 
-func (l *List) Remove(iid id.InstanceID) error {
-	delete(l.instances, iid)
+func (l *List) Remove(iid id.ActionID) error {
+	delete(l.actions, iid)
 	return nil
 }

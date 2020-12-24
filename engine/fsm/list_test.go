@@ -4,8 +4,8 @@ import (
 	"log"
 	"testing"
 
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
-	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/fsm/move"
@@ -85,9 +85,9 @@ func TestAddCancel(t *testing.T) {
 	if diff := cmp.Diff(
 		i2,
 		l.Get(i2.ID()),
-		cmp.AllowUnexported(move.Instance{}, instance.Base{}),
-		cmpopts.IgnoreFields(instance.Base{}, "mux", "fsm"),
-		cmpopts.IgnoreFields(move.Instance{}, "dfStatus", "mux", "e"),
+		cmp.AllowUnexported(move.Action{}, action.Base{}),
+		cmpopts.IgnoreFields(action.Base{}, "mux", "fsm"),
+		cmpopts.IgnoreFields(move.Action{}, "dfStatus", "mux", "e"),
 		protocmp.Transform(),
 	); diff != "" {
 		t.Errorf("Get() mismatch (-want +got):\n%v", diff)

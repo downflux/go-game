@@ -21,9 +21,9 @@ type ID string
 
 func (id ID) Value() string { return string(id) }
 
-type InstanceID ID
+type ActionID ID
 
-func (id InstanceID) Value() string { return string(id) }
+func (id ActionID) Value() string { return string(id) }
 
 type EntityID ID
 

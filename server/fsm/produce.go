@@ -1,8 +1,8 @@
 package produce
 
 import (
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
-	"github.com/downflux/game/engine/fsm/instance"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
@@ -32,10 +32,10 @@ var (
 	FSM = fsm.New(transitions, fsmType)
 )
 
-type Instance struct {
-	*instance.Base
+type Action struct {
+	*action.Base
 
-	id            id.InstanceID   // Read-only.
+	id            id.ActionID     // Read-only.
 	tick          id.Tick         // Read-only.
 	executionTick id.Tick         // Read-only.
 	dfStatus      *status.Status  // Read-only.
@@ -47,10 +47,10 @@ func New(
 	dfStatus *status.Status,
 	executionTick id.Tick,
 	entityType gcpb.EntityType,
-	spawnPosition *gdpb.Position) *Instance {
-	return &Instance{
-		Base:          instance.New(FSM, pending),
-		id:            id.InstanceID(id.RandomString(idLength)),
+	spawnPosition *gdpb.Position) *Action {
+	return &Action{
+		Base:          action.New(FSM, pending),
+		id:            id.ActionID(id.RandomString(idLength)),
 		executionTick: executionTick,
 		dfStatus:      dfStatus,
 		entityType:    entityType,
@@ -58,20 +58,20 @@ func New(
 	}
 }
 
-func (n *Instance) EntityType() gcpb.EntityType    { return n.entityType }
-func (n *Instance) Accept(v visitor.Visitor) error { return v.Visit(n) }
-func (n *Instance) ID() id.InstanceID              { return n.id }
-func (n *Instance) SpawnPosition() *gdpb.Position  { return n.spawnPosition }
+func (n *Action) EntityType() gcpb.EntityType    { return n.entityType }
+func (n *Action) Accept(v visitor.Visitor) error { return v.Visit(n) }
+func (n *Action) ID() id.ActionID                { return n.id }
+func (n *Action) SpawnPosition() *gdpb.Position  { return n.spawnPosition }
 
-func (n *Instance) Precedence(i instance.Instance) bool {
+func (n *Action) Precedence(i action.Action) bool {
 	if i.Type() != fsmType {
 		return false
 	}
 
-	return n.tick > i.(*Instance).tick
+	return n.tick > i.(*Action).tick
 }
 
-func (n *Instance) Finish() error {
+func (n *Action) Finish() error {
 	s, err := n.State()
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (n *Instance) Finish() error {
 	return n.To(s, finished, false)
 }
 
-func (n *Instance) Cancel() error {
+func (n *Action) Cancel() error {
 	s, err := n.State()
 	if err != nil {
 		return err
@@ -89,7 +89,7 @@ func (n *Instance) Cancel() error {
 	return n.To(s, canceled, false)
 }
 
-func (n *Instance) State() (fsm.State, error) {
+func (n *Action) State() (fsm.State, error) {
 	tick := n.dfStatus.Tick()
 
 	s, err := n.Base.State()
