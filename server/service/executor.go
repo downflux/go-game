@@ -92,8 +92,6 @@ type Executor struct {
 
 	sot     *schedule.Schedule
 	cache   *schedule.Schedule
-	move    *move.Visitor
-	produce *produce.Visitor
 }
 
 // New creates a new instance of the Executor.
