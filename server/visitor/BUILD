@@ -79,7 +79,7 @@ go_library(
         ":dirty",
         "//api:constants_go_proto",
         "//api:data_go_proto",
-        "//curve:linearmove",
+        "//engine/curve/common:linearmove",
         "//engine/entity:entity",
         "//engine/status:status",
         "//engine/visitor:visitor",

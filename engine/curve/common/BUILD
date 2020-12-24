@@ -10,7 +10,7 @@ package(default_visibility=[
 go_library(
     name = "linearmove",
     srcs = ["linearmove.go"],
-    importpath = "github.com/downflux/game/curve/linearmove",
+    importpath = "github.com/downflux/game/engine/curve/common/linearmove",
     deps = [
         "//api:data_go_proto",
         "//api:constants_go_proto",
@@ -25,7 +25,7 @@ go_library(
 go_test(
     name = "linearmove_test",
     srcs = ["linearmove_test.go"],
-    importpath = "github.com/downflux/game/curve/linearmove_test",
+    importpath = "github.com/downflux/game/engine/curve/common/linearmove_test",
     embed = [":linearmove"],
     deps = [
         "//api:data_go_proto",

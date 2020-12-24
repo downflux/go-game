@@ -2,7 +2,7 @@
 package tank
 
 import (
-	"github.com/downflux/game/curve/linearmove"
+	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/server/id"

@@ -4,7 +4,7 @@ import (
 	"math"
 	"sync"
 
-	"github.com/downflux/game/curve/linearmove"
+	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/fsm/fsm"
