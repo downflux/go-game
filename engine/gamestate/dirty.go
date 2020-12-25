@@ -37,6 +37,35 @@ func New() *List {
 	return &List{}
 }
 
+func (l *List) Curves() []Curve {
+	l.mux.Lock()
+	defer l.mux.Unlock()
+
+	var curves []Curve
+	for eid, properties := range l.curves {
+		for property := range properties {
+			curves = append(curves, Curve{
+				EntityID: eid,
+				Property: property,
+			})
+		}
+	}
+
+	return curves
+}
+
+func (l *List) Entities() []Entity {
+	l.mux.Lock()
+	defer l.mux.Unlock()
+
+	var entities []Entity
+	for eid := range l.entities {
+		entities = append(entities, Entity{ID: eid})
+	}
+
+	return entities
+}
+
 // AddEntity marks the specified entity as dirty.
 func (l *List) AddEntity(e Entity) error {
 	l.mux.Lock()
@@ -51,8 +80,8 @@ func (l *List) AddEntity(e Entity) error {
 	return nil
 }
 
-// Add marks the specified curve as dirty.
-func (l *List) Add(c Curve) error {
+// AddCurve marks the specified curve as dirty.
+func (l *List) AddCurve(c Curve) error {
 	l.mux.Lock()
 	defer l.mux.Unlock()
 
@@ -68,41 +97,18 @@ func (l *List) Add(c Curve) error {
 	return nil
 }
 
-// PopEntities returns a list of all mutated entities for the given interval.
-// The internal cache is then cleared.
-//
-// TODO(minkezhang): Consolidate PopEntities and Pop.
-func (l *List) PopEntities() []Entity {
+// Pop returns a clone of the current dirty list and resets the internal cache.
+func (l *List) Pop() *List {
 	l.mux.Lock()
 	defer l.mux.Unlock()
 
-	var entities []Entity
-	for eid := range l.entities {
-		entities = append(entities, Entity{ID: eid})
+	nl := &List{
+		curves:   l.curves,
+		entities: l.entities,
 	}
 
-	l.entities = nil
-	return entities
-}
-
-// Pop returns a list of all mutated curves for the given interval.
-// The internal cache is then cleared.
-//
-// TODO(minkezhang): Consolidate PopEntities and Pop.
-func (l *List) Pop() []Curve {
-	l.mux.Lock()
-	defer l.mux.Unlock()
-
-	var curves []Curve
-	for eid, properties := range l.curves {
-		for property := range properties {
-			curves = append(curves, Curve{
-				EntityID: eid,
-				Property: property,
-			})
-		}
-	}
 	l.curves = nil
+	l.entities = nil
 
-	return curves
+	return nl
 }

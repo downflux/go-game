@@ -34,11 +34,11 @@ go_library(
     importpath = "github.com/downflux/game/server/grpc/server",
     deps = [
         ":client",
+        ":executorutils",
         "//api:api_go_proto",
         "//api:data_go_proto",
         "//engine/id:id",
         "//map/api:data_go_proto",
-        "//server/service:executor",
         "@org_golang_google_grpc//:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
@@ -103,5 +103,33 @@ go_library(
     importpath = "github.com/downflux/game/server/grpc/handler",
     deps = [
 	"@org_golang_google_grpc//stats:go_default_library",
+    ],
+)
+
+go_library(
+    name = "executorutils",
+    srcs = ["executorutils.go"],
+    importpath = "github.com/downflux/game/server/grpc/executorutils",
+    deps = [
+        "//api:api_go_proto",
+        "//api:constants_go_proto",
+        "//api:data_go_proto",
+        "//engine/gamestate:dirty",
+        "//engine/gamestate:gamestate",
+        "//engine/entity:list",
+        "//engine/fsm/api:constants_go_proto",
+        "//engine/id:id",
+        "//engine/server/executor:executor",
+        "//engine/status:status",
+        "//engine/visitor:list",
+        "//engine/visitor:visitor",
+        "//engine/visitor/api:constants_go_proto",
+        "//map:map",
+        "//map/api:data_go_proto",
+        "//pathing/hpf:graph",
+        "//server/fsm:move",
+        "//server/fsm:produce",
+        "//server/visitor:move",
+        "//server/visitor:produce",
     ],
 )

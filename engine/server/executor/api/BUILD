@@ -10,6 +10,6 @@ proto_library(
 
 go_proto_library(
     name = "constants_go_proto",
-    importpath = "github.com/downflux/game/server/service/api/constants_go_proto",
+    importpath = "github.com/downflux/game/engine/server/executor/api/constants_go_proto",
     proto = ":constants_proto",
 )

@@ -60,8 +60,7 @@ message StreamDataRequest {
 
 message StreamDataResponse {
   double tick = 1;
-  repeated game.api.data.Curve curves = 2;
-  repeated game.api.data.Entity entities = 3;
+  game.api.data.GameState state = 2;
 }
 
 // TODO(minkezhang): Add team.

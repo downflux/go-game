@@ -4,14 +4,15 @@ package list
 import (
 	"sync"
 
+	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/downflux/game/server/service/client"
+	"github.com/downflux/game/engine/server/client/client"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
-	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
+	ccpb "github.com/downflux/game/engine/server/client/api/constants_go_proto"
 )
 
 var (
@@ -65,8 +66,8 @@ func (l *List) Broadcast(partialGenerator, fullGenerator func() *apipb.StreamDat
 	partial := partialGenerator()
 	var full *apipb.StreamDataResponse
 
-	desyncedClients := l.filterUnsafe(sscpb.ClientStatus_CLIENT_STATUS_DESYNCED)
-	if desyncedClients == nil && partial.GetCurves() == nil && partial.GetEntities() == nil {
+	desyncedClients := l.filterUnsafe(ccpb.ClientState_CLIENT_STATE_DESYNCED)
+	if desyncedClients == nil && partial.GetState().GetCurves() == nil && partial.GetState().GetEntities() == nil {
 		return nil
 	}
 	if desyncedClients != nil {
@@ -76,10 +77,14 @@ func (l *List) Broadcast(partialGenerator, fullGenerator func() *apipb.StreamDat
 	var eg errgroup.Group
 	for _, c := range l.clients {
 		c := c
-		switch c.Status() {
-		case sscpb.ClientStatus_CLIENT_STATUS_OK:
+		s, err := c.State()
+		if err != nil {
+			return err
+		}
+		switch s {
+		case fsm.State(ccpb.ClientState_CLIENT_STATE_OK.String()):
 			eg.Go(func() error { return c.Send(partial) })
-		case sscpb.ClientStatus_CLIENT_STATUS_DESYNCED:
+		case fsm.State(ccpb.ClientState_CLIENT_STATE_DESYNCED.String()):
 			eg.Go(func() error { return c.Send(full) })
 		}
 	}
@@ -124,7 +129,7 @@ func (l *List) Start(cid id.ClientID) error {
 		return notFound
 	}
 
-	return l.clients[cid].SetStatus(sscpb.ClientStatus_CLIENT_STATUS_DESYNCED)
+	return l.clients[cid].SetState(ccpb.ClientState_CLIENT_STATE_DESYNCED)
 }
 
 // Stop will indicate to the associated Client that the game state channel
@@ -159,9 +164,9 @@ func (l *List) stopUnsafe(cid id.ClientID, success bool) error {
 	}
 
 	if success {
-		return l.clients[cid].SetStatus(sscpb.ClientStatus_CLIENT_STATUS_TEARDOWN)
+		return l.clients[cid].SetState(ccpb.ClientState_CLIENT_STATE_TEARDOWN)
 	}
-	return l.clients[cid].SetStatus(sscpb.ClientStatus_CLIENT_STATUS_NEW)
+	return l.clients[cid].SetState(ccpb.ClientState_CLIENT_STATE_NEW)
 }
 
 // inUnsafe implements the Client membership test logic.
@@ -172,11 +177,12 @@ func (l *List) inUnsafe(cid id.ClientID) bool {
 
 // filterUnsafe retuns a list of Client instances which are currently in the
 // specified ClientStatus.
-func (l *List) filterUnsafe(status sscpb.ClientStatus) map[id.ClientID]bool {
+func (l *List) filterUnsafe(filterState ccpb.ClientState) map[id.ClientID]bool {
 	cids := map[id.ClientID]bool{}
 
 	for _, c := range l.clients {
-		if c.Status() == status {
+		s, err := c.State()
+		if err == nil && s == fsm.State(filterState.String()) {
 			cids[c.ID()] = true
 		}
 	}

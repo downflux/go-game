@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
+	sscpb "github.com/downflux/game/engine/server/executor/api/constants_go_proto"
 )
 
 // Status represents the internal Executor state.
@@ -62,6 +62,8 @@ func (s *Status) PB() *gdpb.ServerStatus {
 		StartTime:    timestamppb.New(s.StartTime()),
 	}
 }
+
+func (s *Status) TickDuration() time.Duration { return s.tickDuration }
 
 // Tick returns the current game tick.
 func (s *Status) Tick() id.Tick { return id.Tick(atomic.LoadInt64(&(s.tickImpl))) }

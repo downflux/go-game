@@ -27,10 +27,14 @@ const (
 	// This will be blocked on writing a custom Listen(s *ApiServer)
 	// method.
 	toxiPort = "50000"
+
+	minPathLength = 8
 )
 
 var (
 	testGlobal = networkImpairmentProxy{}
+
+	tickDuration = 100 * time.Millisecond
 )
 
 type networkImpairmentProxy struct {
@@ -150,7 +154,9 @@ func TestServerCloseStream(t *testing.T) {
 					option.ServerOptions(serverOptionConfig),
 					grpc.StatsHandler(&handler.DownFluxHandler{})),
 				nil,
-				nil)
+				nil,
+				tickDuration,
+				minPathLength)
 			if err != nil {
 				t.Fatalf("NewServerWrapper() = _, %v, want = nil", err)
 			}

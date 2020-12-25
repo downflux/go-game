@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
@@ -15,12 +16,12 @@ import (
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
+	ccpb "github.com/downflux/game/engine/server/client/api/constants_go_proto"
 )
 
 func TestNew(t *testing.T) {
 	const cid = "client-id"
-	const status = sscpb.ClientStatus_CLIENT_STATUS_NEW
+	state := fsm.State(ccpb.ClientState_CLIENT_STATE_NEW.String())
 
 	c := New(id.ClientID(cid))
 
@@ -28,8 +29,8 @@ func TestNew(t *testing.T) {
 		t.Fatalf("ID() = %v, want = %v", c.ID(), cid)
 	}
 
-	if c.Status() != status {
-		t.Errorf("Status() = %v, want = %v", c.Status, status)
+	if got, err := c.State(); err != nil || got != state {
+		t.Errorf("State() = %v, %v, want = %v, nil", got, err, state)
 	}
 }
 
@@ -48,8 +49,10 @@ func TestGetChannelInvald(t *testing.T) {
 func TestSend(t *testing.T) {
 	const nClients = 1000
 	message := &apipb.StreamDataResponse{
-		Entities: []*gdpb.Entity{
-			{EntityId: "eid"},
+		State: &gdpb.GameState{
+			Entities: []*gdpb.Entity{
+				{EntityId: "eid"},
+			},
 		},
 	}
 
@@ -57,11 +60,11 @@ func TestSend(t *testing.T) {
 	var channels []<-chan *apipb.StreamDataResponse
 	for i := 0; i < nClients; i++ {
 		c := New(id.ClientID(fmt.Sprintf("client-%d", i)))
-		if err := c.SetStatus(sscpb.ClientStatus_CLIENT_STATUS_DESYNCED); err != nil {
-			t.Fatalf("SetStatus() = %v, want = nil", err)
+		if err := c.SetState(ccpb.ClientState_CLIENT_STATE_DESYNCED); err != nil {
+			t.Fatalf("SetState() = %v, want = nil", err)
 		}
-		if err := c.SetStatus(sscpb.ClientStatus_CLIENT_STATUS_OK); err != nil {
-			t.Fatalf("SetStatus() = %v, want = nil", err)
+		if err := c.SetState(ccpb.ClientState_CLIENT_STATE_OK); err != nil {
+			t.Fatalf("SetState() = %v, want = nil", err)
 		}
 		clients = append(clients, c)
 
@@ -75,11 +78,7 @@ func TestSend(t *testing.T) {
 	var eg errgroup.Group
 	for i := 0; i < nClients; i++ {
 		i := i
-		eg.Go(func() error {
-			err := clients[i].Send(message)
-			fmt.Println("DEBUG: ERR %v", err)
-			return err
-		})
+		eg.Go(func() error { return clients[i].Send(message) })
 	}
 
 	for i := 0; i < nClients; i++ {

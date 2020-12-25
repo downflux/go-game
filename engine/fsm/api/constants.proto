@@ -11,6 +11,7 @@ enum FSMType {
   FSM_TYPE_UNKNOWN = 0;
   FSM_TYPE_MOVE = 1;
   FSM_TYPE_PRODUCE = 2;
+  FSM_TYPE_CLIENT = 3;
 }
 
 enum CommonState {

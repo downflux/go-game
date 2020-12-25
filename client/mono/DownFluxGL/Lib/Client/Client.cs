@@ -108,7 +108,7 @@ namespace DF {
 
               _curvesMutex.AcquireWriterLock(1000);  // 1 sec
               try {
-                foreach (var curvePB in resp.Curves) {
+                foreach (var curvePB in resp.State.Curves) {
                   try {
                     _curves.Enqueue((resp.Tick, DF.Curve.Curve.Import(curvePB)));
                   } catch (System.ArgumentException) {
@@ -121,7 +121,7 @@ namespace DF {
               // TODO(minkezhang): Parallelize this.
               _entitiesMutex.AcquireWriterLock(1000);  // 1 sec
               try {
-                foreach (var entityPB in resp.Entities) {
+                foreach (var entityPB in resp.State.Entities) {
                   try {
                     _entities.Enqueue((resp.Tick, DF.Entity.Entity.Import(entityPB)));
                   } catch (System.ArgumentException) {

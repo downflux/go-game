@@ -1,10 +1,8 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 package(default_visibility=[
-    "//engine:__subpackages__",
-    "//server/service:__pkg__",
-    "//server/schedule:__pkg__",
-    "//server/visitor:__pkg__",
+    "//engine:__subpackages__",  # test-only
+    "//server:__subpackages__",
 ])
 
 go_test(

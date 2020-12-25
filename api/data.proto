@@ -75,3 +75,8 @@ message Entity {
 
   game.api.constants.EntityType type = 2;  
 }
+
+message GameState {
+  repeated game.api.data.Curve curves = 1;
+  repeated game.api.data.Entity entities = 2;
+}
