@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	sscpb "github.com/downflux/game/server/service/api/constants_go_proto"
+	sscpb "github.com/downflux/game/engine/server/executor/api/constants_go_proto"
 )
 
 // Status represents the internal Executor state.

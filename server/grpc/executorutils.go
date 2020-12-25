@@ -6,10 +6,10 @@ import (
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/gamestate/gamestate"
 	"github.com/downflux/game/engine/id/id"
+	"github.com/downflux/game/engine/server/executor/executor"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/server/service/executor"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
 

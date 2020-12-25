@@ -1,10 +1,11 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
+package(default_visibility=["//visibility:public"])
+
 go_library(
     name = "executor",
     srcs = ["executor.go"],
-    importpath = "github.com/downflux/game/server/service/executor",
-    visibility = ["//server/grpc:__pkg__"],
+    importpath = "github.com/downflux/game/engine/server/executor/executor",
     deps = [
         "//api:api_go_proto",
         "//api:data_go_proto",
@@ -25,7 +26,7 @@ go_library(
 go_test(
     name = "executor_test",
     srcs = [":executor_test.go"],
-    importpath = "github.com/downflux/game/server/service/executor_test",
+    importpath = "github.com/downflux/game/engine/server/executor/executor_test",
     embed = [":executor"],
     deps = [
         "//api:api_go_proto",

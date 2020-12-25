@@ -1,9 +1,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test", "go_binary")
 
-package(default_visibility=[
-    "//pathing:__subpackages__",
-    "//server:__subpackages__",
-])
+package(default_visibility=["//visibility:public"])
 
 go_library(
     name = "map",
