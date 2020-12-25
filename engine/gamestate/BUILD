@@ -22,3 +22,16 @@ go_library(
         "//engine/id:id",
     ],
 )
+
+go_library(
+    name = "gamestate",
+    srcs = ["gamestate.go"],
+    importpath = "github.com/downflux/game/engine/gamestate/gamestate",
+    deps = [
+        ":dirty",
+        "//api:data_go_proto",
+        "//engine/entity:list",
+        "//engine/id:id",
+        "//engine/status:status",
+    ],
+)

@@ -17,7 +17,7 @@ type List struct {
 }
 
 // New constructs a new instance of the List.
-func New(eid id.EntityID) *List {
+func New() *List {
 	return &List{
 		entities: map[id.EntityID]entity.Entity{},
 	}

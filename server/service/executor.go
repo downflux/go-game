@@ -7,6 +7,7 @@ import (
 
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
+	"github.com/downflux/game/engine/gamestate/gamestate"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
@@ -71,21 +72,12 @@ type Executor struct {
 	// See https://en.wikipedia.org/wiki/Visitor_pattern.
 	visitors *visitorlist.List
 
-	// entities is a list of all Entity instances for the current game.
-	// An Entity is an arbitrary stateful object -- it may not be a
-	// physical game object like a tank; the entitylist.List object
-	// itself is implements the Entity interface.
-	//
-	// Entity object states are mutated by Visitor instances.
-	entities *entitylist.List
+	gamestate *gamestate.GameState
 
 	// dirties is a list of Entity and Curve instances which have been
 	// modified during the current game tick. The Executor broadcasts this
 	// list to all clients to update the game state.
 	dirties *dirty.List
-
-	// statusImpl represents the current Executor state metadata.
-	statusImpl *serverstatus.Status
 
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
@@ -106,13 +98,12 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	}
 
 	dirties := dirty.New()
-	statusImpl := serverstatus.New(tickDuration)
 
-	entities := entitylist.New(entityListID)
+	state := gamestate.New(serverstatus.New(tickDuration), entitylist.New())
 
 	visitors, err := visitorlist.New([]visitor.Visitor{
-		produce.New(statusImpl, entities, dirties),
-		move.New(tm, g, statusImpl, dirties, minPathLength),
+		produce.New(state.Status(), state.Entities(), dirties),
+		move.New(tm, g, state.Status(), dirties, minPathLength),
 	})
 	if err != nil {
 		return nil, err
@@ -120,17 +111,16 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 
 	return &Executor{
 		visitors:      visitors,
-		entities:      entities,
+		gamestate:     state,
 		dirties:       dirties,
 		clients:       clientlist.New(idLen),
-		statusImpl:    statusImpl,
 		schedule:      schedule.New(schedule.FSMTypes),
 		scheduleCache: schedule.New(schedule.FSMTypes),
 	}, nil
 }
 
 // Status returns the current Executor status.
-func (e *Executor) Status() *gdpb.ServerStatus { return e.statusImpl.PB() }
+func (e *Executor) Status() *gdpb.ServerStatus { return e.gamestate.Status().PB() }
 
 // ClientExists tests for if the specified Client UUID is currently being
 // tracked by the Executor.
@@ -154,72 +144,29 @@ func (e *Executor) ClientChannel(cid id.ClientID) (<-chan *apipb.StreamDataRespo
 	return e.clients.Channel(cid)
 }
 
-// partialState returns the game state update that will need to be broadcast
-// to all valid clients for the current server tick.
-func (e *Executor) partialState() *gdpb.GameState {
-	state := &gdpb.GameState{}
-
-	tailTick := e.statusImpl.Tick() - 100
-	if tailTick < 0 {
-		tailTick = 0
-	}
-
-	dirtyClone := e.dirties.Pop()
-
-	for _, de := range dirtyClone.Entities() {
-		state.Entities = append(state.GetEntities(), &gdpb.Entity{
-			EntityId: de.ID.Value(),
-			Type:     e.entities.Get(de.ID).Type(),
-		})
-	}
-	for _, dc := range dirtyClone.Curves() {
-		state.Curves = append(state.GetCurves(),
-			e.entities.Get(dc.EntityID).Curve(dc.Property).ExportTail(tailTick))
-	}
-
-	return state
-}
-
-// fullState returns a list of all Curve and Entity protos as of the
-// current tick. This is used to broadcast the full game state to new or
-// reconnecting clients.
-func (e *Executor) fullState() *gdpb.GameState {
-	state := &gdpb.GameState{}
-
-	// TODO(minkezhang): Give some leeway here, broadcast a bit in the
-	// past.
-	beginningTick := e.statusImpl.Tick()
-
-	for _, en := range e.entities.Iter() {
-		state.Entities = append(state.GetEntities(), &gdpb.Entity{
-			EntityId: en.ID().Value(),
-			Type:     en.Type(),
-		})
-		for _, p := range en.Properties() {
-			state.Curves = append(state.GetCurves(), en.Curve(p).ExportTail(beginningTick))
-		}
-	}
-	return state
-}
-
 // broadcast will send the current game state delta or full game state to
 // all connected clients. This is a blocking call.
 func (e *Executor) broadcast() error {
-	state := e.partialState()
+	partial := e.gamestate.Export(e.gamestate.Status().Tick()-100, e.dirties.Pop())
 
 	return e.clients.Broadcast(
+		// Return the game state update that will need to be broadcast
+		// to all valid clients for the current server tick.
 		func() *apipb.StreamDataResponse {
 			// TODO(minkezhang): Decide if it's okay that the reported tick may not
 			// coincide with the ticks of the curve and entities.
 			return &apipb.StreamDataResponse{
-				Tick:  e.statusImpl.Tick().Value(),
-				State: state,
+				Tick:  e.gamestate.Status().Tick().Value(),
+				State: partial,
 			}
 		},
+		// Return a list of all Curve and Entity protos as of the
+		// current tick. This is used to broadcast the full game state
+		// to new or reconnecting clients.
 		func() *apipb.StreamDataResponse {
 			return &apipb.StreamDataResponse{
-				Tick:  e.statusImpl.Tick().Value(),
-				State: e.fullState(),
+				Tick:  e.gamestate.Status().Tick().Value(),
+				State: e.gamestate.Export(e.gamestate.Status().Tick(), e.gamestate.NoFilter()),
 			}
 		},
 	)
@@ -228,7 +175,7 @@ func (e *Executor) broadcast() error {
 // Stop will teardown the Executor and close all client channels. This is
 // called at the end of the game.
 func (e *Executor) Stop() error {
-	if err := e.statusImpl.SetIsStopped(); err != nil {
+	if err := e.gamestate.Status().SetIsStopped(); err != nil {
 		return err
 	}
 	e.clients.StopAll()
@@ -237,11 +184,11 @@ func (e *Executor) Stop() error {
 
 // Run executes the core game loop.
 func (e *Executor) Run() error {
-	e.statusImpl.SetStartTime()
-	if err := e.statusImpl.SetIsStarted(); err != nil {
+	e.gamestate.Status().SetStartTime()
+	if err := e.gamestate.Status().SetIsStarted(); err != nil {
 		return err
 	}
-	for !e.statusImpl.IsStopped() {
+	for !e.gamestate.Status().IsStopped() {
 		if err := e.doTick(); err != nil {
 			// TODO(minkezhang): Only return if error is fatal.
 			return err
@@ -253,7 +200,7 @@ func (e *Executor) Run() error {
 // doTick executes a single iteration of the core game loop.
 func (e *Executor) doTick() error {
 	t := time.Now()
-	e.statusImpl.IncrementTick()
+	e.gamestate.Status().IncrementTick()
 
 	x := e.scheduleCache.Pop()
 
@@ -277,14 +224,14 @@ func (e *Executor) doTick() error {
 
 	// TODO(minkezhang): Add metrics collection here for tick
 	// distribution.
-	u := e.statusImpl.StartTime().Add(
-		time.Duration(e.statusImpl.Tick()) * tickDuration).Sub(t)
+	u := e.gamestate.Status().StartTime().Add(
+		time.Duration(e.gamestate.Status().Tick()) * tickDuration).Sub(t)
 	if u < tickDuration {
 		time.Sleep(u)
 	} else {
 		log.Printf(
 			"[%.f] took too long: execution time %v > %v",
-			e.statusImpl.Tick(), u, tickDuration)
+			e.gamestate.Status().Tick(), u, tickDuration)
 	}
 	return nil
 }
@@ -295,7 +242,7 @@ func (e *Executor) doTick() error {
 // debugging purposes.
 func (e *Executor) AddEntity(entityType gcpb.EntityType, p *gdpb.Position) error {
 	return e.scheduleCache.Add(
-		produceinstance.New(e.statusImpl, e.statusImpl.Tick(), entityType, p),
+		produceinstance.New(e.gamestate.Status(), e.gamestate.Status().Tick(), entityType, p),
 	)
 }
 
@@ -306,7 +253,7 @@ func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
 
 	for _, eid := range req.GetEntityIds() {
 		if err := e.scheduleCache.Add(
-			moveinstance.New(e.entities.Get(id.EntityID(eid)), e.statusImpl, req.GetDestination()),
+			moveinstance.New(e.gamestate.Entities().Get(id.EntityID(eid)), e.gamestate.Status(), req.GetDestination()),
 		); err != nil {
 			return err
 		}
