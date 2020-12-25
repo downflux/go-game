@@ -7,8 +7,7 @@ import (
 	"google.golang.org/grpc/stats"
 )
 
-type DownFluxHandler struct {
-}
+type DownFluxHandler struct{}
 
 func (h *DownFluxHandler) TagRPC(ctx context.Context, s *stats.RPCTagInfo) context.Context { return ctx }
 func (h *DownFluxHandler) HandleRPC(context.Context, stats.RPCStats)                       {}
@@ -18,6 +17,7 @@ func (h *DownFluxHandler) TagConn(ctx context.Context, s *stats.ConnTagInfo) con
 func (h *DownFluxHandler) HandleConn(ctx context.Context, s stats.ConnStats) {
 	switch s.(type) {
 	case *stats.ConnEnd:
+		// TODO(minkezhang): Surface this as a stat / trigger instead.
 		log.Println("handler detected connection break")
 	}
 }

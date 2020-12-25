@@ -63,6 +63,8 @@ func (s *Status) PB() *gdpb.ServerStatus {
 	}
 }
 
+func (s *Status) TickDuration() time.Duration { return s.tickDuration }
+
 // Tick returns the current game tick.
 func (s *Status) Tick() id.Tick { return id.Tick(atomic.LoadInt64(&(s.tickImpl))) }
 

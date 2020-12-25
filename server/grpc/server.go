@@ -13,7 +13,7 @@ import (
 
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/server/grpc/client"
-	"github.com/downflux/game/server/service/executor"
+	"github.com/downflux/game/server/grpc/executorutils"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -38,10 +38,12 @@ type ServerWrapper struct {
 func NewServerWrapper(
 	serverOptions []grpc.ServerOption,
 	pb *mdpb.TileMap,
-	d *gdpb.Coordinate) (*ServerWrapper, error) {
+	d *gdpb.Coordinate,
+	tickDuration time.Duration,
+	minPathLength int) (*ServerWrapper, error) {
 	sw := &ServerWrapper{}
 
-	gRPCServerImpl, err := NewDownFluxServer(pb, d)
+	gRPCServerImpl, err := NewDownFluxServer(pb, d, tickDuration, minPathLength)
 	if err != nil {
 		return nil, err
 	}
@@ -60,9 +62,9 @@ func (s *ServerWrapper) Start(addr string) error {
 	}
 
 	s.eg.Go(func() error { return s.gRPCServer.Serve(lis) })
-	s.eg.Go(s.gRPCServerImpl.ex.Run)
+	s.eg.Go(s.gRPCServerImpl.utils.Executor().Run)
 
-	for isStarted := false; !isStarted; isStarted = s.gRPCServerImpl.ex.Status().GetIsStarted() {
+	for isStarted := false; !isStarted; isStarted = s.gRPCServerImpl.utils.Executor().Status().GetIsStarted() {
 		time.Sleep(time.Second)
 	}
 
@@ -70,7 +72,7 @@ func (s *ServerWrapper) Start(addr string) error {
 }
 
 func (s *ServerWrapper) Stop() error {
-	if err := s.gRPCServerImpl.ex.Stop(); err != nil {
+	if err := s.gRPCServerImpl.utils.Executor().Stop(); err != nil {
 		return err
 	}
 	s.gRPCServer.GracefulStop()
@@ -78,36 +80,32 @@ func (s *ServerWrapper) Stop() error {
 	return s.eg.Wait()
 }
 
-func NewDownFluxServer(pb *mdpb.TileMap, d *gdpb.Coordinate) (*DownFluxServer, error) {
-	ex, err := executor.New(pb, d)
+func NewDownFluxServer(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPathLength int) (*DownFluxServer, error) {
+	utils, err := executorutils.New(pb, d, tickDuration, minPathLength)
 	if err != nil {
 		return nil, err
 	}
 	return &DownFluxServer{
-		ex: ex,
+		utils: utils,
 	}, nil
 }
 
 type DownFluxServer struct {
-	ex *executor.Executor
+	utils *executorutils.Utils
 }
 
 func (s *DownFluxServer) validateClient(cid id.ClientID) error {
-	if !s.ex.ClientExists(cid) {
+	if !s.utils.Executor().ClientExists(cid) {
 		return status.Errorf(codes.NotFound, "client %v not found", cid)
 	}
 	return nil
 }
 
-// Executor returns the internal executor.Executor instance. This is a debug
-// function.
-//
-// TODO(minkezhang): Delete this function.
-func (s *DownFluxServer) Executor() *executor.Executor { return s.ex }
+func (s *DownFluxServer) Utils() *executorutils.Utils { return s.utils }
 
 func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequest) (*apipb.GetStatusResponse, error) {
 	return &apipb.GetStatusResponse{
-		Status: s.ex.Status(),
+		Status: s.utils.Executor().Status(),
 	}, nil
 }
 
@@ -115,11 +113,11 @@ func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*api
 	if err := s.validateClient(id.ClientID(req.GetClientId())); err != nil {
 		return nil, err
 	}
-	return &apipb.MoveResponse{}, s.ex.AddMoveCommands(req)
+	return &apipb.MoveResponse{}, s.utils.Move(req)
 }
 
 func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequest) (*apipb.AddClientResponse, error) {
-	cid, err := s.ex.AddClient()
+	cid, err := s.utils.Executor().AddClient()
 	if err != nil {
 		return nil, err
 	}
@@ -139,15 +137,15 @@ func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.D
 
 	md := client.New()
 	defer func() {
-		s.ex.StopClientStreamError(cid)
+		s.utils.Executor().StopClientStreamError(cid)
 		md.Close()
 	}()
 
-	if err := s.ex.StartClientStream(cid); err != nil {
+	if err := s.utils.Executor().StartClientStream(cid); err != nil {
 		return err
 	}
 
-	ch, err := s.ex.ClientChannel(cid)
+	ch, err := s.utils.Executor().ClientChannel(cid)
 	if err != nil {
 		return err
 	}

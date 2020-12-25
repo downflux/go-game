@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"time"
 
 	"github.com/downflux/game/server/grpc/server"
 	"github.com/golang/protobuf/proto"
@@ -18,8 +19,20 @@ import (
 )
 
 var (
-	port    = flag.Int("port", 4444, "gRPC server listener port")
-	mapFile = flag.String("map_file", "data/map/demo.textproto", "game map textproto file")
+	port           = flag.Int("port", 4444, "gRPC server listener port")
+	mapFile        = flag.String("map_file", "data/map/demo.textproto", "game map textproto file")
+	tickDurationMS = flag.Int("tick_ms", 100, "maximum loop time duration")
+
+	// minPathLength represents the minimum lookahead path length to
+	// calculate, where the path is a list of tile.Map coordinates.
+	minPathLength = flag.Int("path_length", 8, "target lookahead path length for partial moves")
+
+	// tickDuration is the targeted loop iteration time delta. If a tick
+	// loop exceeds this time, it should delay commands until the next
+	// cycle and ensure the dirty curves are being broadcasted instead.
+	//
+	// TODO(minkezhang): Ensure tick timeout actually occurs.
+	tickDuration = time.Duration(*tickDurationMS) * time.Millisecond
 )
 
 func main() {
@@ -44,7 +57,7 @@ func main() {
 		log.Fatalf("could not parse map file: %v", err)
 	}
 
-	downFluxServer, err := server.NewDownFluxServer(mapPB, &gdpb.Coordinate{X: 5, Y: 5})
+	downFluxServer, err := server.NewDownFluxServer(mapPB, &gdpb.Coordinate{X: 5, Y: 5}, tickDuration, *minPathLength)
 	if err != nil {
 		log.Fatal("could not construct DownFlux server instance: %v", err)
 	}
@@ -54,9 +67,9 @@ func main() {
 	s := grpc.NewServer()
 	apipb.RegisterDownFluxServer(s, downFluxServer)
 
-	downFluxServer.Executor().AddEntity(gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 1, Y: 1})
-	downFluxServer.Executor().AddEntity(gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 2, Y: 1})
+	downFluxServer.Utils().ProduceDebug(gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 1, Y: 1})
+	downFluxServer.Utils().ProduceDebug(gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 2, Y: 1})
 
 	go s.Serve(lis)
-	log.Println(downFluxServer.Executor().Run())
+	log.Println(downFluxServer.Utils().Executor().Run())
 }

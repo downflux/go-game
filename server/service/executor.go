@@ -5,51 +5,26 @@ import (
 	"log"
 	"time"
 
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/gamestate/gamestate"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/downflux/game/engine/visitor/visitor"
-	"github.com/downflux/game/pathing/hpf/graph"
-	"github.com/downflux/game/server/visitor/move"
-	"github.com/downflux/game/server/visitor/produce"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
-	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	entitylist "github.com/downflux/game/engine/entity/list"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	clientlist "github.com/downflux/game/engine/server/client/list"
-	serverstatus "github.com/downflux/game/engine/status/status"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	visitorlist "github.com/downflux/game/engine/visitor/list"
-	mdpb "github.com/downflux/game/map/api/data_go_proto"
-	tile "github.com/downflux/game/map/map"
-	moveinstance "github.com/downflux/game/server/fsm/move"
-	produceinstance "github.com/downflux/game/server/fsm/produce"
 )
 
 const (
 	// idLen represents the default length of a UUID (e.g. ClientID,
 	// EntityID, etc.).
 	idLen = 8
-
-	// tickDuration is the targeted loop iteration time delta. If a tick
-	// loop exceeds this time, it should delay commands until the next
-	// cycle and ensure the dirty curves are being broadcasted instead.
-	//
-	// TODO(minkezhang): Ensure tick timeout actually occurs.
-	tickDuration = 100 * time.Millisecond
-
-	// entityListID is a preset ID for the global EntityList Entity
-	// instance.
-	entityListID = "entity-list"
-
-	// minPathLength represents the minimum lookahead path length to
-	// calculate, where the path is a list of tile.Map coordinates.
-	minPathLength = 8
 )
 
 var (
@@ -82,40 +57,37 @@ type Executor struct {
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
 
+	fsmLookup     map[vcpb.VisitorType]fcpb.FSMType
 	schedule      *schedule.Schedule
 	scheduleCache *schedule.Schedule
 }
 
-// New creates a new instance of the Executor.
-func New(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
-	tm, err := tile.ImportMap(pb)
-	if err != nil {
-		return nil, err
+func New(
+	visitors *visitorlist.List,
+	state *gamestate.GameState,
+	dirtystate *dirty.List,
+	fsmLookup map[vcpb.VisitorType]fcpb.FSMType,
+) (*Executor, error) {
+	for _, v := range visitors.Iter() {
+		visitorType := v.Type()
+		if _, found := fsmLookup[visitorType]; !found {
+			return nil, status.Errorf(codes.NotFound, "cannot find associated FSM type for visitor %v", visitorType)
+		}
 	}
-	g, err := graph.BuildGraph(tm, d)
-	if err != nil {
-		return nil, err
-	}
 
-	dirties := dirty.New()
-
-	state := gamestate.New(serverstatus.New(tickDuration), entitylist.New())
-
-	visitors, err := visitorlist.New([]visitor.Visitor{
-		produce.New(state.Status(), state.Entities(), dirties),
-		move.New(tm, g, state.Status(), dirties, minPathLength),
-	})
-	if err != nil {
-		return nil, err
+	var fsmTypes []fcpb.FSMType
+	for _, fsmType := range fsmLookup {
+		fsmTypes = append(fsmTypes, fsmType)
 	}
 
 	return &Executor{
 		visitors:      visitors,
 		gamestate:     state,
-		dirties:       dirties,
+		dirties:       dirtystate,
 		clients:       clientlist.New(idLen),
-		schedule:      schedule.New(schedule.FSMTypes),
-		scheduleCache: schedule.New(schedule.FSMTypes),
+		schedule:      schedule.New(fsmTypes),
+		scheduleCache: schedule.New(fsmTypes),
+		fsmLookup:     fsmLookup,
 	}, nil
 }
 
@@ -211,7 +183,7 @@ func (e *Executor) doTick() error {
 	// TODO(minkezhang): Clear CANCELED or FINISHED instances in a Visitor.
 	e.schedule.Clear()
 	for _, v := range e.visitors.Iter() {
-		if fsmType, found := fsmVisitorTypeLookup[v.Type()]; found {
+		if fsmType, found := e.fsmLookup[v.Type()]; found {
 			if err := e.schedule.Get(fsmType).Accept(v); err != nil {
 				return err
 			}
@@ -224,6 +196,7 @@ func (e *Executor) doTick() error {
 
 	// TODO(minkezhang): Add metrics collection here for tick
 	// distribution.
+	tickDuration := e.gamestate.Status().TickDuration()
 	u := e.gamestate.Status().StartTime().Add(
 		time.Duration(e.gamestate.Status().Tick()) * tickDuration).Sub(t)
 	if u < tickDuration {
@@ -236,28 +209,6 @@ func (e *Executor) doTick() error {
 	return nil
 }
 
-// AddEntity schedules adding a new entity in the next game tick.
-//
-// TODO(minkezhang): Delete this method -- this is currently public for
-// debugging purposes.
-func (e *Executor) AddEntity(entityType gcpb.EntityType, p *gdpb.Position) error {
-	return e.scheduleCache.Add(
-		produceinstance.New(e.gamestate.Status(), e.gamestate.Status().Tick(), entityType, p),
-	)
-}
-
-// AddMoveCommands transforms the player MoveRequest input into a list of
-// Command instances, and schedules them to be executed in the next tick.
-func (e *Executor) AddMoveCommands(req *apipb.MoveRequest) error {
-	// TODO(minkezhang): If tick outside window, return error.
-
-	for _, eid := range req.GetEntityIds() {
-		if err := e.scheduleCache.Add(
-			moveinstance.New(e.gamestate.Entities().Get(id.EntityID(eid)), e.gamestate.Status(), req.GetDestination()),
-		); err != nil {
-			return err
-		}
-	}
-
-	return nil
+func (e *Executor) Schedule(a action.Action) error {
+	return e.scheduleCache.Add(a)
 }

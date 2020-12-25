@@ -31,9 +31,13 @@ func init() {
 const (
 	bufSize = 1024 * 1024
 	idLen   = 8
+
+	minPathLength = 8
 )
 
 var (
+	tickDuration = 100 * time.Millisecond
+
 	/**
 	 * Y = 0 - - - -
 	 *   X = 0
@@ -71,7 +75,7 @@ func newConn(s *sut) (*grpc.ClientConn, error) {
 
 func newSUT() (*sut, error) {
 	gRPCServer := grpc.NewServer()
-	gRPCServerImpl, err := NewDownFluxServer(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
+	gRPCServerImpl, err := NewDownFluxServer(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1}, tickDuration, minPathLength)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not create SUT: %v", err)
 	}
@@ -102,11 +106,11 @@ func TestSendMoveCommand(t *testing.T) {
 
 	// TODO(minkezhang): This is a hack -- clients should get the entities
 	// via broadcast.
-	s.gRPCServerImpl.ex.AddEntity(gcpb.EntityType_ENTITY_TYPE_TANK, src)
+	s.gRPCServerImpl.Utils().ProduceDebug(gcpb.EntityType_ENTITY_TYPE_TANK, src)
 
 	var eg errgroup.Group
 	eg.Go(func() error { return s.gRPCServer.Serve(s.listener) })
-	eg.Go(func() error { return s.gRPCServerImpl.Executor().Run() })
+	eg.Go(func() error { return s.gRPCServerImpl.Utils().Executor().Run() })
 
 	client := apipb.NewDownFluxClient(conn)
 	resp, err := client.AddClient(s.ctx, &apipb.AddClientRequest{})
@@ -179,7 +183,7 @@ func TestSendMoveCommand(t *testing.T) {
 		time.Sleep(time.Second)
 	}
 
-	if err := s.gRPCServerImpl.Executor().Stop(); err != nil {
+	if err := s.gRPCServerImpl.Utils().Executor().Stop(); err != nil {
 		t.Fatalf("Stop() = %v, want = nil", err)
 	}
 	s.gRPCServer.GracefulStop()
