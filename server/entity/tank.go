@@ -19,8 +19,8 @@ type Tank struct {
 	// eid is a UUID of the Entity.
 	eid id.EntityID
 
-	// curveLookup is a list of Curves tracking the Entity properties.
-	curveLookup map[gcpb.EntityProperty]curve.Curve
+	// curves is a list of Curves tracking the Entity properties.
+	curves map[gcpb.EntityProperty]curve.Curve
 }
 
 // New constructs a new instance of the Tank.
@@ -30,7 +30,7 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) *Tank {
 
 	return &Tank{
 		eid: eid,
-		curveLookup: map[gcpb.EntityProperty]curve.Curve{
+		curves: map[gcpb.EntityProperty]curve.Curve{
 			gcpb.EntityProperty_ENTITY_PROPERTY_POSITION: mc,
 		},
 	}
@@ -46,7 +46,7 @@ func (e *Tank) Properties() []gcpb.EntityProperty {
 }
 
 // Curve returns the Curve instance for a specific EntityProperty.
-func (e *Tank) Curve(t gcpb.EntityProperty) curve.Curve { return e.curveLookup[t] }
+func (e *Tank) Curve(t gcpb.EntityProperty) curve.Curve { return e.curves[t] }
 
 // Type returns the registered EntityType.
 func (e *Tank) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }
