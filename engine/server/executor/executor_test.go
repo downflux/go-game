@@ -15,6 +15,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/testing/protocmp"
+	"github.com/downflux/game/server/entity/component/moveable"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -284,7 +285,7 @@ func TestDoMove(t *testing.T) {
 	}
 
 	if err := e.Schedule(moveaction.New(
-		e.gamestate.Entities().Get(id.EntityID(eid)),
+		e.gamestate.Entities().Get(id.EntityID(eid)).(moveable.Component),
 		e.gamestate.Status(),
 		dest,
 	)); err != nil {

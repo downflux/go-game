@@ -3,6 +3,7 @@ package move
 import (
 	"math"
 	"sync"
+	"time"
 
 	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/fsm/action"
@@ -16,7 +17,6 @@ import (
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/fsm/move"
 
-	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
@@ -24,12 +24,6 @@ import (
 )
 
 const (
-	// ticksPerTile represents the number of ticks necessary to move an
-	// Entity instance one full tile width.
-	//
-	// TODO(minkezhang): Make this a property of the entity.
-	ticksPerTile = id.Tick(10)
-
 	// visitorType is the registered VisitorType of the move visitor.
 	visitorType = vcpb.VisitorType_VISITOR_TYPE_MOVE
 )
@@ -69,9 +63,9 @@ type Visitor struct {
 	// for the associated Map.
 	abstractGraph *graph.Graph
 
-	// dfStatus is a shared object with the game engine and indicates
+	// status is a shared object with the game engine and indicates
 	// current tick, etc.
-	dfStatus *status.Status
+	status *status.Status
 
 	// dirties is a shared object between the game engine and the
 	// Visitor.
@@ -96,7 +90,7 @@ func New(
 	return &Visitor{
 		tileMap:       tileMap,
 		abstractGraph: abstractGraph,
-		dfStatus:      dfStatus,
+		status:        dfStatus,
 		dirties:       dirties,
 		minPathLength: minPathLength,
 	}
@@ -120,20 +114,23 @@ func (v *Visitor) visitFSM(i action.Action) error {
 
 	m := i.(*move.Action)
 
-	tick := v.dfStatus.Tick()
+	tick := v.status.Tick()
 
 	switch s {
 	case fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String()):
-		e := m.Entity()
-		c := e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
+		e := m.Component()
+		c := e.PositionCurve()
 		if c == nil {
 			return nil
 		}
 
+		ticksPerSecond := float64(time.Second / v.status.TickDuration())
+		ticksPerTile := id.Tick(ticksPerSecond / e.Velocity())
+
 		p, _, err := astar.Path(
 			v.tileMap,
 			v.abstractGraph,
-			utils.MC(coordinate(c.Get(tick).(*gdpb.Position))),
+			utils.MC(coordinate(e.Position(tick))),
 			utils.MC(coordinate(m.Destination())),
 			v.minPathLength,
 		)
@@ -144,12 +141,12 @@ func (v *Visitor) visitFSM(i action.Action) error {
 
 		// Add to the existing curve, while smoothing out the existing
 		// trajectory.
-		prevPos := c.Get(tick).(*gdpb.Position)
+		prevPos := e.Position(tick)
 		cv := linearmove.New(e.ID(), tick)
 		cv.Add(tick, prevPos)
 		for i, tile := range p {
 			curPos := position(tile.Val.GetCoordinate())
-			tickDelta := id.Tick(ticksPerTile.Value() * d(prevPos, curPos))
+			tickDelta := ticksPerTile * id.Tick(d(prevPos, curPos))
 			cv.Add(tick+id.Tick(i)*ticksPerTile+tickDelta, curPos)
 			prevPos = curPos
 		}

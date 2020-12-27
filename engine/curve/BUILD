@@ -12,3 +12,15 @@ go_library(
         "//engine/id:id",
     ],
 )
+
+go_library(
+    name = "list",
+    srcs = ["list.go"],
+    importpath = "github.com/downflux/game/engine/curve/list",
+    deps = [
+        ":curve",
+        "//api:constants_go_proto",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+    ],
+)

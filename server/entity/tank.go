@@ -4,49 +4,54 @@ package tank
 import (
 	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/curve/curve"
+	"github.com/downflux/game/engine/curve/list"
 	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/id/id"
+	"github.com/downflux/game/server/entity/component/moveable"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
-// Tank implements the entity.Entity interface and represents a simple armored
+const (
+	// velocity is measured in tiles per second.
+	velocity = 2
+)
+
+// Entity implements the entity.Entity interface and represents a simple armored
 // unit.
-type Tank struct {
+type Entity struct {
 	entity.LifeCycle
+	moveable.Component
 
 	// eid is a UUID of the Entity.
 	eid id.EntityID
 
-	// curveLookup is a list of Curves tracking the Entity properties.
-	curveLookup map[gcpb.EntityProperty]curve.Curve
+	// curves is a list of Curves tracking the Entity properties.
+	curves *list.List
 }
 
 // New constructs a new instance of the Tank.
-func New(eid id.EntityID, t id.Tick, p *gdpb.Position) *Tank {
+func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	mc := linearmove.New(eid, t)
 	mc.Add(t, p)
 
-	return &Tank{
-		eid: eid,
-		curveLookup: map[gcpb.EntityProperty]curve.Curve{
-			gcpb.EntityProperty_ENTITY_PROPERTY_POSITION: mc,
-		},
+	curves, err := list.New([]curve.Curve{mc})
+	if err != nil {
+		return nil, err
 	}
+
+	return &Entity{
+		Component: moveable.New(eid, mc, velocity),
+		eid:       eid,
+		curves:    curves,
+	}, nil
 }
 
 // ID returns the UUID of the Tank.
-func (e *Tank) ID() id.EntityID { return e.eid }
+func (e *Entity) ID() id.EntityID { return e.eid }
 
-// Properties returns the list of registered properties tracked by the
-// Tank instance.
-func (e *Tank) Properties() []gcpb.EntityProperty {
-	return []gcpb.EntityProperty{gcpb.EntityProperty_ENTITY_PROPERTY_POSITION}
-}
-
-// Curve returns the Curve instance for a specific EntityProperty.
-func (e *Tank) Curve(t gcpb.EntityProperty) curve.Curve { return e.curveLookup[t] }
+func (e *Entity) Curves() *list.List { return e.curves }
 
 // Type returns the registered EntityType.
-func (e *Tank) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }
+func (e *Entity) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }

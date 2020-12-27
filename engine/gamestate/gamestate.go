@@ -37,7 +37,7 @@ func (s *GameState) NoFilter() *dirty.List {
 
 	for _, e := range s.entities.Iter() {
 		filter.AddEntity(dirty.Entity{ID: e.ID()})
-		for _, property := range e.Properties() {
+		for _, property := range e.Curves().Properties() {
 			filter.AddCurve(dirty.Curve{EntityID: e.ID(), Property: property})
 		}
 	}
@@ -61,7 +61,7 @@ func (s *GameState) Export(tick id.Tick, filter *dirty.List) *gdpb.GameState {
 	for _, c := range filter.Curves() {
 		state.Curves = append(
 			state.GetCurves(),
-			s.entities.Get(c.EntityID).Curve(c.Property).ExportTail(tick),
+			s.entities.Get(c.EntityID).Curves().Curve(c.Property).ExportTail(tick),
 		)
 	}
 

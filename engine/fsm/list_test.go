@@ -6,6 +6,7 @@ import (
 
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/fsm/move"
@@ -21,6 +22,14 @@ const (
 	fsmType = fcpb.FSMType_FSM_TYPE_MOVE
 )
 
+func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Entity {
+	tankEntity, err := tank.New(eid, tick, p)
+	if err != nil {
+		t.Fatalf("New() = %v, want = nil", err)
+	}
+	return tankEntity
+}
+
 func TestNew(t *testing.T) {
 	l := New(fsmType)
 
@@ -35,7 +44,7 @@ func TestNew(t *testing.T) {
 
 func TestAddError(t *testing.T) {
 	l := New(fcpb.FSMType_FSM_TYPE_UNKNOWN)
-	i := move.New(tank.New("entity-id", 0, nil), status.New(0), nil)
+	i := move.New(newTank(t, "entity-id", 0, nil), status.New(0), nil)
 
 	log.Println(l.Type(), i.Type())
 
@@ -48,7 +57,7 @@ func TestAdd(t *testing.T) {
 	const iid = "entity-id"
 
 	l := New(fsmType)
-	i := move.New(tank.New(iid, 0, nil), status.New(0), nil)
+	i := move.New(newTank(t, iid, 0, nil), status.New(0), nil)
 
 	if err := l.Add(i); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
@@ -64,7 +73,7 @@ func TestAddCancel(t *testing.T) {
 
 	l := New(fsmType)
 
-	e := tank.New(iid, 0, nil)
+	e := newTank(t, iid, 0, nil)
 	dfStatus := status.New(0)
 	i1 := move.New(e, dfStatus, &gdpb.Position{X: 0, Y: 0})
 	dfStatus.IncrementTick()

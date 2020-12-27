@@ -7,17 +7,20 @@ import (
 	"github.com/downflux/game/engine/gamestate/gamestate"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/server/executor/executor"
-	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/entity/component/moveable"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	entitylist "github.com/downflux/game/engine/entity/list"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
+	serverstatus "github.com/downflux/game/engine/status/status"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	visitorlist "github.com/downflux/game/engine/visitor/list"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
@@ -45,7 +48,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		return nil, err
 	}
 
-	state := gamestate.New(status.New(tickDuration), entitylist.New())
+	state := gamestate.New(serverstatus.New(tickDuration), entitylist.New())
 	dirtystate := dirty.New()
 	visitors, err := visitorlist.New([]visitor.Visitor{
 		produce.New(state.Status(), state.Entities(), dirtystate),
@@ -77,8 +80,13 @@ func (u *Utils) Move(pb *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 
 	for _, eid := range pb.GetEntityIds() {
+		e, ok := u.gamestate.Entities().Get(id.EntityID(eid)).(moveable.Component)
+		if !ok {
+			return status.Error(codes.FailedPrecondition, "specified entity is not moveable")
+		}
+
 		if err := u.executor.Schedule(
-			moveaction.New(u.gamestate.Entities().Get(id.EntityID(eid)), u.gamestate.Status(), pb.GetDestination()),
+			moveaction.New(e, u.gamestate.Status(), pb.GetDestination()),
 		); err != nil {
 			return err
 		}

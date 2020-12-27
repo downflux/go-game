@@ -127,9 +127,12 @@ go_library(
         "//map:map",
         "//map/api:data_go_proto",
         "//pathing/hpf:graph",
+        "//server/entity/component:moveable",
         "//server/fsm:move",
         "//server/fsm:produce",
         "//server/visitor:move",
         "//server/visitor:produce",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
     ],
 )

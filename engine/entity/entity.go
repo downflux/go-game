@@ -7,14 +7,12 @@
 //    entity.LifeCycle
 //    ...
 //  }
-//
-//  func (e *ConcreteEntity) Curve(...) { ... }
 package entity
 
 import (
 	"sync"
 
-	"github.com/downflux/game/engine/curve/curve"
+	"github.com/downflux/game/engine/curve/list"
 	"github.com/downflux/game/engine/id/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -27,15 +25,7 @@ type Entity interface {
 	// ID returns the UUID of the Entity.
 	ID() id.EntityID
 
-	// Curve returns a Curve instance of a specific mutable property,
-	// e.g. HP or position.
-	//
-	// TODO(minkezhang): Decide if we should return default value.
-	Curve(t gcpb.EntityProperty) curve.Curve
-
-	// Properties() returns list of entity properties defined in a specific
-	// entity. This list is created at init time and is immutable.
-	Properties() []gcpb.EntityProperty
+	Curves() *list.List
 
 	// Start returns the game tick at which the Entity was created.
 	Start() id.Tick
@@ -51,20 +41,6 @@ type Entity interface {
 	// game. This may occur when the HP is set to zero, etc.
 	Delete(tick id.Tick)
 }
-
-// NoCurve implements a subset of the Entity interface and is used by
-// Entity implementations which do not have any properties that may be tracked
-// by curves.
-type NoCurve struct{}
-
-// Curve returns a Curve instance for the given EntityProperty. In the
-// NoCurve implementation, this returns a trivially true nil value for
-// all categories.
-func (e *NoCurve) Curve(c gcpb.EntityProperty) curve.Curve { return nil }
-
-// Properties returns a list of registered CurveCategory instances tracked
-// by the Entity implementation. NoCurve will return an empty list.
-func (e *NoCurve) Properties() []gcpb.EntityProperty { return nil }
 
 // LifeCycle implements a subset of the Entity interface concerned with
 // tracking the lifecycle of the Entity. Entities such as tanks are created

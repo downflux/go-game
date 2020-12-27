@@ -10,6 +10,7 @@ go_test(
     deps = [
 	":action",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/id:id",
         "//engine/status:status",
         "//server/fsm:move",
         "//server/entity:tank",
@@ -39,6 +40,7 @@ go_test(
         ":fsm",
         "//api:data_go_proto",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/id:id",
         "//engine/status:status",
         "//server/fsm:move",
         "//server/entity:tank",

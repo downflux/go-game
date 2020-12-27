@@ -174,14 +174,11 @@ func (e *Executor) doTick() error {
 	t := time.Now()
 	e.gamestate.Status().IncrementTick()
 
-	x := e.scheduleCache.Pop()
-
-	if err := e.schedule.Merge(x); err != nil {
+	e.schedule.Clear()
+	if err := e.schedule.Merge(e.scheduleCache.Pop()); err != nil {
 		return err
 	}
 
-	// TODO(minkezhang): Clear CANCELED or FINISHED instances in a Visitor.
-	e.schedule.Clear()
 	for _, v := range e.visitors.Iter() {
 		if fsmType, found := e.fsmLookup[v.Type()]; found {
 			if err := e.schedule.Get(fsmType).Accept(v); err != nil {

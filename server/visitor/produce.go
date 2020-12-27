@@ -88,7 +88,10 @@ func (v *Visitor) visitFSM(i action.Action) error {
 		var ne entity.Entity
 		switch entityType := p.EntityType(); entityType {
 		case gcpb.EntityType_ENTITY_TYPE_TANK:
-			ne = tank.New(eid, tick, p.SpawnPosition())
+			ne, err := tank.New(eid, tick, p.SpawnPosition())
+			if err != nil {
+				return err
+			}
 			if err := v.dirties.AddEntity(dirty.Entity{ID: eid}); err != nil {
 				return err
 			}
@@ -98,9 +101,12 @@ func (v *Visitor) visitFSM(i action.Action) error {
 		default:
 			return unsupportedEntityType(entityType)
 		}
-		for _, property := range ne.Properties() {
-			if err := v.dirties.AddCurve(dirty.Curve{EntityID: eid, Property: property}); err != nil {
-				return err
+
+		if ne != nil {
+			for _, property := range ne.Curves().Properties() {
+				if err := v.dirties.AddCurve(dirty.Curve{EntityID: eid, Property: property}); err != nil {
+					return err
+				}
 			}
 		}
 	default:

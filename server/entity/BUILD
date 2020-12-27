@@ -19,8 +19,21 @@ go_library(
 	"//api:constants_go_proto",
 	"//api:data_go_proto",
         "//engine/curve:curve",
+        "//engine/curve:list",
         "//engine/curve/common:linearmove",
         "//engine/entity:entity",
 	"//engine/id:id",
+        "//server/entity/component:moveable",
+    ],
+)
+
+go_test(
+    name = "tank_test",
+    srcs = ["tank_test.go"],
+    importpath = "github.com/downflux/game/server/entity/tank_test",
+    embed = [":tank"],
+    deps = [
+        "//engine/entity:entity",
+        "//server/entity/component:moveable",
     ],
 )

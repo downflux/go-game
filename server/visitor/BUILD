@@ -38,6 +38,7 @@ go_test(
         "//api:data_go_proto",
         "//engine/fsm:action",
         "//engine/gamestate:dirty",
+        "//engine/id:id",
         "//engine/status:status",
         "//map/api:constants_go_proto",
         "//map/api:data_go_proto",
@@ -54,7 +55,6 @@ go_library(
     srcs = ["move.go"],
     importpath = "github.com/downflux/game/server/visitor/move",
     deps = [
-        "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/curve/common:linearmove",
         "//engine/entity:entity",

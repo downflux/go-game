@@ -3,15 +3,14 @@ package move
 import (
 	"sync"
 
-	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
+	"github.com/downflux/game/server/entity/component/moveable"
 	"google.golang.org/protobuf/proto"
 
-	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
@@ -48,8 +47,7 @@ type Action struct {
 	dfStatus    *status.Status // Read-only.
 	destination *gdpb.Position // Read-only.
 
-	// TODO(minkezhang): Use moveable.Moveable instead.
-	e entity.Entity // Read-only.
+	e moveable.Component // Read-only.
 
 	// mux guards the Base and executionTick properties.
 	mux sync.Mutex
@@ -64,7 +62,7 @@ type Action struct {
 // TODO(minkezhang): Add executionTick arg to allow for scheduling in the
 // future.
 func New(
-	e entity.Entity,
+	e moveable.Component,
 	dfStatus *status.Status,
 	destination *gdpb.Position) *Action {
 	t := dfStatus.Tick()
@@ -79,7 +77,7 @@ func New(
 }
 
 func (n *Action) Accept(v visitor.Visitor) error { return v.Visit(n) }
-func (n *Action) Entity() entity.Entity          { return n.e }
+func (n *Action) Component() moveable.Component  { return n.e }
 func (n *Action) ID() id.ActionID                { return id.ActionID(n.e.ID()) }
 
 // SchedulePartialMove allows us to mutate the FSM action to deal with
@@ -142,12 +140,11 @@ func (n *Action) stateUnsafe() (fsm.State, error) {
 
 	switch s {
 	case pending:
-		c := n.e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
 		var t fsm.State = unknown
 
 		if n.executionTick <= tick {
 			t = executing
-			if proto.Equal(n.destination, c.Get(tick).(*gdpb.Position)) {
+			if proto.Equal(n.destination, n.e.Position(tick)) {
 				t = finished
 			}
 		}
