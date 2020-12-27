@@ -142,7 +142,7 @@ func (n *Action) stateUnsafe() (fsm.State, error) {
 
 	switch s {
 	case pending:
-		c := n.e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
+		c := n.e.Curves().Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
 		var t fsm.State = unknown
 
 		if n.executionTick <= tick {

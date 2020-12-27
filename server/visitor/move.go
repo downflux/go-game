@@ -125,7 +125,7 @@ func (v *Visitor) visitFSM(i action.Action) error {
 	switch s {
 	case fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String()):
 		e := m.Entity()
-		c := e.Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
+		c := e.Curves().Curve(gcpb.EntityProperty_ENTITY_PROPERTY_POSITION)
 		if c == nil {
 			return nil
 		}

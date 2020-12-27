@@ -7,6 +7,7 @@ import (
 
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/gamestate/dirty"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/tank"
@@ -64,6 +65,14 @@ func newVisitor(t *testing.T) *Visitor {
 	return New(tm, g, s, d, 1)
 }
 
+func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Tank {
+	tankEntity, err := tank.New(eid, tick, p)
+	if err != nil {
+		t.Fatalf("New() = %v, want = nil", err)
+	}
+	return tankEntity
+}
+
 func TestVisit(t *testing.T) {
 	const eid = "entity-id"
 	const t0 = 0
@@ -83,7 +92,7 @@ func TestVisit(t *testing.T) {
 			name: "TestNoMove",
 			v:    testNoMoveVisitor,
 			i: move.New(
-				tank.New(eid, t0, p0),
+				newTank(t, eid, t0, p0),
 				testNoMoveVisitor.dfStatus, p0),
 			want: nil,
 		},
@@ -91,7 +100,7 @@ func TestVisit(t *testing.T) {
 			name: "TestSimpleMove",
 			v:    testSimpleMoveVisitor,
 			i: move.New(
-				tank.New(eid, t0, p0),
+				newTank(t, eid, t0, p0),
 				testSimpleMoveVisitor.dfStatus, p1),
 			want: []dirty.Curve{
 				{EntityID: eid, Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION},

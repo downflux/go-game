@@ -38,6 +38,7 @@ go_test(
         "//api:data_go_proto",
         "//engine/fsm:action",
         "//engine/gamestate:dirty",
+        "//engine/id:id",
         "//engine/status:status",
         "//map/api:constants_go_proto",
         "//map/api:data_go_proto",

@@ -5,6 +5,7 @@ import (
 
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
+	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/server/entity/tank"
 
@@ -15,30 +16,38 @@ var (
 	_ action.Action = &Action{}
 )
 
+func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Tank {
+	tankEntity, err := tank.New(eid, tick, p)
+	if err != nil {
+		t.Fatalf("New() = %v, want = nil", err)
+	}
+	return tankEntity
+}
+
 func TestState(t *testing.T) {
-	const eid = "entity-id"
-	const t0 = 0
+	eid := id.EntityID("entity-id")
+	t0 := id.Tick(0)
 	p0 := &gdpb.Position{X: 0, Y: 0}
 
-	executingNewEntity := tank.New(eid, t0, p0)
+	executingNewEntity := newTank(t, eid, t0, p0)
 	executingNewStatus := status.New(0)
 	executingNewI1 := New(executingNewEntity, executingNewStatus, &gdpb.Position{X: 1, Y: 1})
 
-	scheduleEntity := tank.New(eid, t0, p0)
+	scheduleEntity := newTank(t, eid, t0, p0)
 	scheduleStatus := status.New(0)
 	scheduleI1 := New(scheduleEntity, scheduleStatus, &gdpb.Position{X: 1, Y: 1})
 	scheduleI1.SchedulePartialMove(100)
 
-	cancelEntity := tank.New(eid, t0, p0)
+	cancelEntity := newTank(t, eid, t0, p0)
 	cancelStatus := status.New(0)
 	cancelI1 := New(cancelEntity, cancelStatus, &gdpb.Position{X: 1, Y: 1})
 	cancelI1.Cancel()
 
-	finishedEntity := tank.New(eid, t0, p0)
+	finishedEntity := newTank(t, eid, t0, p0)
 	finishedStatus := status.New(0)
 	finishedI1 := New(finishedEntity, finishedStatus, p0)
 
-	pendingCanceledEntity := tank.New(eid, t0, p0)
+	pendingCanceledEntity := newTank(t, eid, t0, p0)
 	pendingCanceledStatus := status.New(0)
 	pendingCanceledI1 := New(pendingCanceledEntity, pendingCanceledStatus, &gdpb.Position{X: 1, Y: 1})
 	pendingCanceledI1.SchedulePartialMove(100)
@@ -71,18 +80,18 @@ func TestPrecedence(t *testing.T) {
 	const t0 = 0
 	p0 := &gdpb.Position{X: 0, Y: 0}
 
-	sameTickEntity := tank.New(eid, t0, p0)
+	sameTickEntity := newTank(t, eid, t0, p0)
 	sameTickStatus := status.New(0)
 	sameTickI1 := New(sameTickEntity, sameTickStatus, &gdpb.Position{X: 1, Y: 1})
 	sameTickI2 := New(sameTickEntity, sameTickStatus, &gdpb.Position{X: 2, Y: 2})
 
-	diffTickSamePosEntity := tank.New(eid, t0, p0)
+	diffTickSamePosEntity := newTank(t, eid, t0, p0)
 	diffTickSamePosStatus := status.New(0)
 	diffTickSamePosI1 := New(diffTickSamePosEntity, diffTickSamePosStatus, &gdpb.Position{X: 1, Y: 1})
 	diffTickSamePosStatus.IncrementTick()
 	diffTickSamePosI2 := New(diffTickSamePosEntity, diffTickSamePosStatus, &gdpb.Position{X: 1, Y: 1})
 
-	precedenceEntity := tank.New(eid, t0, p0)
+	precedenceEntity := newTank(t, eid, t0, p0)
 	precedenceStatus := status.New(0)
 	precedenceI1 := New(precedenceEntity, precedenceStatus, &gdpb.Position{X: 1, Y: 1})
 	precedenceStatus.IncrementTick()

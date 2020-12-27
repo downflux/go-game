@@ -14,6 +14,7 @@ go_test(
         "//api:data_go_proto",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
+        "//engine/id:id",
         "//engine/status:status",
         "//server/entity:tank",
     ],

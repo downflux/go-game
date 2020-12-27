@@ -4,6 +4,7 @@ package tank
 import (
 	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/curve/curve"
+	"github.com/downflux/game/engine/curve/list"
 	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/id/id"
 
@@ -20,33 +21,29 @@ type Tank struct {
 	eid id.EntityID
 
 	// curves is a list of Curves tracking the Entity properties.
-	curves map[gcpb.EntityProperty]curve.Curve
+	curves *list.List
 }
 
 // New constructs a new instance of the Tank.
-func New(eid id.EntityID, t id.Tick, p *gdpb.Position) *Tank {
+func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Tank, error) {
 	mc := linearmove.New(eid, t)
 	mc.Add(t, p)
 
-	return &Tank{
-		eid: eid,
-		curves: map[gcpb.EntityProperty]curve.Curve{
-			gcpb.EntityProperty_ENTITY_PROPERTY_POSITION: mc,
-		},
+	curves, err := list.New([]curve.Curve{mc})
+	if err != nil {
+		return nil, err
 	}
+
+	return &Tank{
+		eid:    eid,
+		curves: curves,
+	}, nil
 }
 
 // ID returns the UUID of the Tank.
 func (e *Tank) ID() id.EntityID { return e.eid }
 
-// Properties returns the list of registered properties tracked by the
-// Tank instance.
-func (e *Tank) Properties() []gcpb.EntityProperty {
-	return []gcpb.EntityProperty{gcpb.EntityProperty_ENTITY_PROPERTY_POSITION}
-}
-
-// Curve returns the Curve instance for a specific EntityProperty.
-func (e *Tank) Curve(t gcpb.EntityProperty) curve.Curve { return e.curves[t] }
+func (e *Tank) Curves() *list.List { return e.curves }
 
 // Type returns the registered EntityType.
 func (e *Tank) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }

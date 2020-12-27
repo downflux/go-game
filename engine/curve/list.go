@@ -30,10 +30,16 @@ func New(curves []curve.Curve) (*List, error) {
 	return l, nil
 }
 
+// Curve returns a Curve instance of a specific mutable property,
+// e.g. HP or position.
+//
+// TODO(minkezhang): Decide if we should return default value.
 func (l *List) Curve(propertyType gcpb.EntityProperty) curve.Curve {
 	return l.curves[propertyType]
 }
 
+// Properties returns list of entity properties defined in a specific
+// list.
 func (l *List) Properties() []gcpb.EntityProperty {
 	return l.properties
 }
