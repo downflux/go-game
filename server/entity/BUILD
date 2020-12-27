@@ -23,6 +23,7 @@ go_library(
         "//engine/curve/common:linearmove",
         "//engine/entity:entity",
 	"//engine/id:id",
+        "//server/entity/component:moveable",
     ],
 )
 
@@ -33,5 +34,6 @@ go_test(
     embed = [":tank"],
     deps = [
         "//engine/entity:entity",
+        "//server/entity/component:moveable",
     ],
 )
