@@ -16,7 +16,7 @@ var (
 	_ action.Action = &Action{}
 )
 
-func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Tank {
+func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Entity {
 	tankEntity, err := tank.New(eid, tick, p)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)

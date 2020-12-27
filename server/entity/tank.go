@@ -12,9 +12,9 @@ import (
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
-// Tank implements the entity.Entity interface and represents a simple armored
+// Entity implements the entity.Entity interface and represents a simple armored
 // unit.
-type Tank struct {
+type Entity struct {
 	entity.LifeCycle
 
 	// eid is a UUID of the Entity.
@@ -25,7 +25,7 @@ type Tank struct {
 }
 
 // New constructs a new instance of the Tank.
-func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Tank, error) {
+func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	mc := linearmove.New(eid, t)
 	mc.Add(t, p)
 
@@ -34,16 +34,16 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Tank, error) {
 		return nil, err
 	}
 
-	return &Tank{
+	return &Entity{
 		eid:    eid,
 		curves: curves,
 	}, nil
 }
 
 // ID returns the UUID of the Tank.
-func (e *Tank) ID() id.EntityID { return e.eid }
+func (e *Entity) ID() id.EntityID { return e.eid }
 
-func (e *Tank) Curves() *list.List { return e.curves }
+func (e *Entity) Curves() *list.List { return e.curves }
 
 // Type returns the registered EntityType.
-func (e *Tank) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }
+func (e *Entity) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }

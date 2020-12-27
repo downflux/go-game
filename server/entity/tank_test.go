@@ -5,5 +5,5 @@ import (
 )
 
 var (
-	_ entity.Entity = &Tank{}
+	_ entity.Entity = &Entity{}
 )

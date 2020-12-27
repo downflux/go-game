@@ -12,7 +12,7 @@ import (
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
-func newTank(t *testing.T, eid id.EntityID, tick id.Tick) *tank.Tank {
+func newTank(t *testing.T, eid id.EntityID, tick id.Tick) *tank.Entity {
 	tankEntity, err := tank.New(eid, tick, nil)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
