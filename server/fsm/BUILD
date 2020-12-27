@@ -25,15 +25,14 @@ go_library(
     srcs = ["move.go"],
     importpath = "github.com/downflux/game/server/fsm/move",
     deps = [
-        "//api:constants_go_proto",
         "//api:data_go_proto",
-        "//engine/entity:entity",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
         "//engine/id:id",
         "//engine/status:status",
         "//engine/visitor:visitor",
+        "//server/entity/component:moveable",
         "@org_golang_google_protobuf//proto:go_default_library",
     ],
 )

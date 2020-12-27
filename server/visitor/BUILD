@@ -55,7 +55,6 @@ go_library(
     srcs = ["move.go"],
     importpath = "github.com/downflux/game/server/visitor/move",
     deps = [
-        "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/curve/common:linearmove",
         "//engine/entity:entity",

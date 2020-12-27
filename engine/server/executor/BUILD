@@ -49,6 +49,7 @@ go_test(
         "//server/fsm:produce",
         "//server/visitor:move",
         "//server/visitor:produce",
+        "//server/entity/component:moveable",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@org_golang_google_protobuf//testing/protocmp:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",

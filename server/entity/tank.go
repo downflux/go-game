@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	velocity = 10
+	// velocity is measured in tiles per second.
+	velocity = 2
 )
 
 // Entity implements the entity.Entity interface and represents a simple armored
@@ -41,7 +42,7 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	}
 
 	return &Entity{
-		Component: moveable.New(mc, velocity),
+		Component: moveable.New(eid, mc, velocity),
 		eid:       eid,
 		curves:    curves,
 	}, nil

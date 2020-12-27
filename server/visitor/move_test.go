@@ -93,7 +93,7 @@ func TestVisit(t *testing.T) {
 			v:    testNoMoveVisitor,
 			i: move.New(
 				newTank(t, eid, t0, p0),
-				testNoMoveVisitor.dfStatus, p0),
+				testNoMoveVisitor.status, p0),
 			want: nil,
 		},
 		{
@@ -101,7 +101,7 @@ func TestVisit(t *testing.T) {
 			v:    testSimpleMoveVisitor,
 			i: move.New(
 				newTank(t, eid, t0, p0),
-				testSimpleMoveVisitor.dfStatus, p1),
+				testSimpleMoveVisitor.status, p1),
 			want: []dirty.Curve{
 				{EntityID: eid, Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION},
 			},
