@@ -8,6 +8,7 @@ import (
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/server/entity/tank"
+	"github.com/downflux/game/server/fsm/commonstate"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
@@ -58,11 +59,11 @@ func TestState(t *testing.T) {
 		i    *Action
 		want fsm.State
 	}{
-		{name: "NewExecutingTest", i: executingNewI1, want: executing},
-		{name: "ScheduleTest", i: scheduleI1, want: pending},
-		{name: "CanceledTest", i: cancelI1, want: canceled},
-		{name: "FinishedTest", i: finishedI1, want: finished},
-		{name: "PendingCanceledTest", i: pendingCanceledI1, want: canceled},
+		{name: "NewExecutingTest", i: executingNewI1, want: commonstate.Executing},
+		{name: "ScheduleTest", i: scheduleI1, want: commonstate.Pending},
+		{name: "CanceledTest", i: cancelI1, want: commonstate.Canceled},
+		{name: "FinishedTest", i: finishedI1, want: commonstate.Finished},
+		{name: "PendingCanceledTest", i: pendingCanceledI1, want: commonstate.Canceled},
 	}
 
 	for _, c := range testConfigs {
@@ -104,7 +105,7 @@ func TestPrecedence(t *testing.T) {
 		i2   *Action
 		want bool
 	}{
-		{name: "SameTickNoPrecedenceTest", i1: sameTickI1, i2: sameTickI2, want: false},
+		{name: "SameTickPrecedenceTest", i1: sameTickI1, i2: sameTickI2, want: true},
 		{name: "DiffTickSamePosNoPrecedenceTest", i1: diffTickSamePosI1, i2: diffTickSamePosI2, want: false},
 		{name: "DiffTickSamePosNoPrecedenceCommutativeTest", i1: diffTickSamePosI2, i2: diffTickSamePosI1, want: false},
 		{name: "PrecedenceTest", i1: precedenceI1, i2: precedenceI2, want: false},

@@ -4,11 +4,11 @@ import (
 	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/entity/list"
 	"github.com/downflux/game/engine/fsm/action"
-	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/entity/tank"
+	"github.com/downflux/game/server/fsm/commonstate"
 	"github.com/downflux/game/server/fsm/produce"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -77,7 +77,7 @@ func (v *Visitor) visitFSM(i action.Action) error {
 	tick := v.dfStatus.Tick()
 
 	switch s {
-	case fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String()):
+	case commonstate.Executing:
 		defer p.Finish()
 
 		var eid id.EntityID = id.EntityID(id.RandomString(entityIDLen))

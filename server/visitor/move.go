@@ -7,7 +7,6 @@ import (
 
 	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/fsm/action"
-	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
@@ -15,6 +14,7 @@ import (
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/fsm/commonstate"
 	"github.com/downflux/game/server/fsm/move"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -117,7 +117,7 @@ func (v *Visitor) visitFSM(i action.Action) error {
 	tick := v.status.Tick()
 
 	switch s {
-	case fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String()):
+	case commonstate.Executing:
 		e := m.Component()
 		c := e.PositionCurve()
 		if c == nil {

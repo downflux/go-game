@@ -40,7 +40,8 @@ func (s *Schedule) Pop() *Schedule {
 	defer s.mux.Unlock()
 
 	ns := &Schedule{
-		actions: s.actions,
+		actions:  s.actions,
+		fsmTypes: s.fsmTypes,
 	}
 	s.actions = nil
 	return ns

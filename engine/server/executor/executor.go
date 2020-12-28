@@ -66,29 +66,18 @@ func New(
 	visitors *visitorlist.List,
 	state *gamestate.GameState,
 	dirtystate *dirty.List,
+	fsmSchedule *schedule.Schedule,
 	fsmLookup map[vcpb.VisitorType]fcpb.FSMType,
-) (*Executor, error) {
-	for _, v := range visitors.Iter() {
-		visitorType := v.Type()
-		if _, found := fsmLookup[visitorType]; !found {
-			return nil, status.Errorf(codes.NotFound, "cannot find associated FSM type for visitor %v", visitorType)
-		}
-	}
-
-	var fsmTypes []fcpb.FSMType
-	for _, fsmType := range fsmLookup {
-		fsmTypes = append(fsmTypes, fsmType)
-	}
-
+) *Executor {
 	return &Executor{
 		visitors:      visitors,
 		gamestate:     state,
 		dirties:       dirtystate,
 		clients:       clientlist.New(idLen),
-		schedule:      schedule.New(fsmTypes),
-		scheduleCache: schedule.New(fsmTypes),
+		schedule:      fsmSchedule,
+		scheduleCache: fsmSchedule.Pop(),
 		fsmLookup:     fsmLookup,
-	}, nil
+	}
 }
 
 // Status returns the current Executor status.

@@ -5,17 +5,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/gamestate/gamestate"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/entity/component/moveable"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/testing/protocmp"
-	"github.com/downflux/game/server/entity/component/moveable"
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -37,6 +38,11 @@ const (
 )
 
 var (
+	fsmLookup = map[vcpb.VisitorType]fcpb.FSMType{
+		vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
+		vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
+	}
+
 	tickDuration = 100 * time.Millisecond
 
 	/**
@@ -54,7 +60,7 @@ var (
 	}
 )
 
-func newTestExecutor(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
+func newExecutor(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 	tm, err := tile.ImportMap(pb)
 	if err != nil {
 		return nil, err
@@ -76,16 +82,18 @@ func newTestExecutor(pb *mdpb.TileMap, d *gdpb.Coordinate) (*Executor, error) {
 		return nil, err
 	}
 
-	return New(visitors, state, dirties, map[vcpb.VisitorType]fcpb.FSMType{
-		vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
-		vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
+	fsmSchedule := schedule.New([]fcpb.FSMType{
+		fcpb.FSMType_FSM_TYPE_MOVE,
+		fcpb.FSMType_FSM_TYPE_PRODUCE,
 	})
+
+	return New(visitors, state, dirties, fsmSchedule, fsmLookup), nil
 }
 
 func TestNewExecutor(t *testing.T) {
-	_, err := newTestExecutor(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
+	_, err := newExecutor(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
 	if err != nil {
-		t.Errorf("newTestExecutor() = _, %v, want = nil", err)
+		t.Errorf("newExecutor() = _, %v, want = nil", err)
 	}
 }
 
@@ -111,9 +119,9 @@ func TestAddEntity(t *testing.T) {
 			}},
 	}
 
-	e, err := newTestExecutor(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
+	e, err := newExecutor(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
 	if err != nil {
-		t.Fatalf("newTestExecutor() = _, %v, want = nil", err)
+		t.Fatalf("newExecutor() = _, %v, want = nil", err)
 	}
 	if err := e.Schedule(produceaction.New(
 		e.gamestate.Status(),
@@ -189,9 +197,9 @@ func TestDoMove(t *testing.T) {
 	dest := &gdpb.Position{X: 3, Y: 0}
 	src := &gdpb.Position{X: 0, Y: 0}
 
-	e, err := newTestExecutor(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
+	e, err := newExecutor(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
 	if err != nil {
-		t.Fatalf("newTestExecutor() = _, %v, want = nil", err)
+		t.Fatalf("newExecutor() = _, %v, want = nil", err)
 	}
 
 	if err := e.Schedule(

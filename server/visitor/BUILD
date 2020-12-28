@@ -14,7 +14,6 @@ go_library(
         "//engine/entity:entity",
         "//engine/entity:list",
         "//engine/fsm:action",
-        "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
         "//engine/gamestate:dirty",
         "//engine/id:id",
@@ -22,10 +21,21 @@ go_library(
         "//engine/visitor:visitor",
 	"//engine/visitor/api:constants_go_proto",
         "//server/entity:tank",
+        "//server/fsm:commonstate",
         "//server/fsm:produce",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
     ]
+)
+
+go_test(
+    name = "produce_test",
+    srcs = ["produce_test.go"],
+    importpath = "github.com/downflux/game/server/visitor/produce_test",
+    embed = [":produce"],
+    deps = [
+        "//engine/visitor:visitor",
+    ],
 )
 
 go_test(
@@ -40,6 +50,7 @@ go_test(
         "//engine/gamestate:dirty",
         "//engine/id:id",
         "//engine/status:status",
+        "//engine/visitor:visitor",
         "//map/api:constants_go_proto",
         "//map/api:data_go_proto",
         "//map:map",
@@ -63,13 +74,41 @@ go_library(
         "//engine/visitor:visitor",
 	"//engine/visitor/api:constants_go_proto",
         "//engine/fsm:action",
-        "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
         "//map:map",
         "//map:utils", 
         "//pathing/hpf:astar",
         "//pathing/hpf:graph",
         "//engine/id:id",
+        "//server/fsm:commonstate",
         "//server/fsm:move",
+    ],
+)
+
+go_library(
+    name = "chase",
+    srcs = ["chase.go"],
+    importpath = "github.com/downflux/game/server/visitor/chase",
+    deps = [
+        "//api:constants_go_proto",
+        "//api:data_go_proto",
+        "//engine/fsm/api:constants_go_proto",
+        "//engine/status:status",
+        "//engine/visitor:visitor",
+        "//engine/visitor/api:constants_go_proto",
+        "//engine/fsm:action",
+        "//engine/fsm:schedule",
+        "//server/fsm:chase",
+        "//server/fsm:move",
+    ],
+)
+
+go_test(
+    name = "chase_test",
+    srcs = ["chase_test.go"],
+    importpath = "github.com/downflux/game/server/visitor/chase_test",
+    embed = [":chase"],
+    deps = [
+        "//engine/visitor:visitor",
     ],
 )
