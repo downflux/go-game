@@ -9,6 +9,7 @@ import (
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
+	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/fsm/move"
@@ -46,6 +47,8 @@ var (
 			{TerrainType: mcpb.TerrainType_TERRAIN_TYPE_PLAINS, Cost: 1},
 		},
 	}
+
+	_ visitor.Visitor = &Visitor{}
 )
 
 func newVisitor(t *testing.T) *Visitor {
