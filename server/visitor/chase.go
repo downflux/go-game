@@ -23,6 +23,13 @@ type Visitor struct {
 	status   *status.Status
 }
 
+func New(status *status.Status, schedule *schedule.Schedule) *Visitor {
+	return &Visitor{
+		schedule: schedule,
+		status:   status,
+	}
+}
+
 func (v *Visitor) Type() vcpb.VisitorType {
 	return visitorType
 }

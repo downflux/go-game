@@ -3,6 +3,7 @@ package executorutils
 import (
 	"time"
 
+	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/gamestate/gamestate"
 	"github.com/downflux/game/engine/id/id"
@@ -10,6 +11,7 @@ import (
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/component/moveable"
+	"github.com/downflux/game/server/visitor/chase"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
 	"google.golang.org/grpc/codes"
@@ -48,9 +50,16 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		return nil, err
 	}
 
+	fsmSchedule := schedule.New([]fcpb.FSMType{
+		fcpb.FSMType_FSM_TYPE_CHASE,
+		fcpb.FSMType_FSM_TYPE_MOVE,
+		fcpb.FSMType_FSM_TYPE_PRODUCE,
+	})
+
 	state := gamestate.New(serverstatus.New(tickDuration), entitylist.New())
 	dirtystate := dirty.New()
 	visitors, err := visitorlist.New([]visitor.Visitor{
+		chase.New(state.Status(), fsmSchedule),
 		produce.New(state.Status(), state.Entities(), dirtystate),
 		move.New(tm, g, state.Status(), dirtystate, minPathLength),
 	})
@@ -58,16 +67,12 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		return nil, err
 	}
 
-	e, err := executor.New(visitors, state, dirtystate, map[vcpb.VisitorType]fcpb.FSMType{
-		vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
-		vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	return &Utils{
-		executor:  e,
+		executor: executor.New(visitors, state, dirtystate, fsmSchedule, map[vcpb.VisitorType]fcpb.FSMType{
+			vcpb.VisitorType_VISITOR_TYPE_CHASE:   fcpb.FSMType_FSM_TYPE_CHASE,
+			vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
+			vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
+		}),
 		gamestate: state,
 	}, nil
 }

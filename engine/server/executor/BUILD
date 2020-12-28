@@ -33,6 +33,7 @@ go_test(
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/entity:list",
+        "//engine/fsm:schedule",
         "//engine/fsm/api:constants_go_proto",
         "//engine/gamestate:dirty",
         "//engine/gamestate:gamestate",
