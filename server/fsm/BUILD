@@ -78,9 +78,13 @@ go_library(
     deps = [
         "//engine/entity:entity",
         "//engine/fsm:action",
+        "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/id:id",
         "//engine/visitor:visitor",
         "//server/entity/component:moveable",
+        "//server/fsm:commonstate",
+        "//server/fsm:move",
     ],
 )
 

@@ -16,6 +16,11 @@ enum FSMType {
   FSM_TYPE_CLIENT = 1000;
 }
 
+enum ChaseState {
+  CHASE_STATE_UNKNOWN = 0;
+  CHASE_STATE_WAITING = 1;
+}
+
 enum CommonState {
   COMMON_STATE_UNKNOWN = 0;
   COMMON_STATE_PENDING = 1;
