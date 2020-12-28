@@ -18,11 +18,12 @@
 * [x] migrate to FSM Visitor model
 * [x] migrate engine components
 * [x] migrate instance -> action
+* [x] add Entity Implements layer
 * [ ] add generator for IDs instead of manually testing for random string
 * [ ] add server / engine documentation
-* [ ] add Entity Implements layer
 * [ ] add API documentation
 * [ ] add tests for produce.Visitor
+* [ ] add tests for chase.Visitor
 * [ ] add tests for Status
 * [ ] add tests for Entity
 * [ ] add client documentation
