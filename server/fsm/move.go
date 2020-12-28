@@ -9,6 +9,7 @@ import (
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/entity/component/moveable"
+	"github.com/downflux/game/server/fsm/commonstate"
 	"google.golang.org/protobuf/proto"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -20,18 +21,12 @@ const (
 )
 
 var (
-	unknown   = fsm.State(fcpb.CommonState_COMMON_STATE_UNKNOWN.String())
-	pending   = fsm.State(fcpb.CommonState_COMMON_STATE_PENDING.String())
-	executing = fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String())
-	canceled  = fsm.State(fcpb.CommonState_COMMON_STATE_CANCELED.String())
-	finished  = fsm.State(fcpb.CommonState_COMMON_STATE_FINISHED.String())
-
 	transitions = []fsm.Transition{
-		{From: pending, To: executing, VirtualOnly: true},
-		{From: pending, To: canceled},
-		{From: pending, To: finished, VirtualOnly: true},
-		{From: executing, To: pending},
-		{From: executing, To: canceled},
+		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
+		{From: commonstate.Pending, To: commonstate.Canceled},
+		{From: commonstate.Pending, To: commonstate.Finished, VirtualOnly: true},
+		{From: commonstate.Executing, To: commonstate.Pending},
+		{From: commonstate.Executing, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
@@ -67,7 +62,7 @@ func New(
 	destination *gdpb.Position) *Action {
 	t := dfStatus.Tick()
 	return &Action{
-		Base:          action.New(FSM, pending),
+		Base:          action.New(FSM, commonstate.Pending),
 		e:             e,
 		dfStatus:      dfStatus,
 		tick:          t,
@@ -92,7 +87,7 @@ func (n *Action) SchedulePartialMove(t id.Tick) error {
 		return err
 	}
 
-	if err := n.To(s, pending, false); err != nil {
+	if err := n.To(s, commonstate.Pending, false); err != nil {
 		return err
 	}
 
@@ -120,7 +115,7 @@ func (n *Action) Cancel() error {
 		return err
 	}
 
-	return n.To(s, canceled, false)
+	return n.To(s, commonstate.Canceled, false)
 }
 
 func (n *Action) State() (fsm.State, error) {
@@ -135,28 +130,28 @@ func (n *Action) stateUnsafe() (fsm.State, error) {
 
 	s, err := n.Base.State()
 	if err != nil {
-		return unknown, err
+		return commonstate.Unknown, err
 	}
 
 	switch s {
-	case pending:
-		var t fsm.State = unknown
+	case commonstate.Pending:
+		var t fsm.State = commonstate.Unknown
 
 		if n.executionTick <= tick {
-			t = executing
+			t = commonstate.Executing
 			if proto.Equal(n.destination, n.e.Position(tick)) {
-				t = finished
+				t = commonstate.Finished
 			}
 		}
 
-		if t != unknown {
+		if t != commonstate.Unknown {
 			if err := n.To(s, t, true); err != nil {
-				return unknown, err
+				return commonstate.Unknown, err
 			}
 			return t, nil
 		}
 
-		return pending, nil
+		return commonstate.Pending, nil
 	default:
 		return s, nil
 	}

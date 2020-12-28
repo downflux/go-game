@@ -11,6 +11,7 @@ go_test(
     importpath = "github.com/downflux/game/server/fsm/move_test",
     embed = [":move"],
     deps = [
+        ":commonstate",
         "//api:data_go_proto",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
@@ -25,6 +26,7 @@ go_library(
     srcs = ["move.go"],
     importpath = "github.com/downflux/game/server/fsm/move",
     deps = [
+        ":commonstate",
         "//api:data_go_proto",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
@@ -42,6 +44,7 @@ go_library(
     srcs = ["produce.go"],
     importpath = "github.com/downflux/game/server/fsm/produce",
     deps = [
+        ":commonstate",
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/fsm:action",
@@ -59,11 +62,44 @@ go_test(
     importpath = "github.com/downflux/game/server/fsm/produce_test",
     embed = [":produce"],
     deps = [
+        ":commonstate",
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
-        "//engine/fsm/api:constants_go_proto",
         "//engine/status:status",
+    ],
+)
+
+go_library(
+    name = "chase",
+    srcs = ["chase.go"],
+    importpath = "github.com/downflux/game/server/fsm/chase",
+    deps = [
+        "//engine/entity:entity",
+        "//engine/fsm:action",
+        "//engine/fsm/api:constants_go_proto",
+        "//engine/visitor:visitor",
+        "//server/entity/component:moveable",
+    ],
+)
+
+go_test(
+    name = "chase_test",
+    srcs = ["chase_test.go"],
+    importpath = "github.com/downflux/game/server/fsm/chase_test",
+    embed = [":chase"],
+    deps = [
+        "//engine/fsm:action",
+    ],
+)
+
+go_library(
+    name = "commonstate",
+    srcs = ["commonstate.go"],
+    importpath = "github.com/downflux/game/server/fsm/commonstate",
+    deps = [
+        "//engine/fsm:fsm",
+        "//engine/fsm/api:constants_go_proto",
     ],
 )

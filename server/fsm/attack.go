@@ -1,12 +1,10 @@
 package attack
 
-import (
-)
 /*
 type Action struct {
 	move move.Action
-	target 
+	target
 }
 
-func (a *Action) 
- */
+func (a *Action)
+*/

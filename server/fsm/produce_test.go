@@ -6,10 +6,10 @@ import (
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/status/status"
+	"github.com/downflux/game/server/fsm/commonstate"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 var (
@@ -27,12 +27,12 @@ func TestConstructor(t *testing.T) {
 		{
 			name: "NewPending",
 			i:    New(s, s.Tick()+1, gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}),
-			want: fsm.State(fcpb.CommonState_COMMON_STATE_PENDING.String()),
+			want: commonstate.Pending,
 		},
 		{
 			name: "NewExecuting",
 			i:    New(s, s.Tick(), gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}),
-			want: fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String()),
+			want: commonstate.Executing,
 		},
 	}
 

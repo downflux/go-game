@@ -6,6 +6,7 @@ import (
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
+	"github.com/downflux/game/server/fsm/commonstate"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -18,16 +19,10 @@ const (
 )
 
 var (
-	unknown   = fsm.State(fcpb.CommonState_COMMON_STATE_UNKNOWN.String())
-	pending   = fsm.State(fcpb.CommonState_COMMON_STATE_PENDING.String())
-	executing = fsm.State(fcpb.CommonState_COMMON_STATE_EXECUTING.String())
-	canceled  = fsm.State(fcpb.CommonState_COMMON_STATE_CANCELED.String())
-	finished  = fsm.State(fcpb.CommonState_COMMON_STATE_FINISHED.String())
-
 	transitions = []fsm.Transition{
-		{From: pending, To: executing, VirtualOnly: true},
-		{From: pending, To: canceled},
-		{From: executing, To: finished},
+		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
+		{From: commonstate.Pending, To: commonstate.Canceled},
+		{From: commonstate.Executing, To: commonstate.Finished},
 	}
 	FSM = fsm.New(transitions, fsmType)
 )
@@ -49,7 +44,7 @@ func New(
 	entityType gcpb.EntityType,
 	spawnPosition *gdpb.Position) *Action {
 	return &Action{
-		Base:          action.New(FSM, pending),
+		Base:          action.New(FSM, commonstate.Pending),
 		id:            id.ActionID(id.RandomString(idLength)),
 		executionTick: executionTick,
 		dfStatus:      dfStatus,
@@ -77,7 +72,7 @@ func (n *Action) Finish() error {
 		return err
 	}
 
-	return n.To(s, finished, false)
+	return n.To(s, commonstate.Finished, false)
 }
 
 func (n *Action) Cancel() error {
@@ -86,7 +81,7 @@ func (n *Action) Cancel() error {
 		return err
 	}
 
-	return n.To(s, canceled, false)
+	return n.To(s, commonstate.Canceled, false)
 }
 
 func (n *Action) State() (fsm.State, error) {
@@ -94,18 +89,18 @@ func (n *Action) State() (fsm.State, error) {
 
 	s, err := n.Base.State()
 	if err != nil {
-		return unknown, err
+		return commonstate.Unknown, err
 	}
 
 	switch s {
-	case pending:
+	case commonstate.Pending:
 		if tick >= n.executionTick {
-			if err := n.To(s, executing, true); err != nil {
-				return unknown, err
+			if err := n.To(s, commonstate.Executing, true); err != nil {
+				return commonstate.Unknown, err
 			}
-			return executing, nil
+			return commonstate.Executing, nil
 		}
-		return pending, nil
+		return commonstate.Pending, nil
 	default:
 		return s, nil
 	}
