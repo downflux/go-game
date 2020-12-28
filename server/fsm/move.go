@@ -100,7 +100,7 @@ func (n *Action) Precedence(i action.Action) bool {
 		return false
 	}
 
-	return n.tick > i.(*Action).tick && !proto.Equal(n.Destination(), i.(*Action).Destination())
+	return n.tick >= i.(*Action).tick && !proto.Equal(n.Destination(), i.(*Action).Destination())
 }
 
 // TODO(minkezhang): Return a cloned instance instead.

@@ -105,7 +105,7 @@ func TestPrecedence(t *testing.T) {
 		i2   *Action
 		want bool
 	}{
-		{name: "SameTickNoPrecedenceTest", i1: sameTickI1, i2: sameTickI2, want: false},
+		{name: "SameTickPrecedenceTest", i1: sameTickI1, i2: sameTickI2, want: true},
 		{name: "DiffTickSamePosNoPrecedenceTest", i1: diffTickSamePosI1, i2: diffTickSamePosI2, want: false},
 		{name: "DiffTickSamePosNoPrecedenceCommutativeTest", i1: diffTickSamePosI2, i2: diffTickSamePosI1, want: false},
 		{name: "PrecedenceTest", i1: precedenceI1, i2: precedenceI2, want: false},
