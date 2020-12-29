@@ -107,3 +107,22 @@ go_library(
         "//engine/fsm/api:constants_go_proto",
     ],
 )
+
+go_library(
+    name = "attack",
+    srcs = ["attack.go"],
+    importpath = "github.com/downflux/game/server/fsm/attack",
+    deps = [
+        ":chase",
+    ],
+)
+
+go_test(
+    name = "attack_test",
+    srcs = ["attack_test.go"],
+    importpath = "github.com/downflux/game/server/fsm/attack_test",
+    embed = [":attack"],
+    deps = [
+        "//engine/fsm:action",
+    ],
+)

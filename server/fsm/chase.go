@@ -114,5 +114,5 @@ func (a *Action) Cancel() error {
 		return err
 	}
 
-	return a.To(s, commonstate.Canceled, true)
+	return a.To(s, commonstate.Canceled, false)
 }
