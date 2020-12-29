@@ -18,7 +18,9 @@ import (
 )
 
 const (
-	property  = gcpb.EntityProperty_ENTITY_PROPERTY_POSITION
+	// TODO(minkezhang): Untether the static property with this curve type.
+	property = gcpb.EntityProperty_ENTITY_PROPERTY_POSITION
+
 	curveType = gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE
 )
 
@@ -28,108 +30,39 @@ var (
 		codes.Unimplemented, "function not implemented")
 )
 
-// insert adds a datum object into a sorted list of data.
-func insert(l []datum, d datum) []datum {
-	i := sort.Search(len(l), func(i int) bool { return !datumBefore(l[i], d) })
-
-	// Override existing value if the given input will result in an invalid
-	// function.
-	if i < len(l) && l[i].tick == d.tick {
-		l[i] = d
-	} else {
-		l = append(l, datum{})
-		copy(l[i+1:], l[i:])
-		l[i] = d
-	}
-	return l
-}
-
-// datum represents a specific metric at a specific tick.
-type datum struct {
-	tick id.Tick
-
-	// value must be a clone of the input and is considered immutable
-	value *gdpb.Position
-}
-
-// datumBefore compares two data points and checks if d1 precedes d2.
-func datumBefore(d1, d2 datum) bool {
-	return d1.tick < d2.tick
-}
-
 // Curve implements a curve.Curve which represents the physical location
 // of a specific entity.
 type Curve struct {
-	// entityID is read-only and not alterable after construction.
-	entityID id.EntityID
+	curve.Base
 
-	dataMux sync.RWMutex
-	tick    id.Tick
-	data    []datum
+	// mux guards the tick and data properties.
+	mux  sync.RWMutex
+	tick id.Tick
+	data []datum
 }
 
 // New constructs an instance of a Curve.
 func New(eid id.EntityID, tick id.Tick) *Curve {
 	return &Curve{
-		entityID: eid,
-		tick:     tick,
+		Base: *curve.New(eid, curveType, datumType, property),
+		tick: tick,
 	}
 }
-
-// Type returns the type of the Curve, which governs e.g. the interpolation,
-// data interpretation, etc.
-func (c *Curve) Type() gcpb.CurveType { return curveType }
 
 // Tick returns the last server tick at which the curve was updated and
 // current. Values along the parametric curve past this tick should be
 // considered non-authoritative.
 func (c *Curve) Tick() id.Tick {
-	c.dataMux.RLock()
-	defer c.dataMux.RUnlock()
+	c.mux.RLock()
+	defer c.mux.RUnlock()
 
 	return c.tick
 }
 
-// Property returns the entity property that this curve represents.
-func (c *Curve) Property() gcpb.EntityProperty { return property }
-
-// EntityID returns the ID of the parent Entity.
-func (c *Curve) EntityID() id.EntityID { return c.entityID }
-
-// DatumType returns the type of the datum value.
-func (c *Curve) DatumType() reflect.Type { return datumType }
-
-// addDatumUnsafe adds a single datum point into the Curve, but does not hold
-// the required c.dataMux; the caller is responsible for acquiring this lock.
-//
-// TODO(minkezhang): Add duplicate removal.
-//
-// TODO(minkezhang): Add point interpolation removal (if a < b < c have the
-// same slopes, remove b).
-func (c *Curve) addDatumUnsafe(t id.Tick, v interface{}) error {
-	d := datum{tick: t, value: proto.Clone(v.(*gdpb.Position)).(*gdpb.Position)}
-
-	c.data = insert(c.data, d)
-
-	// TODO(minkezhang): Add data validation.
-	return nil
-}
-
-// cloneData exposes a concurrency-safe copy of the internal Curve data.
-func (c *Curve) cloneData() []datum {
-	c.dataMux.RLock()
-	defer c.dataMux.RUnlock()
-
-	res := make([]datum, len(c.data))
-	copy(res, c.data)
-
-	return res
-}
-
 // Add inserts a single datum point into the Curve.
 func (c *Curve) Add(t id.Tick, v interface{}) error {
-	c.dataMux.Lock()
-	defer c.dataMux.Unlock()
+	c.mux.Lock()
+	defer c.mux.Unlock()
 
 	return c.addDatumUnsafe(t, v)
 }
@@ -139,43 +72,42 @@ func (c *Curve) Add(t id.Tick, v interface{}) error {
 // replacement Curve. In the game, this will occur when the original Curve
 // predicts too far in the future.
 func (c *Curve) ReplaceTail(o curve.Curve) error {
-	c.dataMux.Lock()
-	defer c.dataMux.Unlock()
+	c.mux.Lock()
+	defer c.mux.Unlock()
 
 	if c.tick > o.Tick() {
 		return nil
 	}
 	c.tick = o.Tick()
 
-	switch o.Type() {
-	case gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE:
-		data := o.(*Curve).cloneData()
-		// We need to delete the struct because of memory leaks from
-		// the pointer stored at datum.value to gdpb.Position.
-		//
-		// See https://github.com/golang/go/wiki/SliceTricks.
-		if len(data) > 0 {
-			i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: data[0].tick}) })
-			if i < len(c.data) {
-				for j := i; j < len(c.data); j++ {
-					c.data[j] = datum{}
-				}
-			}
-			c.data = c.data[:i]
-		}
-		for _, d := range data {
-			c.addDatumUnsafe(d.tick, d.value)
-		}
-	default:
+	if o.Type() != gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE {
 		return notImplemented
+	}
+
+	data := o.(*Curve).cloneData()
+	// We need to delete the struct because of memory leaks from
+	// the pointer stored at datum.value to gdpb.Position.
+	//
+	// See https://github.com/golang/go/wiki/SliceTricks.
+	if len(data) > 0 {
+		i := sort.Search(len(c.data), func(i int) bool { return !datumBefore(c.data[i], datum{tick: data[0].tick}) })
+		if i < len(c.data) {
+			for j := i; j < len(c.data); j++ {
+				c.data[j] = datum{}
+			}
+		}
+		c.data = c.data[:i]
+	}
+	for _, d := range data {
+		c.addDatumUnsafe(d.tick, d.value)
 	}
 	return nil
 }
 
 // Get queries the Curve at a specific point for an interpolated value.
 func (c *Curve) Get(t id.Tick) interface{} {
-	c.dataMux.RLock()
-	defer c.dataMux.RUnlock()
+	c.mux.RLock()
+	defer c.mux.RUnlock()
 
 	if c.data == nil {
 		return &gdpb.Position{}
@@ -209,8 +141,8 @@ func (c *Curve) Get(t id.Tick) interface{} {
 // tick -- this allows clients to extrapolate the current position of an
 // entity if input tick does not fall on an exact data point.
 func (c *Curve) ExportTail(tick id.Tick) *gdpb.Curve {
-	c.dataMux.RLock()
-	defer c.dataMux.RUnlock()
+	c.mux.RLock()
+	defer c.mux.RUnlock()
 
 	pb := &gdpb.Curve{
 		Type:     c.Type(),
@@ -240,4 +172,60 @@ func (c *Curve) ExportTail(tick id.Tick) *gdpb.Curve {
 	}
 
 	return pb
+}
+
+// insert adds a datum object into a sorted list of data.
+func insert(l []datum, d datum) []datum {
+	i := sort.Search(len(l), func(i int) bool { return !datumBefore(l[i], d) })
+
+	// Override existing value if the given input will result in an invalid
+	// function.
+	if i < len(l) && l[i].tick == d.tick {
+		l[i] = d
+	} else {
+		l = append(l, datum{})
+		copy(l[i+1:], l[i:])
+		l[i] = d
+	}
+	return l
+}
+
+// datum represents a specific metric at a specific tick.
+type datum struct {
+	tick id.Tick
+
+	// value must be a clone of the input and is considered immutable
+	value *gdpb.Position
+}
+
+// datumBefore compares two data points and checks if d1 precedes d2.
+func datumBefore(d1, d2 datum) bool {
+	return d1.tick < d2.tick
+}
+
+// addDatumUnsafe adds a single datum point into the Curve, but does not hold
+// the required c.mux; the caller is responsible for acquiring this lock.
+//
+// TODO(minkezhang): Add duplicate removal.
+//
+// TODO(minkezhang): Add point interpolation removal (if a < b < c have the
+// same slopes, remove b).
+func (c *Curve) addDatumUnsafe(t id.Tick, v interface{}) error {
+	d := datum{tick: t, value: proto.Clone(v.(*gdpb.Position)).(*gdpb.Position)}
+
+	c.data = insert(c.data, d)
+
+	// TODO(minkezhang): Add data validation.
+	return nil
+}
+
+// cloneData exposes a concurrency-safe copy of the internal Curve data.
+func (c *Curve) cloneData() []datum {
+	c.mux.RLock()
+	defer c.mux.RUnlock()
+
+	res := make([]datum, len(c.data))
+	copy(res, c.data)
+
+	return res
 }

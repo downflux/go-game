@@ -60,3 +60,28 @@ type Curve interface {
 	// curve.
 	ExportTail(t id.Tick) *gdpb.Curve
 }
+
+type Base struct {
+	eid       id.EntityID         // Read-only.
+	curveType gcpb.CurveType      // Read-only.
+	property  gcpb.EntityProperty // Read-only.
+	datumType reflect.Type        // Read-only.
+}
+
+func New(
+	eid id.EntityID,
+	curveType gcpb.CurveType,
+	datumType reflect.Type,
+	property gcpb.EntityProperty) *Base {
+	return &Base{
+		eid:       eid,
+		curveType: curveType,
+		property:  property,
+		datumType: datumType,
+	}
+}
+
+func (c Base) Type() gcpb.CurveType          { return c.curveType }
+func (c Base) Property() gcpb.EntityProperty { return c.property }
+func (c Base) DatumType() reflect.Type       { return c.datumType }
+func (c Base) EntityID() id.EntityID         { return c.eid }

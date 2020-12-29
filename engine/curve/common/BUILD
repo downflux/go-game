@@ -29,9 +29,31 @@ go_test(
     embed = [":linearmove"],
     deps = [
         "//api:data_go_proto",
+        "//engine/curve:curve",
         "//engine/id:id",
         "@com_github_golang_protobuf//proto:go_default_library",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@org_golang_google_protobuf//testing/protocmp:go_default_library",
+    ],
+)
+
+go_library(
+    name = "stepfloat",
+    srcs = ["stepfloat.go"],
+    importpath = "github.com/downflux/game/engine/curve/common/stepfloat",
+    deps = [
+        "//api:constants_go_proto",
+        "//engine/curve:curve",
+        "//engine/id:id",
+    ],
+)
+
+go_test(
+    name = "stepfloat_test",
+    srcs = ["stepfloat_test.go"],
+    importpath = "github.com/downflux/game/engine/curve/common/stepfloat_test",
+    embed = [":stepfloat"],
+    deps = [
+        "//engine/curve:curve",
     ],
 )

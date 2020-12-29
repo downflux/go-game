@@ -3,12 +3,17 @@ package linearmove
 import (
 	"testing"
 
+	"github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
+)
+
+var (
+	_ curve.Curve = &Curve{}
 )
 
 func TestDatumBefore(t *testing.T) {

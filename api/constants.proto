@@ -24,7 +24,10 @@ enum EntityProperty {
 // specified curve.
 enum CurveType {
   CURVE_TYPE_UNKNOWN = 0;
+
+  // TODO(minkezhang): Rename to LINEAR_POSITION
   CURVE_TYPE_LINEAR_MOVE = 1;
+  CURVE_TYPE_STEP_FLOAT = 2;
 }
 
 // EntityType indicates the type of an object.
