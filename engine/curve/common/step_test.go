@@ -1,4 +1,4 @@
-package stepfloat
+package step
 
 import (
 	"github.com/downflux/game/engine/curve/curve"

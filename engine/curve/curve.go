@@ -25,6 +25,9 @@ import (
 // We can remove the DatumType function once this is implemented.
 type Curve interface {
 
+	// EntityID links back to the specific entity that uses this curve.
+	EntityID() id.EntityID
+
 	// Type indicates the type of the curve itself, e.g. if the curve is
 	// a linear interpolation, a delta graph, or else.
 	Type() gcpb.CurveType
@@ -40,9 +43,6 @@ type Curve interface {
 	// Tick indicates the last time at which the curve was updated by the
 	// server.
 	Tick() id.Tick
-
-	// EntityID links back to the specific entity that uses this curve.
-	EntityID() id.EntityID
 
 	// Add takes a value and copies it into the curve.
 	Add(t id.Tick, v interface{}) error

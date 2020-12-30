@@ -24,3 +24,12 @@ go_library(
         "@org_golang_google_grpc//status:go_default_library",
     ],
 )
+
+go_library(
+    name = "data",
+    srcs = ["data.go"],
+    importpath = "github.com/downflux/game/engine/curve/data",
+    deps = [
+         "//engine/id:id",
+    ],
+)

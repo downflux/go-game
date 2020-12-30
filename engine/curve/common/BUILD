@@ -38,9 +38,9 @@ go_test(
 )
 
 go_library(
-    name = "stepfloat",
-    srcs = ["stepfloat.go"],
-    importpath = "github.com/downflux/game/engine/curve/common/stepfloat",
+    name = "step",
+    srcs = ["step.go"],
+    importpath = "github.com/downflux/game/engine/curve/common/step",
     deps = [
         "//api:constants_go_proto",
         "//engine/curve:curve",
@@ -49,10 +49,10 @@ go_library(
 )
 
 go_test(
-    name = "stepfloat_test",
-    srcs = ["stepfloat_test.go"],
-    importpath = "github.com/downflux/game/engine/curve/common/stepfloat_test",
-    embed = [":stepfloat"],
+    name = "step_test",
+    srcs = ["step_test.go"],
+    importpath = "github.com/downflux/game/engine/curve/common/step_test",
+    embed = [":step"],
     deps = [
         "//engine/curve:curve",
     ],
