@@ -15,6 +15,7 @@ go_library(
         "//api:data_go_proto",
         "//api:constants_go_proto",
         "//engine/curve:curve",
+        "//engine/curve:data",
         "//engine/id:id",
         "@com_github_golang_protobuf//proto:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
@@ -30,6 +31,7 @@ go_test(
     deps = [
         "//api:data_go_proto",
         "//engine/curve:curve",
+        "//engine/curve:data",
         "//engine/id:id",
         "@com_github_golang_protobuf//proto:go_default_library",
         "@com_github_google_go_cmp//cmp:go_default_library",

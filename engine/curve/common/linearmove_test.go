@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/downflux/game/engine/curve/curve"
+	"github.com/downflux/game/engine/curve/data"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
@@ -15,55 +16,6 @@ import (
 var (
 	_ curve.Curve = &Curve{}
 )
-
-func TestDatumBefore(t *testing.T) {
-	testConfigs := []struct {
-		name   string
-		d1, d2 datum
-		want   bool
-	}{
-		{name: "TrivialCompareBefore", d1: datum{tick: 0}, d2: datum{tick: 1}, want: true},
-		{name: "TrivialCompareAfter", d1: datum{tick: 1}, d2: datum{tick: 0}, want: false},
-		{name: "TrivialCompareNotBefore", d1: datum{tick: 0}, d2: datum{tick: 0}, want: false},
-	}
-
-	for _, c := range testConfigs {
-		t.Run(c.name, func(t *testing.T) {
-			if got := datumBefore(c.d1, c.d2); got != c.want {
-				t.Errorf("datumBefore() = %v, want = %v", got, c.want)
-			}
-		})
-	}
-}
-
-func TestInsert(t *testing.T) {
-	testConfigs := []struct {
-		name string
-		data []datum
-		d    datum
-		want []datum
-	}{
-		{name: "TrivialInsert", data: nil, d: datum{tick: 1}, want: []datum{{tick: 1}}},
-		{name: "InsertBefore", data: []datum{{tick: 1}}, d: datum{tick: 0}, want: []datum{{tick: 0}, {tick: 1}}},
-		{name: "InsertAfter", data: []datum{{tick: 0}}, d: datum{tick: 1}, want: []datum{{tick: 0}, {tick: 1}}},
-		{
-			name: "InsertOverride",
-			data: []datum{{tick: 0, value: &gdpb.Position{X: 0, Y: 0}}},
-			d:    datum{tick: 0, value: &gdpb.Position{X: 1, Y: 1}},
-			want: []datum{{tick: 0, value: &gdpb.Position{X: 1, Y: 1}}},
-		},
-		{name: "InsertBetween", data: []datum{{tick: 0}, {tick: 2}}, d: datum{tick: 1}, want: []datum{{tick: 0}, {tick: 1}, {tick: 2}}},
-	}
-
-	for _, c := range testConfigs {
-		t.Run(c.name, func(t *testing.T) {
-			got := insert(c.data, c.d)
-			if diff := cmp.Diff(got, c.want, cmp.AllowUnexported(datum{}), protocmp.Transform()); diff != "" {
-				t.Errorf("insert() mismatch (-want +got):\n%v", diff)
-			}
-		})
-	}
-}
 
 func TestReplaceTail(t *testing.T) {
 	replaceC1 := New("eid", 0)
@@ -267,28 +219,38 @@ func TestGet(t *testing.T) {
 		},
 		{
 			name: "GetBeforeCreation",
-			c:    &Curve{data: []datum{{tick: 1, value: &gdpb.Position{X: 1, Y: 1}}}},
+			c: &Curve{
+				data: data.New(map[id.Tick]interface{}{
+					1: &gdpb.Position{X: 1, Y: 1},
+				})},
 			t:    0,
 			want: &gdpb.Position{X: 1, Y: 1},
 		},
 		{
 			name: "GetAlreadyKnown",
-			c:    &Curve{data: []datum{{tick: 1, value: &gdpb.Position{X: 1, Y: 1}}}},
+			c: &Curve{
+				data: data.New(map[id.Tick]interface{}{
+					1: &gdpb.Position{X: 1, Y: 1},
+				})},
 			t:    1,
 			want: &gdpb.Position{X: 1, Y: 1},
 		},
 		{
 			name: "GetAfterLastKnown",
-			c:    &Curve{data: []datum{{tick: 0, value: &gdpb.Position{X: 1, Y: 1}}}},
+			c: &Curve{
+				data: data.New(map[id.Tick]interface{}{
+					0: &gdpb.Position{X: 1, Y: 1},
+				})},
 			t:    1,
 			want: &gdpb.Position{X: 1, Y: 1},
 		},
 		{
 			name: "GetInterpolatedValue",
-			c: &Curve{data: []datum{
-				{tick: 0, value: &gdpb.Position{X: 0, Y: 0}},
-				{tick: 1, value: &gdpb.Position{X: 1, Y: 1}},
-			}},
+			c: &Curve{
+				data: data.New(map[id.Tick]interface{}{
+					0: &gdpb.Position{X: 0, Y: 0},
+					1: &gdpb.Position{X: 1, Y: 1},
+				})},
 			t:    0.7,
 			want: &gdpb.Position{X: 0.7, Y: 0.7},
 		},

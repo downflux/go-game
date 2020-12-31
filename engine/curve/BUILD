@@ -33,3 +33,13 @@ go_library(
          "//engine/id:id",
     ],
 )
+
+go_test(
+    name = "data_test",
+    srcs = ["data_test.go"],
+    importpath = "github.com/downflux/game/engine/curve/data_test",
+    embed = [":data"],
+    deps = [
+         "//engine/id:id",
+    ],
+)
