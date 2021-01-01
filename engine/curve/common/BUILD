@@ -46,6 +46,7 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//engine/curve:curve",
+        "//engine/curve:data",
         "//engine/id:id",
     ],
 )
