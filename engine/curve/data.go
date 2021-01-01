@@ -65,3 +65,14 @@ func (d *Data) Clone(tick id.Tick) *Data {
 
 	return clone
 }
+
+func (d *Data) Merge(other *Data) error {
+	d.Truncate(other.Tick(0))
+
+	for i := 0; i < other.Len(); i++ {
+		tick := other.Tick(i)
+		// TODO(minkezhang): Check for memory leaks from curve o.
+		d.Set(tick, other.Get(tick))
+	}
+	return nil
+}

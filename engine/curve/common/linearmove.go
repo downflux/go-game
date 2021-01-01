@@ -75,6 +75,10 @@ func (c *Curve) Add(t id.Tick, v interface{}) error {
 // data in the original Curve which occurs after the earliest element of the
 // replacement Curve. In the game, this will occur when the original Curve
 // predicts too far in the future.
+//
+// This is not technically thread-safe -- the mutex for the other curve is not
+// acquired. Special care should be taken that the other input curve is a
+// temporary struct.
 func (c *Curve) Merge(o curve.Curve) error {
 	c.mux.Lock()
 	defer c.mux.Unlock()
@@ -90,15 +94,7 @@ func (c *Curve) Merge(o curve.Curve) error {
 		return status.Errorf(codes.FailedPrecondition, "cannot merge curves of type %v and %v", c.Type(), o.Type())
 	}
 
-	d := o.(*Curve).data
-	c.data.Truncate(d.Tick(0))
-
-	for i := 0; i < d.Len(); i++ {
-		tick := d.Tick(i)
-		// TODO(minkezhang): Check for memory leaks from curve o.
-		c.data.Set(tick, d.Get(tick))
-	}
-	return nil
+	return c.data.Merge(o.(*Curve).data)
 }
 
 // Get queries the Curve at a specific point for an interpolated value.
@@ -148,19 +144,15 @@ func (c *Curve) Get(t id.Tick) interface{} {
 // Export builds a gdpb.Curve instance for data yet to be communicated
 // to the client.
 //
-// Export tail will include in the Curve returned a single point before the
+// Export will include in the Curve returned a single point before the
 // tick -- this allows clients to extrapolate the current position of an
 // entity if input tick does not fall on an exact data point.
 func (c *Curve) Export(tick id.Tick) *gdpb.Curve {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 
-	pb := &gdpb.Curve{
-		Type:     c.Type(),
-		Property: c.Property(),
-		EntityId: c.EntityID().Value(),
-		Tick:     c.Tick().Value(),
-	}
+	pb := c.Base.Export()
+	pb.Tick = c.Tick().Value()
 
 	i := c.data.Search(tick)
 	// If tick is a very large number, still include at minimum the last
