@@ -17,7 +17,7 @@ var (
 	_ curve.Curve = &Curve{}
 )
 
-func TestReplaceTail(t *testing.T) {
+func TestMerge(t *testing.T) {
 	replaceC1 := New("eid", 0)
 	replaceC1.Add(0, &gdpb.Position{X: 0, Y: 0})
 	replaceC1.Add(1, &gdpb.Position{X: 10, Y: 10})
@@ -43,7 +43,7 @@ func TestReplaceTail(t *testing.T) {
 	updateTickC2 := New("eid", 2)
 	updateTickC2.Add(0, &gdpb.Position{X: 0, Y: 0})
 	updateTickC2.Add(1, &gdpb.Position{X: 10, Y: 10})
-	updateTickC1.ReplaceTail(updateTickC2)
+	updateTickC1.Merge(updateTickC2)
 	updateTickC3 := New("eid", 1)
 	updateTickC3.Add(2, &gdpb.Position{X: 20, Y: 20})
 
@@ -55,14 +55,14 @@ func TestReplaceTail(t *testing.T) {
 		want *gdpb.Position
 	}{
 		{
-			name: "ReplaceTailNormal",
+			name: "MergeNormal",
 			c1:   replaceC1,
 			c2:   replaceC2,
 			tick: 0.7,
 			want: &gdpb.Position{X: 0.7, Y: 0.7},
 		},
 		{
-			name: "ReplaceTailSameTick",
+			name: "MergeSameTick",
 			c1:   replaceSameTickC1,
 			c2:   replaceSameTickC2,
 			tick: 0.7,
@@ -86,7 +86,7 @@ func TestReplaceTail(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			c.c1.ReplaceTail(c.c2)
+			c.c1.Merge(c.c2)
 			got := c.c1.Get(c.tick)
 			if diff := cmp.Diff(got, c.want, protocmp.Transform()); diff != "" {
 				t.Errorf("Get() mismatch (-want +got):\n%v", diff)
@@ -95,7 +95,7 @@ func TestReplaceTail(t *testing.T) {
 	}
 }
 
-func TestExportTail(t *testing.T) {
+func TestExport(t *testing.T) {
 	const eid = "eid"
 	cSimple := New(eid, 0)
 	cSimple.Add(0, &gdpb.Position{X: 0, Y: 0})
@@ -109,7 +109,7 @@ func TestExportTail(t *testing.T) {
 		want *gdpb.Curve
 	}{
 		{
-			name: "ExportTailSimple",
+			name: "ExportSimple",
 			c:    cSimple,
 			t:    0,
 			want: &gdpb.Curve{
@@ -134,7 +134,7 @@ func TestExportTail(t *testing.T) {
 			},
 		},
 		{
-			name: "ExportTailPartial",
+			name: "ExportPartial",
 			c:    cSimple,
 			t:    1,
 			want: &gdpb.Curve{
@@ -155,7 +155,7 @@ func TestExportTail(t *testing.T) {
 			},
 		},
 		{
-			name: "ExportTailOffsetIndex",
+			name: "ExportOffsetIndex",
 			c:    cSimple,
 			t:    1.1,
 			want: &gdpb.Curve{
@@ -176,7 +176,7 @@ func TestExportTail(t *testing.T) {
 			},
 		},
 		{
-			name: "ExportTailPastLastDataPoint",
+			name: "ExportPastLastDataPoint",
 			c:    cSimple,
 			t:    2.1,
 			want: &gdpb.Curve{
@@ -196,9 +196,9 @@ func TestExportTail(t *testing.T) {
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			got := c.c.ExportTail(c.t)
+			got := c.c.Export(c.t)
 			if diff := cmp.Diff(got, c.want, protocmp.Transform()); diff != "" {
-				t.Errorf("ExportTail() mismatch (-want, +got):\n%v", diff)
+				t.Errorf("Export() mismatch (-want, +got):\n%v", diff)
 			}
 		})
 	}

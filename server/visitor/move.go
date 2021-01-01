@@ -156,7 +156,7 @@ func (v *Visitor) visitFSM(i action.Action) error {
 		}); err != nil {
 			return err
 		}
-		if err := c.ReplaceTail(cv); err != nil {
+		if err := c.Merge(cv); err != nil {
 			return err
 		}
 

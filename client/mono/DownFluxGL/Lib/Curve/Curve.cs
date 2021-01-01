@@ -70,10 +70,10 @@ namespace DF {
       public string EntityID { get => _entityID; }
       public double Tick { get => _tick; }
 
-      public void ReplaceTail(LinearMove curve) {
-        System.Console.Error.WriteLine("--------------------- DEBUG: REPLACETAIL _tick");
+      public void Merge(LinearMove curve) {
+        System.Console.Error.WriteLine("--------------------- DEBUG: Merge _tick");
         System.Console.Error.WriteLine(_tick);
-        System.Console.Error.WriteLine("--------------------- DEBUG: REPLACETAIL curve.Tick");
+        System.Console.Error.WriteLine("--------------------- DEBUG: Merge curve.Tick");
         System.Console.Error.WriteLine(curve.Tick);
         if (_tick > curve.Tick) {
           return;

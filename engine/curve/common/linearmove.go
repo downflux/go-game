@@ -71,13 +71,11 @@ func (c *Curve) Add(t id.Tick, v interface{}) error {
 	return nil
 }
 
-// ReplaceTail takes as input another Curve of the same type and replaces any
+// Merge takes as input another Curve of the same type and replaces any
 // data in the original Curve which occurs after the earliest element of the
 // replacement Curve. In the game, this will occur when the original Curve
 // predicts too far in the future.
-//
-// TODO(minkezhang): Rename to Merge.
-func (c *Curve) ReplaceTail(o curve.Curve) error {
+func (c *Curve) Merge(o curve.Curve) error {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
@@ -147,15 +145,13 @@ func (c *Curve) Get(t id.Tick) interface{} {
 	}
 }
 
-// ExportTail builds a gdpb.Curve instance for data yet to be communicated
+// Export builds a gdpb.Curve instance for data yet to be communicated
 // to the client.
 //
 // Export tail will include in the Curve returned a single point before the
 // tick -- this allows clients to extrapolate the current position of an
 // entity if input tick does not fall on an exact data point.
-//
-// TODO(minkezhang): Rename Export.
-func (c *Curve) ExportTail(tick id.Tick) *gdpb.Curve {
+func (c *Curve) Export(tick id.Tick) *gdpb.Curve {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 

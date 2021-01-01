@@ -50,15 +50,15 @@ type Curve interface {
 	// Get returns a copy of the interal value at a given tick.
 	Get(t id.Tick) interface{}
 
-	// ReplaceTail conditionally mutates the last N values of the curve
+	// Merge conditionally mutates the last N values of the curve
 	// with the values specified in the input, as long as the input curve
 	// was updated after the source curve.
-	ReplaceTail(c Curve) error
+	Merge(c Curve) error
 
-	// ExportTail returns the last N values of the curve as a protobuf,
+	// Export returns the last N values of the curve as a protobuf,
 	// ready to be sent on wire. Setting tick = 0 will export the entire
 	// curve.
-	ExportTail(t id.Tick) *gdpb.Curve
+	Export(t id.Tick) *gdpb.Curve
 }
 
 type Base struct {
