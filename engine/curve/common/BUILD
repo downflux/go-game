@@ -65,3 +65,28 @@ go_test(
         "//engine/id:id",
     ],
 )
+
+go_library(
+    name = "delta",
+    srcs = ["delta.go"],
+    importpath = "github.com/downflux/game/engine/curve/common/delta",
+    deps = [
+        "//engine/curve:curve",
+        "//engine/id:id",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
+    ],
+)
+
+go_test(
+    name = "delta_test",
+    srcs = ["delta_test.go"],
+    importpath = "github.com/downflux/game/engine/curve/common/delta_test",
+    embed = [":delta"],
+    deps = [
+        "//api:constants_go_proto",
+        "//engine/curve:curve",
+        "//engine/curve/common:step",
+        "//engine/id:id",
+    ],
+)
