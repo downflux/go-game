@@ -48,6 +48,13 @@ func New(eid id.EntityID, tick id.Tick) *Curve {
 	}
 }
 
+func (c *Curve) Data() *data.Data {
+	c.mux.RLock()
+	defer c.mux.RUnlock()
+
+	return c.data
+}
+
 // Tick returns the last server tick at which the curve was updated and
 // current. Values along the parametric curve past this tick should be
 // considered non-authoritative.
@@ -94,7 +101,7 @@ func (c *Curve) Merge(o curve.Curve) error {
 		return status.Errorf(codes.FailedPrecondition, "cannot merge curves of type %v and %v", c.Type(), o.Type())
 	}
 
-	return c.data.Merge(o.(*Curve).data)
+	return c.data.Merge(o.Data())
 }
 
 // Get queries the Curve at a specific point for an interpolated value.

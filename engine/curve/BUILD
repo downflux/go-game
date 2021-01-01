@@ -7,6 +7,7 @@ go_library(
     srcs = ["curve.go"],
     importpath = "github.com/downflux/game/engine/curve/curve",
     deps = [
+        ":data",
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/id:id",

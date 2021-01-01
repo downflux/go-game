@@ -42,6 +42,13 @@ func (c *Curve) Tick() id.Tick {
 	return c.tick
 }
 
+func (c *Curve) Data() *data.Data {
+	c.mux.RLock()
+	defer c.mux.RUnlock()
+
+	return c.data
+}
+
 func (c *Curve) Get(tick id.Tick) interface{} {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
@@ -94,7 +101,7 @@ func (c *Curve) Merge(o curve.Curve) error {
 		return status.Errorf(codes.FailedPrecondition, "cannot merge curves of type %v and %v", c.Type(), o.Type())
 	}
 
-	return c.data.Merge(o.(*Curve).data)
+	return c.data.Merge(o.Data())
 }
 
 // Export builds a gdpb.Curve instance for data yet to be communicated

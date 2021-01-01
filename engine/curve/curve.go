@@ -6,6 +6,7 @@ package curve
 import (
 	"reflect"
 
+	"github.com/downflux/game/engine/curve/data"
 	"github.com/downflux/game/engine/id/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -39,6 +40,8 @@ type Curve interface {
 	// DatumType indicates the data type of the time-series values,
 	// e.g. Coordinates, bool, etc.
 	DatumType() reflect.Type
+
+	Data() *data.Data
 
 	// Tick indicates the last time at which the curve was updated by the
 	// server.
