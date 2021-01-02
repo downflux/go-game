@@ -14,21 +14,18 @@ type Component interface {
 	Velocity() float64
 }
 
-type ComponentImpl struct {
-	id       id.EntityID
+type Base struct {
 	curve    curve.Curve
 	velocity float64
 }
 
-func New(eid id.EntityID, c curve.Curve, v float64) *ComponentImpl {
-	return &ComponentImpl{
-		id:       eid,
+func New(c curve.Curve, v float64) *Base {
+	return &Base{
 		curve:    c,
 		velocity: v,
 	}
 }
 
-func (c ComponentImpl) ID() id.EntityID                   { return c.id }
-func (c ComponentImpl) Position(t id.Tick) *gdpb.Position { return c.curve.Get(t).(*gdpb.Position) }
-func (c ComponentImpl) PositionCurve() curve.Curve        { return c.curve }
-func (c ComponentImpl) Velocity() float64                 { return c.velocity }
+func (c Base) Position(t id.Tick) *gdpb.Position { return c.curve.Get(t).(*gdpb.Position) }
+func (c Base) PositionCurve() curve.Curve        { return c.curve }
+func (c Base) Velocity() float64                 { return c.velocity }

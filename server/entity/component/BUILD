@@ -17,9 +17,13 @@ go_library(
     ],
 )
 
-go_test(
-    name = "moveable_test",
-    srcs = ["moveable_test.go"],
-    importpath = "github.com/downflux/game/server/entity/component/moveable_test",
-    embed = [":moveable"],
+go_library(
+    name = "attackable",
+    srcs = ["attackable.go"],
+    importpath = "github.com/downflux/game/server/entity/component/attackable",
+    deps = [
+        "//api:data_go_proto",
+        "//engine/curve:curve",
+        "//engine/id:id",
+    ],
 )
