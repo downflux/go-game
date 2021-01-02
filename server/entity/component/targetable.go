@@ -1,6 +1,12 @@
 package targetable
 
-type Component interface{}
+import (
+	"github.com/downflux/game/server/entity/component/positionable"
+)
+
+type Component interface {
+	positionable.Component
+}
 
 type Base struct{}
 

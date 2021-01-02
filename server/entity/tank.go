@@ -9,6 +9,7 @@ import (
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/server/entity/component/attackable"
 	"github.com/downflux/game/server/entity/component/moveable"
+	"github.com/downflux/game/server/entity/component/positionable"
 	"github.com/downflux/game/server/entity/component/targetable"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -25,6 +26,7 @@ const (
 type moveComponent = moveable.Base
 type attackComponent = attackable.Base
 type targetComponent = targetable.Base
+type positionComponent = positionable.Base
 
 // Entity implements the entity.Entity interface and represents a simple armored
 // unit.
@@ -33,6 +35,7 @@ type Entity struct {
 	moveComponent
 	attackComponent
 	targetComponent
+	positionComponent
 
 	// eid is a UUID of the Entity.
 	eid id.EntityID
@@ -52,11 +55,12 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	}
 
 	return &Entity{
-		moveComponent:   *moveable.New(mc, velocity),
-		attackComponent: *attackable.New(strength),
-		targetComponent: *targetable.New(),
-		eid:             eid,
-		curves:          curves,
+		moveComponent:     *moveable.New(velocity),
+		attackComponent:   *attackable.New(strength),
+		targetComponent:   *targetable.New(),
+		positionComponent: *positionable.New(mc),
+		eid:               eid,
+		curves:            curves,
 	}, nil
 }
 

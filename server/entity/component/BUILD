@@ -12,7 +12,6 @@ go_library(
     importpath = "github.com/downflux/game/server/entity/component/moveable",
     deps = [
         ":positionable",
-        "//engine/curve:curve",
         "//engine/id:id",
     ],
 )
@@ -32,6 +31,9 @@ go_library(
     name = "targetable",
     srcs = ["targetable.go"],
     importpath = "github.com/downflux/game/server/entity/component/targetable",
+    deps = [
+        ":positionable",
+    ],
 )
 
 go_library(

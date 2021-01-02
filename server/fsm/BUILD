@@ -82,7 +82,7 @@ go_library(
         "//engine/id:id",
         "//engine/visitor:visitor",
         "//server/entity/component:moveable",
-        "//server/entity/component:positionable",
+        "//server/entity/component:targetable",
         "//server/fsm:commonstate",
         "//server/fsm:move",
     ],

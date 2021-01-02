@@ -1,9 +1,7 @@
 package attackable
 
 import (
-	// "github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/engine/id/id"
-	//  gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
 type Component interface {
