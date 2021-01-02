@@ -11,7 +11,7 @@ go_library(
     srcs = ["moveable.go"],
     importpath = "github.com/downflux/game/server/entity/component/moveable",
     deps = [
-        "//api:data_go_proto",
+        ":positionable",
         "//engine/curve:curve",
         "//engine/id:id",
     ],
@@ -21,6 +21,23 @@ go_library(
     name = "attackable",
     srcs = ["attackable.go"],
     importpath = "github.com/downflux/game/server/entity/component/attackable",
+    deps = [
+        "//api:data_go_proto",
+        "//engine/curve:curve",
+        "//engine/id:id",
+    ],
+)
+
+go_library(
+    name = "targetable",
+    srcs = ["targetable.go"],
+    importpath = "github.com/downflux/game/server/entity/component/targetable",
+)
+
+go_library(
+    name = "positionable",
+    srcs = ["positionable.go"],
+    importpath = "github.com/downflux/game/server/entity/component/positionable",
     deps = [
         "//api:data_go_proto",
         "//engine/curve:curve",

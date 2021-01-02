@@ -25,6 +25,7 @@ go_library(
 	"//engine/id:id",
         "//server/entity/component:attackable",
         "//server/entity/component:moveable",
+        "//server/entity/component:targetable",
     ],
 )
 
@@ -37,5 +38,7 @@ go_test(
         "//engine/entity:entity",
         "//server/entity/component:attackable",
         "//server/entity/component:moveable",
+        "//server/entity/component:positionable",
+        "//server/entity/component:targetable",
     ],
 )
