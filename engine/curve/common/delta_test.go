@@ -57,3 +57,11 @@ func TestAdd(t *testing.T) {
 		})
 	}
 }
+
+func TestExport(t *testing.T) {
+	c := newTestCurve()
+	pb := c.Export(0)
+	if got := pb.GetType(); got != c.Curve.Type() {
+		t.Errorf("GetType() = %v, want = %v", got, c.Curve.Type())
+	}
+}

@@ -71,6 +71,7 @@ go_library(
     srcs = ["delta.go"],
     importpath = "github.com/downflux/game/engine/curve/common/delta",
     deps = [
+        "//api:constants_go_proto",
         "//engine/curve:curve",
         "//engine/id:id",
         "@org_golang_google_grpc//status:go_default_library",

@@ -7,6 +7,12 @@ import (
 	"github.com/downflux/game/engine/id/id"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	gcpb "github.com/downflux/game/api/constants_go_proto"
+)
+
+const (
+	curveType = gcpb.CurveType_CURVE_TYPE_DELTA
 )
 
 type Curve struct {
@@ -14,6 +20,16 @@ type Curve struct {
 }
 
 func New(c curve.Curve) *Curve { return &Curve{Curve: c} }
+
+func (c *Curve) Type() gcpb.CurveType { return curveType }
+
+func (c *Curve) Merge(o curve.Curve) error {
+	if o.Type() != curveType {
+		return status.Errorf(codes.FailedPrecondition, "cannot merge %v curve", o.Type())
+	}
+
+	return c.Curve.Merge(o.(*Curve).Curve)
+}
 
 func (c *Curve) Add(t id.Tick, v interface{}) error {
 	if c.DatumType() != reflect.TypeOf(float64(0)) {
