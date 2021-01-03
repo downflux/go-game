@@ -58,7 +58,10 @@ func (c *Curve) Add(tick id.Tick, value interface{}) error {
 	return nil
 }
 
-// True => recently called
+func (c *Curve) Ok(tick id.Tick) bool { return !c.Get(tick).(bool) }
+
+// Get returns the value of the underlying curve. A true value implies the
+// timer was recently reset.
 func (c *Curve) Get(tick id.Tick) interface{} {
 	v := c.Curve.Get(tick).(bool)
 

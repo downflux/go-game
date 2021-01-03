@@ -18,6 +18,8 @@ enum MoveType {
 enum EntityProperty {
   ENTITY_PROPERTY_UNKNOWN = 0;
   ENTITY_PROPERTY_POSITION = 1;
+  ENTITY_PROPERTY_ATTACK_TIMER = 2;
+  ENTITY_PROPERTY_HEALTH = 3;
 }
 
 // CurveType indicates the interpolation method that should be used for the

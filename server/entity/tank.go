@@ -2,7 +2,12 @@
 package tank
 
 import (
+	"reflect"
+
+	"github.com/downflux/game/engine/curve/common/delta"
 	"github.com/downflux/game/engine/curve/common/linearmove"
+	"github.com/downflux/game/engine/curve/common/step"
+	"github.com/downflux/game/engine/curve/common/timer"
 	"github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/engine/curve/list"
 	"github.com/downflux/game/engine/entity/entity"
@@ -19,6 +24,10 @@ import (
 const (
 	// velocity is measured in tiles per second.
 	velocity = 2
+
+	// cooloff is measured in ticks.
+	// TODO(minkezhang): Refactor to be in terms of seconds instead.
+	cooloff = id.Tick(10)
 
 	strength    = 2
 	attackRange = 2
@@ -49,16 +58,18 @@ type Entity struct {
 func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	mc := linearmove.New(eid, t)
 	mc.Add(t, p)
+	ac := timer.New(eid, t, cooloff, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TIMER)
+	hp := delta.New(step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH, reflect.TypeOf(float64(0))))
 
-	curves, err := list.New([]curve.Curve{mc})
+	curves, err := list.New([]curve.Curve{mc, ac, hp})
 	if err != nil {
 		return nil, err
 	}
 
 	return &Entity{
 		moveComponent:     *moveable.New(velocity),
-		attackComponent:   *attackable.New(strength, attackRange),
-		targetComponent:   *targetable.New(),
+		attackComponent:   *attackable.New(strength, attackRange, ac),
+		targetComponent:   *targetable.New(hp),
 		positionComponent: *positionable.New(mc),
 		eid:               eid,
 		curves:            curves,

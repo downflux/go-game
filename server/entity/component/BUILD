@@ -23,6 +23,7 @@ go_library(
     deps = [
         "//api:data_go_proto",
         "//engine/curve:curve",
+        "//engine/curve/common:timer",
         "//engine/id:id",
     ],
 )
@@ -33,6 +34,8 @@ go_library(
     importpath = "github.com/downflux/game/server/entity/component/targetable",
     deps = [
         ":positionable",
+        "//engine/id:id",
+        "//engine/curve/common:delta",
     ],
 )
 
