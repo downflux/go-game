@@ -89,10 +89,11 @@ func (c Base) Property() gcpb.EntityProperty { return c.property }
 func (c Base) DatumType() reflect.Type       { return c.datumType }
 func (c Base) EntityID() id.EntityID         { return c.eid }
 
-func (c Base) Export() *gdpb.Curve {
+func (c Base) Export(t id.Tick) *gdpb.Curve {
 	return &gdpb.Curve{
 		Type:     c.Type(),
 		Property: c.Property(),
 		EntityId: c.EntityID().Value(),
+		Tick:     t.Value(),
 	}
 }

@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	curveType = gcpb.CurveType_CURVE_TYPE_STEP_FLOAT
+	curveType = gcpb.CurveType_CURVE_TYPE_STEP
 )
 
 type Curve struct {
@@ -74,7 +74,7 @@ func (c *Curve) Add(tick id.Tick, value interface{}) error {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
-	c.data.Set(tick, value.(float64))
+	c.data.Set(tick, value)
 	return nil
 }
 
@@ -97,8 +97,8 @@ func (c *Curve) Merge(o curve.Curve) error {
 	}
 	c.tick = o.Tick()
 
-	if o.Type() != c.Type() {
-		return status.Errorf(codes.FailedPrecondition, "cannot merge curves of type %v and %v", c.Type(), o.Type())
+	if o.Type() != c.Type() || o.DatumType() != c.DatumType() {
+		return status.Errorf(codes.FailedPrecondition, "cannot merge (%v, %v) curve with (%v, %v)", c.Type(), c.DatumType(), o.Type(), o.DatumType())
 	}
 
 	return c.data.Merge(o.Data())
@@ -114,7 +114,7 @@ func (c *Curve) Export(tick id.Tick) *gdpb.Curve {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 
-	pb := c.Base.Export()
+	pb := c.Base.Export(tick)
 	pb.Tick = c.Tick().Value()
 
 	i := c.data.Search(tick)
@@ -130,12 +130,21 @@ func (c *Curve) Export(tick id.Tick) *gdpb.Curve {
 		i -= 1
 	}
 
-	for j := i; j < c.data.Len(); j++ {
-		pb.Data = append(pb.GetData(), &gdpb.CurveDatum{
-			Tick:  c.data.Tick(j).Value(),
-			Datum: &gdpb.CurveDatum_DoubleDatum{c.data.Get(c.data.Tick(j)).(float64)},
-		})
+	switch c.DatumType() {
+	case reflect.TypeOf(float64(0)):
+		for j := i; j < c.data.Len(); j++ {
+			pb.Data = append(pb.GetData(), &gdpb.CurveDatum{
+				Tick:  c.data.Tick(j).Value(),
+				Datum: &gdpb.CurveDatum_DoubleDatum{c.data.Get(c.data.Tick(j)).(float64)},
+			})
+		}
+	case reflect.TypeOf(false):
+		for j := i; j < c.data.Len(); j++ {
+			pb.Data = append(pb.GetData(), &gdpb.CurveDatum{
+				Tick:  c.data.Tick(j).Value(),
+				Datum: &gdpb.CurveDatum_BoolDatum{c.data.Get(c.data.Tick(j)).(bool)},
+			})
+		}
 	}
-
 	return pb
 }
