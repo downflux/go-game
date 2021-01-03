@@ -91,3 +91,25 @@ go_test(
         "//engine/id:id",
     ],
 )
+
+go_library(
+    name = "timer",
+    srcs = ["timer.go"],
+    importpath = "github.com/downflux/game/engine/curve/common/timer",
+    deps = [
+        "//api:constants_go_proto",
+        "//engine/id:id",
+        "//engine/curve:curve",
+        "//engine/curve:data",
+    ],
+)
+
+go_test(
+    name = "timer_test",
+    srcs = ["timer_test.go"],
+    importpath = "github.com/downflux/game/engine/curve/common/timer_test",
+    embed = [":timer"],
+    deps = [
+        "//engine/curve:curve",
+    ],
+)

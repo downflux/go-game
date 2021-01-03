@@ -28,8 +28,11 @@ enum CurveType {
   // TODO(minkezhang): Rename to LINEAR_POSITION
   CURVE_TYPE_LINEAR_MOVE = 1;
 
+  // TODO(minkezhang): Rename to STEP
   CURVE_TYPE_STEP_FLOAT = 2;
+
   CURVE_TYPE_DELTA = 3;
+  CURVE_TYPE_TIMER = 4;
 }
 
 // EntityType indicates the type of an object.

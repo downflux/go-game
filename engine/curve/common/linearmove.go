@@ -158,7 +158,7 @@ func (c *Curve) Export(tick id.Tick) *gdpb.Curve {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 
-	pb := c.Base.Export()
+	pb := c.Base.Export(tick)
 	pb.Tick = c.Tick().Value()
 
 	i := c.data.Search(tick)
