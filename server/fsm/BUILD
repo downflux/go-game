@@ -76,13 +76,13 @@ go_library(
     srcs = ["chase.go"],
     importpath = "github.com/downflux/game/server/fsm/chase",
     deps = [
-        "//engine/entity:entity",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
         "//engine/id:id",
         "//engine/visitor:visitor",
         "//server/entity/component:moveable",
+        "//server/entity/component:targetable",
         "//server/fsm:commonstate",
         "//server/fsm:move",
     ],
@@ -114,6 +114,14 @@ go_library(
     importpath = "github.com/downflux/game/server/fsm/attack",
     deps = [
         ":chase",
+        ":commonstate",
+        "//engine/fsm:action",
+        "//engine/fsm:fsm",
+        "//engine/fsm/api:constants_go_proto",
+        "//engine/id:id",
+        "//engine/visitor:visitor",
+        "//server/entity/component:attackable",
+        "//server/entity/component:targetable",
     ],
 )
 

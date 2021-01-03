@@ -3,12 +3,12 @@ package chase
 import (
 	"sync"
 
-	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/entity/component/moveable"
+	"github.com/downflux/game/server/entity/component/targetable"
 	"github.com/downflux/game/server/fsm/commonstate"
 	"github.com/downflux/game/server/fsm/move"
 
@@ -37,15 +37,15 @@ var (
 type Action struct {
 	*action.Base
 
-	source      moveable.Component // Read-only.
-	destination entity.Entity      // Read-only.
+	source      moveable.Component   // Read-only.
+	destination targetable.Component // Read-only.
 
 	// mux guards the Base and move properties.
 	mux  sync.Mutex
 	move *move.Action
 }
 
-func New(source moveable.Component, destination entity.Entity, moveaction *move.Action) *Action {
+func New(source moveable.Component, destination targetable.Component, moveaction *move.Action) *Action {
 	return &Action{
 		Base:        action.New(FSM, commonstate.Pending),
 		source:      source,
@@ -54,10 +54,10 @@ func New(source moveable.Component, destination entity.Entity, moveaction *move.
 	}
 }
 
-func (a *Action) Accept(v visitor.Visitor) error { return v.Visit(a) }
-func (a *Action) Source() moveable.Component     { return a.source }
-func (a *Action) Destination() entity.Entity     { return a.destination }
-func (a *Action) ID() id.ActionID                { return id.ActionID(a.source.ID()) }
+func (a *Action) Accept(v visitor.Visitor) error    { return v.Visit(a) }
+func (a *Action) Source() moveable.Component        { return a.source }
+func (a *Action) Destination() targetable.Component { return a.destination }
+func (a *Action) ID() id.ActionID                   { return id.ActionID(a.source.ID()) }
 
 func (a *Action) SetMove(m *move.Action) error {
 	a.mux.Lock()

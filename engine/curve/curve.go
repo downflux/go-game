@@ -6,6 +6,7 @@ package curve
 import (
 	"reflect"
 
+	"github.com/downflux/game/engine/curve/data"
 	"github.com/downflux/game/engine/id/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -25,6 +26,9 @@ import (
 // We can remove the DatumType function once this is implemented.
 type Curve interface {
 
+	// EntityID links back to the specific entity that uses this curve.
+	EntityID() id.EntityID
+
 	// Type indicates the type of the curve itself, e.g. if the curve is
 	// a linear interpolation, a delta graph, or else.
 	Type() gcpb.CurveType
@@ -37,12 +41,11 @@ type Curve interface {
 	// e.g. Coordinates, bool, etc.
 	DatumType() reflect.Type
 
+	Data() *data.Data
+
 	// Tick indicates the last time at which the curve was updated by the
 	// server.
 	Tick() id.Tick
-
-	// EntityID links back to the specific entity that uses this curve.
-	EntityID() id.EntityID
 
 	// Add takes a value and copies it into the curve.
 	Add(t id.Tick, v interface{}) error
@@ -50,13 +53,46 @@ type Curve interface {
 	// Get returns a copy of the interal value at a given tick.
 	Get(t id.Tick) interface{}
 
-	// ReplaceTail conditionally mutates the last N values of the curve
+	// Merge conditionally mutates the last N values of the curve
 	// with the values specified in the input, as long as the input curve
 	// was updated after the source curve.
-	ReplaceTail(c Curve) error
+	Merge(c Curve) error
 
-	// ExportTail returns the last N values of the curve as a protobuf,
+	// Export returns the last N values of the curve as a protobuf,
 	// ready to be sent on wire. Setting tick = 0 will export the entire
 	// curve.
-	ExportTail(t id.Tick) *gdpb.Curve
+	Export(t id.Tick) *gdpb.Curve
+}
+
+type Base struct {
+	eid       id.EntityID         // Read-only.
+	curveType gcpb.CurveType      // Read-only.
+	property  gcpb.EntityProperty // Read-only.
+	datumType reflect.Type        // Read-only.
+}
+
+func New(
+	eid id.EntityID,
+	curveType gcpb.CurveType,
+	datumType reflect.Type,
+	property gcpb.EntityProperty) *Base {
+	return &Base{
+		eid:       eid,
+		curveType: curveType,
+		property:  property,
+		datumType: datumType,
+	}
+}
+
+func (c Base) Type() gcpb.CurveType          { return c.curveType }
+func (c Base) Property() gcpb.EntityProperty { return c.property }
+func (c Base) DatumType() reflect.Type       { return c.datumType }
+func (c Base) EntityID() id.EntityID         { return c.eid }
+
+func (c Base) Export() *gdpb.Curve {
+	return &gdpb.Curve{
+		Type:     c.Type(),
+		Property: c.Property(),
+		EntityId: c.EntityID().Value(),
+	}
 }

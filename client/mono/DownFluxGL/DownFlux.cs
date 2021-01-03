@@ -142,7 +142,7 @@ namespace DownFluxGL
                     System.Console.Error.WriteLine(linearMove.Tick);
                     _curves[(linearMove.EntityID, DF.Game.API.Constants.EntityProperty.Position)] = linearMove;
                   } else {
-                    _curves[(linearMove.EntityID, DF.Game.API.Constants.EntityProperty.Position)].AsT0.ReplaceTail(linearMove);
+                    _curves[(linearMove.EntityID, DF.Game.API.Constants.EntityProperty.Position)].AsT0.Merge(linearMove);
                   }
                 }
               );

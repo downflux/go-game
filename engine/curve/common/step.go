@@ -1,6 +1,4 @@
-// Package linearmove implements a specific curve type, i.e. that of a
-// position curve traveling at constant velocity.
-package linearmove
+package step
 
 import (
 	"reflect"
@@ -9,7 +7,6 @@ import (
 	"github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/engine/curve/data"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -18,18 +15,9 @@ import (
 )
 
 const (
-	// TODO(minkezhang): Untether the static property with this curve type.
-	property = gcpb.EntityProperty_ENTITY_PROPERTY_POSITION
-
-	curveType = gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE
+	curveType = gcpb.CurveType_CURVE_TYPE_STEP_FLOAT
 )
 
-var (
-	datumType = reflect.TypeOf(&gdpb.Position{})
-)
-
-// Curve implements a curve.Curve which represents the physical location
-// of a specific entity.
 type Curve struct {
 	curve.Base
 
@@ -39,13 +27,19 @@ type Curve struct {
 	data *data.Data
 }
 
-// New constructs an instance of a Curve.
-func New(eid id.EntityID, tick id.Tick) *Curve {
+func New(eid id.EntityID, tick id.Tick, property gcpb.EntityProperty, datumType reflect.Type) *Curve {
 	return &Curve{
 		Base: *curve.New(eid, curveType, datumType, property),
 		tick: tick,
 		data: data.New(nil),
 	}
+}
+
+func (c *Curve) Tick() id.Tick {
+	c.mux.RLock()
+	defer c.mux.RUnlock()
+
+	return c.tick
 }
 
 func (c *Curve) Data() *data.Data {
@@ -55,26 +49,32 @@ func (c *Curve) Data() *data.Data {
 	return c.data
 }
 
-// Tick returns the last server tick at which the curve was updated and
-// current. Values along the parametric curve past this tick should be
-// considered non-authoritative.
-func (c *Curve) Tick() id.Tick {
+func (c *Curve) Get(tick id.Tick) interface{} {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 
-	return c.tick
+	if c.data == nil || c.data.Len() == 0 {
+		return reflect.Zero(c.Base.DatumType()).Interface()
+	}
+
+	i := c.data.Search(tick)
+	if i == c.data.Len() {
+		i = i - 1
+	} else if c.data.Tick(i) != tick {
+		if i == 0 {
+			return reflect.Zero(c.Base.DatumType()).Interface()
+		} else {
+			return c.data.Get(c.data.Tick(i - 1))
+		}
+	}
+	return c.data.Get(c.data.Tick(i))
 }
 
-// Add inserts a single datum point into the Curve.
-//
-// TODO(minkezhang): Add duplicate removal.
-// TODO(minkezhang): Add point interpolation removal (if a < b < c have the
-// same slopes, remove b).
-func (c *Curve) Add(t id.Tick, v interface{}) error {
+func (c *Curve) Add(tick id.Tick, value interface{}) error {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
-	c.data.Set(t, v)
+	c.data.Set(tick, value.(float64))
 	return nil
 }
 
@@ -104,54 +104,10 @@ func (c *Curve) Merge(o curve.Curve) error {
 	return c.data.Merge(o.Data())
 }
 
-// Get queries the Curve at a specific point for an interpolated value.
-func (c *Curve) Get(t id.Tick) interface{} {
-	c.mux.RLock()
-	defer c.mux.RUnlock()
-
-	if c.data == nil {
-		return &gdpb.Position{}
-	}
-
-	if data.Before(t, c.data.Tick(0)) {
-		return proto.Clone(
-			c.data.Get(c.data.Tick(0)).(*gdpb.Position),
-		).(*gdpb.Position)
-	}
-	if data.Before(c.data.Tick(c.data.Len()-1), t) {
-		return proto.Clone(
-			c.data.Get(c.data.Tick(c.data.Len() - 1)).(*gdpb.Position),
-		).(*gdpb.Position)
-	}
-
-	i := c.data.Search(t)
-	if i == 0 {
-		return proto.Clone(
-			c.data.Get(c.data.Tick(0)).(*gdpb.Position),
-		).(*gdpb.Position)
-	}
-
-	t0 := c.data.Tick(i - 1)
-	t1 := c.data.Tick(i)
-	p0 := c.data.Get(t0).(*gdpb.Position)
-	p1 := c.data.Get(t1).(*gdpb.Position)
-
-	tickDelta := t.Value() - t0.Value()
-
-	dx := p1.GetX() - p0.GetX()
-	dy := p1.GetY() - p0.GetY()
-	dt := t1.Value() - t0.Value()
-
-	return &gdpb.Position{
-		X: p0.GetX() + dx*(tickDelta/dt),
-		Y: p0.GetY() + dy*(tickDelta/dt),
-	}
-}
-
 // Export builds a gdpb.Curve instance for data yet to be communicated
 // to the client.
 //
-// Export will include in the Curve returned a single point before the
+// Export tail will include in the Curve returned a single point before the
 // tick -- this allows clients to extrapolate the current position of an
 // entity if input tick does not fall on an exact data point.
 func (c *Curve) Export(tick id.Tick) *gdpb.Curve {
@@ -177,7 +133,7 @@ func (c *Curve) Export(tick id.Tick) *gdpb.Curve {
 	for j := i; j < c.data.Len(); j++ {
 		pb.Data = append(pb.GetData(), &gdpb.CurveDatum{
 			Tick:  c.data.Tick(j).Value(),
-			Datum: &gdpb.CurveDatum_PositionDatum{c.data.Get(c.data.Tick(j)).(*gdpb.Position)},
+			Datum: &gdpb.CurveDatum_DoubleDatum{c.data.Get(c.data.Tick(j)).(float64)},
 		})
 	}
 

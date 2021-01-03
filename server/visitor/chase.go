@@ -8,8 +8,6 @@ import (
 	"github.com/downflux/game/server/fsm/chase"
 	"github.com/downflux/game/server/fsm/move"
 
-	gcpb "github.com/downflux/game/api/constants_go_proto"
-	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 )
@@ -50,9 +48,7 @@ func (v *Visitor) visitFSM(a action.Action) error {
 		m := move.New(
 			c.Source(),
 			v.status,
-			c.Destination().Curves().Curve(
-				gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
-			).Get(v.status.Tick()).(*gdpb.Position))
+			c.Destination().Position(v.status.Tick()))
 		if err := v.schedule.Add(m); err != nil {
 			return err
 		}
