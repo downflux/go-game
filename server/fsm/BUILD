@@ -114,6 +114,14 @@ go_library(
     importpath = "github.com/downflux/game/server/fsm/attack",
     deps = [
         ":chase",
+        ":commonstate",
+        "//engine/fsm:action",
+        "//engine/fsm:fsm",
+        "//engine/fsm/api:constants_go_proto",
+        "//engine/id:id",
+        "//engine/visitor:visitor",
+        "//server/entity/component:attackable",
+        "//server/entity/component:targetable",
     ],
 )
 

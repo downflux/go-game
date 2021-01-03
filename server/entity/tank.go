@@ -20,7 +20,8 @@ const (
 	// velocity is measured in tiles per second.
 	velocity = 2
 
-	strength = 2
+	strength    = 2
+	attackRange = 2
 )
 
 type moveComponent = moveable.Base
@@ -56,7 +57,7 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 
 	return &Entity{
 		moveComponent:     *moveable.New(velocity),
-		attackComponent:   *attackable.New(strength),
+		attackComponent:   *attackable.New(strength, attackRange),
 		targetComponent:   *targetable.New(),
 		positionComponent: *positionable.New(mc),
 		eid:               eid,
