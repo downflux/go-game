@@ -21,6 +21,7 @@ go_library(
     srcs = ["attackable.go"],
     importpath = "github.com/downflux/game/server/entity/component/attackable",
     deps = [
+        ":positionable",
         "//api:data_go_proto",
         "//engine/curve:curve",
         "//engine/curve/common:timer",

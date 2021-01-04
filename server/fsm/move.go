@@ -38,7 +38,7 @@ type Action struct {
 	// scheduled.
 	tick id.Tick // Read-only.
 
-	dfStatus    *status.Status // Read-only.
+	status      *status.Status // Read-only.
 	destination *gdpb.Position // Read-only.
 
 	e moveable.Component // Read-only.
@@ -63,7 +63,7 @@ func New(
 	return &Action{
 		Base:          action.New(FSM, commonstate.Pending),
 		e:             e,
-		dfStatus:      dfStatus,
+		status:        dfStatus,
 		tick:          t,
 		executionTick: t,
 		destination:   destination,
@@ -117,7 +117,7 @@ func (n *Action) State() (fsm.State, error) {
 }
 
 func (n *Action) stateUnsafe() (fsm.State, error) {
-	tick := n.dfStatus.Tick()
+	tick := n.status.Tick()
 
 	s, err := n.Base.State()
 	if err != nil {

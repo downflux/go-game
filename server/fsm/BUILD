@@ -115,10 +115,12 @@ go_library(
     deps = [
         ":chase",
         ":commonstate",
+        "//api:data_go_proto",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
         "//engine/id:id",
+        "//engine/status:status",
         "//engine/visitor:visitor",
         "//server/entity/component:attackable",
         "//server/entity/component:targetable",

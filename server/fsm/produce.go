@@ -33,7 +33,7 @@ type Action struct {
 	id            id.ActionID     // Read-only.
 	tick          id.Tick         // Read-only.
 	executionTick id.Tick         // Read-only.
-	dfStatus      *status.Status  // Read-only.
+	status        *status.Status  // Read-only.
 	entityType    gcpb.EntityType // Read-only.
 	spawnPosition *gdpb.Position  // read-only.
 }
@@ -47,7 +47,7 @@ func New(
 		Base:          action.New(FSM, commonstate.Pending),
 		id:            id.ActionID(id.RandomString(idLength)),
 		executionTick: executionTick,
-		dfStatus:      dfStatus,
+		status:        dfStatus,
 		entityType:    entityType,
 		spawnPosition: spawnPosition,
 	}
@@ -85,7 +85,7 @@ func (n *Action) Cancel() error {
 }
 
 func (n *Action) State() (fsm.State, error) {
-	tick := n.dfStatus.Tick()
+	tick := n.status.Tick()
 
 	s, err := n.Base.State()
 	if err != nil {

@@ -3,9 +3,12 @@ package attackable
 import (
 	"github.com/downflux/game/engine/curve/common/timer"
 	"github.com/downflux/game/engine/id/id"
+	"github.com/downflux/game/server/entity/component/positionable"
 )
 
 type Component interface {
+	positionable.Component
+
 	ID() id.EntityID
 	Strength() float64
 	Range() float64

@@ -1,15 +1,28 @@
+// Package attack defines the Action used for carrying out the Attack command.
+//
+// A Pending state indicates the attack target is out of range or the attack
+// ability is not off cooldown yet.
+//
+// An Executing state indicates the attack target is within range and is off
+// cooldown.
+//
+// A Finished state indicates the target is dead.
 package attack
 
 import (
+	"math"
+
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
+	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/entity/component/attackable"
 	"github.com/downflux/game/server/entity/component/targetable"
 	"github.com/downflux/game/server/fsm/chase"
 	"github.com/downflux/game/server/fsm/commonstate"
 
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
@@ -22,6 +35,7 @@ var (
 		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Finished, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Canceled},
+		{From: commonstate.Executing, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
@@ -29,20 +43,31 @@ var (
 
 type Action struct {
 	*action.Base
-	chase *chase.Action
-	tick  id.Tick
+	chase *chase.Action // Read-only.
+	tick  id.Tick       // Read-only.
 
-	attackable attackable.Component
-	target     targetable.Component
+	status     *status.Status       // Read-only.
+	attackable attackable.Component // Read-only.
+	target     targetable.Component // Read-only.
 }
 
-func New(chase *chase.Action, t id.Tick, attackable attackable.Component, target targetable.Component) *Action {
+func New(
+	chase *chase.Action,
+	t id.Tick,
+	dfStatus *status.Status,
+	attackable attackable.Component,
+	target targetable.Component) *Action {
 	return &Action{
 		Base:       action.New(FSM, commonstate.Pending),
 		attackable: attackable,
 		target:     target,
 		tick:       t,
+		status:     dfStatus,
 	}
+}
+
+func d(a, b *gdpb.Position) float64 {
+	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
 }
 
 func (a *Action) Accept(v visitor.Visitor) error { return v.Visit(a) }
@@ -66,7 +91,16 @@ func (a *Action) State() (fsm.State, error) {
 
 	switch s {
 	case commonstate.Pending:
-		// TODO(minkezhang): Implement
+		tick := a.status.Tick()
+		if a.target.Health(tick) <= 0 {
+			return commonstate.Finished, a.To(s, commonstate.Finished, true)
+		}
+		if d(
+			a.attackable.Position(tick),
+			a.target.Position(tick),
+		) <= a.attackable.Range() && a.attackable.AttackTimerCurve().Ok(tick) {
+			return commonstate.Executing, a.To(s, commonstate.Executing, true)
+		}
 		return s, nil
 	default:
 		return s, nil
