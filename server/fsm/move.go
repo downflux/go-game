@@ -25,8 +25,6 @@ var (
 		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Canceled},
 		{From: commonstate.Pending, To: commonstate.Finished, VirtualOnly: true},
-		{From: commonstate.Executing, To: commonstate.Pending},
-		{From: commonstate.Executing, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
@@ -81,15 +79,6 @@ func (n *Action) ID() id.ActionID                { return id.ActionID(n.e.ID()) 
 func (n *Action) SchedulePartialMove(t id.Tick) error {
 	n.mux.Lock()
 	defer n.mux.Unlock()
-
-	s, err := n.stateUnsafe()
-	if err != nil {
-		return err
-	}
-
-	if err := n.To(s, commonstate.Pending, false); err != nil {
-		return err
-	}
 
 	n.executionTick = t
 	return nil

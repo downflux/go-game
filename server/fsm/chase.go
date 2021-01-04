@@ -24,11 +24,8 @@ var (
 
 	transitions = []fsm.Transition{
 		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
-		{From: commonstate.Pending, To: commonstate.Canceled},
 		{From: commonstate.Pending, To: Waiting, VirtualOnly: true},
-		{From: commonstate.Executing, To: commonstate.Pending, VirtualOnly: true},
-		{From: commonstate.Executing, To: commonstate.Canceled},
-		{From: Waiting, To: commonstate.Canceled},
+		{From: commonstate.Pending, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
