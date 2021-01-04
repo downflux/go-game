@@ -84,6 +84,12 @@ func (a *Action) Precedence(o action.Action) bool {
 }
 
 func (a *Action) State() (fsm.State, error) {
+	if s, err := a.chase.State(); err != nil {
+		return commonstate.Unknown, err
+	} else if s == commonstate.Canceled {
+		return s, nil
+	}
+
 	s, err := a.Base.State()
 	if err != nil {
 		return commonstate.Unknown, err
@@ -113,5 +119,8 @@ func (a *Action) Cancel() error {
 		return err
 	}
 
+	if err := a.chase.Cancel(); err != nil {
+		return err
+	}
 	return a.To(s, commonstate.Canceled, false)
 }
