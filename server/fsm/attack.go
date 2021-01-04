@@ -101,10 +101,10 @@ func (a *Action) State() (fsm.State, error) {
 		if a.target.Health(tick) <= 0 {
 			return commonstate.Finished, a.To(s, commonstate.Finished, true)
 		}
-		if d(
+		if a.attackable.AttackTimerCurve().Ok(tick) && d(
 			a.attackable.Position(tick),
 			a.target.Position(tick),
-		) <= a.attackable.Range() && a.attackable.AttackTimerCurve().Ok(tick) {
+		) <= a.attackable.Range() {
 			return commonstate.Executing, a.To(s, commonstate.Executing, true)
 		}
 		return s, nil
