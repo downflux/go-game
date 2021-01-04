@@ -100,7 +100,7 @@ func TestNewExecutor(t *testing.T) {
 func TestAddEntity(t *testing.T) {
 	const (
 		t0       = float64(0)
-		nClients = 1000
+		nClients = 1
 	)
 	src := &gdpb.Position{X: 0, Y: 0}
 
@@ -108,15 +108,27 @@ func TestAddEntity(t *testing.T) {
 		Tick: t0 + 1,
 		State: &gdpb.GameState{
 			Entities: []*gdpb.Entity{{Type: gcpb.EntityType_ENTITY_TYPE_TANK}},
-			Curves: []*gdpb.Curve{{
-				Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
-				Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
-				Data: []*gdpb.CurveDatum{
-					{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+			Curves: []*gdpb.Curve{
+				{
+					Type:     gcpb.CurveType_CURVE_TYPE_LINEAR_MOVE,
+					Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION,
+					Data: []*gdpb.CurveDatum{
+						{Datum: &gdpb.CurveDatum_PositionDatum{&gdpb.Position{X: 0, Y: 0}}},
+					},
+					Tick: t0 + 1,
 				},
-				Tick: t0 + 1,
+				{
+					Type:     gcpb.CurveType_CURVE_TYPE_TIMER,
+					Property: gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TIMER,
+					Tick:     t0 + 1,
+				},
+				{
+					Type:     gcpb.CurveType_CURVE_TYPE_STEP,
+					Property: gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH,
+					Tick:     t0 + 1,
+				},
 			},
-			}},
+		},
 	}
 
 	e, err := newExecutor(simpleLinearMapProto, &gdpb.Coordinate{X: 2, Y: 1})
@@ -183,6 +195,7 @@ func TestAddEntity(t *testing.T) {
 			protocmp.IgnoreFields(&gdpb.CurveDatum{}, "tick"),
 			protocmp.IgnoreFields(&gdpb.Curve{}, "entity_id"),
 			protocmp.IgnoreFields(&gdpb.Entity{}, "entity_id"),
+			protocmp.SortRepeatedFields(&gdpb.GameState{}, "curves"),
 		); diff != "" {
 			t.Errorf("<-e.ClientChannel() mismatch (-want +got):\n%v", diff)
 		}

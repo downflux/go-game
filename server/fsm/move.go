@@ -25,6 +25,7 @@ var (
 		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Canceled},
 		{From: commonstate.Pending, To: commonstate.Finished, VirtualOnly: true},
+		{From: commonstate.Executing, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
@@ -89,7 +90,8 @@ func (n *Action) Precedence(i action.Action) bool {
 		return false
 	}
 
-	return n.tick >= i.(*Action).tick && !proto.Equal(n.Destination(), i.(*Action).Destination())
+	m := i.(*Action)
+	return n.tick >= m.tick && !proto.Equal(n.Destination(), m.Destination())
 }
 
 // TODO(minkezhang): Return a cloned instance instead.
