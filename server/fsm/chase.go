@@ -1,11 +1,11 @@
 package chase
 
 import (
-	"sync"
-
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
+	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/entity/component/moveable"
 	"github.com/downflux/game/server/entity/component/targetable"
@@ -20,34 +20,51 @@ const (
 )
 
 var (
-	Waiting = fsm.State(fcpb.ChaseState_CHASE_STATE_WAITING.String())
+	InRange = fsm.State(fcpb.ChaseState_CHASE_STATE_IN_RANGE.String())
+	OutOfRange = fsm.State(fcpb.ChaseState_CHASE_STATE_OUT_OF_RANGE.String())
 
 	transitions = []fsm.Transition{
 		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
-		{From: commonstate.Pending, To: Waiting, VirtualOnly: true},
+		{From: commonstate.Pending, To: InRange, VirtualOnly: true},
+		{From: commonstate.Pending, To: OutOfRange, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
+
+	presetChaseRange = chaseRange{ start: 3, stop: 1 }
 )
+
+type chaseRange struct {
+	// start indicates the distance between source and destination at
+	// which the source starts chasing. The start property should be
+	// strictly greater than the stop distance.
+	start float64
+
+	// stop indicates the distance between source and destination at which
+	// the source stops chasing.
+	stop float64
+}
 
 type Action struct {
 	*action.Base
 
 	source      moveable.Component   // Read-only.
 	destination targetable.Component // Read-only.
+	chaseRange  chaseRange           // Read-only.
+	status      *status.Status       // Read-only.
 
-	// mux guards the Base and move properties.
-	mux  sync.Mutex
 	move *move.Action
 }
 
-func New(source moveable.Component, destination targetable.Component, moveaction *move.Action) *Action {
+func New(dfStatus *status.Status, source moveable.Component, destination targetable.Component, moveaction *move.Action) *Action {
 	return &Action{
 		Base:        action.New(FSM, commonstate.Pending),
 		source:      source,
 		destination: destination,
 		move:        moveaction,
+		chaseRange:  presetChaseRange,
+		status:      dfStatus,
 	}
 }
 
@@ -57,9 +74,6 @@ func (a *Action) Destination() targetable.Component { return a.destination }
 func (a *Action) ID() id.ActionID                   { return id.ActionID(a.source.ID()) }
 
 func (a *Action) SetMove(m *move.Action) error {
-	a.mux.Lock()
-	defer a.mux.Unlock()
-
 	a.move = m
 	return nil
 }
@@ -73,17 +87,12 @@ func (a *Action) Precedence(other action.Action) bool {
 }
 
 func (a *Action) State() (fsm.State, error) {
-	a.mux.Lock()
-	defer a.mux.Unlock()
-
-	return a.stateUnsafe()
-}
-
-func (a *Action) stateUnsafe() (fsm.State, error) {
 	s, err := a.Base.State()
 	if err != nil {
 		return commonstate.Unknown, err
 	}
+
+	tick := a.status.Tick()
 
 	switch s {
 	case commonstate.Pending:
@@ -91,22 +100,23 @@ func (a *Action) stateUnsafe() (fsm.State, error) {
 		if err != nil {
 			return commonstate.Unknown, err
 		}
-		switch moveState {
-		case commonstate.Finished:
-			return Waiting, a.To(s, Waiting, true)
-		default:
-			return moveState, a.To(s, moveState, true)
+
+		if d := utils.Euclidean(
+			a.source.Position(tick),
+			a.destination.Position(tick)); d < a.chaseRange.stop {
+			return InRange, a.To(s, InRange, true)
+		} else if moveState == commonstate.Finished && d > a.chaseRange.start {
+			return OutOfRange, a.To(s, OutOfRange, true)
 		}
+
+		return s, nil
 	default:
 		return s, nil
 	}
 }
 
 func (a *Action) Cancel() error {
-	a.mux.Lock()
-	defer a.mux.Unlock()
-
-	s, err := a.stateUnsafe()
+	s, err := a.State()
 	if err != nil {
 		return err
 	}

@@ -10,8 +10,7 @@
 package attack
 
 import (
-	"math"
-
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
@@ -22,7 +21,6 @@ import (
 	"github.com/downflux/game/server/fsm/chase"
 	"github.com/downflux/game/server/fsm/commonstate"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
@@ -66,10 +64,6 @@ func New(
 	}
 }
 
-func d(a, b *gdpb.Position) float64 {
-	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
-}
-
 func (a *Action) Accept(v visitor.Visitor) error { return v.Visit(a) }
 func (a *Action) ID() id.ActionID                { return id.ActionID(a.attackable.ID()) }
 
@@ -101,7 +95,7 @@ func (a *Action) State() (fsm.State, error) {
 		if a.target.Health(tick) <= 0 {
 			return commonstate.Finished, a.To(s, commonstate.Finished, true)
 		}
-		if a.attackable.AttackTimerCurve().Ok(tick) && d(
+		if a.attackable.AttackTimerCurve().Ok(tick) && utils.Euclidean(
 			a.attackable.Position(tick),
 			a.target.Position(tick),
 		) <= a.attackable.Range() {

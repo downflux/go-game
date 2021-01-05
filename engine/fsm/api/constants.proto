@@ -19,7 +19,8 @@ enum FSMType {
 
 enum ChaseState {
   CHASE_STATE_UNKNOWN = 0;
-  CHASE_STATE_WAITING = 1;
+  CHASE_STATE_IN_RANGE = 1;
+  CHASE_STATE_OUT_OF_RANGE = 2;
 }
 
 enum CommonState {
