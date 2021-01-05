@@ -23,7 +23,6 @@ go_library(
     deps = [
         ":positionable",
         "//api:data_go_proto",
-        "//engine/curve:curve",
         "//engine/curve/common:timer",
         "//engine/id:id",
     ],
@@ -46,7 +45,7 @@ go_library(
     importpath = "github.com/downflux/game/server/entity/component/positionable",
     deps = [
         "//api:data_go_proto",
-        "//engine/curve:curve",
+        "//engine/curve/common:linearmove",
         "//engine/id:id",
     ],
 )
