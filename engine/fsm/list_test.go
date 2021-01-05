@@ -96,7 +96,7 @@ func TestAddCancel(t *testing.T) {
 		l.Get(i2.ID()),
 		cmp.AllowUnexported(move.Action{}, action.Base{}),
 		cmpopts.IgnoreFields(action.Base{}, "mux", "fsm"),
-		cmpopts.IgnoreFields(move.Action{}, "dfStatus", "mux", "e"),
+		cmpopts.IgnoreFields(move.Action{}, "status", "mux", "e"),
 		protocmp.Transform(),
 	); diff != "" {
 		t.Errorf("Get() mismatch (-want +got):\n%v", diff)

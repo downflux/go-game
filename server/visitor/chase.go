@@ -6,7 +6,6 @@ import (
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/fsm/chase"
-	"github.com/downflux/game/server/fsm/move"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
@@ -44,11 +43,8 @@ func (v *Visitor) visitFSM(a action.Action) error {
 
 	c := a.(*chase.Action)
 	switch s {
-	case chase.Waiting:
-		m := move.New(
-			c.Source(),
-			v.status,
-			c.Destination().Position(v.status.Tick()))
+	case chase.OutOfRange:
+		m := chase.GenerateMove(c)
 		if err := v.schedule.Add(m); err != nil {
 			return err
 		}

@@ -97,7 +97,6 @@ go_library(
         "//engine/fsm:action",
         "//engine/fsm:schedule",
         "//server/fsm:chase",
-        "//server/fsm:move",
     ],
 )
 
