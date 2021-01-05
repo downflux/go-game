@@ -44,15 +44,15 @@ type Action struct {
 	chase *chase.Action // Read-only.
 	tick  id.Tick       // Read-only.
 
-	status     *status.Status       // Read-only.
-	attackable attackable.Component // Read-only.
-	target     targetable.Component // Read-only.
+	status     status.ReadOnlyStatus // Read-only.
+	attackable attackable.Component  // Read-only.
+	target     targetable.Component  // Read-only.
 }
 
 func New(
 	chase *chase.Action,
 	t id.Tick,
-	dfStatus *status.Status,
+	dfStatus status.ReadOnlyStatus,
 	attackable attackable.Component,
 	target targetable.Component) *Action {
 	return &Action{

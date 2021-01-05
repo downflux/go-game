@@ -49,15 +49,15 @@ type chaseRange struct {
 type Action struct {
 	*action.Base
 
-	source      moveable.Component   // Read-only.
-	destination targetable.Component // Read-only.
-	chaseRadius float64              // Read-only.
-	status      *status.Status       // Read-only.
+	source      moveable.Component    // Read-only.
+	destination targetable.Component  // Read-only.
+	chaseRadius float64               // Read-only.
+	status      status.ReadOnlyStatus // Read-only.
 
 	move *move.Action
 }
 
-func New(dfStatus *status.Status, source moveable.Component, destination targetable.Component) *Action {
+func New(dfStatus status.ReadOnlyStatus, source moveable.Component, destination targetable.Component) *Action {
 	return &Action{
 		Base:        action.New(FSM, commonstate.Pending),
 		source:      source,
@@ -74,7 +74,7 @@ func (a *Action) Accept(v visitor.Visitor) error    { return v.Visit(a) }
 func (a *Action) Source() moveable.Component        { return a.source }
 func (a *Action) Destination() targetable.Component { return a.destination }
 func (a *Action) ID() id.ActionID                   { return id.ActionID(a.source.ID()) }
-func (a *Action) Status() *status.Status            { return a.status }
+func (a *Action) Status() status.ReadOnlyStatus     { return a.status }
 
 func (a *Action) SetMove(m *move.Action) error {
 	a.move = m

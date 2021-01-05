@@ -38,8 +38,8 @@ type Action struct {
 	// scheduled.
 	tick id.Tick // Read-only.
 
-	status      *status.Status // Read-only.
-	destination *gdpb.Position // Read-only.
+	status      status.ReadOnlyStatus // Read-only.
+	destination *gdpb.Position        // Read-only.
 
 	e moveable.Component // Read-only.
 
@@ -57,7 +57,7 @@ type Action struct {
 // future.
 func New(
 	e moveable.Component,
-	dfStatus *status.Status,
+	dfStatus status.ReadOnlyStatus,
 	destination *gdpb.Position) *Action {
 	t := dfStatus.Tick()
 	return &Action{

@@ -102,10 +102,7 @@ go_test(
         "//engine/id:id",
         "//engine/status:status",
         "//server/entity:tank",
-        "//server/entity/component:moveable",
-        "//server/entity/component:targetable",
         "//server/fsm:commonstate",
-        "//server/fsm:move",
     ],
 )
 
