@@ -10,12 +10,12 @@
 package attack
 
 import (
-	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/server/entity/component/attackable"
 	"github.com/downflux/game/server/entity/component/targetable"
 	"github.com/downflux/game/server/fsm/chase"

@@ -1,12 +1,18 @@
+// Package chase defines the Action used for carrying out the Chase command.
+//
+// A Pending state indicates the underlying move command is in Pending state
+// and a move is scheduled for future execution.
+//
+// An OutOfRange state indicates the target is too far away.
 package chase
 
 import (
-	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
+	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/server/entity/component/moveable"
 	"github.com/downflux/game/server/entity/component/targetable"
 	"github.com/downflux/game/server/fsm/commonstate"
@@ -17,33 +23,27 @@ import (
 
 const (
 	fsmType = fcpb.FSMType_FSM_TYPE_CHASE
+
+	// chaseRadius is in units of tiles.
+	chaseRadius = 3
 )
 
 var (
-	InRange = fsm.State(fcpb.ChaseState_CHASE_STATE_IN_RANGE.String())
 	OutOfRange = fsm.State(fcpb.ChaseState_CHASE_STATE_OUT_OF_RANGE.String())
 
 	transitions = []fsm.Transition{
 		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
-		{From: commonstate.Pending, To: InRange, VirtualOnly: true},
 		{From: commonstate.Pending, To: OutOfRange, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
-
-	presetChaseRange = chaseRange{ start: 3, stop: 1 }
 )
 
 type chaseRange struct {
-	// start indicates the distance between source and destination at
-	// which the source starts chasing. The start property should be
-	// strictly greater than the stop distance.
+	// start indicates the minimum distance between source and destination
+	// at which the source should start chasing.
 	start float64
-
-	// stop indicates the distance between source and destination at which
-	// the source stops chasing.
-	stop float64
 }
 
 type Action struct {
@@ -51,27 +51,30 @@ type Action struct {
 
 	source      moveable.Component   // Read-only.
 	destination targetable.Component // Read-only.
-	chaseRange  chaseRange           // Read-only.
+	chaseRadius float64              // Read-only.
 	status      *status.Status       // Read-only.
 
 	move *move.Action
 }
 
-func New(dfStatus *status.Status, source moveable.Component, destination targetable.Component, moveaction *move.Action) *Action {
+func New(dfStatus *status.Status, source moveable.Component, destination targetable.Component) *Action {
 	return &Action{
 		Base:        action.New(FSM, commonstate.Pending),
 		source:      source,
 		destination: destination,
-		move:        moveaction,
-		chaseRange:  presetChaseRange,
+		chaseRadius: chaseRadius,
 		status:      dfStatus,
 	}
 }
 
+func GenerateMove(a *Action) *move.Action {
+	return move.New(a.Source(), a.Status(), a.Destination().Position(a.Status().Tick()))
+}
 func (a *Action) Accept(v visitor.Visitor) error    { return v.Visit(a) }
 func (a *Action) Source() moveable.Component        { return a.source }
 func (a *Action) Destination() targetable.Component { return a.destination }
 func (a *Action) ID() id.ActionID                   { return id.ActionID(a.source.ID()) }
+func (a *Action) Status() *status.Status            { return a.status }
 
 func (a *Action) SetMove(m *move.Action) error {
 	a.move = m
@@ -87,25 +90,30 @@ func (a *Action) Precedence(other action.Action) bool {
 }
 
 func (a *Action) State() (fsm.State, error) {
+	var err error
+	moveState := commonstate.Finished
+	if a.move != nil {
+		moveState, err = a.move.State()
+		if err != nil {
+			return commonstate.Unknown, err
+		}
+	}
+
 	s, err := a.Base.State()
 	if err != nil {
 		return commonstate.Unknown, err
+	}
+	if moveState == commonstate.Canceled {
+		return moveState, a.To(s, moveState, true)
 	}
 
 	tick := a.status.Tick()
 
 	switch s {
 	case commonstate.Pending:
-		moveState, err := a.move.State()
-		if err != nil {
-			return commonstate.Unknown, err
-		}
-
 		if d := utils.Euclidean(
 			a.source.Position(tick),
-			a.destination.Position(tick)); d < a.chaseRange.stop {
-			return InRange, a.To(s, InRange, true)
-		} else if moveState == commonstate.Finished && d > a.chaseRange.start {
+			a.destination.Position(tick)); moveState == commonstate.Finished && d > a.chaseRadius {
 			return OutOfRange, a.To(s, OutOfRange, true)
 		}
 
@@ -121,5 +129,10 @@ func (a *Action) Cancel() error {
 		return err
 	}
 
+	if a.move != nil {
+		if err := a.move.Cancel(); err != nil {
+			return err
+		}
+	}
 	return a.To(s, commonstate.Canceled, false)
 }

@@ -43,9 +43,9 @@ func LessThan(a, b MapCoordinate) bool {
 }
 
 func Manhattan(a, b *gdpb.Position) float64 {
-	return math.Abs(a.GetX() - b.GetX()) + math.Abs(a.GetY() - b.GetY())
+	return math.Abs(a.GetX()-b.GetX()) + math.Abs(a.GetY()-b.GetY())
 }
 
 func Euclidean(a, b *gdpb.Position) float64 {
-	return math.Sqrt(math.Pow(a.GetX() - b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
+	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
 }
