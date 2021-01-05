@@ -118,18 +118,6 @@ func (c *Curve) Export(tick id.Tick) *gdpb.Curve {
 	pb.Tick = c.Tick().Value()
 
 	i := c.data.Search(tick)
-	// If tick is a very large number, still include at minimum the last
-	// known position of an entity.
-	if i == c.data.Len() {
-		i = c.data.Len() - 1
-	}
-	// If the tick falls in between two indices, return the smaller index
-	// as we still need to interpolate the position until time passes to
-	// the larger tick.
-	if (c.data.Tick(i) > tick) && (i > 0) {
-		i -= 1
-	}
-
 	switch c.DatumType() {
 	case reflect.TypeOf(float64(0)):
 		for j := i; j < c.data.Len(); j++ {
@@ -146,5 +134,6 @@ func (c *Curve) Export(tick id.Tick) *gdpb.Curve {
 			})
 		}
 	}
+
 	return pb
 }

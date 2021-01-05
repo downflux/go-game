@@ -16,6 +16,15 @@ import (
 	sscpb "github.com/downflux/game/engine/server/executor/api/constants_go_proto"
 )
 
+type ReadOnlyStatus interface {
+	PB() *gdpb.ServerStatus
+	TickDuration() time.Duration
+	Tick() id.Tick
+	IsStarted() bool
+	IsStopped() bool
+	StartTime() time.Time
+}
+
 // Status represents the internal Executor state.
 type Status struct {
 	// tickDuration is the target maximum interval between successive

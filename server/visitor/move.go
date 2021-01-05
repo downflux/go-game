@@ -1,7 +1,6 @@
 package move
 
 import (
-	"math"
 	"sync"
 	"time"
 
@@ -27,10 +26,6 @@ const (
 	// visitorType is the registered VisitorType of the move visitor.
 	visitorType = vcpb.VisitorType_VISITOR_TYPE_MOVE
 )
-
-func d(a, b *gdpb.Position) float64 {
-	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
-}
 
 // coordinate transforms a gdpb.Position instance into a gdpb.Coordinate
 // instance. We're assuming the position values are sane and don't overflow
@@ -146,7 +141,7 @@ func (v *Visitor) visitFSM(i action.Action) error {
 		cv.Add(tick, prevPos)
 		for i, tile := range p {
 			curPos := position(tile.Val.GetCoordinate())
-			tickDelta := ticksPerTile * id.Tick(d(prevPos, curPos))
+			tickDelta := ticksPerTile * id.Tick(utils.Euclidean(prevPos, curPos))
 			cv.Add(tick+id.Tick(i)*ticksPerTile+tickDelta, curPos)
 			prevPos = curPos
 		}

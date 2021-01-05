@@ -42,7 +42,9 @@ func TestState(t *testing.T) {
 	cancelEntity := newTank(t, eid, t0, p0)
 	cancelStatus := status.New(0)
 	cancelI1 := New(cancelEntity, cancelStatus, &gdpb.Position{X: 1, Y: 1})
-	cancelI1.Cancel()
+	if err := cancelI1.Cancel(); err != nil {
+		t.Fatalf("Cancel() = %v, want = nil", err)
+	}
 
 	finishedEntity := newTank(t, eid, t0, p0)
 	finishedStatus := status.New(0)

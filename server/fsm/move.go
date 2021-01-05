@@ -25,7 +25,6 @@ var (
 		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Canceled},
 		{From: commonstate.Pending, To: commonstate.Finished, VirtualOnly: true},
-		{From: commonstate.Executing, To: commonstate.Pending},
 		{From: commonstate.Executing, To: commonstate.Canceled},
 	}
 
@@ -39,8 +38,8 @@ type Action struct {
 	// scheduled.
 	tick id.Tick // Read-only.
 
-	dfStatus    *status.Status // Read-only.
-	destination *gdpb.Position // Read-only.
+	status      status.ReadOnlyStatus // Read-only.
+	destination *gdpb.Position        // Read-only.
 
 	e moveable.Component // Read-only.
 
@@ -58,13 +57,13 @@ type Action struct {
 // future.
 func New(
 	e moveable.Component,
-	dfStatus *status.Status,
+	dfStatus status.ReadOnlyStatus,
 	destination *gdpb.Position) *Action {
 	t := dfStatus.Tick()
 	return &Action{
 		Base:          action.New(FSM, commonstate.Pending),
 		e:             e,
-		dfStatus:      dfStatus,
+		status:        dfStatus,
 		tick:          t,
 		executionTick: t,
 		destination:   destination,
@@ -82,15 +81,6 @@ func (n *Action) SchedulePartialMove(t id.Tick) error {
 	n.mux.Lock()
 	defer n.mux.Unlock()
 
-	s, err := n.stateUnsafe()
-	if err != nil {
-		return err
-	}
-
-	if err := n.To(s, commonstate.Pending, false); err != nil {
-		return err
-	}
-
 	n.executionTick = t
 	return nil
 }
@@ -100,7 +90,8 @@ func (n *Action) Precedence(i action.Action) bool {
 		return false
 	}
 
-	return n.tick >= i.(*Action).tick && !proto.Equal(n.Destination(), i.(*Action).Destination())
+	m := i.(*Action)
+	return n.tick >= m.tick && !proto.Equal(n.Destination(), m.Destination())
 }
 
 // TODO(minkezhang): Return a cloned instance instead.
@@ -126,7 +117,7 @@ func (n *Action) State() (fsm.State, error) {
 }
 
 func (n *Action) stateUnsafe() (fsm.State, error) {
-	tick := n.dfStatus.Tick()
+	tick := n.status.Tick()
 
 	s, err := n.Base.State()
 	if err != nil {

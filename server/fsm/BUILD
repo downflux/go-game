@@ -80,7 +80,9 @@ go_library(
         "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
         "//engine/id:id",
+        "//engine/status:status",
         "//engine/visitor:visitor",
+        "//map:utils",
         "//server/entity/component:moveable",
         "//server/entity/component:targetable",
         "//server/fsm:commonstate",
@@ -94,7 +96,13 @@ go_test(
     importpath = "github.com/downflux/game/server/fsm/chase_test",
     embed = [":chase"],
     deps = [
+        "//api:data_go_proto",
         "//engine/fsm:action",
+        "//engine/fsm:fsm",
+        "//engine/id:id",
+        "//engine/status:status",
+        "//server/entity:tank",
+        "//server/fsm:commonstate",
     ],
 )
 
@@ -119,7 +127,9 @@ go_library(
         "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
         "//engine/id:id",
+        "//engine/status:status",
         "//engine/visitor:visitor",
+        "//map:utils",
         "//server/entity/component:attackable",
         "//server/entity/component:targetable",
     ],

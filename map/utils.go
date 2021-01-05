@@ -2,6 +2,8 @@
 package utils
 
 import (
+	"math"
+
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
@@ -38,4 +40,12 @@ func AddMapCoordinate(a, b MapCoordinate) MapCoordinate {
 // MapCoordinates.
 func LessThan(a, b MapCoordinate) bool {
 	return a.X < b.X || a.X == b.X && a.Y < b.Y
+}
+
+func Manhattan(a, b *gdpb.Position) float64 {
+	return math.Abs(a.GetX()-b.GetX()) + math.Abs(a.GetY()-b.GetY())
+}
+
+func Euclidean(a, b *gdpb.Position) float64 {
+	return math.Sqrt(math.Pow(a.GetX()-b.GetX(), 2) + math.Pow(a.GetY()-b.GetY(), 2))
 }

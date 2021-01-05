@@ -96,7 +96,7 @@ func TestSendMoveCommand(t *testing.T) {
 
 	s, err := newSUT()
 	if err != nil {
-		t.Fatalf("newSut() = _, %v, want = nil", err)
+		t.Fatalf("newSUT() = _, %v, want = nil", err)
 	}
 	conn, err := newConn(s)
 	if err != nil {

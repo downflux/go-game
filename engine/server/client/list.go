@@ -67,10 +67,10 @@ func (l *List) Broadcast(partialGenerator, fullGenerator func() *apipb.StreamDat
 	var full *apipb.StreamDataResponse
 
 	desyncedClients := l.filterUnsafe(ccpb.ClientState_CLIENT_STATE_DESYNCED)
-	if desyncedClients == nil && partial.GetState().GetCurves() == nil && partial.GetState().GetEntities() == nil {
+	if len(desyncedClients) == 0 && partial.GetState().GetCurves() == nil && partial.GetState().GetEntities() == nil {
 		return nil
 	}
-	if desyncedClients != nil {
+	if len(desyncedClients) > 0 {
 		full = fullGenerator()
 	}
 
@@ -81,6 +81,7 @@ func (l *List) Broadcast(partialGenerator, fullGenerator func() *apipb.StreamDat
 		if err != nil {
 			return err
 		}
+
 		switch s {
 		case fsm.State(ccpb.ClientState_CLIENT_STATE_OK.String()):
 			eg.Go(func() error { return c.Send(partial) })
