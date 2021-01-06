@@ -141,6 +141,13 @@ go_test(
     importpath = "github.com/downflux/game/server/fsm/attack_test",
     embed = [":attack"],
     deps = [
+        ":chase",
+        ":commonstate",
+        "//api:data_go_proto",
         "//engine/fsm:action",
+        "//engine/fsm:fsm",
+        "//engine/id:id",
+        "//engine/status:status",
+        "//server/entity:tank",
     ],
 )

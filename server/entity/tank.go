@@ -31,6 +31,8 @@ const (
 
 	strength    = 2
 	attackRange = 2
+
+	health = float64(100)
 )
 
 type moveComponent = moveable.Base
@@ -60,6 +62,9 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	mc.Add(t, p)
 	ac := timer.New(eid, t, cooloff, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TIMER)
 	hp := delta.New(step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH, reflect.TypeOf(float64(0))))
+	if err := hp.Add(t, health); err != nil {
+		return nil, err
+	}
 
 	curves, err := list.New([]curve.Curve{mc, ac, hp})
 	if err != nil {

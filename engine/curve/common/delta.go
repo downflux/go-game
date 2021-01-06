@@ -36,10 +36,13 @@ func (c *Curve) Add(t id.Tick, v interface{}) error {
 		return status.Errorf(codes.FailedPrecondition, "cannot add a curve delta for %v type curve", c.DatumType())
 	}
 
+	c.Data().Set(t, c.Get(t).(float64)+v.(float64))
 	for i := c.Data().Search(t); i < c.Data().Len(); i++ {
 		tick := c.Data().Tick(i)
-		value := c.Data().Get(tick).(float64)
-		c.Data().Set(tick, value+v.(float64))
+		if t != tick {
+			value := c.Data().Get(tick).(float64)
+			c.Data().Set(tick, value+v.(float64))
+		}
 	}
 	return nil
 }
