@@ -10,6 +10,8 @@
 package attack
 
 import (
+	"log"
+
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
@@ -45,27 +47,28 @@ type Action struct {
 	tick  id.Tick       // Read-only.
 
 	status     status.ReadOnlyStatus // Read-only.
-	attackable attackable.Component  // Read-only.
+	source attackable.Component  // Read-only.
 	target     targetable.Component  // Read-only.
 }
 
 func New(
-	chase *chase.Action,
 	t id.Tick,
 	dfStatus status.ReadOnlyStatus,
-	attackable attackable.Component,
-	target targetable.Component) *Action {
+	source attackable.Component,
+	target targetable.Component,
+	chaseAction *chase.Action) *Action {
 	return &Action{
 		Base:       action.New(FSM, commonstate.Pending),
-		attackable: attackable,
+		source: source,
 		target:     target,
 		tick:       t,
 		status:     dfStatus,
+		chase: chaseAction,
 	}
 }
 
 func (a *Action) Accept(v visitor.Visitor) error { return v.Visit(a) }
-func (a *Action) ID() id.ActionID                { return id.ActionID(a.attackable.ID()) }
+func (a *Action) ID() id.ActionID                { return id.ActionID(a.source.ID()) }
 
 func (a *Action) Precedence(o action.Action) bool {
 	if a.Type() != fsmType {
@@ -78,10 +81,8 @@ func (a *Action) Precedence(o action.Action) bool {
 }
 
 func (a *Action) State() (fsm.State, error) {
-	if s, err := a.chase.State(); err != nil {
-		return commonstate.Unknown, err
-	} else if s == commonstate.Canceled {
-		return s, nil
+	if chaseState, err := a.chase.State(); err != nil || chaseState == commonstate.Canceled {
+		return chaseState, err
 	}
 
 	s, err := a.Base.State()
@@ -92,13 +93,14 @@ func (a *Action) State() (fsm.State, error) {
 	switch s {
 	case commonstate.Pending:
 		tick := a.status.Tick()
+		log.Printf("Debug: Attack State() s == Pending, target health == %v", a.target.Health(tick))
 		if a.target.Health(tick) <= 0 {
 			return commonstate.Finished, a.To(s, commonstate.Finished, true)
 		}
-		if a.attackable.AttackTimerCurve().Ok(tick) && utils.Euclidean(
-			a.attackable.Position(tick),
+		if a.source.AttackTimerCurve().Ok(tick) && utils.Euclidean(
+			a.source.Position(tick),
 			a.target.Position(tick),
-		) <= a.attackable.Range() {
+		) <= a.source.Range() {
 			return commonstate.Executing, a.To(s, commonstate.Executing, true)
 		}
 		return s, nil
