@@ -10,8 +10,6 @@
 package attack
 
 import (
-	"log"
-
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
@@ -46,9 +44,9 @@ type Action struct {
 	chase *chase.Action // Read-only.
 	tick  id.Tick       // Read-only.
 
-	status     status.ReadOnlyStatus // Read-only.
+	status status.ReadOnlyStatus // Read-only.
 	source attackable.Component  // Read-only.
-	target     targetable.Component  // Read-only.
+	target targetable.Component  // Read-only.
 }
 
 func New(
@@ -58,12 +56,12 @@ func New(
 	target targetable.Component,
 	chaseAction *chase.Action) *Action {
 	return &Action{
-		Base:       action.New(FSM, commonstate.Pending),
+		Base:   action.New(FSM, commonstate.Pending),
 		source: source,
-		target:     target,
-		tick:       t,
-		status:     dfStatus,
-		chase: chaseAction,
+		target: target,
+		tick:   t,
+		status: dfStatus,
+		chase:  chaseAction,
 	}
 }
 
@@ -93,7 +91,6 @@ func (a *Action) State() (fsm.State, error) {
 	switch s {
 	case commonstate.Pending:
 		tick := a.status.Tick()
-		log.Printf("Debug: Attack State() s == Pending, target health == %v", a.target.Health(tick))
 		if a.target.Health(tick) <= 0 {
 			return commonstate.Finished, a.To(s, commonstate.Finished, true)
 		}

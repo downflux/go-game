@@ -19,17 +19,17 @@ var (
 )
 
 func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Entity {
-        tankEntity, err := tank.New(eid, tick, p)
-        if err != nil {
-                t.Fatalf("New() = %v, want = nil", err)
-        }
-        return tankEntity
+	tankEntity, err := tank.New(eid, tick, p)
+	if err != nil {
+		t.Fatalf("New() = %v, want = nil", err)
+	}
+	return tankEntity
 }
 
 func newAction(source *tank.Entity, dest *tank.Entity) *Action {
 	s := status.New(0)
 	chaseAction := chase.New(status.New(0), source, dest)
-        return New(s.Tick(), s, source, dest, chaseAction)
+	return New(s.Tick(), s, source, dest, chaseAction)
 }
 
 func TestState(t *testing.T) {
@@ -45,7 +45,7 @@ func TestState(t *testing.T) {
 		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
 		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}),
 	)
-	if err := targetDeadAction.target.HealthCurve().Add(0, -1 * targetDeadAction.target.Health(0)); err != nil {
+	if err := targetDeadAction.target.HealthCurve().Add(0, -1*targetDeadAction.target.Health(0)); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 
@@ -57,18 +57,41 @@ func TestState(t *testing.T) {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 
+	targetOutOfRangeSource := newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0})
+	targetOutOfRange := newAction(
+		targetOutOfRangeSource,
+		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: targetOutOfRangeSource.Range() + 1}),
+	)
+
+	attackCanceled := newAction(
+		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
+		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}),
+	)
+	if err := attackCanceled.Cancel(); err != nil {
+		t.Fatalf("Cancel() = %v, want = nil", err)
+	}
+	if s, err := attackCanceled.chase.State(); err != nil || s != commonstate.Canceled {
+		t.Fatalf("State() = %v, %v, want = %v, nil", s, err, commonstate.Canceled)
+	}
+
 	testConfigs := []struct {
 		name string
-		a *Action
+		a    *Action
 		want fsm.State
 	}{
-		{ name: "TestChaseCanceled", a: chaseCanceledAction, want: commonstate.Canceled },
-		{ name: "TestTargetDead", a: targetDeadAction, want: commonstate.Finished },
-		{ name: "TestPendingNotReady", a: targetNotReady, want: commonstate.Pending },
-		/*
-		{ name: "TestPendingOutOfRange" },
-		{ name: "TestExecuting" },
-		{ name: "TestCancel" }, */
+		{name: "TestChaseCanceled", a: chaseCanceledAction, want: commonstate.Canceled},
+		{name: "TestTargetDead", a: targetDeadAction, want: commonstate.Finished},
+		{name: "TestPendingNotReady", a: targetNotReady, want: commonstate.Pending},
+		{name: "TestPendingOutOfRange", a: targetOutOfRange, want: commonstate.Pending},
+		{
+			name: "TestExecuting",
+			a: newAction(
+				newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
+				newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 0}),
+			),
+			want: commonstate.Executing,
+		},
+		{name: "TestCancel", a: attackCanceled, want: commonstate.Canceled},
 	}
 
 	for _, c := range testConfigs {

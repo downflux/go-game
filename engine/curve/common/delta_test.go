@@ -31,28 +31,68 @@ func newTestCurve() *Curve {
 	return New(stepCurve)
 }
 
+type datum struct {
+	tick  id.Tick
+	value float64
+}
+
 func TestAdd(t *testing.T) {
 	testConfigs := []struct {
-		name  string
-		tick  id.Tick
-		delta float64
-		want  float64
+		name string
+		add  []datum
+		want []datum
 	}{
-		{name: "TestBefore", tick: t0 - 1, delta: 1, want: v0 + 1},
-		{name: "TestAfter", tick: t0 + 1, delta: 1, want: v0},
-		{name: "TestAt", tick: t0, delta: 1, want: v0 + 1},
-		{name: "TestNegative", tick: t0, delta: -1, want: v0 + -1},
+		{name: "AddNegative", add: []datum{{0, 101}, {0, -1}}, want: []datum{{0, 100}}},
+		{name: "AddFromNil", add: []datum{{0, 100}}, want: []datum{{0, 100}, {-1, 0}, {1, 100}}},
+		{
+			name: "AddAfter",
+			add:  []datum{{0, 101}, {100, 101}},
+			want: []datum{{0, 101}, {1, 101}, {99, 101}, {100, 202}, {101, 202}},
+		},
+		{
+			name: "AddBefore",
+			add:  []datum{{100, 101}, {0, 101}},
+			want: []datum{
+				{0, 101},
+				{1, 101},
+				{99, 101},
+				{100, 202},
+				{101, 202},
+			},
+		},
+		{
+			name: "AddBetween",
+			add:  []datum{{0, 101}, {100, 101}, {50, 101}},
+			want: []datum{
+				{0, 101},
+				{1, 101},
+				{49, 101},
+				{50, 202},
+				{51, 202},
+				{99, 202},
+				{100, 303},
+				{101, 303},
+			},
+		},
 	}
-
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			testCurve := newTestCurve()
-			if err := testCurve.Add(c.tick, c.delta); err != nil {
-				t.Fatalf("Add() = %v, want = nil", err)
+			stepCurve := step.New(
+				"entity-id",
+				0,
+				gcpb.EntityProperty_ENTITY_PROPERTY_UNKNOWN,
+				reflect.TypeOf(float64(0)),
+			)
+			testCurve := New(stepCurve)
+			for _, d := range c.add {
+				if err := testCurve.Add(d.tick, d.value); err != nil {
+					t.Fatalf("Add() = %v, want = %v", err)
+				}
 			}
-
-			if got := testCurve.Get(t0); got != c.want {
-				t.Fatalf("Get() = %v, want = %v", got, c.want)
+			for _, d := range c.want {
+				if got := testCurve.Get(d.tick); got != d.value {
+					t.Errorf("Get() = %v, want = %v", got, d.value)
+				}
 			}
 		})
 	}

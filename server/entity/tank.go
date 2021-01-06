@@ -3,7 +3,6 @@ package tank
 
 import (
 	"reflect"
-	"log"
 
 	"github.com/downflux/game/engine/curve/common/delta"
 	"github.com/downflux/game/engine/curve/common/linearmove"
@@ -33,7 +32,7 @@ const (
 	strength    = 2
 	attackRange = 2
 
-	health = 100
+	health = float64(100)
 )
 
 type moveComponent = moveable.Base
@@ -63,8 +62,9 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	mc.Add(t, p)
 	ac := timer.New(eid, t, cooloff, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TIMER)
 	hp := delta.New(step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH, reflect.TypeOf(float64(0))))
-	log.Println(hp.Add(t, health))
-	log.Printf("Debug: new tank health == %v", hp.Get(t))
+	if err := hp.Add(t, health); err != nil {
+		return nil, err
+	}
 
 	curves, err := list.New([]curve.Curve{mc, ac, hp})
 	if err != nil {
