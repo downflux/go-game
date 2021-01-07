@@ -1,6 +1,8 @@
 # game
 Implementation of DownFlux, a collaborative RTS.
 
+![Server CI](https://github.com/downflux/game/workflows/Server%20CI/badge.svg?branch=main)
+
 ## Bazel
 
 ```bash
