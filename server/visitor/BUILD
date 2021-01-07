@@ -13,8 +13,6 @@ go_library(
         "//api:constants_go_proto",
         "//engine/entity:entity",
         "//engine/entity:list",
-        "//engine/fsm:action",
-        "//engine/fsm/api:constants_go_proto",
         "//engine/gamestate:dirty",
         "//engine/id:id",
         "//engine/status:status",
@@ -73,8 +71,6 @@ go_library(
         "//engine/status:status",
         "//engine/visitor:visitor",
 	"//engine/visitor/api:constants_go_proto",
-        "//engine/fsm:action",
-        "//engine/fsm/api:constants_go_proto",
         "//map:map",
         "//map:utils", 
         "//pathing/hpf:astar",
@@ -90,11 +86,9 @@ go_library(
     srcs = ["chase.go"],
     importpath = "github.com/downflux/game/server/visitor/chase",
     deps = [
-        "//engine/fsm/api:constants_go_proto",
         "//engine/status:status",
         "//engine/visitor:visitor",
         "//engine/visitor/api:constants_go_proto",
-        "//engine/fsm:action",
         "//engine/fsm:schedule",
         "//server/fsm:chase",
     ],
@@ -107,5 +101,29 @@ go_test(
     embed = [":chase"],
     deps = [
         "//engine/visitor:visitor",
+    ],
+)
+
+go_test(
+    name = "attack_test",
+    srcs = ["attack_test.go"],
+    importpath = "github.com/downflux/game/server/visitor/attack_test",
+    embed = [":attack"],
+    deps = [
+        "//engine/visitor:visitor",
+    ],
+)
+
+go_library(
+    name = "attack",
+    srcs = ["attack.go"],
+    importpath = "github.com/downflux/game/server/visitor/attack",
+    deps = [
+        "//engine/gamestate:dirty",
+        "//engine/status:status",
+        "//engine/visitor:visitor",
+        "//engine/visitor/api:constants_go_proto",
+        "//server/fsm:attack",
+        "//server/fsm:commonstate",
     ],
 )

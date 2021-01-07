@@ -1,8 +1,6 @@
 package action
 
 import (
-	"sync"
-
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
@@ -25,26 +23,24 @@ type Action interface {
 }
 
 type Base struct {
-	fsm *fsm.FSM
+	visitor.BaseAgent
 
-	mux   sync.Mutex
+	fsm   *fsm.FSM
 	state fsm.State
 }
 
 func New(fsm *fsm.FSM, state fsm.State) *Base {
 	return &Base{
-		fsm:   fsm,
-		state: state,
+		BaseAgent: *visitor.NewBaseAgent(vcpb.AgentType_AGENT_TYPE_FSM),
+		fsm:       fsm,
+		state:     state,
 	}
 }
 
-func (n *Base) AgentType() vcpb.AgentType { return vcpb.AgentType_AGENT_TYPE_FSM }
+func (n *Base) State() (fsm.State, error) { return n.state, nil }
 func (n *Base) Type() fcpb.FSMType        { return n.fsm.Type() }
 
 func (n *Base) To(f fsm.State, t fsm.State, virtual bool) error {
-	n.mux.Lock()
-	defer n.mux.Unlock()
-
 	exists, virtualOnly := n.fsm.Exists(f, t)
 	if !exists {
 		return status.Errorf(codes.FailedPrecondition, "no transition exists between the %v and %v states", f, t)
@@ -63,11 +59,4 @@ func (n *Base) To(f fsm.State, t fsm.State, virtual bool) error {
 		n.state = t
 	}
 	return nil
-}
-
-func (n *Base) State() (fsm.State, error) {
-	n.mux.Lock()
-	defer n.mux.Unlock()
-
-	return n.state, nil
 }

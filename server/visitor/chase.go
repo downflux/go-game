@@ -1,13 +1,11 @@
 package chase
 
 import (
-	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/fsm/chase"
 
-	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 )
 
@@ -16,39 +14,33 @@ const (
 )
 
 type Visitor struct {
+	visitor.BaseVisitor
+
 	schedule *schedule.Schedule
-	status   *status.Status
+	status   status.ReadOnlyStatus
 }
 
-func New(status *status.Status, schedule *schedule.Schedule) *Visitor {
+func New(dfStatus status.ReadOnlyStatus, schedule *schedule.Schedule) *Visitor {
 	return &Visitor{
-		schedule: schedule,
-		status:   status,
+		BaseVisitor: *visitor.NewBaseVisitor(visitorType),
+		schedule:    schedule,
+		status:      dfStatus,
 	}
 }
 
-func (v *Visitor) Type() vcpb.VisitorType {
-	return visitorType
-}
-
-func (v *Visitor) visitFSM(a action.Action) error {
-	if a.Type() != fcpb.FSMType_FSM_TYPE_CHASE {
-		return nil
-	}
-
-	s, err := a.State()
+func (v *Visitor) visitFSM(node *chase.Action) error {
+	s, err := node.State()
 	if err != nil {
 		return err
 	}
 
-	c := a.(*chase.Action)
 	switch s {
 	case chase.OutOfRange:
-		m := chase.GenerateMove(c)
+		m := chase.GenerateMove(node)
 		if err := v.schedule.Add(m); err != nil {
 			return err
 		}
-		if err := c.SetMove(m); err != nil {
+		if err := node.SetMove(m); err != nil {
 			return err
 		}
 	}
@@ -57,10 +49,8 @@ func (v *Visitor) visitFSM(a action.Action) error {
 }
 
 func (v *Visitor) Visit(a visitor.Agent) error {
-	switch t := a.AgentType(); t {
-	case vcpb.AgentType_AGENT_TYPE_FSM:
-		return v.visitFSM(a.(action.Action))
-	default:
-		return nil
+	if node, ok := a.(*chase.Action); ok {
+		return v.visitFSM(node)
 	}
+	return nil
 }

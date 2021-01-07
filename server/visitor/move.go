@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/downflux/game/engine/curve/common/linearmove"
-	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
@@ -17,7 +16,6 @@ import (
 	"github.com/downflux/game/server/fsm/move"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	tile "github.com/downflux/game/map/map"
 )
@@ -47,6 +45,8 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 }
 
 type Visitor struct {
+	visitor.BaseVisitor
+
 	// mux guarantees we're running only one tile.Map astar at a time.
 	// TODO(minkezhang): Make this concurrent.
 	mux sync.Mutex
@@ -60,7 +60,7 @@ type Visitor struct {
 
 	// status is a shared object with the game engine and indicates
 	// current tick, etc.
-	status *status.Status
+	status status.ReadOnlyStatus
 
 	// dirties is a shared object between the game engine and the
 	// Visitor.
@@ -79,10 +79,11 @@ type Visitor struct {
 func New(
 	tileMap *tile.Map,
 	abstractGraph *graph.Graph,
-	dfStatus *status.Status,
+	dfStatus status.ReadOnlyStatus,
 	dirties *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
+		BaseVisitor:   *visitor.NewBaseVisitor(visitorType),
 		tileMap:       tileMap,
 		abstractGraph: abstractGraph,
 		status:        dfStatus,
@@ -91,29 +92,20 @@ func New(
 	}
 }
 
-// Type returns the registered VisitorType.
-func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
-
 // TODO(minkezhang): Remove function.
 func (v *Visitor) Schedule(interface{}) error { return nil }
 
-func (v *Visitor) visitFSM(i action.Action) error {
-	if i.Type() != fcpb.FSMType_FSM_TYPE_MOVE {
-		return nil
-	}
-
-	s, err := i.State()
+func (v *Visitor) visitFSM(node *move.Action) error {
+	s, err := node.State()
 	if err != nil {
 		return err
 	}
-
-	m := i.(*move.Action)
 
 	tick := v.status.Tick()
 
 	switch s {
 	case commonstate.Executing:
-		e := m.Component()
+		e := node.Component()
 		c := e.PositionCurve()
 		if c == nil {
 			return nil
@@ -126,7 +118,7 @@ func (v *Visitor) visitFSM(i action.Action) error {
 			v.tileMap,
 			v.abstractGraph,
 			utils.MC(coordinate(e.Position(tick))),
-			utils.MC(coordinate(m.Destination())),
+			utils.MC(coordinate(node.Destination())),
 			v.minPathLength,
 		)
 		if err != nil {
@@ -159,7 +151,7 @@ func (v *Visitor) visitFSM(i action.Action) error {
 		// future.
 		//
 		// TODO(minkezhang): Add test for scheduling here.
-		if err := m.SchedulePartialMove(tick + ticksPerTile*id.Tick(len(p))); err != nil {
+		if err := node.SchedulePartialMove(tick + ticksPerTile*id.Tick(len(p))); err != nil {
 			// TODO(minkezhang): Handle error by logging and continuing.
 			return err
 		}
@@ -175,10 +167,8 @@ func (v *Visitor) Visit(a visitor.Agent) error {
 	v.mux.Lock()
 	defer v.mux.Unlock()
 
-	switch t := a.AgentType(); t {
-	case vcpb.AgentType_AGENT_TYPE_FSM:
-		return v.visitFSM(a.(action.Action))
-	default:
-		return nil
+	if node, ok := a.(*move.Action); ok {
+		return v.visitFSM(node)
 	}
+	return nil
 }

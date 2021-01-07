@@ -50,7 +50,6 @@ type Action struct {
 }
 
 func New(
-	t id.Tick,
 	dfStatus status.ReadOnlyStatus,
 	source attackable.Component,
 	target targetable.Component,
@@ -59,7 +58,7 @@ func New(
 		Base:   action.New(FSM, commonstate.Pending),
 		source: source,
 		target: target,
-		tick:   t,
+		tick:   dfStatus.Tick(),
 		status: dfStatus,
 		chase:  chaseAction,
 	}
@@ -67,6 +66,8 @@ func New(
 
 func (a *Action) Accept(v visitor.Visitor) error { return v.Visit(a) }
 func (a *Action) ID() id.ActionID                { return id.ActionID(a.source.ID()) }
+func (a *Action) Target() targetable.Component   { return a.target }
+func (a *Action) Source() attackable.Component   { return a.source }
 
 func (a *Action) Precedence(o action.Action) bool {
 	if a.Type() != fsmType {

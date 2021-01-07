@@ -29,7 +29,7 @@ func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tan
 func newAction(source *tank.Entity, dest *tank.Entity) *Action {
 	s := status.New(0)
 	chaseAction := chase.New(status.New(0), source, dest)
-	return New(s.Tick(), s, source, dest, chaseAction)
+	return New(s, source, dest, chaseAction)
 }
 
 func TestState(t *testing.T) {

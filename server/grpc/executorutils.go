@@ -10,7 +10,10 @@ import (
 	"github.com/downflux/game/engine/server/executor/executor"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
+	"github.com/downflux/game/server/entity/component/attackable"
 	"github.com/downflux/game/server/entity/component/moveable"
+	"github.com/downflux/game/server/entity/component/targetable"
+	"github.com/downflux/game/server/visitor/attack"
 	"github.com/downflux/game/server/visitor/chase"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
@@ -27,6 +30,8 @@ import (
 	visitorlist "github.com/downflux/game/engine/visitor/list"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
+	attackaction "github.com/downflux/game/server/fsm/attack"
+	chaseaction "github.com/downflux/game/server/fsm/chase"
 	moveaction "github.com/downflux/game/server/fsm/move"
 	produceaction "github.com/downflux/game/server/fsm/produce"
 )
@@ -54,6 +59,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		fcpb.FSMType_FSM_TYPE_CHASE,
 		fcpb.FSMType_FSM_TYPE_MOVE,
 		fcpb.FSMType_FSM_TYPE_PRODUCE,
+		fcpb.FSMType_FSM_TYPE_ATTACK,
 	})
 
 	state := gamestate.New(serverstatus.New(tickDuration), entitylist.New())
@@ -62,6 +68,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		chase.New(state.Status(), fsmSchedule),
 		produce.New(state.Status(), state.Entities(), dirtystate),
 		move.New(tm, g, state.Status(), dirtystate, minPathLength),
+		attack.New(state.Status(), dirtystate),
 	})
 	if err != nil {
 		return nil, err
@@ -72,6 +79,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 			vcpb.VisitorType_VISITOR_TYPE_CHASE:   fcpb.FSMType_FSM_TYPE_CHASE,
 			vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
 			vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
+			vcpb.VisitorType_VISITOR_TYPE_ATTACK:  fcpb.FSMType_FSM_TYPE_ATTACK,
 		}),
 		gamestate: state,
 	}, nil
@@ -97,6 +105,36 @@ func (u *Utils) Move(pb *apipb.MoveRequest) error {
 		}
 	}
 
+	return nil
+}
+
+func (u *Utils) Attack(pb *apipb.AttackRequest) error {
+	t, ok := u.gamestate.Entities().Get(id.EntityID(pb.GetTargetEntityId())).(targetable.Component)
+	if !ok {
+		return status.Error(codes.FailedPrecondition, "specified entity is not targetable")
+	}
+
+	for _, eid := range pb.GetEntityIds() {
+		a, ok := u.gamestate.Entities().Get(id.EntityID(eid)).(attackable.Component)
+		if !ok {
+			return status.Error(codes.FailedPrecondition, "specified entity is not attackable")
+		}
+
+		m, ok := u.gamestate.Entities().Get(id.EntityID(eid)).(moveable.Component)
+		if !ok {
+			return status.Error(codes.FailedPrecondition, "specified entity is not moveable")
+		}
+
+		chaseAction := chaseaction.New(u.gamestate.Status(), m, t)
+		attackAction := attackaction.New(u.gamestate.Status(), a, t, chaseAction)
+
+		if err := u.executor.Schedule(chaseAction); err != nil {
+			return err
+		}
+		if err := u.executor.Schedule(attackAction); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

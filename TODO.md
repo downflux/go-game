@@ -37,7 +37,8 @@
 * [x] consider what to do with partial moves -- refactor out commandQueue with cancellation, etc.
 * [x] add Produce() Visitor
 * [x] add entity click-drag-select action
-* [ ] **add Attack command**
+* [x] add Attack command
+* [ ] **add AttackTarget curve**
 * [ ] add FSM design document
 * [ ] add game state export / import
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)

@@ -42,6 +42,7 @@ go_test(
         "//engine/fsm/api:constants_go_proto",
         "//engine/id:id",
         "//engine/status:status",
+        "//engine/visitor:visitor",
         "//server/fsm:move",
         "//server/entity:tank",
         "@com_github_google_go_cmp//cmp:go_default_library",

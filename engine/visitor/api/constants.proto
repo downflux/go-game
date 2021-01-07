@@ -6,6 +6,7 @@ option csharp_namespace = "DF.Game.Engine.Service.Visitor.API.Constants";
 
 enum AgentType {
   AGENT_TYPE_UNKNOWN = 0;
+
   AGENT_TYPE_FSM = 1;
   AGENT_TYPE_FSM_LIST = 2;
 }
@@ -15,4 +16,5 @@ enum VisitorType {
   VISITOR_TYPE_MOVE = 1;
   VISITOR_TYPE_PRODUCE = 2;
   VISITOR_TYPE_CHASE = 3;
+  VISITOR_TYPE_ATTACK = 4;
 }

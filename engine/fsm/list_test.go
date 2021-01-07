@@ -8,6 +8,7 @@ import (
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/status/status"
+	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/fsm/move"
 	"github.com/google/go-cmp/cmp"
@@ -94,8 +95,8 @@ func TestAddCancel(t *testing.T) {
 	if diff := cmp.Diff(
 		i2,
 		l.Get(i2.ID()),
-		cmp.AllowUnexported(move.Action{}, action.Base{}),
-		cmpopts.IgnoreFields(action.Base{}, "mux", "fsm"),
+		cmp.AllowUnexported(move.Action{}, action.Base{}, visitor.BaseAgent{}),
+		cmpopts.IgnoreFields(action.Base{}, "fsm"),
 		cmpopts.IgnoreFields(move.Action{}, "status", "mux", "e"),
 		protocmp.Transform(),
 	); diff != "" {

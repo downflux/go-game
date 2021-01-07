@@ -99,8 +99,9 @@ func TestNewExecutor(t *testing.T) {
 
 func TestAddEntity(t *testing.T) {
 	const (
-		t0       = float64(0)
-		nClients = 1
+		t0             = float64(0)
+		nClients       = 1
+		tankBaseHealth = 100
 	)
 	src := &gdpb.Position{X: 0, Y: 0}
 
@@ -126,6 +127,9 @@ func TestAddEntity(t *testing.T) {
 					Type:     gcpb.CurveType_CURVE_TYPE_STEP,
 					Property: gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH,
 					Tick:     t0 + 1,
+					Data: []*gdpb.CurveDatum{
+						{Datum: &gdpb.CurveDatum_DoubleDatum{tankBaseHealth}},
+					},
 				},
 			},
 		},

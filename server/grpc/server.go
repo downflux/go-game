@@ -109,6 +109,13 @@ func (s *DownFluxServer) GetStatus(ctx context.Context, req *apipb.GetStatusRequ
 	}, nil
 }
 
+func (s *DownFluxServer) Attack(ctx context.Context, req *apipb.AttackRequest) (*apipb.AttackResponse, error) {
+	if err := s.validateClient(id.ClientID(req.GetClientId())); err != nil {
+		return nil, err
+	}
+	return &apipb.AttackResponse{}, s.utils.Attack(req)
+}
+
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
 	if err := s.validateClient(id.ClientID(req.GetClientId())); err != nil {
 		return nil, err
