@@ -34,3 +34,19 @@ type Visitor interface {
 	// conditional branches in the Accept function.
 	Visit(a Agent) error
 }
+
+type BaseAgent struct {
+	agentType vcpb.AgentType
+}
+
+func NewBaseAgent(t vcpb.AgentType) *BaseAgent { return &BaseAgent{agentType: t} }
+
+func (a BaseAgent) AgentType() vcpb.AgentType { return a.agentType }
+
+type BaseVisitor struct {
+	visitorType vcpb.VisitorType
+}
+
+func NewBaseVisitor(t vcpb.VisitorType) *BaseVisitor { return &BaseVisitor{visitorType: t} }
+
+func (v BaseVisitor) Type() vcpb.VisitorType { return v.visitorType }

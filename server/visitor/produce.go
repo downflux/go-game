@@ -3,7 +3,6 @@ package produce
 import (
 	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/entity/list"
-	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
@@ -14,7 +13,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
-	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	serverstatus "github.com/downflux/game/engine/status/status"
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 )
@@ -37,6 +35,8 @@ func unsupportedEntityType(t gcpb.EntityType) error {
 // Visitor adds a new Entity to the global state. This struct implements the
 // visitor.Visitor interface.
 type Visitor struct {
+	visitor.BaseVisitor
+
 	entities *list.List
 
 	// dirties is a reference to the global cache of mutated Curve and
@@ -50,35 +50,27 @@ type Visitor struct {
 // New creates a new instance of the Visitor struct.
 func New(dfStatus *serverstatus.Status, entities *list.List, dirties *dirty.List) *Visitor {
 	return &Visitor{
-		entities: entities,
-		dirties:  dirties,
-		dfStatus: dfStatus,
+		BaseVisitor: *visitor.NewBaseVisitor(visitorType),
+		entities:    entities,
+		dirties:     dirties,
+		dfStatus:    dfStatus,
 	}
 }
-
-// Type returns the registered VisitorType.
-func (v *Visitor) Type() vcpb.VisitorType { return visitorType }
 
 // TODO(minkezhang): Delete this function.
 func (v *Visitor) Schedule(args interface{}) error { return nil }
 
-func (v *Visitor) visitFSM(i action.Action) error {
-	if i.Type() != fcpb.FSMType_FSM_TYPE_PRODUCE {
-		return nil
-	}
-
-	s, err := i.State()
+func (v *Visitor) visitFSM(node *produce.Action) error {
+	s, err := node.State()
 	if err != nil {
 		return err
 	}
-
-	p := i.(*produce.Action)
 
 	tick := v.dfStatus.Tick()
 
 	switch s {
 	case commonstate.Executing:
-		defer p.Finish()
+		defer node.Finish()
 
 		var eid id.EntityID = id.EntityID(id.RandomString(entityIDLen))
 		for v.entities.Get(eid) != nil {
@@ -86,9 +78,9 @@ func (v *Visitor) visitFSM(i action.Action) error {
 		}
 
 		var ne entity.Entity
-		switch entityType := p.EntityType(); entityType {
+		switch entityType := node.EntityType(); entityType {
 		case gcpb.EntityType_ENTITY_TYPE_TANK:
-			ne, err := tank.New(eid, tick, p.SpawnPosition())
+			ne, err := tank.New(eid, tick, node.SpawnPosition())
 			if err != nil {
 				return err
 			}
@@ -118,10 +110,8 @@ func (v *Visitor) visitFSM(i action.Action) error {
 
 // Visit mutates an entity.List with a new Entity.
 func (v *Visitor) Visit(a visitor.Agent) error {
-	switch t := a.AgentType(); t {
-	case vcpb.AgentType_AGENT_TYPE_FSM:
-		return v.visitFSM(a.(action.Action))
-	default:
-		return nil
+	if node, ok := a.(*produce.Action); ok {
+		return v.visitFSM(node)
 	}
+	return nil
 }
