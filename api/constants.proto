@@ -31,9 +31,9 @@ enum CurveType {
   CURVE_TYPE_LINEAR_MOVE = 1;
 
   CURVE_TYPE_STEP = 2;
-
   CURVE_TYPE_DELTA = 3;
   CURVE_TYPE_TIMER = 4;
+  CURVE_TYPE_LINEAR = 5;
 }
 
 // EntityType indicates the type of an object.

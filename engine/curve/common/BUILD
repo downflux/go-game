@@ -3,6 +3,21 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 package(default_visibility=["//visibility:public"])
 
 go_library(
+    name = "linear",
+    srcs = ["linear.go"],
+    importpath = "github.com/downflux/game/engine/curve/common/linear",
+    deps = [
+        "//api:data_go_proto",
+        "//api:constants_go_proto",
+        "//engine/curve:curve",
+        "//engine/curve:data",
+        "//engine/id:id",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
+    ],
+)
+
+go_library(
     name = "linearmove",
     srcs = ["linearmove.go"],
     importpath = "github.com/downflux/game/engine/curve/common/linearmove",
