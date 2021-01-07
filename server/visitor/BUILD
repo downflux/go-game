@@ -119,8 +119,10 @@ go_library(
     srcs = ["attack.go"],
     importpath = "github.com/downflux/game/server/visitor/attack",
     deps = [
+        "//engine/status:status",
         "//engine/visitor:visitor",
         "//engine/visitor/api:constants_go_proto",
         "//server/fsm:attack",
+        "//server/fsm:commonstate",
     ],
 )

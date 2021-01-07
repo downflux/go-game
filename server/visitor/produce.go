@@ -43,17 +43,17 @@ type Visitor struct {
 	// Entity instances.
 	dirties *dirty.List
 
-	// dfStatus is reference to the global Executor status struct.
-	dfStatus *serverstatus.Status
+	// status is reference to the global Executor status struct.
+	status serverstatus.ReadOnlyStatus
 }
 
 // New creates a new instance of the Visitor struct.
-func New(dfStatus *serverstatus.Status, entities *list.List, dirties *dirty.List) *Visitor {
+func New(dfStatus serverstatus.ReadOnlyStatus, entities *list.List, dirties *dirty.List) *Visitor {
 	return &Visitor{
 		BaseVisitor: *visitor.NewBaseVisitor(visitorType),
 		entities:    entities,
 		dirties:     dirties,
-		dfStatus:    dfStatus,
+		status:      dfStatus,
 	}
 }
 
@@ -66,7 +66,7 @@ func (v *Visitor) visitFSM(node *produce.Action) error {
 		return err
 	}
 
-	tick := v.dfStatus.Tick()
+	tick := v.status.Tick()
 
 	switch s {
 	case commonstate.Executing:

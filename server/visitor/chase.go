@@ -17,14 +17,14 @@ type Visitor struct {
 	visitor.BaseVisitor
 
 	schedule *schedule.Schedule
-	status   *status.Status
+	status   status.ReadOnlyStatus
 }
 
-func New(status *status.Status, schedule *schedule.Schedule) *Visitor {
+func New(dfStatus status.ReadOnlyStatus, schedule *schedule.Schedule) *Visitor {
 	return &Visitor{
 		BaseVisitor: *visitor.NewBaseVisitor(visitorType),
 		schedule:    schedule,
-		status:      status,
+		status:      dfStatus,
 	}
 }
 

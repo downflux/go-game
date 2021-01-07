@@ -60,7 +60,7 @@ type Visitor struct {
 
 	// status is a shared object with the game engine and indicates
 	// current tick, etc.
-	status *status.Status
+	status status.ReadOnlyStatus
 
 	// dirties is a shared object between the game engine and the
 	// Visitor.
@@ -79,7 +79,7 @@ type Visitor struct {
 func New(
 	tileMap *tile.Map,
 	abstractGraph *graph.Graph,
-	dfStatus *status.Status,
+	dfStatus status.ReadOnlyStatus,
 	dirties *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
