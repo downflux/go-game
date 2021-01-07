@@ -131,6 +131,7 @@ go_library(
         "//server/entity/component:moveable",
         "//server/fsm:move",
         "//server/fsm:produce",
+        "//server/visitor:attack",
         "//server/visitor:chase",
         "//server/visitor:move",
         "//server/visitor:produce",

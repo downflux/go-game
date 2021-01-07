@@ -9,6 +9,7 @@ import (
 type Component interface {
 	positionable.Component
 
+	ID() id.EntityID
 	Health(t id.Tick) float64
 	HealthCurve() *delta.Curve
 }

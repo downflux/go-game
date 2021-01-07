@@ -11,6 +11,7 @@ import (
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/component/moveable"
+	"github.com/downflux/game/server/visitor/attack"
 	"github.com/downflux/game/server/visitor/chase"
 	"github.com/downflux/game/server/visitor/move"
 	"github.com/downflux/game/server/visitor/produce"
@@ -54,6 +55,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		fcpb.FSMType_FSM_TYPE_CHASE,
 		fcpb.FSMType_FSM_TYPE_MOVE,
 		fcpb.FSMType_FSM_TYPE_PRODUCE,
+		fcpb.FSMType_FSM_TYPE_ATTACK,
 	})
 
 	state := gamestate.New(serverstatus.New(tickDuration), entitylist.New())
@@ -62,6 +64,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		chase.New(state.Status(), fsmSchedule),
 		produce.New(state.Status(), state.Entities(), dirtystate),
 		move.New(tm, g, state.Status(), dirtystate, minPathLength),
+		attack.New(state.Status(), dirtystate),
 	})
 	if err != nil {
 		return nil, err
@@ -72,6 +75,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 			vcpb.VisitorType_VISITOR_TYPE_CHASE:   fcpb.FSMType_FSM_TYPE_CHASE,
 			vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
 			vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
+			vcpb.VisitorType_VISITOR_TYPE_ATTACK:  fcpb.FSMType_FSM_TYPE_ATTACK,
 		}),
 		gamestate: state,
 	}, nil
