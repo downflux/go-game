@@ -38,6 +38,8 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 	tick := v.status.Tick()
 	switch s {
 	case commonstate.Executing:
+		// TODO(minkezhang): Implement a string step curve for
+		// recording targets, ENTITY_PROPERTY_ATTACK_TARGET.
 		dirtyCurves := []dirty.Curve{
 			{node.Source().ID(), node.Source().AttackTimerCurve().Property()},
 			{node.Target().ID(), node.Target().HealthCurve().Property()},
