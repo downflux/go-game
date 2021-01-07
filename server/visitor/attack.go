@@ -1,11 +1,11 @@
 package attack
 
 import (
+	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/fsm/attack"
 	"github.com/downflux/game/server/fsm/commonstate"
-	"github.com/downflux/game/engine/gamestate/dirty"
 
 	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 )
@@ -25,7 +25,7 @@ func New(dfStatus status.ReadOnlyStatus, dirties *dirty.List) *Visitor {
 	return &Visitor{
 		BaseVisitor: *visitor.NewBaseVisitor(visitorType),
 		status:      dfStatus,
-		dirty: dirties,
+		dirty:       dirties,
 	}
 }
 
@@ -43,9 +43,9 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 			{node.Target().ID(), node.Target().HealthCurve().Property()},
 		}
 		for _, c := range dirtyCurves {
-	                if err := v.dirty.AddCurve(c); err != nil {
-	                        return err
-	                }
+			if err := v.dirty.AddCurve(c); err != nil {
+				return err
+			}
 		}
 
 		if err := node.Source().AttackTimerCurve().Add(tick, true); err != nil {
