@@ -50,7 +50,6 @@ type Action struct {
 }
 
 func New(
-	t id.Tick,
 	dfStatus status.ReadOnlyStatus,
 	source attackable.Component,
 	target targetable.Component,
@@ -59,7 +58,7 @@ func New(
 		Base:   action.New(FSM, commonstate.Pending),
 		source: source,
 		target: target,
-		tick:   t,
+		tick:   dfStatus.Tick(),
 		status: dfStatus,
 		chase:  chaseAction,
 	}

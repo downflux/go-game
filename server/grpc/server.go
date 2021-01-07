@@ -113,7 +113,7 @@ func (s *DownFluxServer) Attack(ctx context.Context, req *apipb.AttackRequest) (
 	if err := s.validateClient(id.ClientID(req.GetClientId())); err != nil {
 		return nil, err
 	}
-	return nil, notImplemented
+	return &apipb.AttackResponse{}, s.utils.Attack(req)
 }
 
 func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*apipb.MoveResponse, error) {
