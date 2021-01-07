@@ -17,6 +17,8 @@ service DownFlux {
   // represents a new player joining the game.
   rpc AddClient(AddClientRequest) returns (AddClientResponse) {}
 
+  rpc Attack(AttackRequest) returns (AttackResponse) {};
+
   // Move represents a player's intent to move an entity to the specified
   // target location.
   rpc Move(MoveRequest) returns (MoveResponse) {
@@ -42,6 +44,15 @@ message GetStatusRequest {}
 message GetStatusResponse {
   game.api.data.ServerStatus status = 1;
 }
+
+message AttackRequest {
+  double tick = 1;
+  string client_id = 2;
+  repeated string entity_ids = 3;
+  string target_entity_id = 4;
+}
+
+message AttackResponse {}
 
 message MoveRequest {
   double tick = 1;
