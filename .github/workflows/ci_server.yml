@@ -1,4 +1,4 @@
-name: Presubmit
+name: Server CI
 
 on:
   push:
@@ -8,24 +8,26 @@ on:
 
 jobs:
   test:
+    name: Server CI Tests
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout DownFlux Repository
+      uses: actions/checkout@v1
 
-    - name: MountBazelCache
+    - name: Mount Bazel Cache
       uses: actions/cache@v1
       with:
         path: "/home/runner/.cache/bazel"
         key: bazel
 
-    - name: InstallBazelisk
+    - name: Install Bazelisk
       run: |
         curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.7.4/bazelisk-linux-amd64"
         mkdir -p "${GITHUB_WORKSPACE}/bin/"
         mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
         chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
 
-    - name: Test
+    - name: Run Server CI Tests
       run: |
         "${GITHUB_WORKSPACE}/bin/bazel" test -c opt $("${GITHUB_WORKSPACE}/bin/bazel" query //... except //client/...) --nocache_test_results --runs_per_test=100
