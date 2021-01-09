@@ -30,4 +30,4 @@ jobs:
 
     - name: Run CI tests
       run: |
-        "${GITHUB_WORKSPACE}/bin/bazel" test -c opt $("${GITHUB_WORKSPACE}/bin/bazel" query //... except //client/...) --nocache_test_results --runs_per_test=100
+        "${GITHUB_WORKSPACE}/bin/bazel" test -c opt //... --nocache_test_results --runs_per_test=100
