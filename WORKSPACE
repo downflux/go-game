@@ -1,6 +1,5 @@
 workspace(name = "downflux")
 
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
@@ -21,11 +20,12 @@ http_archive(
     ],
 )
 
+# Match version with the rules_proto_grpc lib.
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "9748c0d90e54ea09e5e75fb7fac16edce15d2028d4356f32211cfa3c0e956564",
-    strip_prefix = "protobuf-3.11.4",
-    urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.11.4.zip"],
+    strip_prefix = "protobuf-3.13.0",
+    sha256 = "1c744a6a1f2c901e68c5521bc275e22bdc66256eeb605c2781923365b7087e5f",
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.13.0.zip"],
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
@@ -139,3 +139,44 @@ go_repository(
     sum = "h1:nFYrTHrdrAOpShe27kaFHjsqYSEQ0KWqdWLu3xuZJts=",
     version = "v0.0.0-20190403152447-81d4e9dc473e",
 )
+
+# CSharp Proto lib
+
+http_archive(
+    name = "rules_proto_grpc",
+    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/2.0.0.tar.gz"],
+    sha256 = "d771584bbff98698e7cb3cb31c132ee206a972569f4dc8b65acbdd934d156b33",
+    strip_prefix = "rules_proto_grpc-2.0.0",
+)
+
+load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_toolchains")
+
+rules_proto_grpc_toolchains()
+
+load("@rules_proto_grpc//csharp:repositories.bzl", rules_proto_grpc_csharp_repos="csharp_repos")
+
+rules_proto_grpc_csharp_repos()
+
+load("@io_bazel_rules_dotnet//dotnet:deps.bzl", "dotnet_repositories")
+
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
+
+grpc_deps()
+
+dotnet_repositories()
+
+load(
+    "@io_bazel_rules_dotnet//dotnet:defs.bzl",
+    "core_register_sdk",
+    "dotnet_register_toolchains",
+    "dotnet_repositories_nugets",
+)
+
+dotnet_register_toolchains()
+dotnet_repositories_nugets()
+
+core_register_sdk()
+
+load("@rules_proto_grpc//csharp/nuget:nuget.bzl", "nuget_rules_proto_grpc_packages")
+
+nuget_rules_proto_grpc_packages()
