@@ -5,6 +5,16 @@ Implementation of DownFlux, a collaborative RTS.
 
 ## Setup
 
+### Install Git LFS
+
+See [official documentation](https://git-lfs.github.com/).
+
+Install the `git-lfs` package
+
+```bash
+sudo apt install git-lfs
+```
+
 ### Cloning Repo
 
 1. Set up `git`
@@ -32,6 +42,12 @@ Implementation of DownFlux, a collaborative RTS.
 
    ```bash
    git clone git@github.com:downflux/game.git
+   ```
+
+1. Install LFS for the repo
+
+   ```bash
+   git lfs install
    ```
 
 ### Installing Bazel
