@@ -7,7 +7,13 @@ Implementation of DownFlux, a collaborative RTS.
 
 ### Cloning Repo
 
-1. Copy the SSH keys into `~/.ssh' and set permission to `600` for `id_rsa` and
+1. Set up `git`
+
+   ```bash
+   git config --global push.default current
+   ```
+
+1. Copy the SSH keys into `~/.ssh` and set permission to `600` for `id_rsa` and
    `644` for `id_rsa.pub`.
 
 1. Add to SSH keychain
