@@ -34,14 +34,15 @@ Implementation of DownFlux, a collaborative RTS.
    git clone git@github.com:downflux/game.git
    ```
 
-## Bazel
+### Installing Bazel
+
+Install Bazel via
+[official docs](https://docs.bazel.build/versions/master/install-ubuntu.html#install-on-ubuntu).
+
+Current verified Bazel version is `3.7.2`.
 
 ```bash
-$ bazel --version
-bazel 3.2.0
-
-$ bazel test -c opt \
-    $(bazel query //... except //client/...) \
-    --nocache_test_results \
-    --runs_per_test=100
+bazel test -c opt ... \
+  --nocache_test_results \
+  --runs_per_test=10
 ```
