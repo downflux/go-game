@@ -24,6 +24,9 @@ different for Windows installs.
 
 ## Update C# gRPC Version
 
+1. Install [NuGetForUnity](https://github.com/GlitchEnzo/NuGetForUnity)
+   v2.0.1.
+
 1. Download from [packages.grpc.io](https://packages.grpc.io/). Latest verified
    version is
    [2.26.0-dev](https://packages.grpc.io/archive/2019/12/a02d6b9be81cbadb60eed88b3b44498ba27bcba9-edd81ac6-e3d1-461a-a263-2b06ae913c3f/index.xml)
