@@ -20,7 +20,6 @@ http_archive(
     ],
 )
 
-# Match version with the rules_proto_grpc lib.
 http_archive(
     name = "com_google_protobuf",
     strip_prefix = "protobuf-3.13.0",
@@ -139,44 +138,3 @@ go_repository(
     sum = "h1:nFYrTHrdrAOpShe27kaFHjsqYSEQ0KWqdWLu3xuZJts=",
     version = "v0.0.0-20190403152447-81d4e9dc473e",
 )
-
-# CSharp Proto lib
-
-http_archive(
-    name = "rules_proto_grpc",
-    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/2.0.0.tar.gz"],
-    sha256 = "d771584bbff98698e7cb3cb31c132ee206a972569f4dc8b65acbdd934d156b33",
-    strip_prefix = "rules_proto_grpc-2.0.0",
-)
-
-load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_toolchains")
-
-rules_proto_grpc_toolchains()
-
-load("@rules_proto_grpc//csharp:repositories.bzl", rules_proto_grpc_csharp_repos="csharp_repos")
-
-rules_proto_grpc_csharp_repos()
-
-load("@io_bazel_rules_dotnet//dotnet:deps.bzl", "dotnet_repositories")
-
-load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
-
-grpc_deps()
-
-dotnet_repositories()
-
-load(
-    "@io_bazel_rules_dotnet//dotnet:defs.bzl",
-    "core_register_sdk",
-    "dotnet_register_toolchains",
-    "dotnet_repositories_nugets",
-)
-
-dotnet_register_toolchains()
-dotnet_repositories_nugets()
-
-core_register_sdk()
-
-load("@rules_proto_grpc//csharp/nuget:nuget.bzl", "nuget_rules_proto_grpc_packages")
-
-nuget_rules_proto_grpc_packages()

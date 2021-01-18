@@ -25,57 +25,50 @@ namespace DF.Game.API.API {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg1hcGkvYXBpLnByb3RvEgxnYW1lLmFwaS5hcGkaE2FwaS9jb25zdGFudHMu",
-            "cHJvdG8aDmFwaS9kYXRhLnByb3RvIhIKEEdldFN0YXR1c1JlcXVlc3QiSAoR",
-            "R2V0U3RhdHVzUmVzcG9uc2USMwoGc3RhdHVzGAEgASgLMhsuZ2FtZS5hcGku",
-            "ZGF0YS5TZXJ2ZXJTdGF0dXNSBnN0YXR1cyKJAQoNQXR0YWNrUmVxdWVzdBIS",
-            "CgR0aWNrGAEgASgBUgR0aWNrEhsKCWNsaWVudF9pZBgCIAEoCVIIY2xpZW50",
-            "SWQSHQoKZW50aXR5X2lkcxgDIAMoCVIJZW50aXR5SWRzEigKEHRhcmdldF9l",
-            "bnRpdHlfaWQYBCABKAlSDnRhcmdldEVudGl0eUlkIhAKDkF0dGFja1Jlc3Bv",
-            "bnNlItMBCgtNb3ZlUmVxdWVzdBISCgR0aWNrGAEgASgBUgR0aWNrEhsKCWNs",
-            "aWVudF9pZBgCIAEoCVIIY2xpZW50SWQSHQoKZW50aXR5X2lkcxgDIAMoCVIJ",
-            "ZW50aXR5SWRzEjkKC2Rlc3RpbmF0aW9uGAQgASgLMhcuZ2FtZS5hcGkuZGF0",
-            "YS5Qb3NpdGlvblILZGVzdGluYXRpb24SOQoJbW92ZV90eXBlGAUgASgOMhwu",
-            "Z2FtZS5hcGkuY29uc3RhbnRzLk1vdmVUeXBlUghtb3ZlVHlwZSIOCgxNb3Zl",
-            "UmVzcG9uc2UiRAoRU3RyZWFtRGF0YVJlcXVlc3QSEgoEdGljaxgBIAEoAVIE",
-            "dGljaxIbCgljbGllbnRfaWQYAiABKAlSCGNsaWVudElkIlgKElN0cmVhbURh",
-            "dGFSZXNwb25zZRISCgR0aWNrGAEgASgBUgR0aWNrEi4KBXN0YXRlGAIgASgL",
-            "MhguZ2FtZS5hcGkuZGF0YS5HYW1lU3RhdGVSBXN0YXRlIhIKEEFkZENsaWVu",
-            "dFJlcXVlc3QiRAoRQWRkQ2xpZW50UmVzcG9uc2USEgoEdGljaxgBIAEoAVIE",
-            "dGljaxIbCgljbGllbnRfaWQYAiABKAlSCGNsaWVudElkMpADCghEb3duRmx1",
-            "eBJOCglBZGRDbGllbnQSHi5nYW1lLmFwaS5hcGkuQWRkQ2xpZW50UmVxdWVz",
-            "dBofLmdhbWUuYXBpLmFwaS5BZGRDbGllbnRSZXNwb25zZSIAEkUKBkF0dGFj",
-            "axIbLmdhbWUuYXBpLmFwaS5BdHRhY2tSZXF1ZXN0GhwuZ2FtZS5hcGkuYXBp",
-            "LkF0dGFja1Jlc3BvbnNlIgASQgoETW92ZRIZLmdhbWUuYXBpLmFwaS5Nb3Zl",
-            "UmVxdWVzdBoaLmdhbWUuYXBpLmFwaS5Nb3ZlUmVzcG9uc2UiA5ACAhJWCgpT",
-            "dHJlYW1EYXRhEh8uZ2FtZS5hcGkuYXBpLlN0cmVhbURhdGFSZXF1ZXN0GiAu",
-            "Z2FtZS5hcGkuYXBpLlN0cmVhbURhdGFSZXNwb25zZSIDkAICMAESUQoJR2V0",
-            "U3RhdHVzEh4uZ2FtZS5hcGkuYXBpLkdldFN0YXR1c1JlcXVlc3QaHy5nYW1l",
-            "LmFwaS5hcGkuR2V0U3RhdHVzUmVzcG9uc2UiA5ACAkIgWgxnYW1lLmFwaS5h",
-            "cGmqAg9ERi5HYW1lLkFQSS5BUEliBnByb3RvMw=="));
+            "cHJvdG8aDmFwaS9kYXRhLnByb3RvIhIKEEdldFN0YXR1c1JlcXVlc3QiQAoR",
+            "R2V0U3RhdHVzUmVzcG9uc2USKwoGc3RhdHVzGAEgASgLMhsuZ2FtZS5hcGku",
+            "ZGF0YS5TZXJ2ZXJTdGF0dXMiXgoNQXR0YWNrUmVxdWVzdBIMCgR0aWNrGAEg",
+            "ASgBEhEKCWNsaWVudF9pZBgCIAEoCRISCgplbnRpdHlfaWRzGAMgAygJEhgK",
+            "EHRhcmdldF9lbnRpdHlfaWQYBCABKAkiEAoOQXR0YWNrUmVzcG9uc2UioQEK",
+            "C01vdmVSZXF1ZXN0EgwKBHRpY2sYASABKAESEQoJY2xpZW50X2lkGAIgASgJ",
+            "EhIKCmVudGl0eV9pZHMYAyADKAkSLAoLZGVzdGluYXRpb24YBCABKAsyFy5n",
+            "YW1lLmFwaS5kYXRhLlBvc2l0aW9uEi8KCW1vdmVfdHlwZRgFIAEoDjIcLmdh",
+            "bWUuYXBpLmNvbnN0YW50cy5Nb3ZlVHlwZSIOCgxNb3ZlUmVzcG9uc2UiNAoR",
+            "U3RyZWFtRGF0YVJlcXVlc3QSDAoEdGljaxgBIAEoARIRCgljbGllbnRfaWQY",
+            "AiABKAkiSwoSU3RyZWFtRGF0YVJlc3BvbnNlEgwKBHRpY2sYASABKAESJwoF",
+            "c3RhdGUYAiABKAsyGC5nYW1lLmFwaS5kYXRhLkdhbWVTdGF0ZSISChBBZGRD",
+            "bGllbnRSZXF1ZXN0IjQKEUFkZENsaWVudFJlc3BvbnNlEgwKBHRpY2sYASAB",
+            "KAESEQoJY2xpZW50X2lkGAIgASgJMpADCghEb3duRmx1eBJOCglBZGRDbGll",
+            "bnQSHi5nYW1lLmFwaS5hcGkuQWRkQ2xpZW50UmVxdWVzdBofLmdhbWUuYXBp",
+            "LmFwaS5BZGRDbGllbnRSZXNwb25zZSIAEkUKBkF0dGFjaxIbLmdhbWUuYXBp",
+            "LmFwaS5BdHRhY2tSZXF1ZXN0GhwuZ2FtZS5hcGkuYXBpLkF0dGFja1Jlc3Bv",
+            "bnNlIgASQgoETW92ZRIZLmdhbWUuYXBpLmFwaS5Nb3ZlUmVxdWVzdBoaLmdh",
+            "bWUuYXBpLmFwaS5Nb3ZlUmVzcG9uc2UiA5ACAhJWCgpTdHJlYW1EYXRhEh8u",
+            "Z2FtZS5hcGkuYXBpLlN0cmVhbURhdGFSZXF1ZXN0GiAuZ2FtZS5hcGkuYXBp",
+            "LlN0cmVhbURhdGFSZXNwb25zZSIDkAICMAESUQoJR2V0U3RhdHVzEh4uZ2Ft",
+            "ZS5hcGkuYXBpLkdldFN0YXR1c1JlcXVlc3QaHy5nYW1lLmFwaS5hcGkuR2V0",
+            "U3RhdHVzUmVzcG9uc2UiA5ACAkIgWgxnYW1lLmFwaS5hcGmqAg9ERi5HYW1l",
+            "LkFQSS5BUEliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::DF.Game.API.Constants.ConstantsReflection.Descriptor, global::DF.Game.API.Data.DataReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.GetStatusRequest), global::DF.Game.API.API.GetStatusRequest.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.GetStatusResponse), global::DF.Game.API.API.GetStatusResponse.Parser, new[]{ "Status" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.AttackRequest), global::DF.Game.API.API.AttackRequest.Parser, new[]{ "Tick", "ClientId", "EntityIds", "TargetEntityId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.AttackResponse), global::DF.Game.API.API.AttackResponse.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.MoveRequest), global::DF.Game.API.API.MoveRequest.Parser, new[]{ "Tick", "ClientId", "EntityIds", "Destination", "MoveType" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.MoveResponse), global::DF.Game.API.API.MoveResponse.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.StreamDataRequest), global::DF.Game.API.API.StreamDataRequest.Parser, new[]{ "Tick", "ClientId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.StreamDataResponse), global::DF.Game.API.API.StreamDataResponse.Parser, new[]{ "Tick", "State" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.AddClientRequest), global::DF.Game.API.API.AddClientRequest.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.AddClientResponse), global::DF.Game.API.API.AddClientResponse.Parser, new[]{ "Tick", "ClientId" }, null, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.GetStatusRequest), global::DF.Game.API.API.GetStatusRequest.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.GetStatusResponse), global::DF.Game.API.API.GetStatusResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.AttackRequest), global::DF.Game.API.API.AttackRequest.Parser, new[]{ "Tick", "ClientId", "EntityIds", "TargetEntityId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.AttackResponse), global::DF.Game.API.API.AttackResponse.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.MoveRequest), global::DF.Game.API.API.MoveRequest.Parser, new[]{ "Tick", "ClientId", "EntityIds", "Destination", "MoveType" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.MoveResponse), global::DF.Game.API.API.MoveResponse.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.StreamDataRequest), global::DF.Game.API.API.StreamDataRequest.Parser, new[]{ "Tick", "ClientId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.StreamDataResponse), global::DF.Game.API.API.StreamDataResponse.Parser, new[]{ "Tick", "State" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.AddClientRequest), global::DF.Game.API.API.AddClientRequest.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.API.AddClientResponse), global::DF.Game.API.API.AddClientResponse.Parser, new[]{ "Tick", "ClientId" }, null, null, null)
           }));
     }
     #endregion
 
   }
   #region Messages
-  public sealed partial class GetStatusRequest : pb::IMessage<GetStatusRequest>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class GetStatusRequest : pb::IMessage<GetStatusRequest> {
     private static readonly pb::MessageParser<GetStatusRequest> _parser = new pb::MessageParser<GetStatusRequest>(() => new GetStatusRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -140,23 +133,10 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -177,9 +157,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -188,30 +165,11 @@ namespace DF.Game.API.API {
             break;
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class GetStatusResponse : pb::IMessage<GetStatusResponse>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class GetStatusResponse : pb::IMessage<GetStatusResponse> {
     private static readonly pb::MessageParser<GetStatusResponse> _parser = new pb::MessageParser<GetStatusResponse>(() => new GetStatusResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -290,9 +248,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (status_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Status);
@@ -300,21 +255,7 @@ namespace DF.Game.API.API {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (status_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Status);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -344,9 +285,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -362,37 +300,11 @@ namespace DF.Game.API.API {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 10: {
-            if (status_ == null) {
-              Status = new global::DF.Game.API.Data.ServerStatus();
-            }
-            input.ReadMessage(Status);
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class AttackRequest : pb::IMessage<AttackRequest>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class AttackRequest : pb::IMessage<AttackRequest> {
     private static readonly pb::MessageParser<AttackRequest> _parser = new pb::MessageParser<AttackRequest>(() => new AttackRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -512,9 +424,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (Tick != 0D) {
         output.WriteRawTag(9);
         output.WriteDouble(Tick);
@@ -531,30 +440,7 @@ namespace DF.Game.API.API {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Tick != 0D) {
-        output.WriteRawTag(9);
-        output.WriteDouble(Tick);
-      }
-      if (ClientId.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteString(ClientId);
-      }
-      entityIds_.WriteTo(ref output, _repeated_entityIds_codec);
-      if (TargetEntityId.Length != 0) {
-        output.WriteRawTag(34);
-        output.WriteString(TargetEntityId);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -595,9 +481,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -622,46 +505,11 @@ namespace DF.Game.API.API {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 9: {
-            Tick = input.ReadDouble();
-            break;
-          }
-          case 18: {
-            ClientId = input.ReadString();
-            break;
-          }
-          case 26: {
-            entityIds_.AddEntriesFrom(ref input, _repeated_entityIds_codec);
-            break;
-          }
-          case 34: {
-            TargetEntityId = input.ReadString();
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class AttackResponse : pb::IMessage<AttackResponse>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class AttackResponse : pb::IMessage<AttackResponse> {
     private static readonly pb::MessageParser<AttackResponse> _parser = new pb::MessageParser<AttackResponse>(() => new AttackResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -726,23 +574,10 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -763,9 +598,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -774,30 +606,11 @@ namespace DF.Game.API.API {
             break;
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class MoveRequest : pb::IMessage<MoveRequest>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class MoveRequest : pb::IMessage<MoveRequest> {
     private static readonly pb::MessageParser<MoveRequest> _parser = new pb::MessageParser<MoveRequest>(() => new MoveRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -880,7 +693,7 @@ namespace DF.Game.API.API {
 
     /// <summary>Field number for the "move_type" field.</summary>
     public const int MoveTypeFieldNumber = 5;
-    private global::DF.Game.API.Constants.MoveType moveType_ = global::DF.Game.API.Constants.MoveType.Unknown;
+    private global::DF.Game.API.Constants.MoveType moveType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::DF.Game.API.Constants.MoveType MoveType {
       get { return moveType_; }
@@ -917,7 +730,7 @@ namespace DF.Game.API.API {
       if (ClientId.Length != 0) hash ^= ClientId.GetHashCode();
       hash ^= entityIds_.GetHashCode();
       if (destination_ != null) hash ^= Destination.GetHashCode();
-      if (MoveType != global::DF.Game.API.Constants.MoveType.Unknown) hash ^= MoveType.GetHashCode();
+      if (MoveType != 0) hash ^= MoveType.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -931,9 +744,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (Tick != 0D) {
         output.WriteRawTag(9);
         output.WriteDouble(Tick);
@@ -947,41 +757,14 @@ namespace DF.Game.API.API {
         output.WriteRawTag(34);
         output.WriteMessage(Destination);
       }
-      if (MoveType != global::DF.Game.API.Constants.MoveType.Unknown) {
+      if (MoveType != 0) {
         output.WriteRawTag(40);
         output.WriteEnum((int) MoveType);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Tick != 0D) {
-        output.WriteRawTag(9);
-        output.WriteDouble(Tick);
-      }
-      if (ClientId.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteString(ClientId);
-      }
-      entityIds_.WriteTo(ref output, _repeated_entityIds_codec);
-      if (destination_ != null) {
-        output.WriteRawTag(34);
-        output.WriteMessage(Destination);
-      }
-      if (MoveType != global::DF.Game.API.Constants.MoveType.Unknown) {
-        output.WriteRawTag(40);
-        output.WriteEnum((int) MoveType);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -996,7 +779,7 @@ namespace DF.Game.API.API {
       if (destination_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Destination);
       }
-      if (MoveType != global::DF.Game.API.Constants.MoveType.Unknown) {
+      if (MoveType != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MoveType);
       }
       if (_unknownFields != null) {
@@ -1023,7 +806,7 @@ namespace DF.Game.API.API {
         }
         Destination.MergeFrom(other.Destination);
       }
-      if (other.MoveType != global::DF.Game.API.Constants.MoveType.Unknown) {
+      if (other.MoveType != 0) {
         MoveType = other.MoveType;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1031,9 +814,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1065,53 +845,11 @@ namespace DF.Game.API.API {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 9: {
-            Tick = input.ReadDouble();
-            break;
-          }
-          case 18: {
-            ClientId = input.ReadString();
-            break;
-          }
-          case 26: {
-            entityIds_.AddEntriesFrom(ref input, _repeated_entityIds_codec);
-            break;
-          }
-          case 34: {
-            if (destination_ == null) {
-              Destination = new global::DF.Game.API.Data.Position();
-            }
-            input.ReadMessage(Destination);
-            break;
-          }
-          case 40: {
-            MoveType = (global::DF.Game.API.Constants.MoveType) input.ReadEnum();
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class MoveResponse : pb::IMessage<MoveResponse>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class MoveResponse : pb::IMessage<MoveResponse> {
     private static readonly pb::MessageParser<MoveResponse> _parser = new pb::MessageParser<MoveResponse>(() => new MoveResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1176,23 +914,10 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1213,9 +938,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1224,30 +946,11 @@ namespace DF.Game.API.API {
             break;
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class StreamDataRequest : pb::IMessage<StreamDataRequest>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class StreamDataRequest : pb::IMessage<StreamDataRequest> {
     private static readonly pb::MessageParser<StreamDataRequest> _parser = new pb::MessageParser<StreamDataRequest>(() => new StreamDataRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1340,9 +1043,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (Tick != 0D) {
         output.WriteRawTag(9);
         output.WriteDouble(Tick);
@@ -1354,25 +1054,7 @@ namespace DF.Game.API.API {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Tick != 0D) {
-        output.WriteRawTag(9);
-        output.WriteDouble(Tick);
-      }
-      if (ClientId.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteString(ClientId);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1405,9 +1087,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1424,38 +1103,11 @@ namespace DF.Game.API.API {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 9: {
-            Tick = input.ReadDouble();
-            break;
-          }
-          case 18: {
-            ClientId = input.ReadString();
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class StreamDataResponse : pb::IMessage<StreamDataResponse>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class StreamDataResponse : pb::IMessage<StreamDataResponse> {
     private static readonly pb::MessageParser<StreamDataResponse> _parser = new pb::MessageParser<StreamDataResponse>(() => new StreamDataResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1548,9 +1200,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (Tick != 0D) {
         output.WriteRawTag(9);
         output.WriteDouble(Tick);
@@ -1562,25 +1211,7 @@ namespace DF.Game.API.API {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Tick != 0D) {
-        output.WriteRawTag(9);
-        output.WriteDouble(Tick);
-      }
-      if (state_ != null) {
-        output.WriteRawTag(18);
-        output.WriteMessage(State);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1616,9 +1247,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1638,41 +1266,14 @@ namespace DF.Game.API.API {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 9: {
-            Tick = input.ReadDouble();
-            break;
-          }
-          case 18: {
-            if (state_ == null) {
-              State = new global::DF.Game.API.Data.GameState();
-            }
-            input.ReadMessage(State);
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class AddClientRequest : pb::IMessage<AddClientRequest>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  /// <summary>
+  /// TODO(minkezhang): Add team.
+  /// </summary>
+  public sealed partial class AddClientRequest : pb::IMessage<AddClientRequest> {
     private static readonly pb::MessageParser<AddClientRequest> _parser = new pb::MessageParser<AddClientRequest>(() => new AddClientRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1737,23 +1338,10 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1774,9 +1362,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1785,30 +1370,11 @@ namespace DF.Game.API.API {
             break;
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class AddClientResponse : pb::IMessage<AddClientResponse>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class AddClientResponse : pb::IMessage<AddClientResponse> {
     private static readonly pb::MessageParser<AddClientResponse> _parser = new pb::MessageParser<AddClientResponse>(() => new AddClientResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1901,9 +1467,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (Tick != 0D) {
         output.WriteRawTag(9);
         output.WriteDouble(Tick);
@@ -1915,25 +1478,7 @@ namespace DF.Game.API.API {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Tick != 0D) {
-        output.WriteRawTag(9);
-        output.WriteDouble(Tick);
-      }
-      if (ClientId.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteString(ClientId);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1966,9 +1511,6 @@ namespace DF.Game.API.API {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1985,30 +1527,7 @@ namespace DF.Game.API.API {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 9: {
-            Tick = input.ReadDouble();
-            break;
-          }
-          case 18: {
-            ClientId = input.ReadString();
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 

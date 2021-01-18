@@ -1,13 +1,7 @@
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library", "go_grpc_library")
-load("@rules_proto_grpc//csharp:defs.bzl", "csharp_grpc_compile", "csharp_proto_compile")
 
 package(default_visibility=["//visibility:public"])
-
-csharp_grpc_compile(
-    name = "api_csharp_proto",
-    deps = [":api_proto"],
-)
 
 proto_library(
     name = "api_proto",

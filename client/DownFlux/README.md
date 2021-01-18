@@ -37,6 +37,9 @@ different for Windows installs.
    (as we aren't supporting these builds in Unity) and they contain very large
    binaries.
 
+1. Untar relevant `grpc_protoc` plugin dir from same verified gRPC version, and
+   copy `grpc_csharp_plugin` to `/usr/local/bin/`.
+
 1. Install a verified working `protoc` package (latest verified with gRPC
    v2.26.0-dev is protoc
    [v3.8](https://github.com/protocolbuffers/protobuf/releases/tag/v3.8.0)).
@@ -50,6 +53,14 @@ different for Windows installs.
 
 ## Protobuf Generation
 
-1. Build relevant Bazel files
+1. Generate protobufs from root GitHub repo directory
 
-1. Copy from build output directory to `//client/DownFlux/Assets` directory.
+   ```bash
+   protoc -I=${PWD} \
+     --grpc_out=${PWD}/client/DownFlux/Assets/Protos/Api \
+     --csharp_out=${PWD}/client/DownFlux/Assets/Protos/Api \
+     --plugin=protoc-gen-grpc=/usr/local/bin/grpc_csharp_plugin \
+     $(find ${PWD}/api -iname "*.proto")
+   ```
+
+   We will need to do this per proto directory.

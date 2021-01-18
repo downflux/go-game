@@ -26,49 +26,44 @@ namespace DF.Game.API.Data {
           string.Concat(
             "Cg5hcGkvZGF0YS5wcm90bxINZ2FtZS5hcGkuZGF0YRoTYXBpL2NvbnN0YW50",
             "cy5wcm90bxoeZ29vZ2xlL3Byb3RvYnVmL2R1cmF0aW9uLnByb3RvGh9nb29n",
-            "bGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvIiYKCFBvc2l0aW9uEgwKAXgY",
-            "ASABKAFSAXgSDAoBeRgCIAEoAVIBeSIoCgpDb29yZGluYXRlEgwKAXgYASAB",
-            "KAVSAXgSDAoBeRgCIAEoBVIBeSLUAQoKQ3VydmVEYXR1bRISCgR0aWNrGAEg",
-            "ASgBUgR0aWNrEh8KCmJvb2xfZGF0dW0YAiABKAhIAFIJYm9vbERhdHVtEiEK",
-            "C2ludDMyX2RhdHVtGAMgASgFSABSCmludDMyRGF0dW0SIwoMZG91YmxlX2Rh",
-            "dHVtGAQgASgBSABSC2RvdWJsZURhdHVtEkAKDnBvc2l0aW9uX2RhdHVtGAUg",
-            "ASgLMhcuZ2FtZS5hcGkuZGF0YS5Qb3NpdGlvbkgAUg1wb3NpdGlvbkRhdHVt",
-            "QgcKBWRhdHVtItoBCgVDdXJ2ZRIbCgllbnRpdHlfaWQYASABKAlSCGVudGl0",
-            "eUlkEj4KCHByb3BlcnR5GAIgASgOMiIuZ2FtZS5hcGkuY29uc3RhbnRzLkVu",
-            "dGl0eVByb3BlcnR5Ughwcm9wZXJ0eRIxCgR0eXBlGAMgASgOMh0uZ2FtZS5h",
-            "cGkuY29uc3RhbnRzLkN1cnZlVHlwZVIEdHlwZRItCgRkYXRhGAQgAygLMhku",
-            "Z2FtZS5hcGkuZGF0YS5DdXJ2ZURhdHVtUgRkYXRhEhIKBHRpY2sYBSABKAFS",
-            "BHRpY2sivAEKDFNlcnZlclN0YXR1cxIdCgppc19zdGFydGVkGAEgASgIUglp",
-            "c1N0YXJ0ZWQSEgoEdGljaxgCIAEoAVIEdGljaxI+Cg10aWNrX2R1cmF0aW9u",
-            "GAMgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uUgx0aWNrRHVyYXRp",
-            "b24SOQoKc3RhcnRfdGltZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l",
-            "c3RhbXBSCXN0YXJ0VGltZSJZCgZFbnRpdHkSGwoJZW50aXR5X2lkGAEgASgJ",
-            "UghlbnRpdHlJZBIyCgR0eXBlGAIgASgOMh4uZ2FtZS5hcGkuY29uc3RhbnRz",
-            "LkVudGl0eVR5cGVSBHR5cGUibAoJR2FtZVN0YXRlEiwKBmN1cnZlcxgBIAMo",
-            "CzIULmdhbWUuYXBpLmRhdGEuQ3VydmVSBmN1cnZlcxIxCghlbnRpdGllcxgC",
-            "IAMoCzIVLmdhbWUuYXBpLmRhdGEuRW50aXR5UghlbnRpdGllc0IiWg1nYW1l",
-            "LmFwaS5kYXRhqgIQREYuR2FtZS5BUEkuRGF0YWIGcHJvdG8z"));
+            "bGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvIiAKCFBvc2l0aW9uEgkKAXgY",
+            "ASABKAESCQoBeRgCIAEoASIiCgpDb29yZGluYXRlEgkKAXgYASABKAUSCQoB",
+            "eRgCIAEoBSKbAQoKQ3VydmVEYXR1bRIMCgR0aWNrGAEgASgBEhQKCmJvb2xf",
+            "ZGF0dW0YAiABKAhIABIVCgtpbnQzMl9kYXR1bRgDIAEoBUgAEhYKDGRvdWJs",
+            "ZV9kYXR1bRgEIAEoAUgAEjEKDnBvc2l0aW9uX2RhdHVtGAUgASgLMhcuZ2Ft",
+            "ZS5hcGkuZGF0YS5Qb3NpdGlvbkgAQgcKBWRhdHVtIrQBCgVDdXJ2ZRIRCgll",
+            "bnRpdHlfaWQYASABKAkSNAoIcHJvcGVydHkYAiABKA4yIi5nYW1lLmFwaS5j",
+            "b25zdGFudHMuRW50aXR5UHJvcGVydHkSKwoEdHlwZRgDIAEoDjIdLmdhbWUu",
+            "YXBpLmNvbnN0YW50cy5DdXJ2ZVR5cGUSJwoEZGF0YRgEIAMoCzIZLmdhbWUu",
+            "YXBpLmRhdGEuQ3VydmVEYXR1bRIMCgR0aWNrGAUgASgBIpIBCgxTZXJ2ZXJT",
+            "dGF0dXMSEgoKaXNfc3RhcnRlZBgBIAEoCBIMCgR0aWNrGAIgASgBEjAKDXRp",
+            "Y2tfZHVyYXRpb24YAyABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24S",
+            "LgoKc3RhcnRfdGltZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3Rh",
+            "bXAiSQoGRW50aXR5EhEKCWVudGl0eV9pZBgBIAEoCRIsCgR0eXBlGAIgASgO",
+            "Mh4uZ2FtZS5hcGkuY29uc3RhbnRzLkVudGl0eVR5cGUiWgoJR2FtZVN0YXRl",
+            "EiQKBmN1cnZlcxgBIAMoCzIULmdhbWUuYXBpLmRhdGEuQ3VydmUSJwoIZW50",
+            "aXRpZXMYAiADKAsyFS5nYW1lLmFwaS5kYXRhLkVudGl0eUIiWg1nYW1lLmFw",
+            "aS5kYXRhqgIQREYuR2FtZS5BUEkuRGF0YWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::DF.Game.API.Constants.ConstantsReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Position), global::DF.Game.API.Data.Position.Parser, new[]{ "X", "Y" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Coordinate), global::DF.Game.API.Data.Coordinate.Parser, new[]{ "X", "Y" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.CurveDatum), global::DF.Game.API.Data.CurveDatum.Parser, new[]{ "Tick", "BoolDatum", "Int32Datum", "DoubleDatum", "PositionDatum" }, new[]{ "Datum" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Curve), global::DF.Game.API.Data.Curve.Parser, new[]{ "EntityId", "Property", "Type", "Data", "Tick" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.ServerStatus), global::DF.Game.API.Data.ServerStatus.Parser, new[]{ "IsStarted", "Tick", "TickDuration", "StartTime" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Entity), global::DF.Game.API.Data.Entity.Parser, new[]{ "EntityId", "Type" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.GameState), global::DF.Game.API.Data.GameState.Parser, new[]{ "Curves", "Entities" }, null, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Position), global::DF.Game.API.Data.Position.Parser, new[]{ "X", "Y" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Coordinate), global::DF.Game.API.Data.Coordinate.Parser, new[]{ "X", "Y" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.CurveDatum), global::DF.Game.API.Data.CurveDatum.Parser, new[]{ "Tick", "BoolDatum", "Int32Datum", "DoubleDatum", "PositionDatum" }, new[]{ "Datum" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Curve), global::DF.Game.API.Data.Curve.Parser, new[]{ "EntityId", "Property", "Type", "Data", "Tick" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.ServerStatus), global::DF.Game.API.Data.ServerStatus.Parser, new[]{ "IsStarted", "Tick", "TickDuration", "StartTime" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Entity), global::DF.Game.API.Data.Entity.Parser, new[]{ "EntityId", "Type" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.GameState), global::DF.Game.API.Data.GameState.Parser, new[]{ "Curves", "Entities" }, null, null, null)
           }));
     }
     #endregion
 
   }
   #region Messages
-  public sealed partial class Position : pb::IMessage<Position>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  /// <summary>
+  /// Position is a specific point in the map, representing a point in the map.
+  /// </summary>
+  public sealed partial class Position : pb::IMessage<Position> {
     private static readonly pb::MessageParser<Position> _parser = new pb::MessageParser<Position>(() => new Position());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -161,9 +156,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (X != 0D) {
         output.WriteRawTag(9);
         output.WriteDouble(X);
@@ -175,25 +167,7 @@ namespace DF.Game.API.Data {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (X != 0D) {
-        output.WriteRawTag(9);
-        output.WriteDouble(X);
-      }
-      if (Y != 0D) {
-        output.WriteRawTag(17);
-        output.WriteDouble(Y);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -226,9 +200,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -245,38 +216,15 @@ namespace DF.Game.API.Data {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 9: {
-            X = input.ReadDouble();
-            break;
-          }
-          case 17: {
-            Y = input.ReadDouble();
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class Coordinate : pb::IMessage<Coordinate>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  /// <summary>
+  /// Coordinate is a pointer to a specific Tile object in a map.
+  /// TODO(minkezhang): Move to //map/api.
+  /// </summary>
+  public sealed partial class Coordinate : pb::IMessage<Coordinate> {
     private static readonly pb::MessageParser<Coordinate> _parser = new pb::MessageParser<Coordinate>(() => new Coordinate());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -369,9 +317,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (X != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(X);
@@ -383,25 +328,7 @@ namespace DF.Game.API.Data {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (X != 0) {
-        output.WriteRawTag(8);
-        output.WriteInt32(X);
-      }
-      if (Y != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(Y);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -434,9 +361,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -453,38 +377,16 @@ namespace DF.Game.API.Data {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 8: {
-            X = input.ReadInt32();
-            break;
-          }
-          case 16: {
-            Y = input.ReadInt32();
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class CurveDatum : pb::IMessage<CurveDatum>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  /// <summary>
+  /// CurveDatum represents a single (time, data) point on a curve. The value of
+  /// the datum may be of multiple types, and it is up to the client and server
+  /// to consume this data responsibly.
+  /// </summary>
+  public sealed partial class CurveDatum : pb::IMessage<CurveDatum> {
     private static readonly pb::MessageParser<CurveDatum> _parser = new pb::MessageParser<CurveDatum>(() => new CurveDatum());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -653,9 +555,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (Tick != 0D) {
         output.WriteRawTag(9);
         output.WriteDouble(Tick);
@@ -679,37 +578,7 @@ namespace DF.Game.API.Data {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Tick != 0D) {
-        output.WriteRawTag(9);
-        output.WriteDouble(Tick);
-      }
-      if (datumCase_ == DatumOneofCase.BoolDatum) {
-        output.WriteRawTag(16);
-        output.WriteBool(BoolDatum);
-      }
-      if (datumCase_ == DatumOneofCase.Int32Datum) {
-        output.WriteRawTag(24);
-        output.WriteInt32(Int32Datum);
-      }
-      if (datumCase_ == DatumOneofCase.DoubleDatum) {
-        output.WriteRawTag(33);
-        output.WriteDouble(DoubleDatum);
-      }
-      if (datumCase_ == DatumOneofCase.PositionDatum) {
-        output.WriteRawTag(42);
-        output.WriteMessage(PositionDatum);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -766,9 +635,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -802,55 +668,15 @@ namespace DF.Game.API.Data {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 9: {
-            Tick = input.ReadDouble();
-            break;
-          }
-          case 16: {
-            BoolDatum = input.ReadBool();
-            break;
-          }
-          case 24: {
-            Int32Datum = input.ReadInt32();
-            break;
-          }
-          case 33: {
-            DoubleDatum = input.ReadDouble();
-            break;
-          }
-          case 42: {
-            global::DF.Game.API.Data.Position subBuilder = new global::DF.Game.API.Data.Position();
-            if (datumCase_ == DatumOneofCase.PositionDatum) {
-              subBuilder.MergeFrom(PositionDatum);
-            }
-            input.ReadMessage(subBuilder);
-            PositionDatum = subBuilder;
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class Curve : pb::IMessage<Curve>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  /// <summary>
+  /// Curve represents a time series of a specified property. This curve belongs
+  /// to a specific entity.
+  /// </summary>
+  public sealed partial class Curve : pb::IMessage<Curve> {
     private static readonly pb::MessageParser<Curve> _parser = new pb::MessageParser<Curve>(() => new Curve());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -901,7 +727,7 @@ namespace DF.Game.API.Data {
 
     /// <summary>Field number for the "property" field.</summary>
     public const int PropertyFieldNumber = 2;
-    private global::DF.Game.API.Constants.EntityProperty property_ = global::DF.Game.API.Constants.EntityProperty.Unknown;
+    private global::DF.Game.API.Constants.EntityProperty property_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::DF.Game.API.Constants.EntityProperty Property {
       get { return property_; }
@@ -912,7 +738,7 @@ namespace DF.Game.API.Data {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 3;
-    private global::DF.Game.API.Constants.CurveType type_ = global::DF.Game.API.Constants.CurveType.Unknown;
+    private global::DF.Game.API.Constants.CurveType type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::DF.Game.API.Constants.CurveType Type {
       get { return type_; }
@@ -934,6 +760,11 @@ namespace DF.Game.API.Data {
     /// <summary>Field number for the "tick" field.</summary>
     public const int TickFieldNumber = 5;
     private double tick_;
+    /// <summary>
+    /// tick is the last server tick at which the curve has been updated. This is
+    /// used as a measure of staleness of the curve, and is used when we merge
+    /// curves of the same entity property.
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Tick {
       get { return tick_; }
@@ -967,8 +798,8 @@ namespace DF.Game.API.Data {
     public override int GetHashCode() {
       int hash = 1;
       if (EntityId.Length != 0) hash ^= EntityId.GetHashCode();
-      if (Property != global::DF.Game.API.Constants.EntityProperty.Unknown) hash ^= Property.GetHashCode();
-      if (Type != global::DF.Game.API.Constants.CurveType.Unknown) hash ^= Type.GetHashCode();
+      if (Property != 0) hash ^= Property.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
       hash ^= data_.GetHashCode();
       if (Tick != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Tick);
       if (_unknownFields != null) {
@@ -984,18 +815,15 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (EntityId.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(EntityId);
       }
-      if (Property != global::DF.Game.API.Constants.EntityProperty.Unknown) {
+      if (Property != 0) {
         output.WriteRawTag(16);
         output.WriteEnum((int) Property);
       }
-      if (Type != global::DF.Game.API.Constants.CurveType.Unknown) {
+      if (Type != 0) {
         output.WriteRawTag(24);
         output.WriteEnum((int) Type);
       }
@@ -1007,34 +835,7 @@ namespace DF.Game.API.Data {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (EntityId.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(EntityId);
-      }
-      if (Property != global::DF.Game.API.Constants.EntityProperty.Unknown) {
-        output.WriteRawTag(16);
-        output.WriteEnum((int) Property);
-      }
-      if (Type != global::DF.Game.API.Constants.CurveType.Unknown) {
-        output.WriteRawTag(24);
-        output.WriteEnum((int) Type);
-      }
-      data_.WriteTo(ref output, _repeated_data_codec);
-      if (Tick != 0D) {
-        output.WriteRawTag(41);
-        output.WriteDouble(Tick);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1042,10 +843,10 @@ namespace DF.Game.API.Data {
       if (EntityId.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(EntityId);
       }
-      if (Property != global::DF.Game.API.Constants.EntityProperty.Unknown) {
+      if (Property != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Property);
       }
-      if (Type != global::DF.Game.API.Constants.CurveType.Unknown) {
+      if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
       size += data_.CalculateSize(_repeated_data_codec);
@@ -1066,10 +867,10 @@ namespace DF.Game.API.Data {
       if (other.EntityId.Length != 0) {
         EntityId = other.EntityId;
       }
-      if (other.Property != global::DF.Game.API.Constants.EntityProperty.Unknown) {
+      if (other.Property != 0) {
         Property = other.Property;
       }
-      if (other.Type != global::DF.Game.API.Constants.CurveType.Unknown) {
+      if (other.Type != 0) {
         Type = other.Type;
       }
       data_.Add(other.data_);
@@ -1081,9 +882,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1112,50 +910,14 @@ namespace DF.Game.API.Data {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 10: {
-            EntityId = input.ReadString();
-            break;
-          }
-          case 16: {
-            Property = (global::DF.Game.API.Constants.EntityProperty) input.ReadEnum();
-            break;
-          }
-          case 24: {
-            Type = (global::DF.Game.API.Constants.CurveType) input.ReadEnum();
-            break;
-          }
-          case 34: {
-            data_.AddEntriesFrom(ref input, _repeated_data_codec);
-            break;
-          }
-          case 41: {
-            Tick = input.ReadDouble();
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class ServerStatus : pb::IMessage<ServerStatus>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  /// <summary>
+  /// ServerStatus represents the current status of the game server.
+  /// </summary>
+  public sealed partial class ServerStatus : pb::IMessage<ServerStatus> {
     private static readonly pb::MessageParser<ServerStatus> _parser = new pb::MessageParser<ServerStatus>(() => new ServerStatus());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1206,6 +968,11 @@ namespace DF.Game.API.Data {
     /// <summary>Field number for the "tick" field.</summary>
     public const int TickFieldNumber = 2;
     private double tick_;
+    /// <summary>
+    /// tick represents the current server tick that is being processed. This is a
+    /// non-zero integer (cast into a float). This, together with the start_time
+    /// and tick_duration, allows the client to predict the current server tick.
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Tick {
       get { return tick_; }
@@ -1276,9 +1043,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (IsStarted != false) {
         output.WriteRawTag(8);
         output.WriteBool(IsStarted);
@@ -1298,33 +1062,7 @@ namespace DF.Game.API.Data {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (IsStarted != false) {
-        output.WriteRawTag(8);
-        output.WriteBool(IsStarted);
-      }
-      if (Tick != 0D) {
-        output.WriteRawTag(17);
-        output.WriteDouble(Tick);
-      }
-      if (tickDuration_ != null) {
-        output.WriteRawTag(26);
-        output.WriteMessage(TickDuration);
-      }
-      if (startTime_ != null) {
-        output.WriteRawTag(34);
-        output.WriteMessage(StartTime);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1375,9 +1113,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1408,52 +1143,18 @@ namespace DF.Game.API.Data {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 8: {
-            IsStarted = input.ReadBool();
-            break;
-          }
-          case 17: {
-            Tick = input.ReadDouble();
-            break;
-          }
-          case 26: {
-            if (tickDuration_ == null) {
-              TickDuration = new global::Google.Protobuf.WellKnownTypes.Duration();
-            }
-            input.ReadMessage(TickDuration);
-            break;
-          }
-          case 34: {
-            if (startTime_ == null) {
-              StartTime = new global::Google.Protobuf.WellKnownTypes.Timestamp();
-            }
-            input.ReadMessage(StartTime);
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class Entity : pb::IMessage<Entity>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  /// <summary>
+  /// Entity represents a game object. This may be a unit (TANK), a rendered
+  /// (PROJECTILE_ROCKET), a non-rendered object (PLAYER), or any other trackable
+  /// data struct. This object's propeties are represented as parametric curves.
+  /// The entire list of entities, along with the property curves, represent
+  /// wholly the game state.
+  /// </summary>
+  public sealed partial class Entity : pb::IMessage<Entity> {
     private static readonly pb::MessageParser<Entity> _parser = new pb::MessageParser<Entity>(() => new Entity());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1491,6 +1192,9 @@ namespace DF.Game.API.Data {
     /// <summary>Field number for the "entity_id" field.</summary>
     public const int EntityIdFieldNumber = 1;
     private string entityId_ = "";
+    /// <summary>
+    /// TODO(minkezhang): Rename to id instead.
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string EntityId {
       get { return entityId_; }
@@ -1501,7 +1205,7 @@ namespace DF.Game.API.Data {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 2;
-    private global::DF.Game.API.Constants.EntityType type_ = global::DF.Game.API.Constants.EntityType.Unknown;
+    private global::DF.Game.API.Constants.EntityType type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::DF.Game.API.Constants.EntityType Type {
       get { return type_; }
@@ -1532,7 +1236,7 @@ namespace DF.Game.API.Data {
     public override int GetHashCode() {
       int hash = 1;
       if (EntityId.Length != 0) hash ^= EntityId.GetHashCode();
-      if (Type != global::DF.Game.API.Constants.EntityType.Unknown) hash ^= Type.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1546,39 +1250,18 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       if (EntityId.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(EntityId);
       }
-      if (Type != global::DF.Game.API.Constants.EntityType.Unknown) {
+      if (Type != 0) {
         output.WriteRawTag(16);
         output.WriteEnum((int) Type);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (EntityId.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(EntityId);
-      }
-      if (Type != global::DF.Game.API.Constants.EntityType.Unknown) {
-        output.WriteRawTag(16);
-        output.WriteEnum((int) Type);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1586,7 +1269,7 @@ namespace DF.Game.API.Data {
       if (EntityId.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(EntityId);
       }
-      if (Type != global::DF.Game.API.Constants.EntityType.Unknown) {
+      if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
       if (_unknownFields != null) {
@@ -1603,7 +1286,7 @@ namespace DF.Game.API.Data {
       if (other.EntityId.Length != 0) {
         EntityId = other.EntityId;
       }
-      if (other.Type != global::DF.Game.API.Constants.EntityType.Unknown) {
+      if (other.Type != 0) {
         Type = other.Type;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1611,9 +1294,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1630,38 +1310,11 @@ namespace DF.Game.API.Data {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 10: {
-            EntityId = input.ReadString();
-            break;
-          }
-          case 16: {
-            Type = (global::DF.Game.API.Constants.EntityType) input.ReadEnum();
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
-  public sealed partial class GameState : pb::IMessage<GameState>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
+  public sealed partial class GameState : pb::IMessage<GameState> {
     private static readonly pb::MessageParser<GameState> _parser = new pb::MessageParser<GameState>(() => new GameState());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1752,27 +1405,12 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
       curves_.WriteTo(output, _repeated_curves_codec);
       entities_.WriteTo(output, _repeated_entities_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      curves_.WriteTo(ref output, _repeated_curves_codec);
-      entities_.WriteTo(ref output, _repeated_entities_codec);
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1797,9 +1435,6 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1816,30 +1451,7 @@ namespace DF.Game.API.Data {
           }
         }
       }
-    #endif
     }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 10: {
-            curves_.AddEntriesFrom(ref input, _repeated_curves_codec);
-            break;
-          }
-          case 18: {
-            entities_.AddEntriesFrom(ref input, _repeated_entities_codec);
-            break;
-          }
-        }
-      }
-    }
-    #endif
 
   }
 
