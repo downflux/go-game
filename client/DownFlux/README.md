@@ -41,7 +41,9 @@ different for Windows installs.
    | Grpc.Tools      | 2.34.1  |
 
 1. Copy the gRPC binary from Packages/Grpc.Tools directory into /usr/local/bin,
-   set executable bit, and `root:root` as owner for the binaries.
+   set executable bit, and `root:root` as owner for the binaries. See
+   [#694](https://github.com/golang/protobuf/issues/694) for potential
+   pitfalls with linking native `.proto` files.
 
 ## Install Visual Studio Code
 
@@ -62,14 +64,14 @@ different for Windows installs.
 
 ## Protobuf Generation
 
-1. Generate protobufs from root GitHub repo directory
+Generate protobufs from root GitHub repo directory
 
-   ```bash
-   protoc -I=${PWD} \
-     --grpc_out=${PWD}/client/DownFlux/Assets/Protos/Api \
-     --csharp_out=${PWD}/client/DownFlux/Assets/Protos/Api \
-     --plugin=protoc-gen-grpc=/usr/local/bin/grpc_csharp_plugin \
-     $(find ${PWD}/api -iname "*.proto")
-   ```
+```bash
+protoc -I=${PWD} \
+  --grpc_out=${PWD}/client/DownFlux/Assets/Protos/Api \
+  --csharp_out=${PWD}/client/DownFlux/Assets/Protos/Api \
+  --plugin=protoc-gen-grpc=/usr/local/bin/grpc_csharp_plugin \
+  $(find ${PWD}/api -iname "*.proto")
+```
 
-   We will need to do this per proto directory.
+We will need to do this per proto directory.
