@@ -27,26 +27,21 @@ different for Windows installs.
 1. Install [NuGetForUnity](https://github.com/GlitchEnzo/NuGetForUnity)
    v2.0.1.
 
-1. Download from [packages.grpc.io](https://packages.grpc.io/). Latest verified
-   version is
-   [2.26.0-dev](https://packages.grpc.io/archive/2019/12/a02d6b9be81cbadb60eed88b3b44498ba27bcba9-edd81ac6-e3d1-461a-a263-2b06ae913c3f/index.xml)
+   Assets > Import Package
 
-   See [#22251](https://github.com/grpc/grpc/issues/22251) for explanation and
-   architecture updates.
+1. Ensure the correct gRPC packages are installed
 
-1. Unzip `grpc_unity_package` inside the `//client/DownFlux/Assets` directory.
+   | Package         | Version |
+   | --------------- | ------- |
+   | Google.Protobuf | 3.14.0  |
+   | Grpc            | 2.34.1  |
+   | Grpc.Core       | 2.34.1  |
+   | Grpc.Core.Api   | 2.34.1  |
+   | Grpc.Net.Client | 2.34.0  |
+   | Grpc.Tools      | 2.34.1  |
 
-1. Delete the `ios`, `android`, and `osx` directories from `Grpc.Core/runtimes`
-   (as we aren't supporting these builds in Unity) and they contain very large
-   binaries.
-
-1. Untar relevant `grpc_protoc` plugin dir from same verified gRPC version, and
-   copy `grpc_csharp_plugin` to `/usr/local/bin/`.
-
-1. Install a verified working `protoc` package (latest verified with gRPC
-   v2.26.0-dev is protoc
-   [v3.8](https://github.com/protocolbuffers/protobuf/releases/tag/v3.8.0)).
-   See [StackOverflow](https://askubuntu.com/questions/1072683/).
+1. Copy the gRPC binary from Packages/Grpc.Tools directory into /usr/local/bin,
+   set executable bit, and `root:root` as owner for the binaries.
 
 ## Install Visual Studio Code
 
