@@ -16,7 +16,7 @@ different for Windows installs.
    [bug with Unity Hub](https://forum.unity.com/threads/no-editor-installed.893605),
    we need to create a throwaway project first.
 
-1. Add `//client/DownFlux/` as a project.
+1. Add `DownFlux/` as a project.
 
 1. Set .NET 4.x for gRPC compatibility
 
@@ -31,14 +31,15 @@ different for Windows installs.
 
 1. Ensure the correct gRPC packages are installed
 
-   | Package         | Version |
-   | --------------- | ------- |
-   | Google.Protobuf | 3.14.0  |
-   | Grpc            | 2.34.1  |
-   | Grpc.Core       | 2.34.1  |
-   | Grpc.Core.Api   | 2.34.1  |
-   | Grpc.Net.Client | 2.34.0  |
-   | Grpc.Tools      | 2.34.1  |
+   | Package               | Version |
+   | --------------------- | ------- |
+   | Google.Protobuf       | 3.14.0  |
+   | Grpc                  | 2.34.1  |
+   | Grpc.Core             | 2.34.1  |
+   | Grpc.Core.Api         | 2.34.1  |
+   | Grpc.Net.Client       | 2.34.0  |
+   | Grpc.Tools            | 2.34.1  |
+   | Google.Protobuf.Tools | 3.14.0  |
 
 1. Copy the gRPC binary from Packages/Grpc.Tools directory into /usr/local/bin,
    set executable bit, and `root:root` as owner for the binaries. See
@@ -67,7 +68,9 @@ different for Windows installs.
 Generate protobufs from root GitHub repo directory
 
 ```bash
-protoc -I=${PWD} \
+protoc \
+  -I=${PWD} \
+  -I=${PWD}/client/DownFlux/Packages/Google.Protobuf.Tools.3.14.0/tools/ \
   --grpc_out=${PWD}/client/DownFlux/Assets/Protos/Api \
   --csharp_out=${PWD}/client/DownFlux/Assets/Protos/Api \
   --plugin=protoc-gen-grpc=/usr/local/bin/grpc_csharp_plugin \
