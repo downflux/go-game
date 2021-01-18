@@ -28,7 +28,7 @@ different for Windows installs.
    version is
    [2.26.0-dev](https://packages.grpc.io/archive/2019/12/a02d6b9be81cbadb60eed88b3b44498ba27bcba9-edd81ac6-e3d1-461a-a263-2b06ae913c3f/index.xml)
 
-   See [#22251](https://github.com/grpc/grpc/issues/22251) for explaination and
+   See [#22251](https://github.com/grpc/grpc/issues/22251) for explanation and
    architecture updates.
 
 1. Unzip `grpc_unity_package` inside the `//client/DownFlux/Assets` directory.
@@ -47,9 +47,20 @@ different for Windows installs.
 
 ## Install Visual Studio Code
 
+1. Install [VSCode](https://code.visualstudio.com/docs/setup/linux), taking
+   care to go the `apt` update route.
+
 1. Set as default Unity editor
 
    Edit > Preferences > External Tools > External Script Editor
+
+1. Install the
+   [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
+   extension for VSCode, via Extensions in the side panel.
+
+1. Install the
+   [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux).
+   Currently verified with Ubuntu 20.04.
 
 ## Protobuf Generation
 
