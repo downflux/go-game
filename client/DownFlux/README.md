@@ -41,7 +41,7 @@ different for Windows installs.
    | Grpc.Tools            | 2.34.1  |
    | Google.Protobuf.Tools | 3.14.0  |
 
-1. Copy the gRPC binary from Packages/Grpc.Tools directory into /usr/local/bin,
+1. Copy the gRPC binary from `Packages/Grpc.Tools` directory into `/usr/local/bin`,
    set executable bit, and `root:root` as owner for the binaries. See
    [#694](https://github.com/golang/protobuf/issues/694) for potential
    pitfalls with linking native `.proto` files.
@@ -71,14 +71,17 @@ different for Windows installs.
    [.NET 5.0 SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux).
    Currently verified with Ubuntu 20.04.
 
-1. Install `mono-complete`; may need a more up-to-date version, e.g.
+1. Install `mono-complete` via
    [official source](https://www.mono-project.com/download/stable/#download-lin).
 
 1. Edit `~/.bashrc`:
 
    ```bash
-   export FrameworkPathOverride=/lib/mono/4.5
+   export FrameworkPathOverride=/lib/mono/4.7.1-api
    ```
+
+   This seems necessary due to an archaic unfixed bug
+   [#335](https://github.com/dotnet/sdk/issues/335).
 
 ## Protobuf Generation
 
