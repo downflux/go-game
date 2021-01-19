@@ -24,8 +24,8 @@ different for Windows installs.
 
 ## Update C# gRPC Version
 
-1. Install [NuGetForUnity](https://github.com/GlitchEnzo/NuGetForUnity)
-   v2.0.1.
+1. Install [NuGetForUnity](https://github.com/GlitchEnzo/NuGetForUnity).
+   Currently verified with 2.0.1.
 
    Assets > Import Package
 
@@ -46,7 +46,7 @@ different for Windows installs.
    [#694](https://github.com/golang/protobuf/issues/694) for potential
    pitfalls with linking native `.proto` files.
 
-## Install Visual Studio Code
+## [Optional] Install Visual Studio Code
 
 1. Install [VSCode](https://code.visualstudio.com/docs/setup/linux), taking
    care to go the `apt` update route.
