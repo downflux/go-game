@@ -59,9 +59,26 @@ different for Windows installs.
    [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
    extension for VSCode, via Extensions in the side panel.
 
+1. Per extension notes, ensure we set
+
+   ```json
+   "omnisharp.useGlobalMono": "never"
+   ```
+
+   in `DownFlux/.vscode/settings.json`
+
 1. Install the
-   [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux).
+   [.NET 5.0 SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux).
    Currently verified with Ubuntu 20.04.
+
+1. Install `mono-complete`; may need a more up-to-date version, e.g.
+   [official source](https://www.mono-project.com/download/stable/#download-lin).
+
+1. Edit `~/.bashrc`:
+
+   ```bash
+   export FrameworkPathOverride=/lib/mono/4.5
+   ```
 
 ## Protobuf Generation
 

@@ -1,4 +1,5 @@
 ﻿{
+    "omnisharp.useGlobalMono": "never",
     "files.exclude":
     {
         "**/.DS_Store":true,
