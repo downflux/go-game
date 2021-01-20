@@ -1,11 +1,9 @@
-namespace DF
+namespace DF.Game.Entity
 {
-    namespace Game
+    public interface IEntity
     {
-        namespace Entity
-        {
-            public class Entity { }
-        }
-
+        DF.Game.API.Constants.EntityType Type { get; }
+        DF.Game.ID.EntityID ID { get; }
+        DF.Game.Curve.List Curves { get; }
     }
 }

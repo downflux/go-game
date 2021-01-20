@@ -1,16 +1,11 @@
-namespace DF
+namespace DF.Game.State
 {
-    namespace Game
+    public class State
     {
-        namespace State
+        private DF.Game.Entity.List _entities;
+
+        public State()
         {
-            public class State
-            {
-                private System.Collections.Generic.Dictionary<DF.Game.EntityID, DF.Game.Entity.Entity> entities;
-                public State() { }
-
-            }
         }
-
     }
 }

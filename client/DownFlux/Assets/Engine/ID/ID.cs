@@ -1,21 +1,30 @@
-namespace DF
+namespace DF.Game.ID
 {
-    namespace Game
+    public class Tick
     {
-        class ID
+        private double _tick;
+        public Tick(double t) { Double = t; }
+        public double Double
         {
-            private string _id;
-            public string String
-            {
-                get => _id;
-                private set { _id = value; }
-            }
-            public ID(string id) { _id = id; }
+            get => _tick;
+            private set { _tick = value; }
+        }
+    }
+
+    public class ID
+    {
+        private string _id;
+        public string String
+        {
+            get => _id;
+            private set { _id = value; }
         }
 
-        class EntityID : ID
-        {
-            public EntityID(string id) : base(id) { }
-        }
+        public ID(string id) { String = id; }
+    }
+
+    public class EntityID : ID
+    {
+        public EntityID(string id) : base(id) { }
     }
 }
