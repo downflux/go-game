@@ -83,6 +83,13 @@ different for Windows installs.
    This seems necessary due to an archaic unfixed bug
    [#335](https://github.com/dotnet/sdk/issues/335).
 
+1. `FrameworkPathOverride` is not passed in via the Unity GUI; we have to
+   start VSCode separately in the terminal
+
+   ```bash
+   code
+   ```
+
 ## Protobuf Generation
 
 Generate protobufs from root GitHub repo directory
