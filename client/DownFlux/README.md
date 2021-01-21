@@ -97,6 +97,7 @@ Generate protobufs from root GitHub repo directory. See
 for `protoc` flag explanation.
 
 ```bash
+rm -rf ${PWD}/client/DownFlux/Assets/Protos/*
 protoc \
   -I=${PWD} \
   -I=${PWD}/client/DownFlux/Packages/Google.Protobuf.Tools.3.14.0/tools/ \
