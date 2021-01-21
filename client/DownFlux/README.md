@@ -103,7 +103,7 @@ protoc \
   -I=${PWD}/client/DownFlux/Packages/Google.Protobuf.Tools.3.14.0/tools/ \
   --grpc_out=${PWD}/client/DownFlux/Assets/Protos \
   --csharp_out=${PWD}/client/DownFlux/Assets/Protos \
-  --csharp_opt=file_extension=.g.cs,base_namespace=DF \
+  --csharp_opt=file_extension=.g.cs,base_namespace=DF.Game \
   --plugin=protoc-gen-grpc=/usr/local/bin/grpc_csharp_plugin \
   $(find ${PWD}/ -iname "*.proto" -print -o -path ${PWD}/client -prune)
 ```

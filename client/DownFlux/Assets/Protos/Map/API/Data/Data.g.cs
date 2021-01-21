@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace DF.Map.API.Data {
+namespace DF.Game.Map.API.Data {
 
   /// <summary>Holder for reflection information generated from map/api/data.proto</summary>
   public static partial class DataReflection {
@@ -33,14 +33,14 @@ namespace DF.Map.API.Data {
             "CgRjb3N0GAIgASgBIpYBCgdUaWxlTWFwEiwKCWRpbWVuc2lvbhgBIAEoCzIZ",
             "LmdhbWUuYXBpLmRhdGEuQ29vcmRpbmF0ZRImCgV0aWxlcxgCIAMoCzIXLmdh",
             "bWUubWFwLmFwaS5kYXRhLlRpbGUSNQoNdGVycmFpbl9jb3N0cxgDIAMoCzIe",
-            "LmdhbWUubWFwLmFwaS5kYXRhLlRlcnJhaW5Db3N0QiVaEWdhbWUubWFwLmFw",
-            "aS5kYXRhqgIPREYuTWFwLkFQSS5EYXRhYgZwcm90bzM="));
+            "LmdhbWUubWFwLmFwaS5kYXRhLlRlcnJhaW5Db3N0QipaEWdhbWUubWFwLmFw",
+            "aS5kYXRhqgIUREYuR2FtZS5NYXAuQVBJLkRhdGFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::DF.Game.API.Data.DataReflection.Descriptor, global::DF.Game.Map.API.Constants.ConstantsReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Map.API.Data.Tile), global::DF.Map.API.Data.Tile.Parser, new[]{ "Coordinate", "TerrainType" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Map.API.Data.TerrainCost), global::DF.Map.API.Data.TerrainCost.Parser, new[]{ "TerrainType", "Cost" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Map.API.Data.TileMap), global::DF.Map.API.Data.TileMap.Parser, new[]{ "Dimension", "Tiles", "TerrainCosts" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.Map.API.Data.Tile), global::DF.Game.Map.API.Data.Tile.Parser, new[]{ "Coordinate", "TerrainType" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.Map.API.Data.TerrainCost), global::DF.Game.Map.API.Data.TerrainCost.Parser, new[]{ "TerrainType", "Cost" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.Map.API.Data.TileMap), global::DF.Game.Map.API.Data.TileMap.Parser, new[]{ "Dimension", "Tiles", "TerrainCosts" }, null, null, null, null)
           }));
     }
     #endregion
@@ -59,7 +59,7 @@ namespace DF.Map.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Map.API.Data.DataReflection.Descriptor.MessageTypes[0]; }
+      get { return global::DF.Game.Map.API.Data.DataReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -276,7 +276,7 @@ namespace DF.Map.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Map.API.Data.DataReflection.Descriptor.MessageTypes[1]; }
+      get { return global::DF.Game.Map.API.Data.DataReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -484,7 +484,7 @@ namespace DF.Map.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Map.API.Data.DataReflection.Descriptor.MessageTypes[2]; }
+      get { return global::DF.Game.Map.API.Data.DataReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -525,21 +525,21 @@ namespace DF.Map.API.Data {
 
     /// <summary>Field number for the "tiles" field.</summary>
     public const int TilesFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::DF.Map.API.Data.Tile> _repeated_tiles_codec
-        = pb::FieldCodec.ForMessage(18, global::DF.Map.API.Data.Tile.Parser);
-    private readonly pbc::RepeatedField<global::DF.Map.API.Data.Tile> tiles_ = new pbc::RepeatedField<global::DF.Map.API.Data.Tile>();
+    private static readonly pb::FieldCodec<global::DF.Game.Map.API.Data.Tile> _repeated_tiles_codec
+        = pb::FieldCodec.ForMessage(18, global::DF.Game.Map.API.Data.Tile.Parser);
+    private readonly pbc::RepeatedField<global::DF.Game.Map.API.Data.Tile> tiles_ = new pbc::RepeatedField<global::DF.Game.Map.API.Data.Tile>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::DF.Map.API.Data.Tile> Tiles {
+    public pbc::RepeatedField<global::DF.Game.Map.API.Data.Tile> Tiles {
       get { return tiles_; }
     }
 
     /// <summary>Field number for the "terrain_costs" field.</summary>
     public const int TerrainCostsFieldNumber = 3;
-    private static readonly pb::FieldCodec<global::DF.Map.API.Data.TerrainCost> _repeated_terrainCosts_codec
-        = pb::FieldCodec.ForMessage(26, global::DF.Map.API.Data.TerrainCost.Parser);
-    private readonly pbc::RepeatedField<global::DF.Map.API.Data.TerrainCost> terrainCosts_ = new pbc::RepeatedField<global::DF.Map.API.Data.TerrainCost>();
+    private static readonly pb::FieldCodec<global::DF.Game.Map.API.Data.TerrainCost> _repeated_terrainCosts_codec
+        = pb::FieldCodec.ForMessage(26, global::DF.Game.Map.API.Data.TerrainCost.Parser);
+    private readonly pbc::RepeatedField<global::DF.Game.Map.API.Data.TerrainCost> terrainCosts_ = new pbc::RepeatedField<global::DF.Game.Map.API.Data.TerrainCost>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::DF.Map.API.Data.TerrainCost> TerrainCosts {
+    public pbc::RepeatedField<global::DF.Game.Map.API.Data.TerrainCost> TerrainCosts {
       get { return terrainCosts_; }
     }
 
