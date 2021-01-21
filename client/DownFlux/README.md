@@ -92,16 +92,17 @@ different for Windows installs.
 
 ## Protobuf Generation
 
-Generate protobufs from root GitHub repo directory
+Generate protobufs from root GitHub repo directory. See
+[official documentation](https://developers.google.com/protocol-buffers/docs/reference/csharp-generated#compiler_options)
+for `protoc` flag explanation.
 
 ```bash
 protoc \
   -I=${PWD} \
   -I=${PWD}/client/DownFlux/Packages/Google.Protobuf.Tools.3.14.0/tools/ \
   --grpc_out=${PWD}/client/DownFlux/Assets/Protos/Api \
-  --csharp_out=${PWD}/client/DownFlux/Assets/Protos/Api \
+  --csharp_out=${PWD}/client/DownFlux/Assets/Protos \
+  --csharp_opt=file_extension=.g.cs,base_namespace=DF.Game \
   --plugin=protoc-gen-grpc=/usr/local/bin/grpc_csharp_plugin \
-  $(find ${PWD}/api -iname "*.proto")
+  $(find ${PWD}/api ${PWD}/engine ${PWD}/server ${PWD}/pathing -iname "*.proto")
 ```
-
-We will need to do this per proto directory.
