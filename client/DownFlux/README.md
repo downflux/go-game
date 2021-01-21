@@ -100,9 +100,9 @@ for `protoc` flag explanation.
 protoc \
   -I=${PWD} \
   -I=${PWD}/client/DownFlux/Packages/Google.Protobuf.Tools.3.14.0/tools/ \
-  --grpc_out=${PWD}/client/DownFlux/Assets/Protos/Api \
+  --grpc_out=${PWD}/client/DownFlux/Assets/Protos \
   --csharp_out=${PWD}/client/DownFlux/Assets/Protos \
-  --csharp_opt=file_extension=.g.cs,base_namespace=DF.Game \
+  --csharp_opt=file_extension=.g.cs,base_namespace=DF \
   --plugin=protoc-gen-grpc=/usr/local/bin/grpc_csharp_plugin \
-  $(find ${PWD}/api ${PWD}/engine ${PWD}/server ${PWD}/pathing -iname "*.proto")
+  $(find ${PWD}/ -iname "*.proto" -print -o -path ${PWD}/client -prune)
 ```
