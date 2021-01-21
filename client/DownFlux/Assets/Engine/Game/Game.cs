@@ -5,7 +5,9 @@ namespace DF.Game {
         private DF.Game.Client.Client _client;
         private DF.Game.Config _config;
 
-        public Game(string server) {
+        public Game(string server, DF.Game.Config config) {
+            _config = config;
+
             _client = new DF.Game.Client.Client(server, _config.ServerBootSleepDuration);
             _client.Connect();
             _client.WaitForBoot();
