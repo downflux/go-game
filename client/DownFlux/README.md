@@ -46,6 +46,9 @@ different for Windows installs.
    [#694](https://github.com/golang/protobuf/issues/694) for potential
    pitfalls with linking native `.proto` files.
 
+1. Copy `libgrpc_csharp_ext.so` into `Assets/Plugins`. See
+   [/Assets/Plugins/README.md](/Assets/Plugins/README.md).
+
 ## [Optional] Install Visual Studio Code
 
 1. Install [VSCode](https://code.visualstudio.com/docs/setup/linux), taking

@@ -12,15 +12,16 @@ public class Game : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        game = new DF.Game.Game(
-            server,
-            new DF.Game.Config(_serverBootSleepDuration, _entityListAcquireDuration)
+        var config = new DF.Game.Config(
+            serverBootSleepDuration: _serverBootSleepDuration,
+            entityListAcquireDuration: _entityListAcquireDuration
         );
+        game = new DF.Game.Game(server, config);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }
