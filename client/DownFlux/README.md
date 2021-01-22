@@ -47,7 +47,7 @@ different for Windows installs.
    pitfalls with linking native `.proto` files.
 
 1. Copy `libgrpc_csharp_ext.so` into `Assets/Plugins`. See
-   [/Assets/Plugins/README.md](/Assets/Plugins/README.md).
+   [Assets/Plugins/README.md](Assets/Plugins/README.md).
 
 ## [Optional] Install Visual Studio Code
 
