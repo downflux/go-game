@@ -9,6 +9,12 @@ namespace DF.Game.ID
             get => _tick;
             private set { _tick = value; }
         }
+
+        public static bool operator <(Tick a, Tick b) { return a.Double < b.Double; }
+        public static bool operator >(Tick a, Tick b) { return a.Double > b.Double; }
+
+        public static bool operator >=(Tick a, Tick b) { return a.Double >= b.Double; }
+        public static bool operator <=(Tick a, Tick b) { return a.Double <= b.Double; }
     }
 
     public class ID

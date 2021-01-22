@@ -1,3 +1,8 @@
+# Bugs
+
+* [ ] check why Unity game exiting does not trigger server stream exit
+* [ ] check why server stream uses 1 CPU per stream
+
 # Refactoring
 
 * [x] change MoveRequest.Destination to Coordinate

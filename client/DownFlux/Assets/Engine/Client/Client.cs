@@ -4,19 +4,13 @@ namespace DF.Game.Client
 {
     public class Client
     {
-        private System.TimeSpan _sleepDuration;
         private DF.Game.API.API.DownFlux.DownFluxClient _c;
-        private System.Threading.CancellationTokenSource _ctSource;
-        private System.Threading.CancellationToken _ct;
         private string _cid;
 
         public Client(string server, System.TimeSpan sleepDuration)
         {
             _c = new DF.Game.API.API.DownFlux.DownFluxClient(
                 new Grpc.Core.Channel(server, Grpc.Core.ChannelCredentials.Insecure));
-            _ctSource = new System.Threading.CancellationTokenSource();
-            _ct = _ctSource.Token;
-            _sleepDuration = sleepDuration;
         }
 
         public string ID
@@ -32,12 +26,12 @@ namespace DF.Game.Client
             return ID;
         }
 
-        public DF.Game.ServerStatus.ServerStatus WaitForBoot()
+        public DF.Game.ServerStatus.ServerStatus WaitForBoot(System.TimeSpan s)
         {
             var status = new DF.Game.ServerStatus.ServerStatus(new DF.Game.API.Data.ServerStatus());
             while (!status.IsStarted)
             {
-                System.Threading.Thread.Sleep(_sleepDuration);
+                System.Threading.Thread.Sleep(s);
                 status = new DF.Game.ServerStatus.ServerStatus(
                     _c.GetStatus(new DF.Game.API.API.GetStatusRequest()).Status
                 );
@@ -52,7 +46,8 @@ namespace DF.Game.Client
             DF.Game.API.Constants.MoveType moveType)
         {
             System.Collections.Generic.IEnumerable<string> eids = from eid in entityIDs select eid.String;
-            var req = new DF.Game.API.API.MoveRequest{
+            var req = new DF.Game.API.API.MoveRequest
+            {
                 ClientId = ID,
                 Tick = tick.Double,
                 EntityIds = { eids },
@@ -60,6 +55,31 @@ namespace DF.Game.Client
                 MoveType = moveType,
             };
             return _c.Move(req);
+        }
+
+        public async void StreamData(
+            System.Threading.CancellationToken ct,
+            DF.Game.ID.Tick t,
+            System.Action<DF.Game.API.API.StreamDataResponse> f)
+        {
+            var stream = _c.StreamData(
+                new DF.Game.API.API.StreamDataRequest
+                {
+                    ClientId = ID,
+                    Tick = t.Double
+                }
+            );
+
+            try
+            {
+                while (await stream.ResponseStream.MoveNext(ct))
+                {
+                    f(stream.ResponseStream.Current);
+                }
+            }
+            catch (System.Threading.Tasks.TaskCanceledException)
+            {
+            }
         }
     }
 }
