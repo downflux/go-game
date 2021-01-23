@@ -26,13 +26,13 @@ namespace DF.Game.Client
             return ID;
         }
 
-        public DF.Game.ServerStatus.ServerStatus WaitForBoot(System.TimeSpan s)
+        public DF.Game.Status.Status WaitForBoot(System.TimeSpan s)
         {
-            var status = new DF.Game.ServerStatus.ServerStatus(new DF.Game.API.Data.ServerStatus());
+            var status = new DF.Game.Status.Status(new DF.Game.API.Data.ServerStatus());
             while (!status.IsStarted)
             {
                 System.Threading.Thread.Sleep(s);
-                status = new DF.Game.ServerStatus.ServerStatus(
+                status = new DF.Game.Status.Status(
                     _c.GetStatus(new DF.Game.API.API.GetStatusRequest()).Status
                 );
             }
@@ -78,6 +78,9 @@ namespace DF.Game.Client
                 }
             }
             catch (System.Threading.Tasks.TaskCanceledException)
+            {
+            }
+            catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.Cancelled)
             {
             }
         }

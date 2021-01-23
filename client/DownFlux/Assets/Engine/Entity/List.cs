@@ -4,11 +4,11 @@ namespace DF.Game.Entity
     {
         private System.Collections.Generic.Dictionary<
             DF.Game.ID.EntityID,
-            DF.Game.Entity.IEntity> _entities;
+            DF.Game.Entity.Entity> _entities;
 
         public List()
         {
-            _entities = new System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, DF.Game.Entity.IEntity>();
+            _entities = new System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, DF.Game.Entity.Entity>();
         }
 
         public List(DF.Game.API.API.StreamDataResponse pb) : this()
@@ -19,27 +19,28 @@ namespace DF.Game.Entity
             }
         }
 
-        internal void Append(IEntity e) {
-            _entities[e.ID] = e;
+        internal void Append(Entity e)
+        {
+            if (_entities.ContainsKey(e.ID))
+            {
+                _entities[e.ID].Merge(e);
+            }
+            else
+            {
+                _entities[e.ID] = e;
+            }
         }
 
-        protected System.Collections.ObjectModel.ReadOnlyCollection<DF.Game.Entity.IEntity> Entities
+        protected System.Collections.ObjectModel.ReadOnlyCollection<DF.Game.Entity.Entity> Entities
         {
-            get => new System.Collections.ObjectModel.ReadOnlyCollection<DF.Game.Entity.IEntity>(
-                          new System.Collections.Generic.List<DF.Game.Entity.IEntity>(_entities.Values));
+            get => new System.Collections.ObjectModel.ReadOnlyCollection<DF.Game.Entity.Entity>(
+                          new System.Collections.Generic.List<DF.Game.Entity.Entity>(_entities.Values));
         }
         public void Merge(List o)
         {
             foreach (var e in o.Entities)
             {
-                if (_entities.ContainsKey(e.ID))
-                {
-
-                }
-                else
-                {
-                    Append(e);
-                }
+                Append(e);
             }
         }
     }

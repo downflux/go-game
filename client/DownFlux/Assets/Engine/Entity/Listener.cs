@@ -1,4 +1,8 @@
 namespace DF.Game.Entity.Listener {
+    // LastState overwrites the internal cache with new gRPC server updates.
+    //
+    // For (playable) game clients, we don't need to rewind into the past, so
+    // there's no point in storing corrected past data.
     public class LastState {
         private System.Threading.ReaderWriterLock _l;
         private DF.Game.ID.Tick _serverTick;

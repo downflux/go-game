@@ -11,6 +11,8 @@ namespace DF.Game.Curve
         public List(System.Collections.Generic.List<DF.Game.Curve.ICurve> cs)
         {
             _curves = new Dictionary();
+
+            // New curves may not be added to the list after construction.
             foreach (var c in cs)
             {
                 _curves[c.Property] = c;
@@ -27,6 +29,14 @@ namespace DF.Game.Curve
             get => new System.Collections.ObjectModel.ReadOnlyCollection<DF.Game.API.Constants.EntityProperty>(
                 new System.Collections.Generic.List<DF.Game.API.Constants.EntityProperty>(_curves.Keys)
             );
+        }
+
+        public void Merge(List cs)
+        {
+            foreach (var p in cs.Properties)
+            {
+                Curve(p).Merge(cs.Curve(p));
+            }
         }
     }
 }

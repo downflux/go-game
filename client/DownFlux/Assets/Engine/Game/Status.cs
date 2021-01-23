@@ -1,6 +1,7 @@
-namespace DF.Game.ServerStatus
+namespace DF.Game.Status
 {
-    public class ServerStatus
+    // Status is the current gRPC server status.
+    public class Status
     {
         private DF.Game.API.Data.ServerStatus _pb;
         public System.TimeSpan TickDuration { get => _pb.TickDuration.ToTimeSpan(); }
@@ -13,7 +14,7 @@ namespace DF.Game.ServerStatus
         public bool IsStarted { get => _pb.IsStarted; }
         public System.DateTime StartTime { get => _pb.StartTime.ToDateTime(); }
 
-        public ServerStatus(DF.Game.API.Data.ServerStatus pb)
+        public Status(DF.Game.API.Data.ServerStatus pb)
         {
             _pb = pb;
         }
