@@ -62,3 +62,13 @@ bazel test -c opt ... \
   --nocache_test_results \
   --runs_per_test=10
 ```
+
+### CPU Profiler
+
+```bash
+bazel run -c opt \
+  //server/grpc:main -- \
+  --cpuprofile=${F}
+
+go tool pprof ${F}
+```
