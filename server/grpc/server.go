@@ -183,14 +183,19 @@ func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.D
 		}
 
 		for _, m := range resp {
-			// Send does not block on flakey network connection. See gRPC
-			// docs. On server keepalive failure, StreamData will return
-			// with connection error. On client close, StreamData will
-			// return with connection error.
+			// Send does not block on flakey network connection.
+			// See gRPC docs. On server keepalive failure,
+			// StreamData will return with connection error. On
+			// client close, StreamData will return with connection
+			// error.
 			if err := stream.Send(m); err != nil {
 				return err
 			}
 		}
+
+		// We don't need to broadcast data faster than the executor can
+		// produce it.
+		time.Sleep(s.utils.Status().TickDuration() / 2)
 	}
 	return nil
 }

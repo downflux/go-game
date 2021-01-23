@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"runtime/pprof"
 	"syscall"
 	"time"
@@ -31,7 +32,8 @@ var (
 	// calculate, where the path is a list of tile.Map coordinates.
 	minPathLength = flag.Int("path_length", 8, "target lookahead path length for partial moves")
 
-	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
+	cpuProfile    = flag.String("cpuprofile", "", "CPU profiler output file")
+	cpuSampleFreq = flag.Int("cpusamplefreq", 100, "how often (Hz) CPU profiler samples stack")
 
 	// tickDuration is the targeted loop iteration time delta. If a tick
 	// loop exceeds this time, it should delay commands until the next
@@ -45,8 +47,8 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	flag.Parse()
 
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
+	if *cpuProfile != "" {
+		f, err := os.Create(*cpuProfile)
 		if err != nil {
 			log.Fatal("could not create CPU profile: ", err)
 		}
@@ -64,6 +66,7 @@ func main() {
 		}
 		go h(c)
 
+		runtime.SetCPUProfileRate(*cpuSampleFreq)
 		if err := pprof.StartCPUProfile(f); err != nil {
 			log.Fatal("could not start CPU profile: ", err)
 		}

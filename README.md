@@ -66,9 +66,9 @@ bazel test -c opt ... \
 ### CPU Profiler
 
 ```bash
+sudo apt install graphviz gv
 bazel run -c opt \
   //server/grpc:main -- \
   --cpuprofile=${F}
-
-go tool pprof ${F}
+go tool pprof -http=localhost:8888 ${F}
 ```

@@ -11,7 +11,8 @@ namespace DF.Game.Entity
             id: new DF.Game.ID.EntityID(pb.EntityId)
         )
         {
-            _cs = new DF.Game.Curve.List(null);
+            var cs = new System.Collections.Generic.List<DF.Game.Curve.ICurve>();
+            _cs = new DF.Game.Curve.List(cs);
         }
 
         public Entity(DF.Game.API.Constants.EntityType type, DF.Game.ID.EntityID id)
