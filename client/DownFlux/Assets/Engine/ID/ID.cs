@@ -1,6 +1,6 @@
 namespace DF.Game.ID
 {
-    public class Tick
+    public class Tick : System.IComparable
     {
         private double _tick;
         public Tick(double t) { Double = t; }
@@ -8,6 +8,12 @@ namespace DF.Game.ID
         {
             get => _tick;
             private set { _tick = value; }
+        }
+
+        public int CompareTo(object other)
+        {
+            var v = other as Tick;
+            return Double.CompareTo(v.Double);
         }
 
         public static bool operator <(Tick a, Tick b) { return a.Double < b.Double; }

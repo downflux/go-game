@@ -1,6 +1,6 @@
 using Dictionary = System.Collections.Generic.Dictionary<
     DF.Game.API.Constants.EntityProperty,
-    DF.Game.Curve.ICurve>;
+    DF.Game.Curve.CurveOneOf>;
 
 namespace DF.Game.Curve
 {
@@ -8,18 +8,22 @@ namespace DF.Game.Curve
     {
         private Dictionary _curves;
 
-        public List(System.Collections.Generic.List<DF.Game.Curve.ICurve> cs)
+        public List()
         {
             _curves = new Dictionary();
-
-            // New curves may not be added to the list after construction.
-            foreach (var c in cs)
-            {
-                _curves[c.Property] = c;
-            }
         }
 
-        public ICurve Curve(DF.Game.API.Constants.EntityProperty p)
+        public void Add(DF.Game.Curve.CurveOneOf c)
+        {
+            if (_curves.ContainsKey(c.Property))
+            {
+                throw new DF.Game.Exception.DuplicateKeyException(
+                    string.Format("Cannot add {0} curve, already exists in list.", c.Property));
+            }
+            _curves[c.Property] = c;
+        }
+
+        public DF.Game.Curve.CurveOneOf Curve(DF.Game.API.Constants.EntityProperty p)
         {
             return _curves[p];
         }

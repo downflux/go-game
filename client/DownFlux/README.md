@@ -49,6 +49,14 @@ different for Windows installs.
 1. Copy `libgrpc_csharp_ext.so` into `Assets/Plugins`. See
    [Assets/Plugins/README.md](Assets/Plugins/README.md).
 
+## Other NuGet Packages
+
+1. Make sure all NuGet packages are installed.
+
+   | Package                                       | Version |
+   | --------------------------------------------- | ------- |
+   | [OneOf](https://github.com/mcintyre321/OneOf) | 3.0.163 |
+
 ## [Optional] Install Visual Studio Code
 
 1. Install [VSCode](https://code.visualstudio.com/docs/setup/linux), taking

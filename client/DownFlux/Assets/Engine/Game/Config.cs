@@ -4,6 +4,7 @@ namespace DF.Game
     {
         private System.TimeSpan _serverBootSleepDuration;
         private System.TimeSpan _entityListAcquireDuration;
+        
         public Config(
             System.TimeSpan serverBootSleepDuration,
             System.TimeSpan entityListAcquireDuration

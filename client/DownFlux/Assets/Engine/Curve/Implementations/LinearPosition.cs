@@ -1,5 +1,6 @@
-namespace DF.Game.Curve.LinearPosition {
-    public class LinearPosition : DF.Game.Curve.Base, DF.Game.Curve.ICurve
+namespace DF.Game.Curve.LinearPosition
+{
+    public class LinearPosition : DF.Game.Curve.Base
     {
         public LinearPosition(DF.Game.API.Data.Curve pb) : base(pb)
         {
@@ -8,7 +9,7 @@ namespace DF.Game.Curve.LinearPosition {
 
         public void Add(DF.Game.ID.Tick tick, object data)
         {
-            var p = (DF.Game.API.Data.Position)data;
+            var p = data as DF.Game.API.Data.Position;
         }
 
         public object Get(DF.Game.ID.Tick tick)
@@ -16,7 +17,7 @@ namespace DF.Game.Curve.LinearPosition {
             return new System.Exception();
         }
 
-        public void Merge(ICurve curve)
+        public void Merge(LinearPosition curve)
         {
             if (Type != curve.Type)
             {
