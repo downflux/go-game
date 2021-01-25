@@ -17,8 +17,8 @@ namespace DF.Game.Curve
         {
             if (_curves.ContainsKey(c.Property))
             {
-                throw new DF.Game.Exception.DuplicateKeyException(
-                    string.Format("Cannot add {0} curve, already exists in list.", c.Property));
+                throw new System.ArgumentException(
+                    System.String.Format("Cannot add {0} curve, already exists in list.", c.Property));
             }
             _curves[c.Property] = c;
         }

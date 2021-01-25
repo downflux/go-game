@@ -4,7 +4,20 @@ namespace DF.Game.Curve
         DF.Game.Curve.LinearPosition.LinearPosition
     >
     {
-        CurveOneOf(OneOf.OneOf<
+        public static CurveOneOf Import(DF.Game.API.Data.Curve c)
+        {
+            switch (c.Property)
+            {
+                case DF.Game.API.Constants.EntityProperty.Position:
+                    return new CurveOneOf(
+                        new DF.Game.Curve.LinearPosition.LinearPosition(c)
+                    );
+                default:
+                    throw new System.NotImplementedException(
+                        System.String.Format("Curve type {0} does not have a corresponding client definition.", c.Property));
+            }
+        }
+        public CurveOneOf(OneOf.OneOf<
             DF.Game.Curve.LinearPosition.LinearPosition
         > c) : base(c) { }
 

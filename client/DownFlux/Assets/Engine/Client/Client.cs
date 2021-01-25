@@ -83,6 +83,10 @@ namespace DF.Game.Client
             catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.Cancelled)
             {
             }
+            catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.Unavailable)
+            {
+                // TODO(minkezhang): Implement reconnection logic.
+            }
         }
     }
 }

@@ -10,8 +10,10 @@ namespace DF.Game
 
         public Game(string server, DF.Game.Config config, System.Threading.CancellationToken ct)
         {
+            _entities = new DF.Game.Entity.List();
+
             _config = config;
-            _listener = new DF.Game.Entity.Listener.LastState(config.EntityListAcquireDuration);
+            _listener = new DF.Game.Entity.Listener.LastState(config.ListenerAcquireTimeout);
 
             _client = new DF.Game.Client.Client(server, _config.ServerBootSleepDuration);
             _client.Connect();
@@ -39,7 +41,6 @@ namespace DF.Game
             {
                 return;
             }
-
             _entities.Merge(s);
         }
     }

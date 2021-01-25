@@ -17,6 +17,25 @@ namespace DF.Game.Entity
             {
                 Append(new DF.Game.Entity.Entity(e));
             }
+            foreach (var c in pb.State.Curves)
+            {
+                var eid = new DF.Game.ID.EntityID(c.EntityId);
+                if (!_entities.ContainsKey(eid))
+                {
+                    Append(new DF.Game.Entity.Entity(eid));
+
+                }
+                // TODO(minkezhang): Make this import all curves.
+                if (c.Property == DF.Game.API.Constants.EntityProperty.Position)
+                {
+                    Entity(eid).Curves.Add(DF.Game.Curve.CurveOneOf.Import(c));
+                }
+            }
+        }
+
+        private DF.Game.Entity.Entity Entity(DF.Game.ID.EntityID id)
+        {
+            return _entities[id];
         }
 
         internal void Append(Entity e)

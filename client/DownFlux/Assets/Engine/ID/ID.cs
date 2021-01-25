@@ -4,6 +4,7 @@ namespace DF.Game.ID
     {
         private double _tick;
         public Tick(double t) { Double = t; }
+        public Tick(Tick t) : this(t.Double) { }
         public double Double
         {
             get => _tick;
@@ -16,6 +17,7 @@ namespace DF.Game.ID
             return Double.CompareTo(v.Double);
         }
 
+        public static Tick operator -(Tick a, Tick b) { return new Tick(a.Double - b.Double); }
         public static bool operator <(Tick a, Tick b) { return a.Double < b.Double; }
         public static bool operator >(Tick a, Tick b) { return a.Double > b.Double; }
 

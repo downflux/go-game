@@ -25,6 +25,7 @@ namespace DF.Game.Entity.Listener
             {
                 _l.AcquireReaderLock(_acquireTimeout);
                 v = _buffer;
+                _buffer = null;
             }
             finally
             {

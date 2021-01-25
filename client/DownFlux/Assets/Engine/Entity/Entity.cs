@@ -10,14 +10,17 @@ namespace DF.Game.Entity
             type: pb.Type,
             id: new DF.Game.ID.EntityID(pb.EntityId)
         )
+        { }
+
+        public Entity(DF.Game.ID.EntityID id)
         {
+            ID = id;
             _cs = new DF.Game.Curve.List();
         }
 
-        public Entity(DF.Game.API.Constants.EntityType type, DF.Game.ID.EntityID id)
+        public Entity(DF.Game.API.Constants.EntityType type, DF.Game.ID.EntityID id) : this(id)
         {
             Type = type;
-            ID = id;
         }
 
         public DF.Game.API.Constants.EntityType Type
@@ -38,7 +41,7 @@ namespace DF.Game.Entity
         {
             if (ID != e.ID)
             {
-                throw new DF.Game.Exception.MergeException(
+                throw new System.ArgumentException(
                     System.String.Format("Cannot merge entities with mismatching IDs: {0} != {1}", ID, e.ID));
             }
 
