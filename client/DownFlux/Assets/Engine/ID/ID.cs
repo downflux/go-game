@@ -35,6 +35,19 @@ namespace DF.Game.ID
         }
 
         public ID(string id) { String = id; }
+
+        public static bool operator ==(ID a, ID b) { return a.String == b.String; }
+        public static bool operator !=(ID a, ID b) { return a.String != b.String; }
+
+        public override bool Equals(object obj)
+        {
+            return String.Equals((obj as ID).String);
+        }
+
+        public override int GetHashCode()
+        {
+            return String.GetHashCode();
+        }
     }
 
     public class EntityID : ID

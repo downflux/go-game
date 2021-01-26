@@ -11,12 +11,14 @@ public class Game : MonoBehaviour
     private DF.Game.Game _g;
     private DF.Game.ID.Tick _lastMergeTick;
 
+    public DF.Game.ID.Tick Tick { get => _g.Tick; }
+
     private void Quit()
     {
-        // save any game data here
 #if UNITY_EDITOR
         // Application.Quit() does not work in the editor so
-        // UnityEditor.EditorApplication.isPlaying need to be set to false to end the game
+        // UnityEditor.EditorApplication.isPlaying need to be set to false to
+        // end the game.
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
@@ -24,6 +26,7 @@ public class Game : MonoBehaviour
     }
     void Start()
     {
+
         var config = new DF.Game.Config(
             serverBootSleepDuration: _serverBootSleepDuration,
             listenerAcquireTimeout: _serverBootSleepDuration,
@@ -33,7 +36,7 @@ public class Game : MonoBehaviour
 
         try
         {
-            _g = new DF.Game.Game(server, config, _cancellation.Token);
+            _g = new DF.Game.Game(server, config, _cancellation.Token, GetComponent<List>().Append);
         }
         catch (Grpc.Core.RpcException)
         {
@@ -42,17 +45,22 @@ public class Game : MonoBehaviour
         _lastMergeTick = new DF.Game.ID.Tick(_g.Tick);
     }
 
-    void Update()
+    void FixedUpdate()
     {
         var t = new DF.Game.ID.Tick(_g.Tick);
         if (t - _lastMergeTick > _updateTickDelay)
         {
-            try {
+
+            try
+            {
                 _g.Merge();
                 _lastMergeTick = t;
-            } catch (Grpc.Core.RpcException) {
+            }
+            catch (Grpc.Core.RpcException)
+            {
                 Quit();
             }
+
         }
         // TODO(minkezhang): Update client state with position.
     }

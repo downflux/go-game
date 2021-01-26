@@ -1,3 +1,4 @@
+using EntityCallback = System.Action<DF.Game.Entity.Entity>;
 namespace DF.Game.Entity
 {
     public class List
@@ -5,13 +6,26 @@ namespace DF.Game.Entity
         private System.Collections.Generic.Dictionary<
             DF.Game.ID.EntityID,
             DF.Game.Entity.Entity> _entities;
+        private EntityCallback _newEntityCallback;
+        // TODO(minkezhang): 
+        private System.Threading.ReaderWriterLock _l;
 
-        public List()
+        public List(EntityCallback callback)
         {
             _entities = new System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, DF.Game.Entity.Entity>();
+            _newEntityCallback = callback;
         }
 
-        public List(DF.Game.API.API.StreamDataResponse pb) : this()
+        public List(
+            DF.Game.API.API.StreamDataResponse pb
+        ) : this(pb, delegate (DF.Game.Entity.Entity _) { })
+        {
+        }
+
+        public List(
+            DF.Game.API.API.StreamDataResponse pb,
+            EntityCallback callback
+        ) : this(callback)
         {
             foreach (var e in pb.State.Entities)
             {
@@ -47,6 +61,7 @@ namespace DF.Game.Entity
             else
             {
                 _entities[e.ID] = e;
+                _newEntityCallback(e);
             }
         }
 

@@ -48,7 +48,7 @@ namespace DF.Game.Data
             get => _data[i];
         }
 
-        private int BinarySearch(DF.Game.ID.Tick tick)
+        public int BinarySearch(DF.Game.ID.Tick tick)
         {
             return _data.BinarySearch(new Datum<T>(tick));
         }

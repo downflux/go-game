@@ -8,9 +8,12 @@ namespace DF.Game
         private DF.Game.Config _config;
         private DF.Game.Entity.Listener.LastState _listener;
 
-        public Game(string server, DF.Game.Config config, System.Threading.CancellationToken ct)
+        public Game(
+            string server, DF.Game.Config config,
+            System.Threading.CancellationToken ct,
+            System.Action<DF.Game.Entity.Entity> cb)
         {
-            _entities = new DF.Game.Entity.List();
+            _entities = new DF.Game.Entity.List(cb);
 
             _config = config;
             _listener = new DF.Game.Entity.Listener.LastState(config.ListenerAcquireTimeout);

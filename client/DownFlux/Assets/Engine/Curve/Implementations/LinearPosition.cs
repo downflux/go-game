@@ -31,7 +31,40 @@ namespace DF.Game.Curve.LinearPosition
 
         public DF.Game.API.Data.Position Get(DF.Game.ID.Tick tick)
         {
-            throw new System.NotImplementedException();
+            if (_data.Count == 0)
+            {
+                return new DF.Game.API.Data.Position { };
+            }
+            if (tick < _data[0].Tick)
+            {
+                return _data[0].Value;
+            }
+            if (_data[_data.Count - 1].Tick < tick)
+            {
+                return _data[_data.Count - 1].Value;
+            }
+
+            var i = _data.BinarySearch(tick);
+            if (i == ~_data.Count)
+            {
+                return _data[~i].Value;
+            }
+            if (i == 0)
+            {
+                return _data[0].Value;
+            }
+            if (i < 0) { i = ~i; }
+
+            var tickDelta = (tick - _data[i - 1].Tick).Double;
+            return new DF.Game.API.Data.Position
+            {
+                X = _data[i - 1].Value.X + (
+                _data[i].Value.X - _data[i - 1].Value.X) / (
+                _data[i].Tick - _data[i - 1].Tick).Double * tickDelta,
+                Y = _data[i - 1].Value.Y + (
+                _data[i].Value.Y - _data[i - 1].Value.Y) / (
+                _data[i].Tick - _data[i - 1].Tick).Double * tickDelta,
+            };
         }
 
         public void Merge(LinearPosition curve)
