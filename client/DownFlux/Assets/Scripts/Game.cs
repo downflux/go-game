@@ -10,8 +10,8 @@ public class Game : MonoBehaviour
     private System.Threading.CancellationTokenSource _cancellation;
     private DF.Game.Game _g;
     private DF.Game.ID.Tick _lastMergeTick;
-
     public DF.Game.ID.Tick Tick { get => _g.Tick; }
+    public DF.Game.Client.Client Client { get => _g.Client; }
 
     private void Quit()
     {
@@ -24,6 +24,7 @@ public class Game : MonoBehaviour
         Application.Quit();
 #endif
     }
+
     void Start()
     {
 
@@ -45,6 +46,7 @@ public class Game : MonoBehaviour
         _lastMergeTick = new DF.Game.ID.Tick(_g.Tick);
     }
 
+    // FixedUpdate runs before all Update() functions.
     void FixedUpdate()
     {
         var t = new DF.Game.ID.Tick(_g.Tick);

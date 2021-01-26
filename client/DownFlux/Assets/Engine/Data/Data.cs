@@ -72,7 +72,7 @@ namespace DF.Game.Data
 
         // Merge overwrites an instance's own data with the data from the
         // target. We assume data in the target is already in order.
-        private void Merge(Data<T> other)
+        public void Merge(Data<T> other)
         {
             if (other == null || other.Count == 0)
             {

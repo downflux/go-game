@@ -32,6 +32,8 @@ namespace DF.Game
             get => _status.Tick;
         }
 
+        public DF.Game.Client.Client Client { get => _client; }
+
         // Merge merges the internal state cache with any potential updates
         // from the gRPC server.
         //

@@ -74,6 +74,8 @@ namespace DF.Game.Curve.LinearPosition
                 throw new System.ArgumentException(
                     System.String.Format("Cannot merge curves: {0} != {0}.", Type, curve.Type));
             }
+
+            _data.Merge(curve._data);
         }
     }
 }

@@ -70,6 +70,7 @@ namespace DF.Game.Entity
             get => new System.Collections.ObjectModel.ReadOnlyCollection<DF.Game.Entity.Entity>(
                           new System.Collections.Generic.List<DF.Game.Entity.Entity>(_entities.Values));
         }
+
         public void Merge(List o)
         {
             foreach (var e in o.Entities)
