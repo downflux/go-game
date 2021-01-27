@@ -1,3 +1,5 @@
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("EditTests")]
+
 namespace DF.Game.Data
 {
     public class Datum<T> : System.IComparable
@@ -27,6 +29,20 @@ namespace DF.Game.Data
             private set { _v = value; }
         }
 
+        public override bool Equals(object obj)
+        {
+            var o = obj as Datum<T>;
+            return Tick.Equals(o.Tick) && Value.Equals(o.Value);
+        }
+
+        public override int GetHashCode()
+        {  
+            int hash = 13;
+            hash = (hash * 7) + Tick.GetHashCode();
+            hash = (hash * 7) + Value.GetHashCode();
+            return hash;
+        }
+
         public int CompareTo(object other) { return _t.CompareTo((other as Datum<T>)._t); }
     }
 
@@ -54,7 +70,7 @@ namespace DF.Game.Data
         }
 
         // Truncate deletes all data in this struct after the input tick.
-        private void Truncate(DF.Game.ID.Tick tick)
+        internal void Truncate(DF.Game.ID.Tick tick)
         {
             var i = BinarySearch(tick);
             if (i == ~_data.Count)
@@ -67,7 +83,7 @@ namespace DF.Game.Data
                 i = ~i;
             }
 
-            _data.RemoveRange(i, _data.Count - 1);
+            _data.RemoveRange(i, _data.Count - i);
         }
 
         // Merge overwrites an instance's own data with the data from the

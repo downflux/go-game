@@ -33,7 +33,7 @@ namespace DF.Game.Curve
         public DF.Game.ID.Tick Tick
         {
             get => _tick;
-            protected set { _tick = value; }
+            private set { _tick = value; }
         }
     }
 }

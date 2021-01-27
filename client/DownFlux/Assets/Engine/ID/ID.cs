@@ -17,6 +17,16 @@ namespace DF.Game.ID
             return Double.CompareTo(v.Double);
         }
 
+        public override bool Equals(object obj)
+        {
+            return Double.Equals((obj as Tick).Double);
+        }
+
+        public override int GetHashCode()
+        {
+            return Double.GetHashCode();
+        }
+
         public static Tick operator -(Tick a, Tick b) { return new Tick(a.Double - b.Double); }
         public static bool operator <(Tick a, Tick b) { return a.Double < b.Double; }
         public static bool operator >(Tick a, Tick b) { return a.Double > b.Double; }
