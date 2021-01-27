@@ -6,23 +6,33 @@ using UnityEngine.TestTools;
 
 namespace Tests
 {
+    public sealed class MockCurve : DF.Game.Curve.Base
+    {
+        public MockCurve(DF.Game.API.Data.Curve pb) : base(pb) { }
+
+    }
+
     public class CurveTest
     {
-        // A Test behaves as an ordinary method
         [Test]
-        public void CurveTestSimplePasses()
+        public void TestNewCurve()
         {
-            // Use the Assert class to test conditions
-        }
+            var eid = "entity-id";
+            var tick = 10;
+            var type = DF.Game.API.Constants.CurveType.LinearMove;
+            var property = DF.Game.API.Constants.EntityProperty.Position;
 
-        // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
-        // `yield return null;` to skip a frame.
-        [UnityTest]
-        public IEnumerator CurveTestWithEnumeratorPasses()
-        {
-            // Use the Assert class to test conditions.
-            // Use yield to skip a frame.
-            yield return null;
+            var c = new MockCurve(new DF.Game.API.Data.Curve{
+                EntityId = eid,
+                Tick = tick,
+                Type = type,
+                Property = property
+            });
+            
+            Assert.AreEqual(eid, c.ID.String);
+            Assert.AreEqual(tick, c.Tick.Double);
+            Assert.AreEqual(type, c.Type);
+            Assert.AreEqual(property, c.Property);
         }
     }
 }
