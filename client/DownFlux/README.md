@@ -118,3 +118,9 @@ protoc \
   --plugin=protoc-gen-grpc=/usr/local/bin/grpc_csharp_plugin \
   $(find ${PWD}/ -iname "*.proto" -print -o -path ${PWD}/client -prune)
 ```
+
+## Testing
+
+* See
+  [example](https://www.raywenderlich.com/9454-introduction-to-unity-unit-testing#toc-anchor-007),
+  [NUnit docs](https://docs.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-nunit).
