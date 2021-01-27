@@ -43,6 +43,10 @@ public class Game : MonoBehaviour
         {
             Quit();
         }
+        catch (System.Exception)
+        {
+            Quit();
+        }
         _lastMergeTick = new DF.Game.ID.Tick(_g.Tick);
     }
 
