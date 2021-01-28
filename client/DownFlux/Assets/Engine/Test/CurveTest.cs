@@ -22,13 +22,14 @@ namespace Tests
             var type = DF.Game.API.Constants.CurveType.LinearMove;
             var property = DF.Game.API.Constants.EntityProperty.Position;
 
-            var c = new MockCurve(new DF.Game.API.Data.Curve{
+            var c = new MockCurve(new DF.Game.API.Data.Curve
+            {
                 EntityId = eid,
                 Tick = tick,
                 Type = type,
                 Property = property
             });
-            
+
             Assert.AreEqual(eid, c.ID.String);
             Assert.AreEqual(tick, c.Tick.Double);
             Assert.AreEqual(type, c.Type);
