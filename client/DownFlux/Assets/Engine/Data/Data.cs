@@ -1,4 +1,4 @@
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("EditTests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("EngineTestAssembly")]
 
 namespace DF.Game.Data
 {
@@ -36,7 +36,7 @@ namespace DF.Game.Data
         }
 
         public override int GetHashCode()
-        {  
+        {
             int hash = 13;
             hash = (hash * 7) + Tick.GetHashCode();
             hash = (hash * 7) + Value.GetHashCode();
