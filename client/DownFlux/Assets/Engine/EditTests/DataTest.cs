@@ -33,11 +33,7 @@ namespace Tests
         }
 
         [Test]
-        public void TestDataBinarySearch() {
-
-        }
-        [Test]
-        public void TestDataTruncate()
+        public void TestBinarySearch()
         {
             var dataList = new List<DF.Game.Data.Datum<int>> {
                 new DF.Game.Data.Datum<int>(new DF.Game.ID.Tick(1), 1),
@@ -47,30 +43,79 @@ namespace Tests
 
             var testConfigs = new System.Collections.Generic.List<dynamic>{
                 new {
+                    name = "SearchPre",
+                    t = new DF.Game.ID.Tick(0),
+                    want = -1,
+                },
+                new {
+                    name = "SearchAt",
+                    t = new DF.Game.ID.Tick(1),
+                    want = 0,
+                },
+                new {
+                    name = "SearchBetween",
+                    t = new DF.Game.ID.Tick(2),
+                    want = -2,
+                }
+            };
+
+            foreach (var c in testConfigs)
+            {
+                var d = new DF.Game.Data.Data<int>(dataList);
+                Assert.AreEqual(c.want, d.BinarySearch(c.t));
+            }
+        }
+
+        [Test]
+        public void TestDataTruncate()
+        {
+            var refDataList = new List<DF.Game.Data.Datum<int>> {
+                new DF.Game.Data.Datum<int>(new DF.Game.ID.Tick(1), 1),
+                new DF.Game.Data.Datum<int>(new DF.Game.ID.Tick(10), 2),
+                new DF.Game.Data.Datum<int>(new DF.Game.ID.Tick(100), 3)
+            };
+            var testConfigs = new System.Collections.Generic.List<dynamic>{
+                new {
                     name = "TruncateAll",
                     t = new DF.Game.ID.Tick(0),
-                    want = new System.Collections.Generic.List<DF.Game.Data.Datum<int>>{}
+                    want = new System.Collections.Generic.List<DF.Game.Data.Datum<int>>{ }
                 },
                 new {
                     name = "TruncateAllAtTick",
                     t = new DF.Game.ID.Tick(1),
-                    want = new System.Collections.Generic.List<DF.Game.Data.Datum<int>>{
-                    }
+                    want = new System.Collections.Generic.List<DF.Game.Data.Datum<int>>{ }
                 },
                 new {
                     name = "TruncatePartial",
                     t = new DF.Game.ID.Tick(2),
                     want = new System.Collections.Generic.List<DF.Game.Data.Datum<int>>{
-                        dataList[0]
+                        refDataList[0]
+                    }
+                },
+                new {
+                    name = "TruncateNone",
+                    t = new DF.Game.ID.Tick(101),
+                    want = new System.Collections.Generic.List<DF.Game.Data.Datum<int>>{
+                        refDataList[0],
+                        refDataList[1],
+                        refDataList[2]
                     }
                 }
             };
 
-            foreach(var c in testConfigs) {
+            foreach (var c in testConfigs)
+            {
+                var dataList = new List<DF.Game.Data.Datum<int>> {
+                    new DF.Game.Data.Datum<int>(new DF.Game.ID.Tick(1), 1),
+                    new DF.Game.Data.Datum<int>(new DF.Game.ID.Tick(10), 2),
+                    new DF.Game.Data.Datum<int>(new DF.Game.ID.Tick(100), 3)
+                };
+
                 var d = new DF.Game.Data.Data<int>(dataList);
                 d.Truncate(c.t);
                 Assert.AreEqual(c.want.Count, d.Count);
-                for (var i = 0; i < d.Count; i++) {
+                for (var i = 0; i < d.Count; i++)
+                {
                     Assert.AreEqual(c.want[i], d[i]);
                 }
             }

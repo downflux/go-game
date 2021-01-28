@@ -73,6 +73,7 @@ namespace DF.Game.Data
         internal void Truncate(DF.Game.ID.Tick tick)
         {
             var i = BinarySearch(tick);
+
             if (i == ~_data.Count)
             {
                 return;
