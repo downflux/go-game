@@ -47,7 +47,7 @@ namespace DF.Game.Curve.LinearPosition
             var i = _data.BinarySearch(tick);
             if (i == ~_data.Count)
             {
-                return _data[~i].Value;
+                return _data[_data.Count - 1].Value;
             }
             if (i == 0)
             {
