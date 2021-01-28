@@ -3,8 +3,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "EngineAssembly",
-        "NewAssembly"
+        "ProtoAssembly",
+        "EngineAssembly"
     ],
     "includePlatforms": [
         "Editor"
