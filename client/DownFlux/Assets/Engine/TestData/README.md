@@ -5,3 +5,6 @@ the `Google.Protobuf` namespace. We're using this hack where test data is
 technically defined in the app space, and referencing it in our tests.
 
 Clients should not use this data.
+
+See [#92](https://github.com/GlitchEnzo/NuGetForUnity/issues/92) for more
+information.
