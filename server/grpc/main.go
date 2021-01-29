@@ -6,6 +6,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"runtime"
+	"runtime/pprof"
+	"syscall"
 	"time"
 
 	"github.com/downflux/game/server/grpc/server"
@@ -27,6 +32,9 @@ var (
 	// calculate, where the path is a list of tile.Map coordinates.
 	minPathLength = flag.Int("path_length", 8, "target lookahead path length for partial moves")
 
+	cpuProfile    = flag.String("cpuprofile", "", "CPU profiler output file")
+	cpuSampleFreq = flag.Int("cpusamplefreq", 100, "how often (Hz) CPU profiler samples stack")
+
 	// tickDuration is the targeted loop iteration time delta. If a tick
 	// loop exceeds this time, it should delay commands until the next
 	// cycle and ensure the dirty curves are being broadcasted instead.
@@ -38,6 +46,32 @@ var (
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	flag.Parse()
+
+	if *cpuProfile != "" {
+		f, err := os.Create(*cpuProfile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		defer f.Close()
+
+		c := make(chan os.Signal, 2)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM) // subscribe to system signals
+		h := func(c chan os.Signal) {
+			select {
+			case <-c:
+				pprof.StopCPUProfile()
+				f.Close()
+				os.Exit(0)
+			}
+		}
+		go h(c)
+
+		runtime.SetCPUProfileRate(*cpuSampleFreq)
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
 
 	addr := fmt.Sprintf("localhost:%d", *port)
 

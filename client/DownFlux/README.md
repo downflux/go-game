@@ -46,6 +46,17 @@ different for Windows installs.
    [#694](https://github.com/golang/protobuf/issues/694) for potential
    pitfalls with linking native `.proto` files.
 
+1. Copy `libgrpc_csharp_ext.so` into `Assets/Plugins`. See
+   [Assets/Plugins/README.md](Assets/Plugins/README.md).
+
+## Other NuGet Packages
+
+1. Make sure all NuGet packages are installed.
+
+   | Package                                       | Version |
+   | --------------------------------------------- | ------- |
+   | [OneOf](https://github.com/mcintyre321/OneOf) | 3.0.163 |
+
 ## [Optional] Install Visual Studio Code
 
 1. Install [VSCode](https://code.visualstudio.com/docs/setup/linux), taking
@@ -83,18 +94,33 @@ different for Windows installs.
    This seems necessary due to an archaic unfixed bug
    [#335](https://github.com/dotnet/sdk/issues/335).
 
+1. `FrameworkPathOverride` is not passed in via the Unity GUI; we have to
+   start VSCode separately in the terminal
+
+   ```bash
+   code
+   ```
+
 ## Protobuf Generation
 
-Generate protobufs from root GitHub repo directory
+Generate protobufs from root GitHub repo directory. See
+[official documentation](https://developers.google.com/protocol-buffers/docs/reference/csharp-generated#compiler_options)
+for `protoc` flag explanation.
 
 ```bash
+rm -rf ${PWD}/client/DownFlux/Assets/Protos/*
 protoc \
   -I=${PWD} \
   -I=${PWD}/client/DownFlux/Packages/Google.Protobuf.Tools.3.14.0/tools/ \
-  --grpc_out=${PWD}/client/DownFlux/Assets/Protos/Api \
-  --csharp_out=${PWD}/client/DownFlux/Assets/Protos/Api \
+  --grpc_out=${PWD}/client/DownFlux/Assets/Protos \
+  --csharp_out=${PWD}/client/DownFlux/Assets/Protos \
+  --csharp_opt=file_extension=.g.cs,base_namespace=DF.Game \
   --plugin=protoc-gen-grpc=/usr/local/bin/grpc_csharp_plugin \
-  $(find ${PWD}/api -iname "*.proto")
+  $(find ${PWD}/ -iname "*.proto" -print -o -path ${PWD}/client -prune)
 ```
 
-We will need to do this per proto directory.
+## Testing
+
+* See
+  [example](https://www.raywenderlich.com/9454-introduction-to-unity-unit-testing#toc-anchor-007),
+  [NUnit docs](https://docs.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-nunit).

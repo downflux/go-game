@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package game.map.api.data;
 option go_package = "game.map.api.data";
-option csharp_namespace = "DF.Map.API.Data";
+option csharp_namespace = "DF.Game.Map.API.Data";
 
 import "api/data.proto";
 import "map/api/constants.proto";

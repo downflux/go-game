@@ -41,6 +41,7 @@ type Curve interface {
 	// e.g. Coordinates, bool, etc.
 	DatumType() reflect.Type
 
+	// TODO(minkezhang): Remove this from the interface level.
 	Data() *data.Data
 
 	// Tick indicates the last time at which the curve was updated by the
