@@ -1,6 +1,6 @@
 # Bugs
 
-* [ ] check why Unity game exiting does not trigger server stream exit
+* [x] check why Unity game exiting does not trigger server stream exit
 * [x] check why server stream uses 1 CPU per stream
 
 # Refactoring
@@ -24,6 +24,7 @@
 * [x] migrate engine components
 * [x] migrate instance -> action
 * [x] add Entity Implements layer
+* [x] add client tests
 * [ ] add generator for IDs instead of manually testing for random string
 * [ ] add server / engine documentation
 * [ ] add API documentation
@@ -32,7 +33,6 @@
 * [ ] add tests for Status
 * [ ] add tests for Entity
 * [ ] add client documentation
-* [ ] add client tests
 
 # Feature
 * [x] make channel send from server nonblocking
@@ -43,11 +43,13 @@
 * [x] add Produce() Visitor
 * [x] add entity click-drag-select action
 * [x] add Attack command
-* [ ] **add AttackTarget curve**
-* [ ] add FSM design document
+* [x] add AttackTarget curve
+* [x] add FSM design document
+* [ ] add FSM blog entry
 * [ ] add game state export / import
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
 * [ ] replace pathfinding with flow fields
 * [ ] parallelize move commands
 * [ ] make client load map from server (new API)
 * [ ] make map layered (terrain vs. rendering data; pathing data for size > `1x1` tiles)
+* [ ] allow reconnections in Unity client
