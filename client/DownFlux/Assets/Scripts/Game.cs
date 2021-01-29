@@ -53,10 +53,9 @@ public class Game : MonoBehaviour
     // FixedUpdate runs before all Update() functions.
     void FixedUpdate()
     {
-        var t = new DF.Game.ID.Tick(_g.Tick);
+        var t = new DF.Game.ID.Tick(Tick);
         if (t - _lastMergeTick > _updateTickDelay)
         {
-
             try
             {
                 _g.Merge();

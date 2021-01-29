@@ -37,17 +37,22 @@ public class List : MonoBehaviour
         switch (entity.Type)
         {
             case DF.Game.API.Constants.EntityType.Tank:
+                if (_entities.ContainsKey(entity.ID))
+                {
+                    return;
+                }
                 _entities[entity.ID] = new Entity(
                     Instantiate(TankModel, transform.position, transform.rotation),
                     entity
                 );
 
-                print(GetComponent<Game>().Client.Move(
+                // TODO(minkezhang): Remove this.
+                GetComponent<Game>().Client.Move(
                     GetComponent<Game>().Tick,
-                    new System.Collections.Generic.List<DF.Game.ID.EntityID>{entity.ID},
-                    new DF.Game.API.Data.Position{X = 9, Y = 9},
+                    new System.Collections.Generic.List<DF.Game.ID.EntityID> { entity.ID },
+                    new DF.Game.API.Data.Position { X = 9, Y = 9 },
                     DF.Game.API.Constants.MoveType.Forward
-                ));
+                );
                 break;
         }
 

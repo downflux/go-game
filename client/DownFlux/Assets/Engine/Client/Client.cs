@@ -19,6 +19,7 @@ namespace DF.Game.Client
             private set { _cid = value; }
         }
 
+        // TODO(minkezhang): Return ClientID instead.
         public string Connect()
         {
             var resp = _c.AddClient(new DF.Game.API.API.AddClientRequest());
@@ -36,6 +37,7 @@ namespace DF.Game.Client
                     _c.GetStatus(new DF.Game.API.API.GetStatusRequest()).Status
                 );
             }
+
             return status;
         }
 

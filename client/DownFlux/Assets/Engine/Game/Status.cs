@@ -9,7 +9,7 @@ namespace DF.Game.Status
         public DF.Game.ID.Tick Tick
         {
             get => new DF.Game.ID.Tick(
-                _pb.Tick + System.DateTime.UtcNow.Subtract(StartTime).TotalMilliseconds / TickDuration.TotalMilliseconds
+                System.DateTime.UtcNow.Subtract(StartTime).TotalMilliseconds / TickDuration.TotalMilliseconds
             );
         }
 

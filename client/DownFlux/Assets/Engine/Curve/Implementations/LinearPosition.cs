@@ -31,6 +31,7 @@ namespace DF.Game.Curve.LinearPosition
 
         public DF.Game.API.Data.Position Get(DF.Game.ID.Tick tick)
         {
+
             if (_data.Count == 0)
             {
                 return new DF.Game.API.Data.Position { };

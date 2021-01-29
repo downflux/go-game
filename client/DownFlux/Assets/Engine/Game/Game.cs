@@ -27,11 +27,7 @@ namespace DF.Game
             _client.StreamData(ct, _status.Tick, _listener.Listen);
         }
 
-        public DF.Game.ID.Tick Tick
-        {
-            get => _status.Tick;
-        }
-
+        public DF.Game.ID.Tick Tick { get => _status.Tick; }
         public DF.Game.Client.Client Client { get => _client; }
 
         // Merge merges the internal state cache with any potential updates
