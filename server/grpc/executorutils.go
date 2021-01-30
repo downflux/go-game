@@ -87,6 +87,8 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 
 func (u *Utils) Executor() *executor.Executor { return u.executor }
 
+func (u *Utils) Status() serverstatus.ReadOnlyStatus { return u.gamestate.Status() }
+
 // Move transforms the player MoveRequest input into a list of move actions
 // and schedules them to be executed in the next tick.
 func (u *Utils) Move(pb *apipb.MoveRequest) error {
@@ -99,7 +101,7 @@ func (u *Utils) Move(pb *apipb.MoveRequest) error {
 		}
 
 		if err := u.executor.Schedule(
-			moveaction.New(e, u.gamestate.Status(), pb.GetDestination()),
+			moveaction.New(e, u.Status(), pb.GetDestination()),
 		); err != nil {
 			return err
 		}
@@ -125,8 +127,8 @@ func (u *Utils) Attack(pb *apipb.AttackRequest) error {
 			return status.Error(codes.FailedPrecondition, "specified entity is not moveable")
 		}
 
-		chaseAction := chaseaction.New(u.gamestate.Status(), m, t)
-		attackAction := attackaction.New(u.gamestate.Status(), a, t, chaseAction)
+		chaseAction := chaseaction.New(u.Status(), m, t)
+		attackAction := attackaction.New(u.Status(), a, t, chaseAction)
 
 		if err := u.executor.Schedule(chaseAction); err != nil {
 			return err
@@ -140,5 +142,5 @@ func (u *Utils) Attack(pb *apipb.AttackRequest) error {
 
 // ProduceDebug schedules adding a new entity in the next game tick.
 func (u *Utils) ProduceDebug(entityType gcpb.EntityType, spawnPosition *gdpb.Position) error {
-	return u.executor.Schedule(produceaction.New(u.gamestate.Status(), u.gamestate.Status().Tick(), entityType, spawnPosition))
+	return u.executor.Schedule(produceaction.New(u.Status(), u.Status().Tick(), entityType, spawnPosition))
 }

@@ -45,6 +45,7 @@ func (d *Data) Set(tick id.Tick, value interface{}) {
 	}
 }
 
+// Truncate deletes all data in this struct after the supplied tick.
 func (d *Data) Truncate(tick id.Tick) {
 	i := d.ticks.Search(tick.Value())
 	for j := i; j < d.Len(); j++ {

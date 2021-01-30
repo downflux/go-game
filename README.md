@@ -63,3 +63,13 @@ bazel test -c opt \
   --nocache_test_results \
   --runs_per_test=10
 ```
+
+### CPU Profiler
+
+```bash
+sudo apt install graphviz gv
+bazel run -c opt \
+  //server/grpc:main -- \
+  --cpuprofile=${F}
+go tool pprof -http=localhost:8888 ${F}
+```

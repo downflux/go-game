@@ -1,0 +1,15 @@
+{
+    "name": "EngineAssembly",
+    "references": [
+        "GUID:f90b292694b07e2008ccc50454c68508"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

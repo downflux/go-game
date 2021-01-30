@@ -8,6 +8,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net"
 	"time"
 
@@ -124,6 +125,7 @@ func (s *DownFluxServer) Move(ctx context.Context, req *apipb.MoveRequest) (*api
 }
 
 func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequest) (*apipb.AddClientResponse, error) {
+	log.Println("new Client request")
 	cid, err := s.utils.Executor().AddClient()
 	if err != nil {
 		return nil, err
@@ -136,6 +138,7 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 }
 
 func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.DownFlux_StreamDataServer) error {
+	log.Println("new StreamData request")
 	cid := id.ClientID(req.GetClientId())
 
 	if err := s.validateClient(cid); err != nil {
@@ -146,6 +149,7 @@ func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.D
 	defer func() {
 		s.utils.Executor().StopClientStreamError(cid)
 		md.Close()
+		log.Println("closing StreamData request")
 	}()
 
 	if err := s.utils.Executor().StartClientStream(cid); err != nil {
@@ -179,14 +183,19 @@ func (s *DownFluxServer) StreamData(req *apipb.StreamDataRequest, stream apipb.D
 		}
 
 		for _, m := range resp {
-			// Send does not block on flakey network connection. See gRPC
-			// docs. On server keepalive failure, StreamData will return
-			// with connection error. On client close, StreamData will
-			// return with connection error.
+			// Send does not block on flakey network connection.
+			// See gRPC docs. On server keepalive failure,
+			// StreamData will return with connection error. On
+			// client close, StreamData will return with connection
+			// error.
 			if err := stream.Send(m); err != nil {
 				return err
 			}
 		}
+
+		// We don't need to broadcast data faster than the executor can
+		// produce it.
+		time.Sleep(s.utils.Status().TickDuration() / 2)
 	}
 	return nil
 }
