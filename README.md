@@ -58,7 +58,8 @@ Install Bazel via
 Current verified Bazel version is `3.7.2`.
 
 ```bash
-bazel test -c opt ... \
+bazel test -c opt \
+  --features race ... \
   --nocache_test_results \
   --runs_per_test=10
 ```

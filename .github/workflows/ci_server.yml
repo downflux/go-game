@@ -30,4 +30,4 @@ jobs:
 
     - name: Run CI tests
       run: |
-        "${GITHUB_WORKSPACE}/bin/bazel" test -c opt //... --nocache_test_results --runs_per_test=100
+        "${GITHUB_WORKSPACE}/bin/bazel" test -c opt --features race //... --nocache_test_results --runs_per_test=100
