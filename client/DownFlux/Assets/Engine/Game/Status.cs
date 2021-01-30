@@ -8,9 +8,12 @@ namespace DF.Game.Status
 
         public DF.Game.ID.Tick Tick
         {
-            get => new DF.Game.ID.Tick(
-                System.DateTime.UtcNow.Subtract(StartTime).TotalMilliseconds / TickDuration.TotalMilliseconds
-            );
+            get => CalculateTick(System.DateTime.UtcNow);
+        }
+
+        internal DF.Game.ID.Tick CalculateTick(System.DateTime t)
+        {
+            return new DF.Game.ID.Tick(t.Subtract(StartTime).TotalMilliseconds / TickDuration.TotalMilliseconds);
         }
 
         public bool IsStarted { get => _pb.IsStarted; }
