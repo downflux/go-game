@@ -1,80 +1,101 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class List : MonoBehaviour
+namespace DF.Unity
 {
-    public GameObject TankModel;
+    public delegate bool F(DF.Unity.List.Entity e);
 
-    class Entity
+    public class List : MonoBehaviour
     {
-        private GameObject _o;
-        private DF.Game.Entity.Entity _e;
 
-        public Entity(GameObject o, DF.Game.Entity.Entity e)
+        public GameObject TankModel;
+
+        public class Entity
         {
-            O = o;
-            E = e;
-        }
+            private GameObject _o;
+            private DF.Game.Entity.Entity _e;
 
-        public GameObject O
-        {
-            get => _o;
-            private set { _o = value; }
-        }
-
-        public DF.Game.Entity.Entity E
-        {
-            get => _e;
-            private set { _e = value; }
-        }
-    }
-
-    private System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, Entity> _entities;
-
-    public void Append(DF.Game.Entity.Entity entity)
-    {
-        switch (entity.Type)
-        {
-            case DF.Game.API.Constants.EntityType.Tank:
-                if (_entities.ContainsKey(entity.ID))
-                {
-                    return;
-                }
-                _entities[entity.ID] = new Entity(
-                    Instantiate(TankModel, transform.position, transform.rotation),
-                    entity
-                );
-
-                // TODO(minkezhang): Remove this.
-                GetComponent<Game>().Client.Move(
-                    GetComponent<Game>().Tick,
-                    new System.Collections.Generic.List<DF.Game.ID.EntityID> { entity.ID },
-                    new DF.Game.API.Data.Position { X = 9, Y = 9 },
-                    DF.Game.API.Constants.MoveType.Forward
-                );
-                break;
-        }
-
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        _entities = new System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, Entity>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        foreach (var e in _entities.Values)
-        {
-            var (ok, c) = e.E.Curves.Curve(DF.Game.API.Constants.EntityProperty.Position).TryGetLinearPosition();
-            if (ok)
+            public Entity(GameObject o, DF.Game.Entity.Entity e)
             {
-                var p = c.Get(GetComponent<Game>().Tick);
-                e.O.transform.position = new Vector3((float)p.X, 0, (float)p.Y);
+                O = o;
+                E = e;
             }
+
+            public GameObject O
+            {
+                get => _o;
+                private set { _o = value; }
+            }
+
+            public DF.Game.Entity.Entity E
+            {
+                get => _e;
+                private set { _e = value; }
+            }
+        }
+
+        private System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, Entity> _entities;
+
+        public Entity Get(DF.Game.ID.EntityID id) => _entities[id];
+
+        public void Append(DF.Game.Entity.Entity entity)
+        {
+            switch (entity.Type)
+            {
+                case DF.Game.API.Constants.EntityType.Tank:
+                    if (_entities.ContainsKey(entity.ID))
+                    {
+                        return;
+                    }
+                    _entities[entity.ID] = new Entity(
+                        Instantiate(TankModel, transform.position, transform.rotation),
+                        entity
+                    );
+
+                    // TODO(minkezhang): Remove this.
+                    GetComponent<Game>().Client.Move(
+                        GetComponent<DF.Unity.Game>().Tick,
+                        new System.Collections.Generic.List<DF.Game.ID.EntityID> { entity.ID },
+                        new DF.Game.API.Data.Position { X = 9, Y = 9 },
+                        DF.Game.API.Constants.MoveType.Forward
+                    );
+                    break;
+            }
+
+        }
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            _entities = new System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, Entity>();
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            foreach (var e in _entities.Values)
+            {
+                var (ok, c) = e.E.Curves.Curve(DF.Game.API.Constants.EntityProperty.Position).TryGetLinearPosition();
+                if (ok)
+                {
+                    var p = c.Get(GetComponent<DF.Unity.Game>().Tick);
+                    e.O.transform.position = new Vector3((float)p.X, 0, (float)p.Y);
+                }
+            }
+        }
+
+        public List<DF.Game.ID.EntityID> Filter(F f)
+        {
+            var l = new List<DF.Game.ID.EntityID>();
+            foreach (var e in _entities.Values)
+            {
+                if (f(e))
+                {
+                    // e is a reference here.
+                    l.Add(e.E.ID);
+                }
+            }
+            return l;
         }
     }
 }

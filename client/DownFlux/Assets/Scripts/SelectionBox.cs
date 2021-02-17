@@ -4,40 +4,52 @@ using UnityEngine;
 
 public class SelectionBox : MonoBehaviour
 {
+    public Camera cam;
     public RectTransform selection;
-    private Vector2 start;
-    private bool isDown;
-    private const int primaryButton = 0;
+    private Vector2 _start;
+    private bool _isDown;
+    private const int _primaryButton = 0;
 
     // Start is called before the first frame update
     void Start()
     {
-        isDown = false;
+        _isDown = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(primaryButton))
+        if (Input.GetMouseButtonDown(_primaryButton) || (!Input.GetMouseButtonUp(_primaryButton) && _isDown))
         {
-            isDown = true;
-            start = Input.mousePosition;
-            selection.position = Input.mousePosition;
+            if (Input.GetMouseButtonDown(_primaryButton))
+            {
+                _isDown = true;
+                _start = Input.mousePosition;
+            }
+
+            var mousePos = Input.mousePosition;
+            var x = mousePos.x - _start.x;
+            var y = mousePos.y - _start.y;
+            selection.sizeDelta = new Vector2(Mathf.Abs(x), Mathf.Abs(y));
+            selection.anchoredPosition = _start + new Vector2(x / 2, y / 2);
+            if (Input.GetMouseButtonDown(_primaryButton))
+            {
+                selection.gameObject.SetActive(true);
+            }
+
         }
-        else if (Input.GetMouseButtonUp(primaryButton))
+        else if (Input.GetMouseButtonUp(_primaryButton))
         {
-            isDown = false;
+            _isDown = false;
             selection.gameObject.SetActive(false);
             var p0 = selection.anchoredPosition - selection.sizeDelta / 2;  // lower bound
             var p1 = selection.anchoredPosition + selection.sizeDelta / 2;  // upper bound
-        }
-        else if (isDown)
-        {
-            var mousePos = Input.mousePosition;
-            var x = mousePos.x - start.x;
-            var y = mousePos.y - start.y;
-            selection.sizeDelta = new Vector2(Mathf.Abs(x), Mathf.Abs(y));
-            selection.anchoredPosition = start + new Vector2(x / 2, y / 2);
+
+
+            var selected = GetComponent<DF.Unity.List>().Filter(
+                DF.Unity.Filters.FilterByProjectedPosition(
+                    p0, p1, cam));
+            print(selected.Count);
         }
     }
 }
