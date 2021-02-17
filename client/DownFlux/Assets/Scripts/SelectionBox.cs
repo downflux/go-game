@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class SelectionBox : MonoBehaviour
 {
+    private static int _selectionTolerance = 500;
+
     public Camera cam;
     public RectTransform selection;
     private Vector2 _start;
     private bool _isDown;
     private const int _primaryButton = 0;
+    private List<DF.Game.ID.EntityID> _selected;
 
     // Start is called before the first frame update
     void Start()
@@ -45,11 +48,20 @@ public class SelectionBox : MonoBehaviour
             var p0 = selection.anchoredPosition - selection.sizeDelta / 2;  // lower bound
             var p1 = selection.anchoredPosition + selection.sizeDelta / 2;  // upper bound
 
+            if (selection.sizeDelta.x * selection.sizeDelta.y < _selectionTolerance)
+            {
+                // Move to projected point.
+                foreach(var eid in _selected) {
 
-            var selected = GetComponent<DF.Unity.List>().Filter(
-                DF.Unity.Filters.FilterByProjectedPosition(
-                    p0, p1, cam));
-            print(selected.Count);
+                }
+            }
+            else
+            {
+                // Get selected units bound by selection box projection.
+                _selected = GetComponent<DF.Unity.List>().Filter(
+                    DF.Unity.Filters.FilterByProjectedPosition(
+                        p0, p1, cam));
+            }
         }
     }
 }
