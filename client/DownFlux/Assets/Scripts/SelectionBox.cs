@@ -19,6 +19,8 @@ public class SelectionBox : MonoBehaviour
     void Start()
     {
         _isDown = false;
+        _selected = new List<DF.Game.ID.EntityID>();
+        selection.gameObject.SetActive(false);
     }
 
     // Update is called once per frame
@@ -55,18 +57,17 @@ public class SelectionBox : MonoBehaviour
                 // See https://www.youtube.com/watch?v=OL1QgwaDsqo for more information.
                 Ray r = cam.ScreenPointToRay(_start);
 
-                if (Physics.Raycast(r, out _hit, 50000))
-                {
-                    // hit
-                }
-                else
-                {
-                    // miss
-                }
-                // Move to projected point.
-                foreach (var eid in _selected)
+                if (Physics.Raycast(r, out _hit, 50000, LayerMask.GetMask("Map")))
                 {
 
+                    GetComponent<DF.Unity.Game>().Client.Move(
+                        GetComponent<DF.Unity.Game>().Tick,
+                        _selected,
+                        new DF.Game.API.Data.Position { X = _hit.point.x + 0.5, Y = _hit.point.z + 0.5 },
+                        DF.Game.API.Constants.MoveType.Forward
+                    );
+
+                    print(string.Format("DEBUG(minkezhang): Moving to ({0}, {1})", _hit.point.x + 0.5, _hit.point.z + 0.5));
                 }
             }
             else

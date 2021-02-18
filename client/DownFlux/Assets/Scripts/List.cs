@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 namespace DF.Unity
@@ -50,14 +50,6 @@ namespace DF.Unity
                     _entities[entity.ID] = new Entity(
                         Instantiate(TankModel, transform.position, transform.rotation),
                         entity
-                    );
-
-                    // TODO(minkezhang): Remove this.
-                    GetComponent<Game>().Client.Move(
-                        GetComponent<DF.Unity.Game>().Tick,
-                        new System.Collections.Generic.List<DF.Game.ID.EntityID> { entity.ID },
-                        new DF.Game.API.Data.Position { X = 9, Y = 9 },
-                        DF.Game.API.Constants.MoveType.Forward
                     );
                     break;
             }
