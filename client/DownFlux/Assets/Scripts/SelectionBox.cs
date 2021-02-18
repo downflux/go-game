@@ -8,7 +8,9 @@ public class SelectionBox : MonoBehaviour
 
     public Camera cam;
     public RectTransform selection;
+
     private Vector2 _start;
+    private RaycastHit _hit;
     private bool _isDown;
     private const int _primaryButton = 0;
     private List<DF.Game.ID.EntityID> _selected;
@@ -50,8 +52,20 @@ public class SelectionBox : MonoBehaviour
 
             if (selection.sizeDelta.x * selection.sizeDelta.y < _selectionTolerance)
             {
+                // See https://www.youtube.com/watch?v=OL1QgwaDsqo for more information.
+                Ray r = cam.ScreenPointToRay(_start);
+
+                if (Physics.Raycast(r, out _hit, 50000))
+                {
+                    // hit
+                }
+                else
+                {
+                    // miss
+                }
                 // Move to projected point.
-                foreach(var eid in _selected) {
+                foreach (var eid in _selected)
+                {
 
                 }
             }
