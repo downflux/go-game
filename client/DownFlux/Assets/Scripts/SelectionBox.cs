@@ -55,6 +55,7 @@ public class SelectionBox : MonoBehaviour
             if (selection.sizeDelta.x * selection.sizeDelta.y < _selectionTolerance)
             {
                 // See https://www.youtube.com/watch?v=OL1QgwaDsqo for more information.
+                // See https://www.youtube.com/watch?v=qGWfmqnfey4 as well (hit.transform).
                 Ray r = cam.ScreenPointToRay(_start);
 
                 if (Physics.Raycast(r, out _hit, 50000, LayerMask.GetMask("Map")))
