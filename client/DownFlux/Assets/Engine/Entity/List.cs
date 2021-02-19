@@ -1,14 +1,14 @@
 using EntityCallback = System.Action<DF.Game.Entity.Entity>;
 namespace DF.Game.Entity
 {
+    public delegate bool F(DF.Game.Entity.Entity e);
+
     public class List
     {
         private System.Collections.Generic.Dictionary<
             DF.Game.ID.EntityID,
             DF.Game.Entity.Entity> _entities;
         private EntityCallback _newEntityCallback;
-        // TODO(minkezhang): 
-        private System.Threading.ReaderWriterLock _l;
 
         public List(EntityCallback callback)
         {
@@ -78,5 +78,16 @@ namespace DF.Game.Entity
                 Append(e);
             }
         }
-    }
+
+        public List Filter(F f) {
+            var l = new List(null, delegate (DF.Game.Entity.Entity _) { });
+            foreach(var e in _entities.Values) {
+                if (f(e)) {
+                    // e is a reference here.
+                    l.Append(e);
+                }
+            }
+            return l;
+        }
+    }       
 }
