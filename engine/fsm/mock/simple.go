@@ -46,8 +46,13 @@ func (n *Action) Precedence(i action.Action) bool {
 		return false
 	}
 
+	s, err := n.State()
+	if err != nil {
+		return false
+	}
+
 	m := i.(*Action)
-	return n.priority >= m.priority
+	return s == Canceled || n.priority >= m.priority
 }
 
 func (n *Action) Cancel() error {
