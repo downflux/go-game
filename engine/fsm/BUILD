@@ -10,10 +10,8 @@ go_test(
     deps = [
 	":action",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/fsm/mock:simple",
         "//engine/id:id",
-        "//engine/status:status",
-        "//server/fsm:move",
-        "//server/entity:tank",
     ],
 )
 
