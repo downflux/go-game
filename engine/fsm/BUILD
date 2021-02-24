@@ -38,16 +38,12 @@ go_test(
     deps = [
         ":action",
         ":fsm",
-        "//api:data_go_proto",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/fsm/mock:simple",
         "//engine/id:id",
-        "//engine/status:status",
         "//engine/visitor:visitor",
-        "//server/fsm:move",
-        "//server/entity:tank",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
