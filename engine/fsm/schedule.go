@@ -18,31 +18,16 @@ var (
 	}
 )
 
-type Dependency struct {
-	parent fcpb.FSMType
-	children []fcpb.FSMType
-}
-
 type Schedule struct {
 	fsmTypes map[fcpb.FSMType]bool
 
 	mux     sync.Mutex
 	actions map[fcpb.FSMType]*list.List
-
-	dependencies map[fcpb.FSMType][]fcpb.FSMType
 }
 
-func New(
-	fsmTypes []fcpb.FSMType,
-	deps []Dependency) *Schedule {
-	dependencies := map[fcpb.FSMType][]fcpb.FSMType{}
-	for _, d := range deps {
-		dependencies[d.parent] = append(dependencies[d.parent], d.children...)
-	}
-
+func New(fsmTypes []fcpb.FSMType) *Schedule {
 	s := &Schedule{
 		fsmTypes: map[fcpb.FSMType]bool{},
-		dependencies: dependencies,
 	}
 	for _, fsmType := range fsmTypes {
 		s.fsmTypes[fsmType] = true
@@ -57,7 +42,6 @@ func (s *Schedule) Pop() *Schedule {
 	ns := &Schedule{
 		actions:  s.actions,
 		fsmTypes: s.fsmTypes,
-		dependencies: s.dependencies,
 	}
 	s.actions = nil
 	return ns
@@ -101,10 +85,6 @@ func (s *Schedule) Merge(t *Schedule) error {
 
 			if err := s.actions[fsmType].Merge(l); err != nil {
 				return err
-			}
-
-			for _, d := range s.dependencies[fsmType] {
-				if err := s.actions[d].Merge(l)
 			}
 		}
 	}
