@@ -18,7 +18,6 @@ import (
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	simpleaction "github.com/downflux/game/engine/fsm/mock/simple"
 	serverstatus "github.com/downflux/game/engine/status/status"
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	visitorlist "github.com/downflux/game/engine/visitor/list"
 )
 
@@ -40,9 +39,6 @@ func newExecutor(t *testing.T) *Executor {
 		),
 		dirty.New(),
 		schedule.New([]fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE}),
-		map[vcpb.VisitorType]fcpb.FSMType{
-			vcpb.VisitorType_VISITOR_TYPE_MOVE: fcpb.FSMType_FSM_TYPE_MOVE,
-		},
 	)
 }
 
@@ -72,7 +68,7 @@ func TestDoTick(t *testing.T) {
 		t.Fatal("Get() = nil, want a non-nil value")
 	}
 
-	mock := e.visitors.Visitor(vcpb.VisitorType_VISITOR_TYPE_MOVE).(*simple.Visitor)
+	mock := e.visitors.Visitor(fcpb.FSMType_FSM_TYPE_MOVE).(*simple.Visitor)
 	count := mock.Count()
 
 	e.doTick()

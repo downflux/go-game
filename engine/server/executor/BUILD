@@ -14,10 +14,8 @@ go_library(
         "//engine/id:id",
         "//engine/fsm:action",
         "//engine/fsm:schedule",
-        "//engine/fsm/api:constants_go_proto",
         "//engine/server/client:list",
         "//engine/visitor:list",
-        "//engine/visitor/api:constants_go_proto",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
     ],
@@ -39,7 +37,6 @@ go_test(
         "//engine/status:status",
         "//engine/visitor:list",
         "//engine/visitor:visitor",
-        "//engine/visitor/api:constants_go_proto",
         "//engine/visitor/mock:simple",
     ],
 )

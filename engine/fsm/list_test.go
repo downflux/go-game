@@ -7,7 +7,6 @@ import (
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/fsm/mock/simple"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -73,7 +72,7 @@ func TestAddCancel(t *testing.T) {
 	if diff := cmp.Diff(
 		a2,
 		l.Get(a2.ID()),
-		cmp.AllowUnexported(simple.Action{}, action.Base{}, visitor.BaseAgent{}),
+		cmp.AllowUnexported(simple.Action{}, action.Base{}),
 		cmpopts.IgnoreFields(action.Base{}, "fsm"),
 	); diff != "" {
 		t.Errorf("Get() mismatch (-want +got):\n%v", diff)

@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 )
 
 type Action interface {
@@ -23,17 +22,14 @@ type Action interface {
 }
 
 type Base struct {
-	visitor.BaseAgent
-
 	fsm   *fsm.FSM
 	state fsm.State
 }
 
 func New(fsm *fsm.FSM, state fsm.State) *Base {
 	return &Base{
-		BaseAgent: *visitor.NewBaseAgent(vcpb.AgentType_AGENT_TYPE_FSM),
-		fsm:       fsm,
-		state:     state,
+		fsm:   fsm,
+		state: state,
 	}
 }
 
