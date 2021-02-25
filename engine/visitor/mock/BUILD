@@ -7,8 +7,8 @@ go_library(
     srcs = ["simple.go"],
     importpath = "github.com/downflux/game/engine/visitor/mock/simple",
     deps = [
+        "//engine/fsm/api:constants_go_proto",
         "//engine/visitor:visitor",
-        "//engine/visitor/api:constants_go_proto",
     ],
 )
 

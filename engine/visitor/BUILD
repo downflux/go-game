@@ -8,7 +8,7 @@ go_library(
     importpath = "github.com/downflux/game/engine/visitor/list",
     deps = [
         ":visitor",
-	"//engine/visitor/api:constants_go_proto",
+	"//engine/fsm/api:constants_go_proto",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
     ],
@@ -19,6 +19,6 @@ go_library(
     srcs = ["visitor.go"],
     importpath = "github.com/downflux/game/engine/visitor/visitor",
     deps = [
-	"//engine/visitor/api:constants_go_proto",
+	"//engine/fsm/api:constants_go_proto",
     ],
 )

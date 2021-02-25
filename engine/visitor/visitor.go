@@ -4,7 +4,7 @@
 package visitor
 
 import (
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 type Agent interface {
@@ -13,15 +13,13 @@ type Agent interface {
 	// Example:
 	//  func (a *ConcreteAgent) Accept(v Vistor) { return v.Visit(a) }
 	Accept(v Visitor) error
-
-	AgentType() vcpb.AgentType
 }
 
 // Visitor defines the list of functions necessary for a process regularly
 // mutating arbitrary Entity instances.
 type Visitor interface {
-	// Type returns a registered VisitorType.
-	Type() vcpb.VisitorType
+	// Type returns a registered FSMType.
+	Type() fcpb.FSMType
 
 	// Visit will run appropriate commands for the current tick. If
 	// a timeout occurs, the function will return early. This function
@@ -35,18 +33,9 @@ type Visitor interface {
 	Visit(a Agent) error
 }
 
-type BaseAgent struct {
-	agentType vcpb.AgentType
+type Base struct {
+	fsmType fcpb.FSMType
 }
 
-func NewBaseAgent(t vcpb.AgentType) *BaseAgent { return &BaseAgent{agentType: t} }
-
-func (a BaseAgent) AgentType() vcpb.AgentType { return a.agentType }
-
-type BaseVisitor struct {
-	visitorType vcpb.VisitorType
-}
-
-func NewBaseVisitor(t vcpb.VisitorType) *BaseVisitor { return &BaseVisitor{visitorType: t} }
-
-func (v BaseVisitor) Type() vcpb.VisitorType { return v.visitorType }
+func New(t fcpb.FSMType) *Base    { return &Base{fsmType: t} }
+func (v Base) Type() fcpb.FSMType { return v.fsmType }

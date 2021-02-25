@@ -3,18 +3,18 @@ package simple
 import (
 	"github.com/downflux/game/engine/visitor/visitor"
 
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 type Visitor struct {
-	*visitor.BaseVisitor
+	*visitor.Base
 
 	counter int
 }
 
 func New() *Visitor {
 	return &Visitor{
-		BaseVisitor: visitor.NewBaseVisitor(vcpb.VisitorType_VISITOR_TYPE_MOVE),
+		Base: visitor.New(fcpb.FSMType_FSM_TYPE_MOVE),
 	}
 }
 
