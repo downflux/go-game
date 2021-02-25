@@ -88,7 +88,7 @@ func TestDoTick(t *testing.T) {
 	}
 
 	// TODO(minkezhang): Change to 1 when we remove Visit(List).
-	if get := mock.Count(); get != count+2 {
-		t.Errorf("Count() = %v, want = %v", get, count+2)
+	if get := mock.Count(); get != count+1 {
+		t.Errorf("Count() = %v, want = %v", get, count+1)
 	}
 }

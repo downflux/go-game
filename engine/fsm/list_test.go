@@ -24,10 +24,6 @@ func TestNew(t *testing.T) {
 	if got := l.Type(); got != fsmType {
 		t.Fatalf("Type() = %v, want = %v", got, fsmType)
 	}
-
-	if got := l.AgentType(); got != agentType {
-		t.Errorf("AgentType() = %v, want = %v", got, agentType)
-	}
 }
 
 func TestAddError(t *testing.T) {
