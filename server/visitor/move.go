@@ -16,13 +16,13 @@ import (
 	"github.com/downflux/game/server/fsm/move"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	tile "github.com/downflux/game/map/map"
 )
 
 const (
-	// visitorType is the registered VisitorType of the move visitor.
-	visitorType = vcpb.VisitorType_VISITOR_TYPE_MOVE
+	// fsmType is the registered FSMType of the move visitor.
+	fsmType = fcpb.FSMType_FSM_TYPE_MOVE
 )
 
 // coordinate transforms a gdpb.Position instance into a gdpb.Coordinate
@@ -45,7 +45,7 @@ func position(c *gdpb.Coordinate) *gdpb.Position {
 }
 
 type Visitor struct {
-	visitor.BaseVisitor
+	visitor.Base
 
 	// mux guarantees we're running only one tile.Map astar at a time.
 	// TODO(minkezhang): Make this concurrent.
@@ -83,7 +83,7 @@ func New(
 	dirties *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
-		BaseVisitor:   *visitor.NewBaseVisitor(visitorType),
+		Base:          *visitor.New(fsmType),
 		tileMap:       tileMap,
 		abstractGraph: abstractGraph,
 		status:        dfStatus,

@@ -7,15 +7,15 @@ import (
 	"github.com/downflux/game/server/fsm/attack"
 	"github.com/downflux/game/server/fsm/commonstate"
 
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 const (
-	visitorType = vcpb.VisitorType_VISITOR_TYPE_ATTACK
+	fsmType = fcpb.FSMType_FSM_TYPE_ATTACK
 )
 
 type Visitor struct {
-	visitor.BaseVisitor
+	visitor.Base
 
 	status status.ReadOnlyStatus
 	dirty  *dirty.List
@@ -23,9 +23,9 @@ type Visitor struct {
 
 func New(dfStatus status.ReadOnlyStatus, dirties *dirty.List) *Visitor {
 	return &Visitor{
-		BaseVisitor: *visitor.NewBaseVisitor(visitorType),
-		status:      dfStatus,
-		dirty:       dirties,
+		Base:   *visitor.New(fsmType),
+		status: dfStatus,
+		dirty:  dirties,
 	}
 }
 

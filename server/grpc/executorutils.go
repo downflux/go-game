@@ -26,7 +26,6 @@ import (
 	entitylist "github.com/downflux/game/engine/entity/list"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	serverstatus "github.com/downflux/game/engine/status/status"
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	visitorlist "github.com/downflux/game/engine/visitor/list"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
@@ -75,12 +74,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 	}
 
 	return &Utils{
-		executor: executor.New(visitors, state, dirtystate, fsmSchedule, map[vcpb.VisitorType]fcpb.FSMType{
-			vcpb.VisitorType_VISITOR_TYPE_CHASE:   fcpb.FSMType_FSM_TYPE_CHASE,
-			vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
-			vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
-			vcpb.VisitorType_VISITOR_TYPE_ATTACK:  fcpb.FSMType_FSM_TYPE_ATTACK,
-		}),
+		executor:  executor.New(visitors, state, dirtystate, fsmSchedule),
 		gamestate: state,
 	}, nil
 }
