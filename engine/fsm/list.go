@@ -34,8 +34,10 @@ func New(fsmType fcpb.FSMType) *List {
 	}
 }
 
-func (l *List) AgentType() vcpb.AgentType         { return agentType }
-func (l *List) Type() fcpb.FSMType                { return l.fsmType }
+func (l *List) AgentType() vcpb.AgentType { return agentType }
+func (l *List) Type() fcpb.FSMType        { return l.fsmType }
+
+// TODO(minkezhang): Rename Action.
 func (l *List) Get(iid id.ActionID) action.Action { return l.actions[iid] }
 
 func (l *List) Clear() error {

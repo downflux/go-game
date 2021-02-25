@@ -8,6 +8,8 @@ import (
 
 type Visitor struct {
 	*visitor.BaseVisitor
+
+	counter int
 }
 
 func New() *Visitor {
@@ -16,4 +18,9 @@ func New() *Visitor {
 	}
 }
 
-func (v Visitor) Visit(a visitor.Agent) error { return nil }
+func (v *Visitor) Visit(a visitor.Agent) error {
+	v.counter += 1
+	return nil
+}
+
+func (v *Visitor) Count() int { return v.counter }
