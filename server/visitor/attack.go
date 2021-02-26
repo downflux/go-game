@@ -42,7 +42,7 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 		// recording targets, ENTITY_PROPERTY_ATTACK_TARGET.
 		dirtyCurves := []dirty.Curve{
 			{node.Source().ID(), node.Source().AttackTimerCurve().Property()},
-			{node.Target().ID(), node.Target().HealthCurve().Property()},
+			{node.Target().ID(), node.Target().TargetHealthCurve().Property()},
 		}
 		for _, c := range dirtyCurves {
 			if err := v.dirty.AddCurve(c); err != nil {
@@ -53,7 +53,7 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 		if err := node.Source().AttackTimerCurve().Add(tick, true); err != nil {
 			return err
 		}
-		return node.Target().HealthCurve().Add(tick, -1*node.Source().Strength())
+		return node.Target().TargetHealthCurve().Add(tick, -1*node.Source().AttackStrength())
 	}
 	return nil
 }

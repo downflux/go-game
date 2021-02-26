@@ -89,16 +89,17 @@ func (a *Action) State() (fsm.State, error) {
 		return commonstate.Unknown, err
 	}
 
+	// TODO(minkezhang): Account for AttackVelocity and AttackTarget here.
 	switch s {
 	case commonstate.Pending:
 		tick := a.status.Tick()
-		if a.target.Health(tick) <= 0 {
+		if a.target.TargetHealth(tick) <= 0 {
 			return commonstate.Finished, a.To(s, commonstate.Finished, true)
 		}
 		if a.source.AttackTimerCurve().Ok(tick) && utils.Euclidean(
 			a.source.Position(tick),
 			a.target.Position(tick),
-		) <= a.source.Range() {
+		) <= a.source.AttackRange() {
 			return commonstate.Executing, a.To(s, commonstate.Executing, true)
 		}
 		return s, nil

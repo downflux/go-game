@@ -112,7 +112,7 @@ func (v *Visitor) visitFSM(node *move.Action) error {
 		}
 
 		ticksPerSecond := float64(time.Second / v.status.TickDuration())
-		ticksPerTile := id.Tick(ticksPerSecond / e.Velocity())
+		ticksPerTile := id.Tick(ticksPerSecond / e.MoveVelocity())
 
 		p, _, err := astar.Path(
 			v.tileMap,

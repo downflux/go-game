@@ -22,8 +22,11 @@ import (
 )
 
 const (
-	// velocity is measured in tiles per second.
-	velocity = 2
+	// moveVelocity is measured in tiles per second.
+	moveVelocity = 2
+
+	// attackVelocity is measured in tiles per second.
+	attackVelocity = 10
 
 	// cooloff is measured in ticks.
 	// TODO(minkezhang): Refactor to be in terms of seconds instead.
@@ -61,6 +64,7 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	mc := linearmove.New(eid, t)
 	mc.Add(t, p)
 	ac := timer.New(eid, t, cooloff, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TIMER)
+	tc := step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TARGET, reflect.TypeOf(""))
 	hp := delta.New(step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH, reflect.TypeOf(float64(0))))
 	if err := hp.Add(t, health); err != nil {
 		return nil, err
@@ -72,8 +76,8 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	}
 
 	return &Entity{
-		moveComponent:     *moveable.New(velocity),
-		attackComponent:   *attackable.New(strength, attackRange, ac),
+		moveComponent:     *moveable.New(moveVelocity),
+		attackComponent:   *attackable.New(strength, attackRange, attackVelocity, tc, ac),
 		targetComponent:   *targetable.New(hp),
 		positionComponent: *positionable.New(mc),
 		eid:               eid,

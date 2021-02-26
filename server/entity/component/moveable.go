@@ -9,7 +9,7 @@ type Component interface {
 	positionable.Component
 
 	ID() id.EntityID
-	Velocity() float64
+	MoveVelocity() float64
 }
 
 type Base struct {
@@ -22,4 +22,4 @@ func New(v float64) *Base {
 	}
 }
 
-func (c Base) Velocity() float64 { return c.velocity }
+func (c Base) MoveVelocity() float64 { return c.velocity }
