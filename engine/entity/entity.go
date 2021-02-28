@@ -15,6 +15,7 @@ import (
 
 	"github.com/downflux/game/engine/curve/list"
 	"github.com/downflux/game/engine/id/id"
+	"github.com/downflux/game/engine/entity/acl"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
@@ -30,6 +31,8 @@ type Entity interface {
 	Curves() *list.List
 
 	Export() *gdpb.Entity
+
+	ACL() acl.ACL
 
 	// Start returns the game tick at which the Entity was created.
 	Start() id.Tick
@@ -49,21 +52,25 @@ type Entity interface {
 type Base struct {
 	entityType gcpb.EntityType
 	id         id.EntityID
+	acl        acl.ACL
 }
 
-func New(t gcpb.EntityType, eid id.EntityID) *Base {
+func New(t gcpb.EntityType, eid id.EntityID, a acl.ACLType) *Base {
 	return &Base{
 		entityType: t,
 		id:         eid,
+		acl:        *acl.New(a),
 	}
 }
 
 func (e Base) Type() gcpb.EntityType { return e.entityType }
 func (e Base) ID() id.EntityID       { return e.id }
+func (e Base) ACL() acl.ACL { return e.acl }
 func (e Base) Export() *gdpb.Entity {
 	return &gdpb.Entity{
 		EntityId: e.ID().Value(),
 		Type:     e.Type(),
+		Acl: e.ACL().Export(),
 	}
 }
 

@@ -9,6 +9,7 @@ go_library(
     deps = [
         "//api:constants_go_proto",
         "//engine/curve:list",
+        "//engine/entity:acl",
         "//engine/entity:entity",
         "//engine/id:id",
     ]
