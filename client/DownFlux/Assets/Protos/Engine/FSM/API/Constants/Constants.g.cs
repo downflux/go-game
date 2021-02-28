@@ -30,15 +30,17 @@ namespace DF.Game.Engine.FSM.API.Constants {
             "RRACEhIKDkZTTV9UWVBFX0NIQVNFEAMSEwoPRlNNX1RZUEVfQVRUQUNLEAQS",
             "FAoPRlNNX1RZUEVfQ0xJRU5UEOgHKl0KCkNoYXNlU3RhdGUSFwoTQ0hBU0Vf",
             "U1RBVEVfVU5LTk9XThAAEhgKFENIQVNFX1NUQVRFX0lOX1JBTkdFEAESHAoY",
-            "Q0hBU0VfU1RBVEVfT1VUX09GX1JBTkdFEAIqkwEKC0NvbW1vblN0YXRlEhgK",
-            "FENPTU1PTl9TVEFURV9VTktOT1dOEAASGAoUQ09NTU9OX1NUQVRFX1BFTkRJ",
-            "TkcQARIaChZDT01NT05fU1RBVEVfRVhFQ1VUSU5HEAISGQoVQ09NTU9OX1NU",
-            "QVRFX0NBTkNFTEVEEAMSGQoVQ09NTU9OX1NUQVRFX0ZJTklTSEVEEARCQlod",
-            "Z2FtZS5lbmdpbmUuZnNtLmFwaS5jb25zdGFudHOqAiBERi5HYW1lLkVuZ2lu",
-            "ZS5GU00uQVBJLkNvbnN0YW50c2IGcHJvdG8z"));
+            "Q0hBU0VfU1RBVEVfT1VUX09GX1JBTkdFEAIqQAoLQXR0YWNrU3RhdGUSGAoU",
+            "QVRUQUNLX1NUQVRFX1VOS05PV04QABIXChNBVFRBQ0tfU1RBVEVfRklSSU5H",
+            "EAEqkwEKC0NvbW1vblN0YXRlEhgKFENPTU1PTl9TVEFURV9VTktOT1dOEAAS",
+            "GAoUQ09NTU9OX1NUQVRFX1BFTkRJTkcQARIaChZDT01NT05fU1RBVEVfRVhF",
+            "Q1VUSU5HEAISGQoVQ09NTU9OX1NUQVRFX0NBTkNFTEVEEAMSGQoVQ09NTU9O",
+            "X1NUQVRFX0ZJTklTSEVEEARCQlodZ2FtZS5lbmdpbmUuZnNtLmFwaS5jb25z",
+            "dGFudHOqAiBERi5HYW1lLkVuZ2luZS5GU00uQVBJLkNvbnN0YW50c2IGcHJv",
+            "dG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::DF.Game.Engine.FSM.API.Constants.FSMType), typeof(global::DF.Game.Engine.FSM.API.Constants.ChaseState), typeof(global::DF.Game.Engine.FSM.API.Constants.CommonState), }, null, null));
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::DF.Game.Engine.FSM.API.Constants.FSMType), typeof(global::DF.Game.Engine.FSM.API.Constants.ChaseState), typeof(global::DF.Game.Engine.FSM.API.Constants.AttackState), typeof(global::DF.Game.Engine.FSM.API.Constants.CommonState), }, null, null));
     }
     #endregion
 
@@ -53,10 +55,21 @@ namespace DF.Game.Engine.FSM.API.Constants {
     [pbr::OriginalName("FSM_TYPE_CLIENT")] Client = 1000,
   }
 
+  /// <summary>
+  /// TODO(minkezhang): Migrate to //server/fsm/api/.
+  /// </summary>
   public enum ChaseState {
     [pbr::OriginalName("CHASE_STATE_UNKNOWN")] Unknown = 0,
     [pbr::OriginalName("CHASE_STATE_IN_RANGE")] InRange = 1,
     [pbr::OriginalName("CHASE_STATE_OUT_OF_RANGE")] OutOfRange = 2,
+  }
+
+  /// <summary>
+  /// TODO(minkezhang): Migrate to //server/fsm/api/.
+  /// </summary>
+  public enum AttackState {
+    [pbr::OriginalName("ATTACK_STATE_UNKNOWN")] Unknown = 0,
+    [pbr::OriginalName("ATTACK_STATE_FIRING")] Firing = 1,
   }
 
   public enum CommonState {
@@ -64,7 +77,8 @@ namespace DF.Game.Engine.FSM.API.Constants {
     [pbr::OriginalName("COMMON_STATE_PENDING")] Pending = 1,
     [pbr::OriginalName("COMMON_STATE_EXECUTING")] Executing = 2,
     /// <summary>
-    /// External cancellation due to precedence.
+    /// External cancellation due to explicit call or implicitly via precedence
+    /// testing.
     /// </summary>
     [pbr::OriginalName("COMMON_STATE_CANCELED")] Canceled = 3,
     [pbr::OriginalName("COMMON_STATE_FINISHED")] Finished = 4,

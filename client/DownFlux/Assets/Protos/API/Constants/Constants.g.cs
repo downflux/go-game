@@ -26,16 +26,17 @@ namespace DF.Game.API.Constants {
           string.Concat(
             "ChNhcGkvY29uc3RhbnRzLnByb3RvEhJnYW1lLmFwaS5jb25zdGFudHMqTwoI",
             "TW92ZVR5cGUSFQoRTU9WRV9UWVBFX1VOS05PV04QABIVChFNT1ZFX1RZUEVf",
-            "Rk9SV0FSRBABEhUKEU1PVkVfVFlQRV9SRVRSRUFUEAIqiQEKDkVudGl0eVBy",
+            "Rk9SV0FSRBABEhUKEU1PVkVfVFlQRV9SRVRSRUFUEAIqrAEKDkVudGl0eVBy",
             "b3BlcnR5EhsKF0VOVElUWV9QUk9QRVJUWV9VTktOT1dOEAASHAoYRU5USVRZ",
             "X1BST1BFUlRZX1BPU0lUSU9OEAESIAocRU5USVRZX1BST1BFUlRZX0FUVEFD",
-            "S19USU1FUhACEhoKFkVOVElUWV9QUk9QRVJUWV9IRUFMVEgQAyqAAQoJQ3Vy",
-            "dmVUeXBlEhYKEkNVUlZFX1RZUEVfVU5LTk9XThAAEhoKFkNVUlZFX1RZUEVf",
-            "TElORUFSX01PVkUQARITCg9DVVJWRV9UWVBFX1NURVAQAhIUChBDVVJWRV9U",
-            "WVBFX0RFTFRBEAMSFAoQQ1VSVkVfVFlQRV9USU1FUhAEKlgKCkVudGl0eVR5",
-            "cGUSFwoTRU5USVRZX1RZUEVfVU5LTk9XThAAEhQKEEVOVElUWV9UWVBFX1RB",
-            "TksQARIbChdFTlRJVFlfVFlQRV9FTlRJVFlfTElTVBACQixaEmdhbWUuYXBp",
-            "LmNvbnN0YW50c6oCFURGLkdhbWUuQVBJLkNvbnN0YW50c2IGcHJvdG8z"));
+            "S19USU1FUhACEhoKFkVOVElUWV9QUk9QRVJUWV9IRUFMVEgQAxIhCh1FTlRJ",
+            "VFlfUFJPUEVSVFlfQVRUQUNLX1RBUkdFVBAEKoABCglDdXJ2ZVR5cGUSFgoS",
+            "Q1VSVkVfVFlQRV9VTktOT1dOEAASGgoWQ1VSVkVfVFlQRV9MSU5FQVJfTU9W",
+            "RRABEhMKD0NVUlZFX1RZUEVfU1RFUBACEhQKEENVUlZFX1RZUEVfREVMVEEQ",
+            "AxIUChBDVVJWRV9UWVBFX1RJTUVSEAQqWAoKRW50aXR5VHlwZRIXChNFTlRJ",
+            "VFlfVFlQRV9VTktOT1dOEAASFAoQRU5USVRZX1RZUEVfVEFOSxABEhsKF0VO",
+            "VElUWV9UWVBFX0VOVElUWV9MSVNUEAJCLFoSZ2FtZS5hcGkuY29uc3RhbnRz",
+            "qgIVREYuR2FtZS5BUEkuQ29uc3RhbnRzYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::DF.Game.API.Constants.MoveType), typeof(global::DF.Game.API.Constants.EntityProperty), typeof(global::DF.Game.API.Constants.CurveType), typeof(global::DF.Game.API.Constants.EntityType), }, null, null));
@@ -61,6 +62,7 @@ namespace DF.Game.API.Constants {
     [pbr::OriginalName("ENTITY_PROPERTY_POSITION")] Position = 1,
     [pbr::OriginalName("ENTITY_PROPERTY_ATTACK_TIMER")] AttackTimer = 2,
     [pbr::OriginalName("ENTITY_PROPERTY_HEALTH")] Health = 3,
+    [pbr::OriginalName("ENTITY_PROPERTY_ATTACK_TARGET")] AttackTarget = 4,
   }
 
   /// <summary>

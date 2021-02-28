@@ -37,18 +37,18 @@ namespace DF.Game.API.API {
             "U3RyZWFtRGF0YVJlcXVlc3QSDAoEdGljaxgBIAEoARIRCgljbGllbnRfaWQY",
             "AiABKAkiSwoSU3RyZWFtRGF0YVJlc3BvbnNlEgwKBHRpY2sYASABKAESJwoF",
             "c3RhdGUYAiABKAsyGC5nYW1lLmFwaS5kYXRhLkdhbWVTdGF0ZSISChBBZGRD",
-            "bGllbnRSZXF1ZXN0IjQKEUFkZENsaWVudFJlc3BvbnNlEgwKBHRpY2sYASAB",
-            "KAESEQoJY2xpZW50X2lkGAIgASgJMpADCghEb3duRmx1eBJOCglBZGRDbGll",
-            "bnQSHi5nYW1lLmFwaS5hcGkuQWRkQ2xpZW50UmVxdWVzdBofLmdhbWUuYXBp",
-            "LmFwaS5BZGRDbGllbnRSZXNwb25zZSIAEkUKBkF0dGFjaxIbLmdhbWUuYXBp",
-            "LmFwaS5BdHRhY2tSZXF1ZXN0GhwuZ2FtZS5hcGkuYXBpLkF0dGFja1Jlc3Bv",
-            "bnNlIgASQgoETW92ZRIZLmdhbWUuYXBpLmFwaS5Nb3ZlUmVxdWVzdBoaLmdh",
-            "bWUuYXBpLmFwaS5Nb3ZlUmVzcG9uc2UiA5ACAhJWCgpTdHJlYW1EYXRhEh8u",
-            "Z2FtZS5hcGkuYXBpLlN0cmVhbURhdGFSZXF1ZXN0GiAuZ2FtZS5hcGkuYXBp",
-            "LlN0cmVhbURhdGFSZXNwb25zZSIDkAICMAESUQoJR2V0U3RhdHVzEh4uZ2Ft",
-            "ZS5hcGkuYXBpLkdldFN0YXR1c1JlcXVlc3QaHy5nYW1lLmFwaS5hcGkuR2V0",
-            "U3RhdHVzUmVzcG9uc2UiA5ACAkIgWgxnYW1lLmFwaS5hcGmqAg9ERi5HYW1l",
-            "LkFQSS5BUEliBnByb3RvMw=="));
+            "bGllbnRSZXF1ZXN0Ik0KEUFkZENsaWVudFJlc3BvbnNlEgwKBHRpY2sYASAB",
+            "KAESKgoJY2xpZW50X2lkGAIgASgLMhcuZ2FtZS5hcGkuZGF0YS5DbGllbnRJ",
+            "RDKQAwoIRG93bkZsdXgSTgoJQWRkQ2xpZW50Eh4uZ2FtZS5hcGkuYXBpLkFk",
+            "ZENsaWVudFJlcXVlc3QaHy5nYW1lLmFwaS5hcGkuQWRkQ2xpZW50UmVzcG9u",
+            "c2UiABJFCgZBdHRhY2sSGy5nYW1lLmFwaS5hcGkuQXR0YWNrUmVxdWVzdBoc",
+            "LmdhbWUuYXBpLmFwaS5BdHRhY2tSZXNwb25zZSIAEkIKBE1vdmUSGS5nYW1l",
+            "LmFwaS5hcGkuTW92ZVJlcXVlc3QaGi5nYW1lLmFwaS5hcGkuTW92ZVJlc3Bv",
+            "bnNlIgOQAgISVgoKU3RyZWFtRGF0YRIfLmdhbWUuYXBpLmFwaS5TdHJlYW1E",
+            "YXRhUmVxdWVzdBogLmdhbWUuYXBpLmFwaS5TdHJlYW1EYXRhUmVzcG9uc2Ui",
+            "A5ACAjABElEKCUdldFN0YXR1cxIeLmdhbWUuYXBpLmFwaS5HZXRTdGF0dXNS",
+            "ZXF1ZXN0Gh8uZ2FtZS5hcGkuYXBpLkdldFN0YXR1c1Jlc3BvbnNlIgOQAgJC",
+            "IFoMZ2FtZS5hcGkuYXBpqgIPREYuR2FtZS5BUEkuQVBJYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::DF.Game.API.Constants.ConstantsReflection.Descriptor, global::DF.Game.API.Data.DataReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -440,6 +440,9 @@ namespace DF.Game.API.API {
     /// <summary>Field number for the "client_id" field.</summary>
     public const int ClientIdFieldNumber = 2;
     private string clientId_ = "";
+    /// <summary>
+    /// TODO(minkezhang): Remove after adding authentication.
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ClientId {
       get { return clientId_; }
@@ -846,6 +849,9 @@ namespace DF.Game.API.API {
     /// <summary>Field number for the "client_id" field.</summary>
     public const int ClientIdFieldNumber = 2;
     private string clientId_ = "";
+    /// <summary>
+    /// TODO(minkezhang): Remove after adding authentication.
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ClientId {
       get { return clientId_; }
@@ -1293,6 +1299,9 @@ namespace DF.Game.API.API {
     /// <summary>Field number for the "client_id" field.</summary>
     public const int ClientIdFieldNumber = 2;
     private string clientId_ = "";
+    /// <summary>
+    /// TODO(minkezhang): Remove after adding authentication.
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ClientId {
       get { return clientId_; }
@@ -1834,7 +1843,7 @@ namespace DF.Game.API.API {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public AddClientResponse(AddClientResponse other) : this() {
       tick_ = other.tick_;
-      clientId_ = other.clientId_;
+      clientId_ = other.clientId_ != null ? other.clientId_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1856,12 +1865,12 @@ namespace DF.Game.API.API {
 
     /// <summary>Field number for the "client_id" field.</summary>
     public const int ClientIdFieldNumber = 2;
-    private string clientId_ = "";
+    private global::DF.Game.API.Data.ClientID clientId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string ClientId {
+    public global::DF.Game.API.Data.ClientID ClientId {
       get { return clientId_; }
       set {
-        clientId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        clientId_ = value;
       }
     }
 
@@ -1879,7 +1888,7 @@ namespace DF.Game.API.API {
         return true;
       }
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Tick, other.Tick)) return false;
-      if (ClientId != other.ClientId) return false;
+      if (!object.Equals(ClientId, other.ClientId)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1887,7 +1896,7 @@ namespace DF.Game.API.API {
     public override int GetHashCode() {
       int hash = 1;
       if (Tick != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Tick);
-      if (ClientId.Length != 0) hash ^= ClientId.GetHashCode();
+      if (clientId_ != null) hash ^= ClientId.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1908,9 +1917,9 @@ namespace DF.Game.API.API {
         output.WriteRawTag(9);
         output.WriteDouble(Tick);
       }
-      if (ClientId.Length != 0) {
+      if (clientId_ != null) {
         output.WriteRawTag(18);
-        output.WriteString(ClientId);
+        output.WriteMessage(ClientId);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1925,9 +1934,9 @@ namespace DF.Game.API.API {
         output.WriteRawTag(9);
         output.WriteDouble(Tick);
       }
-      if (ClientId.Length != 0) {
+      if (clientId_ != null) {
         output.WriteRawTag(18);
-        output.WriteString(ClientId);
+        output.WriteMessage(ClientId);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1941,8 +1950,8 @@ namespace DF.Game.API.API {
       if (Tick != 0D) {
         size += 1 + 8;
       }
-      if (ClientId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(ClientId);
+      if (clientId_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ClientId);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1958,8 +1967,11 @@ namespace DF.Game.API.API {
       if (other.Tick != 0D) {
         Tick = other.Tick;
       }
-      if (other.ClientId.Length != 0) {
-        ClientId = other.ClientId;
+      if (other.clientId_ != null) {
+        if (clientId_ == null) {
+          ClientId = new global::DF.Game.API.Data.ClientID();
+        }
+        ClientId.MergeFrom(other.ClientId);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1980,7 +1992,10 @@ namespace DF.Game.API.API {
             break;
           }
           case 18: {
-            ClientId = input.ReadString();
+            if (clientId_ == null) {
+              ClientId = new global::DF.Game.API.Data.ClientID();
+            }
+            input.ReadMessage(ClientId);
             break;
           }
         }
@@ -2002,7 +2017,10 @@ namespace DF.Game.API.API {
             break;
           }
           case 18: {
-            ClientId = input.ReadString();
+            if (clientId_ == null) {
+              ClientId = new global::DF.Game.API.Data.ClientID();
+            }
+            input.ReadMessage(ClientId);
             break;
           }
         }

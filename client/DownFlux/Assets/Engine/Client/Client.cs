@@ -23,7 +23,7 @@ namespace DF.Game.Client
         public string Connect()
         {
             var resp = _c.AddClient(new DF.Game.API.API.AddClientRequest());
-            ID = resp.ClientId;
+            ID = resp.ClientId.ClientId;
             return ID;
         }
 
