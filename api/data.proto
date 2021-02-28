@@ -21,9 +21,8 @@ message ClientID {
 message ACL {
   ClientID owner = 1;
 
-  bool public_writable = 2;
-  bool team_writable = 3;
-  bool client_writable = 4;
+  bool client_writable = 2;
+  bool public_writable = 3;
 }
 
 // Position is a specific point in the map, representing a point in the map.
