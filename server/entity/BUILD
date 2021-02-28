@@ -20,7 +20,6 @@ go_library(
         "//engine/curve/common:linearmove",
         "//engine/curve/common:step",
         "//engine/curve/common:timer",
-        "//engine/entity:acl",
         "//engine/entity:entity",
 	"//engine/id:id",
         "//server/entity/component:attackable",

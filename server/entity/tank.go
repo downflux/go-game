@@ -10,7 +10,6 @@ import (
 	"github.com/downflux/game/engine/curve/common/timer"
 	"github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/engine/curve/list"
-	"github.com/downflux/game/engine/entity/acl"
 	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/server/entity/component/attackable"
@@ -37,8 +36,6 @@ const (
 	attackRange = 2
 
 	health = float64(100)
-
-	aclType = acl.TeamWritable | acl.ClientWritable
 )
 
 type moveComponent = moveable.Base
@@ -80,7 +77,7 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	}
 
 	return &Entity{
-		Base:              *entity.New(gcpb.EntityType_ENTITY_TYPE_TANK, eid, aclType),
+		Base:              *entity.New(gcpb.EntityType_ENTITY_TYPE_TANK, eid),
 		moveComponent:     *moveable.New(moveVelocity),
 		attackComponent:   *attackable.New(strength, attackRange, attackVelocity, tc, ac),
 		targetComponent:   *targetable.New(hp),
