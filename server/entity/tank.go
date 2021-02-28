@@ -46,6 +46,7 @@ type positionComponent = positionable.Base
 // Entity implements the entity.Entity interface and represents a simple armored
 // unit.
 type Entity struct {
+	entity.Base
 	entity.LifeCycle
 	moveComponent
 	attackComponent
@@ -76,19 +77,13 @@ func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
 	}
 
 	return &Entity{
+		Base:              *entity.New(gcpb.EntityType_ENTITY_TYPE_TANK, eid),
 		moveComponent:     *moveable.New(moveVelocity),
 		attackComponent:   *attackable.New(strength, attackRange, attackVelocity, tc, ac),
 		targetComponent:   *targetable.New(hp),
 		positionComponent: *positionable.New(mc),
-		eid:               eid,
 		curves:            curves,
 	}, nil
 }
 
-// ID returns the UUID of the Tank.
-func (e *Entity) ID() id.EntityID { return e.eid }
-
 func (e *Entity) Curves() *list.List { return e.curves }
-
-// Type returns the registered EntityType.
-func (e *Entity) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }

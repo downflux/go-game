@@ -11,6 +11,12 @@ import "api/constants.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
+message ACL {
+  bool public_writable = 1;
+  bool team_writable = 2;
+  bool client_writable = 3;
+}
+
 // Position is a specific point in the map, representing a point in the map.
 message Position {
   double x = 1;
@@ -73,7 +79,9 @@ message Entity {
   // TODO(minkezhang): Rename to id instead.
   string entity_id = 1;
 
-  game.api.constants.EntityType type = 2;  
+  game.api.constants.EntityType type = 2;
+
+  ACL acl = 3;
 }
 
 message GameState {

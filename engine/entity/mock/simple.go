@@ -9,17 +9,14 @@ import (
 )
 
 type Entity struct {
+	entity.Base
 	entity.LifeCycle
-
-	id id.EntityID
 }
 
 func New(eid id.EntityID) *Entity {
 	return &Entity{
-		id: eid,
+		Base: *entity.New(gcpb.EntityType_ENTITY_TYPE_TANK, eid),
 	}
 }
 
-func (e *Entity) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }
-func (e *Entity) ID() id.EntityID       { return e.id }
-func (e *Entity) Curves() *list.List    { return nil }
+func (e *Entity) Curves() *list.List { return nil }
