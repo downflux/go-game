@@ -117,7 +117,7 @@ func TestSendMoveCommand(t *testing.T) {
 	if err != nil {
 		t.Fatalf("AddPlayer() = _, %v, want = nil", err)
 	}
-	cid := resp.GetClientId()
+	cid := resp.GetClientId().GetClientId()
 	stream, err := client.StreamData(s.ctx, &apipb.StreamDataRequest{
 		ClientId: cid,
 	})
@@ -249,7 +249,7 @@ func TestAddClient(t *testing.T) {
 		t.Fatalf("AddPlayer() = _, %v, want = nil", err)
 	}
 
-	if resp.GetClientId() == "" {
+	if resp.GetClientId().GetClientId() == "" {
 		t.Fatalf("GetClientId() = %v, want a non-empty value", err)
 	}
 

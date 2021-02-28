@@ -132,7 +132,9 @@ func (s *DownFluxServer) AddClient(ctx context.Context, req *apipb.AddClientRequ
 	}
 
 	resp := &apipb.AddClientResponse{
-		ClientId: cid.Value(),
+		ClientId: &gdpb.ClientID{
+			ClientId: cid.Value(),
+		},
 	}
 	return resp, nil
 }

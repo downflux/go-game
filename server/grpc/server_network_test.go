@@ -176,7 +176,7 @@ func TestServerCloseStream(t *testing.T) {
 			}
 
 			stream, err := client.StreamData(context.Background(), &apipb.StreamDataRequest{
-				ClientId: clientResp.GetClientId(),
+				ClientId: clientResp.GetClientId().GetClientId(),
 			})
 			if err != nil {
 				t.Fatalf("StreamData() = _, %v, want = nil", err)
