@@ -11,10 +11,19 @@ import "api/constants.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
+// ClientID contains identification information about a specific client
+// connected to the game. This struct is surfaced as public information and does
+// not contain any authentication-related tokens.
+message ClientID {
+  string client_id = 1;
+}
+
 message ACL {
-  bool public_writable = 1;
-  bool team_writable = 2;
-  bool client_writable = 3;
+  ClientID owner = 1;
+
+  bool public_writable = 2;
+  bool team_writable = 3;
+  bool client_writable = 4;
 }
 
 // Position is a specific point in the map, representing a point in the map.
