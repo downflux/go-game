@@ -9,6 +9,7 @@ go_library(
     deps = [
         "//api:data_go_proto",
         "//engine/curve/common:step",
+        "//engine/id:id",
     ],
 )
 

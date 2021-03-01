@@ -1,6 +1,8 @@
 // Package visitor defines interfaces necessary for the visitor design pattern.
 //
 // See https://en.wikipedia.org/wiki/Visitor_pattern for more information.
+//
+// TODO(minkezhang): Refactor with generics (e.g. Visitor[Agent]).
 package visitor
 
 import (
