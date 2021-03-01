@@ -3,6 +3,7 @@ package executorutils
 import (
 	"time"
 
+	"github.com/downflux/game/engine/entity/acl"
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/gamestate/gamestate"
@@ -138,5 +139,12 @@ func (u *Utils) Attack(pb *apipb.AttackRequest) error {
 func (u *Utils) ProduceDebug(entityType gcpb.EntityType, spawnPosition *gdpb.Position) error {
 	// TODO(minkezhang): Use arbitrary client-id after implementing
 	// per-instance ACLs and setting to PublicWritable here.
-	return u.executor.Schedule(produceaction.New(u.Status(), u.Status().Tick(), entityType, spawnPosition, id.ClientID("")))
+	return u.executor.Schedule(
+		produceaction.New(
+			u.Status(),
+			u.Status().Tick(),
+			entityType,
+			spawnPosition,
+			id.ClientID(""),
+			acl.PublicWritable))
 }

@@ -1,6 +1,7 @@
 package produce
 
 import (
+	"github.com/downflux/game/engine/entity/acl"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
@@ -37,6 +38,7 @@ type Action struct {
 	entityType    gcpb.EntityType       // Read-only.
 	spawnPosition *gdpb.Position        // Read-only.
 	spawnClientID id.ClientID           // Read-only.
+	permission    acl.Permission        // Read-only.
 }
 
 func New(
@@ -44,7 +46,8 @@ func New(
 	executionTick id.Tick,
 	entityType gcpb.EntityType,
 	spawnPosition *gdpb.Position,
-	spawnClientID id.ClientID) *Action {
+	spawnClientID id.ClientID,
+	permission acl.Permission) *Action {
 	return &Action{
 		Base:          action.New(FSM, commonstate.Pending),
 		id:            id.ActionID(id.RandomString(idLength)),
@@ -53,6 +56,7 @@ func New(
 		entityType:    entityType,
 		spawnPosition: spawnPosition,
 		spawnClientID: spawnClientID,
+		permission:    permission,
 	}
 }
 
@@ -61,6 +65,7 @@ func (n *Action) Accept(v visitor.Visitor) error { return v.Visit(n) }
 func (n *Action) ID() id.ActionID                { return n.id }
 func (n *Action) SpawnPosition() *gdpb.Position  { return n.spawnPosition }
 func (n *Action) SpawnClientID() id.ClientID     { return n.spawnClientID }
+func (n *Action) Permission() acl.Permission     { return n.permission }
 
 func (n *Action) Precedence(i action.Action) bool {
 	if i.Type() != fsmType {

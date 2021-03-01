@@ -80,7 +80,7 @@ func (v *Visitor) visitFSM(node *produce.Action) error {
 		var ne entity.Entity
 		switch entityType := node.EntityType(); entityType {
 		case gcpb.EntityType_ENTITY_TYPE_TANK:
-			ne, err := tank.New(eid, tick, node.SpawnPosition(), node.SpawnClientID())
+			ne, err := tank.New(eid, tick, node.SpawnPosition(), node.SpawnClientID(), node.Permission())
 			if err != nil {
 				return err
 			}

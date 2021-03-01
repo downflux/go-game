@@ -3,6 +3,7 @@ package move
 import (
 	"testing"
 
+	"github.com/downflux/game/engine/entity/acl"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
@@ -19,7 +20,8 @@ var (
 
 func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Entity {
 	cid := id.ClientID("client-id")
-	tankEntity, err := tank.New(eid, tick, p, cid)
+	const permission = acl.PublicWritable
+	tankEntity, err := tank.New(eid, tick, p, cid, permission)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
 	}
