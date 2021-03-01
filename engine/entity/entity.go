@@ -75,6 +75,7 @@ func (e Base) Export() *gdpb.Entity {
 	return &gdpb.Entity{
 		EntityId: e.ID().Value(),
 		Type:     e.Type(),
+		Acl:      e.ACL().Export(),
 	}
 }
 
