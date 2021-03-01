@@ -21,6 +21,7 @@ go_library(
         "//api:data_go_proto",
         "//engine/curve:list",
         "//engine/curve/common:step",
+        "//engine/entity:acl",
         "//engine/id:id",
     ],
 )

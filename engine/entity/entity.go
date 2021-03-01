@@ -15,6 +15,7 @@ import (
 
 	"github.com/downflux/game/engine/curve/common/step"
 	"github.com/downflux/game/engine/curve/list"
+	"github.com/downflux/game/engine/entity/acl"
 	"github.com/downflux/game/engine/id/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -29,8 +30,8 @@ type Entity interface {
 	ID() id.EntityID
 
 	Curves() *list.List
-
 	Export() *gdpb.Entity
+	ACL() acl.ACL
 
 	// Start returns the game tick at which the Entity was created.
 	Start() id.Tick
@@ -50,21 +51,22 @@ type Entity interface {
 type Base struct {
 	entityType gcpb.EntityType // Read-only.
 	id         id.EntityID     // Read-only.
-
-	clientIDCurve *step.Curve
+	acl        acl.ACL         // Read-only.
+	cidc       *step.Curve
 }
 
-func New(t gcpb.EntityType, eid id.EntityID, cidCurve *step.Curve) *Base {
+func New(t gcpb.EntityType, eid id.EntityID, cidc *step.Curve, permission acl.Permission) *Base {
 	return &Base{
-		entityType:    t,
-		id:            eid,
-		clientIDCurve: cidCurve,
+		entityType: t,
+		id:         eid,
+		cidc:       cidc,
+		acl:        *acl.New(cidc, permission),
 	}
 }
 
-func (e Base) Type() gcpb.EntityType          { return e.entityType }
-func (e Base) ID() id.EntityID                { return e.id }
-func (e Base) ClientID(t id.Tick) id.ClientID { return e.clientIDCurve.Get(t).(id.ClientID) }
+func (e Base) Type() gcpb.EntityType { return e.entityType }
+func (e Base) ID() id.EntityID       { return e.id }
+func (e Base) ACL() acl.ACL          { return e.acl }
 
 // Export converts the static properties of the entity into a gdpb.Entity
 // object. Note that dynamic properties (e.g. position) are not considered here.

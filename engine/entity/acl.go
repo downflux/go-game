@@ -6,7 +6,7 @@ import (
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
-type ACLType uint32
+type Permission uint32
 
 const (
 	ClientWritable = 1 << iota
@@ -14,19 +14,19 @@ const (
 )
 
 type ACL struct {
-	acl           ACLType
+	permission    Permission
 	clientIDCurve *step.Curve
 }
 
-func New(acl ACLType, cidc *step.Curve) *ACL {
+func New(cidc *step.Curve, p Permission) *ACL {
 	return &ACL{
 		clientIDCurve: cidc,
-		acl:           acl,
+		permission:    p,
 	}
 }
 
-func (a ACL) PublicWritable() bool { return a.acl&PublicWritable == PublicWritable }
-func (a ACL) ClientWritable() bool { return a.acl&ClientWritable == ClientWritable }
+func (a ACL) PublicWritable() bool { return a.permission&PublicWritable == PublicWritable }
+func (a ACL) ClientWritable() bool { return a.permission&ClientWritable == ClientWritable }
 
 func (a ACL) Export() *gdpb.ACL {
 	return &gdpb.ACL{
