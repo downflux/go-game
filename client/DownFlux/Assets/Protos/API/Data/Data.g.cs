@@ -27,32 +27,31 @@ namespace DF.Game.API.Data {
             "Cg5hcGkvZGF0YS5wcm90bxINZ2FtZS5hcGkuZGF0YRoTYXBpL2NvbnN0YW50",
             "cy5wcm90bxoeZ29vZ2xlL3Byb3RvYnVmL2R1cmF0aW9uLnByb3RvGh9nb29n",
             "bGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvIh0KCENsaWVudElEEhEKCWNs",
-            "aWVudF9pZBgBIAEoCSJ2CgNBQ0wSJgoFb3duZXIYASABKAsyFy5nYW1lLmFw",
-            "aS5kYXRhLkNsaWVudElEEhcKD3B1YmxpY193cml0YWJsZRgCIAEoCBIVCg10",
-            "ZWFtX3dyaXRhYmxlGAMgASgIEhcKD2NsaWVudF93cml0YWJsZRgEIAEoCCIg",
-            "CghQb3NpdGlvbhIJCgF4GAEgASgBEgkKAXkYAiABKAEiIgoKQ29vcmRpbmF0",
-            "ZRIJCgF4GAEgASgFEgkKAXkYAiABKAUimwEKCkN1cnZlRGF0dW0SDAoEdGlj",
-            "axgBIAEoARIUCgpib29sX2RhdHVtGAIgASgISAASFQoLaW50MzJfZGF0dW0Y",
-            "AyABKAVIABIWCgxkb3VibGVfZGF0dW0YBCABKAFIABIxCg5wb3NpdGlvbl9k",
-            "YXR1bRgFIAEoCzIXLmdhbWUuYXBpLmRhdGEuUG9zaXRpb25IAEIHCgVkYXR1",
-            "bSK0AQoFQ3VydmUSEQoJZW50aXR5X2lkGAEgASgJEjQKCHByb3BlcnR5GAIg",
-            "ASgOMiIuZ2FtZS5hcGkuY29uc3RhbnRzLkVudGl0eVByb3BlcnR5EisKBHR5",
-            "cGUYAyABKA4yHS5nYW1lLmFwaS5jb25zdGFudHMuQ3VydmVUeXBlEicKBGRh",
-            "dGEYBCADKAsyGS5nYW1lLmFwaS5kYXRhLkN1cnZlRGF0dW0SDAoEdGljaxgF",
-            "IAEoASKSAQoMU2VydmVyU3RhdHVzEhIKCmlzX3N0YXJ0ZWQYASABKAgSDAoE",
-            "dGljaxgCIAEoARIwCg10aWNrX2R1cmF0aW9uGAMgASgLMhkuZ29vZ2xlLnBy",
-            "b3RvYnVmLkR1cmF0aW9uEi4KCnN0YXJ0X3RpbWUYBCABKAsyGi5nb29nbGUu",
-            "cHJvdG9idWYuVGltZXN0YW1wImoKBkVudGl0eRIRCgllbnRpdHlfaWQYASAB",
-            "KAkSLAoEdHlwZRgCIAEoDjIeLmdhbWUuYXBpLmNvbnN0YW50cy5FbnRpdHlU",
-            "eXBlEh8KA2FjbBgDIAEoCzISLmdhbWUuYXBpLmRhdGEuQUNMIloKCUdhbWVT",
-            "dGF0ZRIkCgZjdXJ2ZXMYASADKAsyFC5nYW1lLmFwaS5kYXRhLkN1cnZlEicK",
-            "CGVudGl0aWVzGAIgAygLMhUuZ2FtZS5hcGkuZGF0YS5FbnRpdHlCIloNZ2Ft",
-            "ZS5hcGkuZGF0YaoCEERGLkdhbWUuQVBJLkRhdGFiBnByb3RvMw=="));
+            "aWVudF9pZBgBIAEoCSI3CgNBQ0wSFwoPY2xpZW50X3dyaXRhYmxlGAEgASgI",
+            "EhcKD3B1YmxpY193cml0YWJsZRgCIAEoCCIgCghQb3NpdGlvbhIJCgF4GAEg",
+            "ASgBEgkKAXkYAiABKAEiIgoKQ29vcmRpbmF0ZRIJCgF4GAEgASgFEgkKAXkY",
+            "AiABKAUimwEKCkN1cnZlRGF0dW0SDAoEdGljaxgBIAEoARIUCgpib29sX2Rh",
+            "dHVtGAIgASgISAASFQoLaW50MzJfZGF0dW0YAyABKAVIABIWCgxkb3VibGVf",
+            "ZGF0dW0YBCABKAFIABIxCg5wb3NpdGlvbl9kYXR1bRgFIAEoCzIXLmdhbWUu",
+            "YXBpLmRhdGEuUG9zaXRpb25IAEIHCgVkYXR1bSK0AQoFQ3VydmUSEQoJZW50",
+            "aXR5X2lkGAEgASgJEjQKCHByb3BlcnR5GAIgASgOMiIuZ2FtZS5hcGkuY29u",
+            "c3RhbnRzLkVudGl0eVByb3BlcnR5EisKBHR5cGUYAyABKA4yHS5nYW1lLmFw",
+            "aS5jb25zdGFudHMuQ3VydmVUeXBlEicKBGRhdGEYBCADKAsyGS5nYW1lLmFw",
+            "aS5kYXRhLkN1cnZlRGF0dW0SDAoEdGljaxgFIAEoASKSAQoMU2VydmVyU3Rh",
+            "dHVzEhIKCmlzX3N0YXJ0ZWQYASABKAgSDAoEdGljaxgCIAEoARIwCg10aWNr",
+            "X2R1cmF0aW9uGAMgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uEi4K",
+            "CnN0YXJ0X3RpbWUYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1w",
+            "ImoKBkVudGl0eRIRCgllbnRpdHlfaWQYASABKAkSLAoEdHlwZRgCIAEoDjIe",
+            "LmdhbWUuYXBpLmNvbnN0YW50cy5FbnRpdHlUeXBlEh8KA2FjbBgDIAEoCzIS",
+            "LmdhbWUuYXBpLmRhdGEuQUNMIloKCUdhbWVTdGF0ZRIkCgZjdXJ2ZXMYASAD",
+            "KAsyFC5nYW1lLmFwaS5kYXRhLkN1cnZlEicKCGVudGl0aWVzGAIgAygLMhUu",
+            "Z2FtZS5hcGkuZGF0YS5FbnRpdHlCIloNZ2FtZS5hcGkuZGF0YaoCEERGLkdh",
+            "bWUuQVBJLkRhdGFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::DF.Game.API.Constants.ConstantsReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.ClientID), global::DF.Game.API.Data.ClientID.Parser, new[]{ "ClientId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.ACL), global::DF.Game.API.Data.ACL.Parser, new[]{ "Owner", "PublicWritable", "TeamWritable", "ClientWritable" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.ACL), global::DF.Game.API.Data.ACL.Parser, new[]{ "ClientWritable", "PublicWritable" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Position), global::DF.Game.API.Data.Position.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Coordinate), global::DF.Game.API.Data.Coordinate.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.CurveDatum), global::DF.Game.API.Data.CurveDatum.Parser, new[]{ "Tick", "BoolDatum", "Int32Datum", "DoubleDatum", "PositionDatum" }, new[]{ "Datum" }, null, null, null),
@@ -272,10 +271,8 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ACL(ACL other) : this() {
-      owner_ = other.owner_ != null ? other.owner_.Clone() : null;
-      publicWritable_ = other.publicWritable_;
-      teamWritable_ = other.teamWritable_;
       clientWritable_ = other.clientWritable_;
+      publicWritable_ = other.publicWritable_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -284,14 +281,14 @@ namespace DF.Game.API.Data {
       return new ACL(this);
     }
 
-    /// <summary>Field number for the "owner" field.</summary>
-    public const int OwnerFieldNumber = 1;
-    private global::DF.Game.API.Data.ClientID owner_;
+    /// <summary>Field number for the "client_writable" field.</summary>
+    public const int ClientWritableFieldNumber = 1;
+    private bool clientWritable_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::DF.Game.API.Data.ClientID Owner {
-      get { return owner_; }
+    public bool ClientWritable {
+      get { return clientWritable_; }
       set {
-        owner_ = value;
+        clientWritable_ = value;
       }
     }
 
@@ -303,28 +300,6 @@ namespace DF.Game.API.Data {
       get { return publicWritable_; }
       set {
         publicWritable_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "team_writable" field.</summary>
-    public const int TeamWritableFieldNumber = 3;
-    private bool teamWritable_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool TeamWritable {
-      get { return teamWritable_; }
-      set {
-        teamWritable_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "client_writable" field.</summary>
-    public const int ClientWritableFieldNumber = 4;
-    private bool clientWritable_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ClientWritable {
-      get { return clientWritable_; }
-      set {
-        clientWritable_ = value;
       }
     }
 
@@ -341,20 +316,16 @@ namespace DF.Game.API.Data {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (!object.Equals(Owner, other.Owner)) return false;
-      if (PublicWritable != other.PublicWritable) return false;
-      if (TeamWritable != other.TeamWritable) return false;
       if (ClientWritable != other.ClientWritable) return false;
+      if (PublicWritable != other.PublicWritable) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (owner_ != null) hash ^= Owner.GetHashCode();
-      if (PublicWritable != false) hash ^= PublicWritable.GetHashCode();
-      if (TeamWritable != false) hash ^= TeamWritable.GetHashCode();
       if (ClientWritable != false) hash ^= ClientWritable.GetHashCode();
+      if (PublicWritable != false) hash ^= PublicWritable.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -371,21 +342,13 @@ namespace DF.Game.API.Data {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (owner_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Owner);
+      if (ClientWritable != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(ClientWritable);
       }
       if (PublicWritable != false) {
         output.WriteRawTag(16);
         output.WriteBool(PublicWritable);
-      }
-      if (TeamWritable != false) {
-        output.WriteRawTag(24);
-        output.WriteBool(TeamWritable);
-      }
-      if (ClientWritable != false) {
-        output.WriteRawTag(32);
-        output.WriteBool(ClientWritable);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -396,21 +359,13 @@ namespace DF.Game.API.Data {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (owner_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Owner);
+      if (ClientWritable != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(ClientWritable);
       }
       if (PublicWritable != false) {
         output.WriteRawTag(16);
         output.WriteBool(PublicWritable);
-      }
-      if (TeamWritable != false) {
-        output.WriteRawTag(24);
-        output.WriteBool(TeamWritable);
-      }
-      if (ClientWritable != false) {
-        output.WriteRawTag(32);
-        output.WriteBool(ClientWritable);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -421,16 +376,10 @@ namespace DF.Game.API.Data {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (owner_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Owner);
+      if (ClientWritable != false) {
+        size += 1 + 1;
       }
       if (PublicWritable != false) {
-        size += 1 + 1;
-      }
-      if (TeamWritable != false) {
-        size += 1 + 1;
-      }
-      if (ClientWritable != false) {
         size += 1 + 1;
       }
       if (_unknownFields != null) {
@@ -444,20 +393,11 @@ namespace DF.Game.API.Data {
       if (other == null) {
         return;
       }
-      if (other.owner_ != null) {
-        if (owner_ == null) {
-          Owner = new global::DF.Game.API.Data.ClientID();
-        }
-        Owner.MergeFrom(other.Owner);
+      if (other.ClientWritable != false) {
+        ClientWritable = other.ClientWritable;
       }
       if (other.PublicWritable != false) {
         PublicWritable = other.PublicWritable;
-      }
-      if (other.TeamWritable != false) {
-        TeamWritable = other.TeamWritable;
-      }
-      if (other.ClientWritable != false) {
-        ClientWritable = other.ClientWritable;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -473,23 +413,12 @@ namespace DF.Game.API.Data {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 10: {
-            if (owner_ == null) {
-              Owner = new global::DF.Game.API.Data.ClientID();
-            }
-            input.ReadMessage(Owner);
+          case 8: {
+            ClientWritable = input.ReadBool();
             break;
           }
           case 16: {
             PublicWritable = input.ReadBool();
-            break;
-          }
-          case 24: {
-            TeamWritable = input.ReadBool();
-            break;
-          }
-          case 32: {
-            ClientWritable = input.ReadBool();
             break;
           }
         }
@@ -506,23 +435,12 @@ namespace DF.Game.API.Data {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 10: {
-            if (owner_ == null) {
-              Owner = new global::DF.Game.API.Data.ClientID();
-            }
-            input.ReadMessage(Owner);
+          case 8: {
+            ClientWritable = input.ReadBool();
             break;
           }
           case 16: {
             PublicWritable = input.ReadBool();
-            break;
-          }
-          case 24: {
-            TeamWritable = input.ReadBool();
-            break;
-          }
-          case 32: {
-            ClientWritable = input.ReadBool();
             break;
           }
         }
