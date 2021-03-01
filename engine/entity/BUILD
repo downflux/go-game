@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 package(default_visibility=["//visibility:public"])
 
@@ -6,17 +6,6 @@ go_library(
     name = "acl",
     srcs = ["acl.go"],
     importpath = "github.com/downflux/game/engine/entity/acl",
-    deps = [
-        "//api:data_go_proto",
-        "//engine/id:id",
-    ],
-)
-
-go_test(
-    name = "acl_test",
-    srcs = ["acl_test.go"],
-    importpath = "github.com/downflux/game/engine/entity/acl_test",
-    embed = [":acl"],
     deps = [
         "//api:data_go_proto",
         "//engine/id:id",
