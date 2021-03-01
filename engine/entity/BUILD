@@ -8,7 +8,7 @@ go_library(
     importpath = "github.com/downflux/game/engine/entity/acl",
     deps = [
         "//api:data_go_proto",
-        "//engine/id:id",
+        "//engine/curve/common:step",
     ],
 )
 

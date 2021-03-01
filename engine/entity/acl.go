@@ -1,7 +1,7 @@
 package acl
 
 import (
-	"github.com/downflux/game/engine/id/id"
+	"github.com/downflux/game/engine/curve/common/step"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
@@ -14,13 +14,14 @@ const (
 )
 
 type ACL struct {
-	clientID id.ClientID
-	acl      ACLType
+	acl           ACLType
+	clientIDCurve *step.Curve
 }
 
-func New(acl ACLType) *ACL {
+func New(acl ACLType, cidc *step.Curve) *ACL {
 	return &ACL{
-		acl: acl,
+		clientIDCurve: cidc,
+		acl:           acl,
 	}
 }
 
