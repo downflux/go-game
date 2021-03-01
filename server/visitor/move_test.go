@@ -69,7 +69,8 @@ func newVisitor(t *testing.T) *Visitor {
 }
 
 func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Entity {
-	tankEntity, err := tank.New(eid, tick, p)
+	cid := id.ClientID("client-id")
+	tankEntity, err := tank.New(eid, tick, p, cid)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
 	}

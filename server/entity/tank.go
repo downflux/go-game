@@ -61,23 +61,34 @@ type Entity struct {
 }
 
 // New constructs a new instance of the Tank.
-func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
+func New(eid id.EntityID, t id.Tick, p *gdpb.Position, cid id.ClientID) (*Entity, error) {
 	mc := linearmove.New(eid, t)
 	mc.Add(t, p)
 	ac := timer.New(eid, t, cooloff, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TIMER)
 	tc := step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TARGET, reflect.TypeOf(""))
+
+	cidc := step.New(
+		eid,
+		t,
+		gcpb.EntityProperty_ENTITY_PROPERTY_CLIENT_ID,
+		reflect.TypeOf(id.ClientID("")),
+	)
+	cidc.Add(t, cid)
+
 	hp := delta.New(step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH, reflect.TypeOf(float64(0))))
 	if err := hp.Add(t, health); err != nil {
 		return nil, err
 	}
 
-	curves, err := list.New([]curve.Curve{mc, ac, hp})
+	curves, err := list.New([]curve.Curve{mc, ac, hp, cidc})
 	if err != nil {
 		return nil, err
 	}
 
 	return &Entity{
-		Base:              *entity.New(gcpb.EntityType_ENTITY_TYPE_TANK, eid),
+		Base: *entity.New(
+			gcpb.EntityType_ENTITY_TYPE_TANK, eid, cidc),
+
 		moveComponent:     *moveable.New(moveVelocity),
 		attackComponent:   *attackable.New(strength, attackRange, attackVelocity, tc, ac),
 		targetComponent:   *targetable.New(hp),

@@ -136,5 +136,7 @@ func (u *Utils) Attack(pb *apipb.AttackRequest) error {
 
 // ProduceDebug schedules adding a new entity in the next game tick.
 func (u *Utils) ProduceDebug(entityType gcpb.EntityType, spawnPosition *gdpb.Position) error {
-	return u.executor.Schedule(produceaction.New(u.Status(), u.Status().Tick(), entityType, spawnPosition))
+	// TODO(minkezhang): Use arbitrary client-id after implementing
+	// per-instance ACLs and setting to PublicWritable here.
+	return u.executor.Schedule(produceaction.New(u.Status(), u.Status().Tick(), entityType, spawnPosition, id.ClientID("")))
 }
