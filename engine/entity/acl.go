@@ -20,7 +20,7 @@ type ACL struct {
 
 func New(acl ACLType) *ACL {
 	return &ACL{
-		acl:      acl,
+		acl: acl,
 	}
 }
 

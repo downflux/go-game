@@ -20,6 +20,7 @@ go_library(
         "//api:constants_go_proto",
         "//api:data_go_proto",
         "//engine/curve:list",
+        "//engine/curve/common:step",
         "//engine/id:id",
     ],
 )

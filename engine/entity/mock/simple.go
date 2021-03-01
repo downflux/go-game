@@ -15,7 +15,7 @@ type Entity struct {
 
 func New(eid id.EntityID) *Entity {
 	return &Entity{
-		Base: *entity.New(gcpb.EntityType_ENTITY_TYPE_TANK, eid),
+		Base: *entity.New(gcpb.EntityType_ENTITY_TYPE_TANK, eid, nil),
 	}
 }
 

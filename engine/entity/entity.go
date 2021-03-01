@@ -13,6 +13,7 @@ package entity
 import (
 	"sync"
 
+	"github.com/downflux/game/engine/curve/common/step"
 	"github.com/downflux/game/engine/curve/list"
 	"github.com/downflux/game/engine/id/id"
 
@@ -47,19 +48,27 @@ type Entity interface {
 }
 
 type Base struct {
-	entityType gcpb.EntityType
-	id         id.EntityID
+	entityType gcpb.EntityType // Read-only.
+	id         id.EntityID     // Read-only.
+
+	clientIDCurve *step.Curve
 }
 
-func New(t gcpb.EntityType, eid id.EntityID) *Base {
+func New(t gcpb.EntityType, eid id.EntityID, cidCurve *step.Curve) *Base {
 	return &Base{
-		entityType: t,
-		id:         eid,
+		entityType:    t,
+		id:            eid,
+		clientIDCurve: cidCurve,
 	}
 }
 
-func (e Base) Type() gcpb.EntityType { return e.entityType }
-func (e Base) ID() id.EntityID       { return e.id }
+func (e Base) Type() gcpb.EntityType          { return e.entityType }
+func (e Base) ID() id.EntityID                { return e.id }
+func (e Base) ClientID(t id.Tick) id.ClientID { return e.clientIDCurve.Get(t).(id.ClientID) }
+
+// Export converts the static properties of the entity into a gdpb.Entity
+// object. Note that dynamic properties (e.g. position) are not considered here.
+// These properties must be manually converted via Curve.Export instead.
 func (e Base) Export() *gdpb.Entity {
 	return &gdpb.Entity{
 		EntityId: e.ID().Value(),
