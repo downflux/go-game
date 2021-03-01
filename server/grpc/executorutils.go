@@ -80,8 +80,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 	}, nil
 }
 
-func (u *Utils) Executor() *executor.Executor { return u.executor }
-
+func (u *Utils) Executor() *executor.Executor        { return u.executor }
 func (u *Utils) Status() serverstatus.ReadOnlyStatus { return u.gamestate.Status() }
 
 // Move transforms the player MoveRequest input into a list of move actions
@@ -90,14 +89,20 @@ func (u *Utils) Move(pb *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 
 	for _, eid := range pb.GetEntityIds() {
-		e, ok := u.gamestate.Entities().Get(id.EntityID(eid)).(moveable.Component)
+		e := u.gamestate.Entities().Get(id.EntityID(eid))
+		m, ok := e.(moveable.Component)
 		if !ok {
 			return status.Error(codes.FailedPrecondition, "specified entity is not moveable")
 		}
 
+		if !e.ACL().CheckWritable(u.Status().Tick(), id.ClientID(pb.GetClientId())) {
+			return status.Errorf(
+				codes.PermissionDenied,
+				"cannot mutate entity %v with current permissions", e.ID())
+		}
+
 		if err := u.executor.Schedule(
-			moveaction.New(e, u.Status(), pb.GetDestination()),
-		); err != nil {
+			moveaction.New(m, u.Status(), pb.GetDestination())); err != nil {
 			return err
 		}
 	}
@@ -112,14 +117,21 @@ func (u *Utils) Attack(pb *apipb.AttackRequest) error {
 	}
 
 	for _, eid := range pb.GetEntityIds() {
-		a, ok := u.gamestate.Entities().Get(id.EntityID(eid)).(attackable.Component)
+
+		e := u.gamestate.Entities().Get(id.EntityID(eid))
+		a, ok := e.(attackable.Component)
 		if !ok {
 			return status.Error(codes.FailedPrecondition, "specified entity is not attackable")
 		}
-
-		m, ok := u.gamestate.Entities().Get(id.EntityID(eid)).(moveable.Component)
+		m, ok := e.(moveable.Component)
 		if !ok {
 			return status.Error(codes.FailedPrecondition, "specified entity is not moveable")
+		}
+
+		if !e.ACL().CheckWritable(u.Status().Tick(), id.ClientID(pb.GetClientId())) {
+			return status.Errorf(
+				codes.PermissionDenied,
+				"cannot mutate entity %v with current permissions", e.ID())
 		}
 
 		chaseAction := chaseaction.New(u.Status(), m, t)
@@ -146,5 +158,5 @@ func (u *Utils) ProduceDebug(entityType gcpb.EntityType, spawnPosition *gdpb.Pos
 			entityType,
 			spawnPosition,
 			id.ClientID(""),
-			acl.PublicWritable))
+			acl.ClientWritable))
 }
