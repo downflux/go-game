@@ -35,8 +35,7 @@ func (a ACL) ClientWritable() bool {
 
 func (a ACL) CheckPublicWritable() bool { return a.PublicWritable() }
 func (a ACL) CheckClientWritable(t id.Tick, cid id.ClientID) bool {
-	return a.ClientWritable() && (
-		a.clientIDCurve.Get(t).(id.ClientID) == cid)
+	return a.ClientWritable() && (a.clientIDCurve.Get(t).(id.ClientID) == cid)
 }
 func (a ACL) CheckWritable(t id.Tick, cid id.ClientID) bool {
 	return a.CheckPublicWritable() || a.CheckClientWritable(t, cid)
