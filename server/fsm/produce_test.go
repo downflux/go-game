@@ -3,7 +3,6 @@ package produce
 import (
 	"testing"
 
-	"github.com/downflux/game/engine/entity/acl"
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
@@ -29,12 +28,12 @@ func TestConstructor(t *testing.T) {
 	}{
 		{
 			name: "NewPending",
-			i:    New(s, s.Tick()+1, gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}, cid, acl.PublicWritable),
+			i:    New(s, s.Tick()+1, gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}, cid),
 			want: commonstate.Pending,
 		},
 		{
 			name: "NewExecuting",
-			i:    New(s, s.Tick(), gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}, cid, acl.PublicWritable),
+			i:    New(s, s.Tick(), gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}, cid),
 			want: commonstate.Executing,
 		},
 	}
@@ -52,7 +51,7 @@ func TestFinish(t *testing.T) {
 	s := status.New(0)
 	cid := id.ClientID("client-id")
 
-	i := New(s, s.Tick(), gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}, cid, acl.PublicWritable)
+	i := New(s, s.Tick(), gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}, cid)
 
 	if err := i.Finish(); err != nil {
 		t.Fatalf("Finish() = %v, want = nil", err)
@@ -63,7 +62,7 @@ func TestCancel(t *testing.T) {
 	s := status.New(0)
 	cid := id.ClientID("client-id")
 
-	i := New(s, s.Tick()+1, gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}, cid, acl.PublicWritable)
+	i := New(s, s.Tick()+1, gcpb.EntityType_ENTITY_TYPE_TANK, &gdpb.Position{X: 0, Y: 0}, cid)
 
 	if err := i.Cancel(); err != nil {
 		t.Fatalf("Cancel() = %v, want = nil", err)

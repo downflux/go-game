@@ -3,7 +3,6 @@ package executorutils
 import (
 	"time"
 
-	"github.com/downflux/game/engine/entity/acl"
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/gamestate/gamestate"
@@ -88,17 +87,11 @@ func (u *Utils) Status() serverstatus.ReadOnlyStatus { return u.gamestate.Status
 func (u *Utils) Move(pb *apipb.MoveRequest) error {
 	// TODO(minkezhang): If tick outside window, return error.
 
+	// TODO(minkezhang): Return list of errors instead.
 	for _, eid := range pb.GetEntityIds() {
-		e := u.gamestate.Entities().Get(id.EntityID(eid))
-		m, ok := e.(moveable.Component)
+		m, ok := u.gamestate.Entities().Get(id.EntityID(eid)).(moveable.Component)
 		if !ok {
 			return status.Error(codes.FailedPrecondition, "specified entity is not moveable")
-		}
-
-		if !e.ACL().CheckWritable(u.Status().Tick(), id.ClientID(pb.GetClientId())) {
-			return status.Errorf(
-				codes.PermissionDenied,
-				"cannot mutate entity %v with current permissions", e.ID())
 		}
 
 		if err := u.executor.Schedule(
@@ -116,8 +109,8 @@ func (u *Utils) Attack(pb *apipb.AttackRequest) error {
 		return status.Error(codes.FailedPrecondition, "specified entity is not targetable")
 	}
 
+	// TODO(minkezhang): Return list of errors instead.
 	for _, eid := range pb.GetEntityIds() {
-
 		e := u.gamestate.Entities().Get(id.EntityID(eid))
 		a, ok := e.(attackable.Component)
 		if !ok {
@@ -126,12 +119,6 @@ func (u *Utils) Attack(pb *apipb.AttackRequest) error {
 		m, ok := e.(moveable.Component)
 		if !ok {
 			return status.Error(codes.FailedPrecondition, "specified entity is not moveable")
-		}
-
-		if !e.ACL().CheckWritable(u.Status().Tick(), id.ClientID(pb.GetClientId())) {
-			return status.Errorf(
-				codes.PermissionDenied,
-				"cannot mutate entity %v with current permissions", e.ID())
 		}
 
 		chaseAction := chaseaction.New(u.Status(), m, t)
@@ -157,6 +144,5 @@ func (u *Utils) ProduceDebug(entityType gcpb.EntityType, spawnPosition *gdpb.Pos
 			u.Status().Tick(),
 			entityType,
 			spawnPosition,
-			id.ClientID(""),
-			acl.ClientWritable))
+			id.ClientID("")))
 }

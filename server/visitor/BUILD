@@ -41,7 +41,6 @@ go_test(
     deps = [
         "//api:constants_go_proto",
         "//api:data_go_proto",
-        "//engine/entity:acl",
         "//engine/fsm:action",
         "//engine/gamestate:dirty",
         "//engine/id:id",

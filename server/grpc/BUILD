@@ -116,7 +116,6 @@ go_library(
         "//api:data_go_proto",
         "//engine/gamestate:dirty",
         "//engine/gamestate:gamestate",
-        "//engine/entity:acl",
         "//engine/entity:list",
         "//engine/fsm:schedule",
         "//engine/fsm/api:constants_go_proto",

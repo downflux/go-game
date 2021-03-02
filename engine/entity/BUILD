@@ -3,17 +3,6 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 package(default_visibility=["//visibility:public"])
 
 go_library(
-    name = "acl",
-    srcs = ["acl.go"],
-    importpath = "github.com/downflux/game/engine/entity/acl",
-    deps = [
-        "//api:data_go_proto",
-        "//engine/curve/common:step",
-        "//engine/id:id",
-    ],
-)
-
-go_library(
     name = "entity",
     srcs = ["entity.go"],
     importpath = "github.com/downflux/game/engine/entity/entity",
@@ -22,7 +11,6 @@ go_library(
         "//api:data_go_proto",
         "//engine/curve:list",
         "//engine/curve/common:step",
-        "//engine/entity:acl",
         "//engine/id:id",
     ],
 )

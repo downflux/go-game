@@ -10,7 +10,6 @@ import (
 	"github.com/downflux/game/engine/curve/common/timer"
 	"github.com/downflux/game/engine/curve/curve"
 	"github.com/downflux/game/engine/curve/list"
-	"github.com/downflux/game/engine/entity/acl"
 	"github.com/downflux/game/engine/entity/entity"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/server/entity/component/attackable"
@@ -62,7 +61,7 @@ type Entity struct {
 }
 
 // New constructs a new instance of the Tank.
-func New(eid id.EntityID, t id.Tick, pos *gdpb.Position, cid id.ClientID, p acl.Permission) (*Entity, error) {
+func New(eid id.EntityID, t id.Tick, pos *gdpb.Position, cid id.ClientID) (*Entity, error) {
 	mc := linearmove.New(eid, t)
 	mc.Add(t, pos)
 	ac := timer.New(eid, t, cooloff, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TIMER)
@@ -88,7 +87,7 @@ func New(eid id.EntityID, t id.Tick, pos *gdpb.Position, cid id.ClientID, p acl.
 
 	return &Entity{
 		Base: *entity.New(
-			gcpb.EntityType_ENTITY_TYPE_TANK, eid, cidc, p),
+			gcpb.EntityType_ENTITY_TYPE_TANK, eid, cidc),
 
 		moveComponent:     *moveable.New(moveVelocity),
 		attackComponent:   *attackable.New(strength, attackRange, attackVelocity, tc, ac),

@@ -18,11 +18,6 @@ message ClientID {
   string client_id = 1;
 }
 
-message ACL {
-  bool client_writable = 1;
-  bool public_writable = 2;
-}
-
 // Position is a specific point in the map, representing a point in the map.
 message Position {
   double x = 1;
@@ -86,8 +81,6 @@ message Entity {
   string entity_id = 1;
 
   game.api.constants.EntityType type = 2;
-
-  ACL acl = 3;
 }
 
 message GameState {
