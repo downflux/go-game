@@ -19,6 +19,8 @@ import (
 // TODO(minkezhang): Translate to generics instead. See
 // https://blog.golang.org/generics-next-step.
 //
+// TODO(minkezhang): Add ReadOnlyCurve once generics lands.
+//
 // type Curve[T any] interface {
 //   Get(t Tick) T
 // }

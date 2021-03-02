@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 package(default_visibility=["//visibility:public"])
 
@@ -8,7 +8,9 @@ go_library(
     importpath = "github.com/downflux/game/engine/entity/entity",
     deps = [
         "//api:constants_go_proto",
+        "//api:data_go_proto",
         "//engine/curve:list",
+        "//engine/curve/common:step",
         "//engine/id:id",
     ],
 )

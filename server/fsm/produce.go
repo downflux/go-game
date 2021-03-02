@@ -35,14 +35,16 @@ type Action struct {
 	executionTick id.Tick               // Read-only.
 	status        status.ReadOnlyStatus // Read-only.
 	entityType    gcpb.EntityType       // Read-only.
-	spawnPosition *gdpb.Position        // read-only.
+	spawnPosition *gdpb.Position        // Read-only.
+	spawnClientID id.ClientID           // Read-only.
 }
 
 func New(
 	dfStatus status.ReadOnlyStatus,
 	executionTick id.Tick,
 	entityType gcpb.EntityType,
-	spawnPosition *gdpb.Position) *Action {
+	spawnPosition *gdpb.Position,
+	spawnClientID id.ClientID) *Action {
 	return &Action{
 		Base:          action.New(FSM, commonstate.Pending),
 		id:            id.ActionID(id.RandomString(idLength)),
@@ -50,6 +52,7 @@ func New(
 		status:        dfStatus,
 		entityType:    entityType,
 		spawnPosition: spawnPosition,
+		spawnClientID: spawnClientID,
 	}
 }
 
@@ -57,6 +60,7 @@ func (n *Action) EntityType() gcpb.EntityType    { return n.entityType }
 func (n *Action) Accept(v visitor.Visitor) error { return v.Visit(n) }
 func (n *Action) ID() id.ActionID                { return n.id }
 func (n *Action) SpawnPosition() *gdpb.Position  { return n.spawnPosition }
+func (n *Action) SpawnClientID() id.ClientID     { return n.spawnClientID }
 
 func (n *Action) Precedence(i action.Action) bool {
 	if i.Type() != fsmType {

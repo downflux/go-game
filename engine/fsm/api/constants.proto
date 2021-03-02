@@ -17,10 +17,17 @@ enum FSMType {
   FSM_TYPE_CLIENT = 1000;
 }
 
+// TODO(minkezhang): Migrate to //server/fsm/api/.
 enum ChaseState {
   CHASE_STATE_UNKNOWN = 0;
   CHASE_STATE_IN_RANGE = 1;
   CHASE_STATE_OUT_OF_RANGE = 2;
+}
+
+// TODO(minkezhang): Migrate to //server/fsm/api/.
+enum AttackState {
+  ATTACK_STATE_UNKNOWN = 0;
+  ATTACK_STATE_FIRING = 1;
 }
 
 enum CommonState {
@@ -28,7 +35,8 @@ enum CommonState {
   COMMON_STATE_PENDING = 1;
   COMMON_STATE_EXECUTING = 2;
 
-  // External cancellation due to precedence.
+  // External cancellation due to explicit call or implicitly via precedence
+  // testing.
   COMMON_STATE_CANCELED = 3;
 
   COMMON_STATE_FINISHED = 4;

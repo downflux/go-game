@@ -20,6 +20,8 @@ enum EntityProperty {
   ENTITY_PROPERTY_POSITION = 1;
   ENTITY_PROPERTY_ATTACK_TIMER = 2;
   ENTITY_PROPERTY_HEALTH = 3;
+  ENTITY_PROPERTY_ATTACK_TARGET = 4;
+  ENTITY_PROPERTY_CLIENT_ID = 5;
 }
 
 // CurveType indicates the interpolation method that should be used for the

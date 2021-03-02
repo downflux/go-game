@@ -1,21 +1,15 @@
 package list
 
 import (
-	"log"
 	"testing"
 
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
+	"github.com/downflux/game/engine/fsm/mock/simple"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/downflux/game/engine/status/status"
-	"github.com/downflux/game/engine/visitor/visitor"
-	"github.com/downflux/game/server/entity/tank"
-	"github.com/downflux/game/server/fsm/move"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"google.golang.org/protobuf/testing/protocmp"
 
-	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
@@ -23,31 +17,17 @@ const (
 	fsmType = fcpb.FSMType_FSM_TYPE_MOVE
 )
 
-func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Entity {
-	tankEntity, err := tank.New(eid, tick, p)
-	if err != nil {
-		t.Fatalf("New() = %v, want = nil", err)
-	}
-	return tankEntity
-}
-
 func TestNew(t *testing.T) {
 	l := New(fsmType)
 
 	if got := l.Type(); got != fsmType {
 		t.Fatalf("Type() = %v, want = %v", got, fsmType)
 	}
-
-	if got := l.AgentType(); got != agentType {
-		t.Errorf("AgentType() = %v, want = %v", got, agentType)
-	}
 }
 
 func TestAddError(t *testing.T) {
 	l := New(fcpb.FSMType_FSM_TYPE_UNKNOWN)
-	i := move.New(newTank(t, "entity-id", 0, nil), status.New(0), nil)
-
-	log.Println(l.Type(), i.Type())
+	i := simple.New(id.ActionID("action-id"), 0)
 
 	if err := l.Add(i); err == nil {
 		t.Error("Add() = nil, want a non-nil error")
@@ -55,50 +35,45 @@ func TestAddError(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	const iid = "entity-id"
+	aid := id.ActionID("action-id")
 
 	l := New(fsmType)
-	i := move.New(newTank(t, iid, 0, nil), status.New(0), nil)
+	i := simple.New(aid, 0)
 
 	if err := l.Add(i); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 
-	if got := l.Get(iid).ID(); got != iid {
-		t.Errorf("ID() = %v, want = %v", got, iid)
+	if got := l.Get(aid).ID(); got != aid {
+		t.Errorf("ID() = %v, want = %v", got, aid)
 	}
 }
 
 func TestAddCancel(t *testing.T) {
-	const iid = "entity-id"
+	aid := id.ActionID("action-id")
 
 	l := New(fsmType)
 
-	e := newTank(t, iid, 0, nil)
-	dfStatus := status.New(0)
-	i1 := move.New(e, dfStatus, &gdpb.Position{X: 0, Y: 0})
-	dfStatus.IncrementTick()
-	i2 := move.New(e, dfStatus, &gdpb.Position{X: 1, Y: 1})
+	a1 := simple.New(aid, 0)
+	a2 := simple.New(aid, 1)
 
-	if err := l.Add(i1); err != nil {
+	if err := l.Add(a1); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
-	if err := l.Add(i2); err != nil {
+	if err := l.Add(a2); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 
-	want := fsm.State(fcpb.CommonState_COMMON_STATE_CANCELED.String())
-	if got, err := i1.State(); err != nil || got != want {
+	want := fsm.State(simple.Canceled)
+	if got, err := a1.State(); err != nil || got != want {
 		t.Fatalf("State() = %v, %v, want = %v, nil", got, err, want)
 	}
 
 	if diff := cmp.Diff(
-		i2,
-		l.Get(i2.ID()),
-		cmp.AllowUnexported(move.Action{}, action.Base{}, visitor.BaseAgent{}),
+		a2,
+		l.Get(a2.ID()),
+		cmp.AllowUnexported(simple.Action{}, action.Base{}),
 		cmpopts.IgnoreFields(action.Base{}, "fsm"),
-		cmpopts.IgnoreFields(move.Action{}, "status", "mux", "e"),
-		protocmp.Transform(),
 	); diff != "" {
 		t.Errorf("Get() mismatch (-want +got):\n%v", diff)
 	}

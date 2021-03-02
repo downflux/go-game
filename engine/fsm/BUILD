@@ -10,10 +10,8 @@ go_test(
     deps = [
 	":action",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/fsm/mock:simple",
         "//engine/id:id",
-        "//engine/status:status",
-        "//server/fsm:move",
-        "//server/entity:tank",
     ],
 )
 
@@ -38,16 +36,11 @@ go_test(
     deps = [
         ":action",
         ":fsm",
-        "//api:data_go_proto",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/fsm/mock:simple",
         "//engine/id:id",
-        "//engine/status:status",
-        "//engine/visitor:visitor",
-        "//server/fsm:move",
-        "//server/entity:tank",
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
-        "@org_golang_google_protobuf//testing/protocmp:go_default_library",
     ],
 )
 
@@ -61,7 +54,6 @@ go_library(
         "//engine/id:id",
         "//engine/fsm/api:constants_go_proto",
         "//engine/visitor:visitor",
-        "//engine/visitor/api:constants_go_proto",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",
@@ -76,7 +68,6 @@ go_library(
         "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
         "//engine/visitor:visitor",
-        "//engine/visitor/api:constants_go_proto",
         "//engine/id:id",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",

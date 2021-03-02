@@ -10,8 +10,8 @@ type Component interface {
 	positionable.Component
 
 	ID() id.EntityID
-	Health(t id.Tick) float64
-	HealthCurve() *delta.Curve
+	TargetHealth(t id.Tick) float64
+	TargetHealthCurve() *delta.Curve
 }
 
 type Base struct {
@@ -24,5 +24,5 @@ func New(hp *delta.Curve) *Base {
 	}
 }
 
-func (c *Base) Health(t id.Tick) float64  { return c.health.Get(t).(float64) }
-func (c *Base) HealthCurve() *delta.Curve { return c.health }
+func (c *Base) TargetHealth(t id.Tick) float64  { return c.health.Get(t).(float64) }
+func (c *Base) TargetHealthCurve() *delta.Curve { return c.health }

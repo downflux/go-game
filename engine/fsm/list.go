@@ -1,3 +1,4 @@
+// Package list implements a collection of FSM actions.
 package list
 
 import (
@@ -10,11 +11,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
-)
-
-const (
-	agentType = vcpb.AgentType_AGENT_TYPE_FSM_LIST
 )
 
 var (
@@ -34,9 +30,9 @@ func New(fsmType fcpb.FSMType) *List {
 	}
 }
 
-func (l *List) AgentType() vcpb.AgentType         { return agentType }
-func (l *List) Type() fcpb.FSMType                { return l.fsmType }
+// TODO(minkezhang): Rename Action.
 func (l *List) Get(iid id.ActionID) action.Action { return l.actions[iid] }
+func (l *List) Type() fcpb.FSMType                { return l.fsmType }
 
 func (l *List) Clear() error {
 	for iid, i := range l.actions {
@@ -52,11 +48,8 @@ func (l *List) Clear() error {
 	return nil
 }
 
+// TODO(minkezhang): Rename to make clear List is not an FSM agent.
 func (l *List) Accept(v visitor.Visitor) error {
-	if err := v.Visit(l); err != nil {
-		return err
-	}
-
 	var eg errgroup.Group
 	for _, i := range l.actions {
 		i := i

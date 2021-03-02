@@ -4,6 +4,7 @@
 // Example
 //
 //  type ConcreteEntity struct {
+//    entity.Base
 //    entity.LifeCycle
 //    ...
 //  }
@@ -12,10 +13,12 @@ package entity
 import (
 	"sync"
 
+	"github.com/downflux/game/engine/curve/common/step"
 	"github.com/downflux/game/engine/curve/list"
 	"github.com/downflux/game/engine/id/id"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
+	gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
 type Entity interface {
@@ -26,6 +29,7 @@ type Entity interface {
 	ID() id.EntityID
 
 	Curves() *list.List
+	Export() *gdpb.Entity
 
 	// Start returns the game tick at which the Entity was created.
 	Start() id.Tick
@@ -40,6 +44,33 @@ type Entity interface {
 	// Delete marks the Entity as permanently non-relevant for the current
 	// game. This may occur when the HP is set to zero, etc.
 	Delete(tick id.Tick)
+}
+
+type Base struct {
+	entityType gcpb.EntityType // Read-only.
+	id         id.EntityID     // Read-only.
+	cidc       *step.Curve
+}
+
+func New(t gcpb.EntityType, eid id.EntityID, cidc *step.Curve) *Base {
+	return &Base{
+		entityType: t,
+		id:         eid,
+		cidc:       cidc,
+	}
+}
+
+func (e Base) Type() gcpb.EntityType { return e.entityType }
+func (e Base) ID() id.EntityID       { return e.id }
+
+// Export converts the static properties of the entity into a gdpb.Entity
+// object. Note that dynamic properties (e.g. position) are not considered here.
+// These properties must be manually converted via Curve.Export instead.
+func (e Base) Export() *gdpb.Entity {
+	return &gdpb.Entity{
+		EntityId: e.ID().Value(),
+		Type:     e.Type(),
+	}
 }
 
 // LifeCycle implements a subset of the Entity interface concerned with

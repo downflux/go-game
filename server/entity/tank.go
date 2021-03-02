@@ -22,8 +22,11 @@ import (
 )
 
 const (
-	// velocity is measured in tiles per second.
-	velocity = 2
+	// moveVelocity is measured in tiles per second.
+	moveVelocity = 2
+
+	// attackVelocity is measured in tiles per second.
+	attackVelocity = 10
 
 	// cooloff is measured in ticks.
 	// TODO(minkezhang): Refactor to be in terms of seconds instead.
@@ -43,6 +46,7 @@ type positionComponent = positionable.Base
 // Entity implements the entity.Entity interface and represents a simple armored
 // unit.
 type Entity struct {
+	entity.Base
 	entity.LifeCycle
 	moveComponent
 	attackComponent
@@ -57,34 +61,40 @@ type Entity struct {
 }
 
 // New constructs a new instance of the Tank.
-func New(eid id.EntityID, t id.Tick, p *gdpb.Position) (*Entity, error) {
+func New(eid id.EntityID, t id.Tick, pos *gdpb.Position, cid id.ClientID) (*Entity, error) {
 	mc := linearmove.New(eid, t)
-	mc.Add(t, p)
+	mc.Add(t, pos)
 	ac := timer.New(eid, t, cooloff, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TIMER)
+	tc := step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TARGET, reflect.TypeOf(id.ClientID("")))
+
+	cidc := step.New(
+		eid,
+		t,
+		gcpb.EntityProperty_ENTITY_PROPERTY_CLIENT_ID,
+		reflect.TypeOf(id.ClientID("")),
+	)
+	cidc.Add(t, cid)
+
 	hp := delta.New(step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH, reflect.TypeOf(float64(0))))
 	if err := hp.Add(t, health); err != nil {
 		return nil, err
 	}
 
-	curves, err := list.New([]curve.Curve{mc, ac, hp})
+	curves, err := list.New([]curve.Curve{mc, ac, hp, cidc})
 	if err != nil {
 		return nil, err
 	}
 
 	return &Entity{
-		moveComponent:     *moveable.New(velocity),
-		attackComponent:   *attackable.New(strength, attackRange, ac),
+		Base: *entity.New(
+			gcpb.EntityType_ENTITY_TYPE_TANK, eid, cidc),
+
+		moveComponent:     *moveable.New(moveVelocity),
+		attackComponent:   *attackable.New(strength, attackRange, attackVelocity, tc, ac),
 		targetComponent:   *targetable.New(hp),
 		positionComponent: *positionable.New(mc),
-		eid:               eid,
 		curves:            curves,
 	}, nil
 }
 
-// ID returns the UUID of the Tank.
-func (e *Entity) ID() id.EntityID { return e.eid }
-
 func (e *Entity) Curves() *list.List { return e.curves }
-
-// Type returns the registered EntityType.
-func (e *Entity) Type() gcpb.EntityType { return gcpb.EntityType_ENTITY_TYPE_TANK }

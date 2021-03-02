@@ -51,10 +51,7 @@ func (s *GameState) Export(tick id.Tick, filter *dirty.List) *gdpb.GameState {
 	for _, e := range filter.Entities() {
 		state.Entities = append(
 			state.GetEntities(),
-			&gdpb.Entity{
-				EntityId: e.ID.Value(),
-				Type:     s.entities.Get(e.ID).Type(),
-			},
+			s.entities.Get(e.ID).Export(),
 		)
 	}
 

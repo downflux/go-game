@@ -15,9 +15,7 @@ import (
 
 	apipb "github.com/downflux/game/api/api_go_proto"
 	gdpb "github.com/downflux/game/api/data_go_proto"
-	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	clientlist "github.com/downflux/game/engine/server/client/list"
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 	visitorlist "github.com/downflux/game/engine/visitor/list"
 )
 
@@ -30,11 +28,6 @@ const (
 var (
 	notImplemented = status.Error(
 		codes.Unimplemented, "function not implemented")
-
-	fsmVisitorTypeLookup = map[vcpb.VisitorType]fcpb.FSMType{
-		vcpb.VisitorType_VISITOR_TYPE_MOVE:    fcpb.FSMType_FSM_TYPE_MOVE,
-		vcpb.VisitorType_VISITOR_TYPE_PRODUCE: fcpb.FSMType_FSM_TYPE_PRODUCE,
-	}
 )
 
 // Executor encapsulates logic for executing the core game loop.
@@ -57,7 +50,6 @@ type Executor struct {
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
 
-	fsmLookup     map[vcpb.VisitorType]fcpb.FSMType
 	schedule      *schedule.Schedule
 	scheduleCache *schedule.Schedule
 }
@@ -67,7 +59,6 @@ func New(
 	state *gamestate.GameState,
 	dirtystate *dirty.List,
 	fsmSchedule *schedule.Schedule,
-	fsmLookup map[vcpb.VisitorType]fcpb.FSMType,
 ) *Executor {
 	return &Executor{
 		visitors:      visitors,
@@ -76,7 +67,6 @@ func New(
 		clients:       clientlist.New(idLen),
 		schedule:      fsmSchedule,
 		scheduleCache: fsmSchedule.Pop(),
-		fsmLookup:     fsmLookup,
 	}
 }
 
@@ -169,10 +159,8 @@ func (e *Executor) doTick() error {
 	}
 
 	for _, v := range e.visitors.Iter() {
-		if fsmType, found := e.fsmLookup[v.Type()]; found {
-			if err := e.schedule.Get(fsmType).Accept(v); err != nil {
-				return err
-			}
+		if err := e.schedule.Get(v.Type()).Accept(v); err != nil {
+			return err
 		}
 	}
 

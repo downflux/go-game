@@ -13,8 +13,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	serverstatus "github.com/downflux/game/engine/status/status"
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
 )
 
 const (
@@ -22,8 +22,8 @@ const (
 	// Entity objects.
 	entityIDLen = 8
 
-	// visitorType is the registered VisitorType of the produce visitor.
-	visitorType = vcpb.VisitorType_VISITOR_TYPE_PRODUCE
+	// fsmType is the registered FSMType of the produce visitor.
+	fsmType = fcpb.FSMType_FSM_TYPE_PRODUCE
 )
 
 // unsupportedEntityType creates an appropriate error to return when a given
@@ -35,7 +35,7 @@ func unsupportedEntityType(t gcpb.EntityType) error {
 // Visitor adds a new Entity to the global state. This struct implements the
 // visitor.Visitor interface.
 type Visitor struct {
-	visitor.BaseVisitor
+	visitor.Base
 
 	entities *list.List
 
@@ -50,10 +50,10 @@ type Visitor struct {
 // New creates a new instance of the Visitor struct.
 func New(dfStatus serverstatus.ReadOnlyStatus, entities *list.List, dirties *dirty.List) *Visitor {
 	return &Visitor{
-		BaseVisitor: *visitor.NewBaseVisitor(visitorType),
-		entities:    entities,
-		dirties:     dirties,
-		status:      dfStatus,
+		Base:     *visitor.New(fsmType),
+		entities: entities,
+		dirties:  dirties,
+		status:   dfStatus,
 	}
 }
 
@@ -80,7 +80,7 @@ func (v *Visitor) visitFSM(node *produce.Action) error {
 		var ne entity.Entity
 		switch entityType := node.EntityType(); entityType {
 		case gcpb.EntityType_ENTITY_TYPE_TANK:
-			ne, err := tank.New(eid, tick, node.SpawnPosition())
+			ne, err := tank.New(eid, tick, node.SpawnPosition(), node.SpawnClientID())
 			if err != nil {
 				return err
 			}

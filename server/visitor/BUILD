@@ -1,9 +1,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
-package(default_visibility=[
-	"//server:__subpackages__",
-	"//engine:__subpackages__",  # Test-only
-])
+package(default_visibility=["//server:__subpackages__"])
 
 go_library(
     name = "produce",
@@ -13,11 +10,11 @@ go_library(
         "//api:constants_go_proto",
         "//engine/entity:entity",
         "//engine/entity:list",
+	"//engine/fsm/api:constants_go_proto",
         "//engine/gamestate:dirty",
         "//engine/id:id",
         "//engine/status:status",
         "//engine/visitor:visitor",
-	"//engine/visitor/api:constants_go_proto",
         "//server/entity:tank",
         "//server/fsm:commonstate",
         "//server/fsm:produce",
@@ -67,10 +64,10 @@ go_library(
         "//api:data_go_proto",
         "//engine/curve/common:linearmove",
         "//engine/entity:entity",
+	"//engine/fsm/api:constants_go_proto",
         "//engine/gamestate:dirty",
         "//engine/status:status",
         "//engine/visitor:visitor",
-	"//engine/visitor/api:constants_go_proto",
         "//map:map",
         "//map:utils", 
         "//pathing/hpf:astar",
@@ -88,9 +85,9 @@ go_library(
     deps = [
         "//engine/status:status",
         "//engine/visitor:visitor",
-        "//engine/visitor/api:constants_go_proto",
         "//engine/fsm:schedule",
         "//server/fsm:chase",
+        "//engine/fsm/api:constants_go_proto",
     ],
 )
 
@@ -122,8 +119,8 @@ go_library(
         "//engine/gamestate:dirty",
         "//engine/status:status",
         "//engine/visitor:visitor",
-        "//engine/visitor/api:constants_go_proto",
         "//server/fsm:attack",
         "//server/fsm:commonstate",
+        "//engine/fsm/api:constants_go_proto",
     ],
 )

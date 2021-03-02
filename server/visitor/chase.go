@@ -6,15 +6,15 @@ import (
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/fsm/chase"
 
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 const (
-	visitorType = vcpb.VisitorType_VISITOR_TYPE_CHASE
+	fsmType = fcpb.FSMType_FSM_TYPE_CHASE
 )
 
 type Visitor struct {
-	visitor.BaseVisitor
+	visitor.Base
 
 	schedule *schedule.Schedule
 	status   status.ReadOnlyStatus
@@ -22,9 +22,9 @@ type Visitor struct {
 
 func New(dfStatus status.ReadOnlyStatus, schedule *schedule.Schedule) *Visitor {
 	return &Visitor{
-		BaseVisitor: *visitor.NewBaseVisitor(visitorType),
-		schedule:    schedule,
-		status:      dfStatus,
+		Base:     *visitor.New(fsmType),
+		schedule: schedule,
+		status:   dfStatus,
 	}
 }
 

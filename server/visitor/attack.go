@@ -7,15 +7,15 @@ import (
 	"github.com/downflux/game/server/fsm/attack"
 	"github.com/downflux/game/server/fsm/commonstate"
 
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 const (
-	visitorType = vcpb.VisitorType_VISITOR_TYPE_ATTACK
+	fsmType = fcpb.FSMType_FSM_TYPE_ATTACK
 )
 
 type Visitor struct {
-	visitor.BaseVisitor
+	visitor.Base
 
 	status status.ReadOnlyStatus
 	dirty  *dirty.List
@@ -23,9 +23,9 @@ type Visitor struct {
 
 func New(dfStatus status.ReadOnlyStatus, dirties *dirty.List) *Visitor {
 	return &Visitor{
-		BaseVisitor: *visitor.NewBaseVisitor(visitorType),
-		status:      dfStatus,
-		dirty:       dirties,
+		Base:   *visitor.New(fsmType),
+		status: dfStatus,
+		dirty:  dirties,
 	}
 }
 
@@ -42,7 +42,7 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 		// recording targets, ENTITY_PROPERTY_ATTACK_TARGET.
 		dirtyCurves := []dirty.Curve{
 			{node.Source().ID(), node.Source().AttackTimerCurve().Property()},
-			{node.Target().ID(), node.Target().HealthCurve().Property()},
+			{node.Target().ID(), node.Target().TargetHealthCurve().Property()},
 		}
 		for _, c := range dirtyCurves {
 			if err := v.dirty.AddCurve(c); err != nil {
@@ -53,7 +53,7 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 		if err := node.Source().AttackTimerCurve().Add(tick, true); err != nil {
 			return err
 		}
-		return node.Target().HealthCurve().Add(tick, -1*node.Source().Strength())
+		return node.Target().TargetHealthCurve().Add(tick, -1*node.Source().AttackStrength())
 	}
 	return nil
 }

@@ -47,7 +47,10 @@ message GetStatusResponse {
 
 message AttackRequest {
   double tick = 1;
+
+  // TODO(minkezhang): Remove after adding authentication.
   string client_id = 2;
+
   repeated string entity_ids = 3;
   string target_entity_id = 4;
 }
@@ -56,7 +59,10 @@ message AttackResponse {}
 
 message MoveRequest {
   double tick = 1;
+
+  // TODO(minkezhang): Remove after adding authentication.
   string client_id = 2;
+
   repeated string entity_ids = 3;
   game.api.data.Position destination = 4;
   game.api.constants.MoveType move_type = 5;
@@ -66,6 +72,8 @@ message MoveResponse {}
 
 message StreamDataRequest {
   double tick = 1;
+
+  // TODO(minkezhang): Remove after adding authentication.
   string client_id = 2;
 }
 
@@ -78,5 +86,6 @@ message StreamDataResponse {
 message AddClientRequest {}
 message AddClientResponse {
   double tick = 1;
-  string client_id = 2;
+
+  game.api.data.ClientID client_id = 2;
 }

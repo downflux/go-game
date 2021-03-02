@@ -11,6 +11,13 @@ import "api/constants.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
+// ClientID contains identification information about a specific client
+// connected to the game. This struct is surfaced as public information and does
+// not contain any authentication-related tokens.
+message ClientID {
+  string client_id = 1;
+}
+
 // Position is a specific point in the map, representing a point in the map.
 message Position {
   double x = 1;
@@ -73,7 +80,7 @@ message Entity {
   // TODO(minkezhang): Rename to id instead.
   string entity_id = 1;
 
-  game.api.constants.EntityType type = 2;  
+  game.api.constants.EntityType type = 2;
 }
 
 message GameState {

@@ -11,13 +11,6 @@ import (
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
-var (
-	FSMTypes = []fcpb.FSMType{
-		fcpb.FSMType_FSM_TYPE_MOVE,
-		fcpb.FSMType_FSM_TYPE_PRODUCE,
-	}
-)
-
 type Schedule struct {
 	fsmTypes map[fcpb.FSMType]bool
 
@@ -91,6 +84,7 @@ func (s *Schedule) Merge(t *Schedule) error {
 	return nil
 }
 
+// TODO(minkezhang): Rename List.
 func (s *Schedule) Get(fsmType fcpb.FSMType) *list.List {
 	s.mux.Lock()
 	defer s.mux.Unlock()

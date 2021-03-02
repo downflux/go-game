@@ -46,6 +46,7 @@
 * [x] add AttackTarget curve
 * [x] add FSM design document
 * [x] add FSM blog entry
+* [ ] **add Attack delay / targeting**
 * [ ] add game state export / import
 * [ ] log to file, log non-fatal errors instead of erroring out (e.g. `Run`)
 * [ ] replace pathfinding with flow fields

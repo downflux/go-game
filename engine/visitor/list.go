@@ -7,13 +7,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	vcpb "github.com/downflux/game/engine/visitor/api/constants_go_proto"
+	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
 // List implements a managed list of Visitor instances.
 type List struct {
-	visitors map[vcpb.VisitorType]visitor.Visitor
-	order    []vcpb.VisitorType
+	visitors map[fcpb.FSMType]visitor.Visitor
+	order    []fcpb.FSMType
 }
 
 // New creates a new instance of the List object.
@@ -30,7 +30,7 @@ func New(visitors []visitor.Visitor) (*List, error) {
 }
 
 // Get returns a concrete Visitor instance given the registered VisitorType.
-func (l *List) Visitor(visitorType vcpb.VisitorType) visitor.Visitor {
+func (l *List) Visitor(visitorType fcpb.FSMType) visitor.Visitor {
 	return l.visitors[visitorType]
 }
 
@@ -48,7 +48,7 @@ func (l *List) Iter() []visitor.Visitor {
 // appendVisitor registers a new Visitor instance into the managed List.
 func (l *List) appendVisitor(v visitor.Visitor) error {
 	if l.visitors == nil {
-		l.visitors = map[vcpb.VisitorType]visitor.Visitor{}
+		l.visitors = map[fcpb.FSMType]visitor.Visitor{}
 	}
 
 	if _, found := l.visitors[v.Type()]; found {

@@ -4,47 +4,39 @@ import (
 	"testing"
 
 	"github.com/downflux/game/engine/fsm/action"
+	"github.com/downflux/game/engine/fsm/mock/simple"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/downflux/game/engine/status/status"
-	"github.com/downflux/game/server/entity/tank"
-	"github.com/downflux/game/server/fsm/move"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
-func newTank(t *testing.T, eid id.EntityID, tick id.Tick) *tank.Entity {
-	tankEntity, err := tank.New(eid, tick, nil)
-	if err != nil {
-		t.Fatalf("New() = %v, want = nil", err)
-	}
-	return tankEntity
-}
-
+// TestAddError validates we cannot add unknown FSMs to the schedule.
 func TestAddError(t *testing.T) {
 	s := New(nil)
 
-	i := move.New(newTank(t, id.EntityID("entity-id"), id.Tick(0)), status.New(0), nil)
-	if err := s.Add(i); err == nil {
-		t.Errorf("Add() = nil, want a non-nil error")
+	a := simple.New(id.ActionID("action-id"), 0)
+	if err := s.Add(a); err == nil {
+		t.Errorf("Add() = nil, want a non-nil error %s", err)
 	}
 }
 
 func TestAdd(t *testing.T) {
-	const eid = "entity-id"
+	aid := id.ActionID("action-id")
 
 	s := New([]fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE})
-	i := move.New(newTank(t, eid, id.Tick(0)), status.New(0), nil)
+	i := simple.New(aid, 0)
 	if err := s.Add(i); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 
-	if got := s.Get(fcpb.FSMType_FSM_TYPE_MOVE).Get(eid); got.ID() != eid {
-		t.Errorf("ID() = %v, want = %v", got, eid)
+	if got := s.Get(fcpb.FSMType_FSM_TYPE_MOVE).Get(aid); got.ID() != aid {
+		t.Errorf("ID() = %v, want = %v", got, aid)
 	}
 }
 
 func TestMerge(t *testing.T) {
 	const eid = "entity-id"
+	aid := id.ActionID("action-id")
 
 	testConfigs := []struct {
 		name    string
@@ -58,10 +50,10 @@ func TestMerge(t *testing.T) {
 			s1Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
 			s2Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
 			actions: []action.Action{
-				move.New(newTank(t, eid, id.Tick(0)), status.New(0), nil),
+				simple.New(aid, 0),
 			},
 			want: []action.Action{
-				move.New(newTank(t, eid, id.Tick(0)), status.New(0), nil),
+				simple.New(aid, 0),
 			},
 		},
 		{
@@ -69,7 +61,7 @@ func TestMerge(t *testing.T) {
 			s1Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
 			s2Types: nil,
 			actions: []action.Action{
-				move.New(newTank(t, eid, id.Tick(0)), status.New(0), nil),
+				simple.New(aid, 0),
 			},
 			want: nil,
 		},
@@ -91,7 +83,7 @@ func TestMerge(t *testing.T) {
 			}
 
 			for _, i := range c.want {
-				if got := s2.Get(i.Type()).Get(i.ID()); got.ID() != eid {
+				if got := s2.Get(i.Type()).Get(i.ID()); got.ID() != aid {
 					t.Fatalf("ID() = %v, want = %v", got, eid)
 				}
 			}
@@ -100,19 +92,19 @@ func TestMerge(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
-	const eid = "entity-id"
+	aid := id.ActionID("entity-id")
 
 	s1 := New([]fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE})
-	i := move.New(newTank(t, eid, id.Tick(0)), status.New(0), nil)
-	if err := s1.Add(i); err != nil {
+	a := simple.New(aid, 0)
+	if err := s1.Add(a); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 
 	s2 := s1.Pop()
-	if got := s2.Get(fcpb.FSMType_FSM_TYPE_MOVE).Get(eid); got.ID() != eid {
-		t.Fatalf("ID() = %v, want = %v", got, eid)
+	if got := s2.Get(fcpb.FSMType_FSM_TYPE_MOVE).Get(aid); got.ID() != aid {
+		t.Fatalf("ID() = %v, want = %v", got, aid)
 	}
-	if got := s1.Get(fcpb.FSMType_FSM_TYPE_MOVE).Get(eid); got != nil {
+	if got := s1.Get(fcpb.FSMType_FSM_TYPE_MOVE).Get(aid); got != nil {
 		t.Errorf("Get() = %v, want = nil", got)
 	}
 }

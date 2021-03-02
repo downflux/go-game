@@ -108,7 +108,8 @@ Generate protobufs from root GitHub repo directory. See
 for `protoc` flag explanation.
 
 ```bash
-rm -rf ${PWD}/client/DownFlux/Assets/Protos/*
+find ${PWD}/client/DownFlux/Assets/Protos/ -type f ! -iname *.asmdef -delete
+find ${PWD}/client/DownFlux/Assets/Protos/ -type d -empty -delete
 protoc \
   -I=${PWD} \
   -I=${PWD}/client/DownFlux/Packages/Google.Protobuf.Tools.3.14.0/tools/ \

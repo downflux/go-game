@@ -124,7 +124,6 @@ go_library(
         "//engine/status:status",
         "//engine/visitor:list",
         "//engine/visitor:visitor",
-        "//engine/visitor/api:constants_go_proto",
         "//map:map",
         "//map/api:data_go_proto",
         "//pathing/hpf:graph",
