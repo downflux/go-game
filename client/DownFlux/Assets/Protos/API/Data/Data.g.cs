@@ -27,23 +27,21 @@ namespace DF.Game.API.Data {
             "Cg5hcGkvZGF0YS5wcm90bxINZ2FtZS5hcGkuZGF0YRoTYXBpL2NvbnN0YW50",
             "cy5wcm90bxoeZ29vZ2xlL3Byb3RvYnVmL2R1cmF0aW9uLnByb3RvGh9nb29n",
             "bGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvIh0KCENsaWVudElEEhEKCWNs",
-            "aWVudF9pZBgBIAEoCSI3CgNBQ0wSFwoPY2xpZW50X3dyaXRhYmxlGAEgASgI",
-            "EhcKD3B1YmxpY193cml0YWJsZRgCIAEoCCIgCghQb3NpdGlvbhIJCgF4GAEg",
-            "ASgBEgkKAXkYAiABKAEiIgoKQ29vcmRpbmF0ZRIJCgF4GAEgASgFEgkKAXkY",
-            "AiABKAUimwEKCkN1cnZlRGF0dW0SDAoEdGljaxgBIAEoARIUCgpib29sX2Rh",
-            "dHVtGAIgASgISAASFQoLaW50MzJfZGF0dW0YAyABKAVIABIWCgxkb3VibGVf",
-            "ZGF0dW0YBCABKAFIABIxCg5wb3NpdGlvbl9kYXR1bRgFIAEoCzIXLmdhbWUu",
-            "YXBpLmRhdGEuUG9zaXRpb25IAEIHCgVkYXR1bSK0AQoFQ3VydmUSEQoJZW50",
-            "aXR5X2lkGAEgASgJEjQKCHByb3BlcnR5GAIgASgOMiIuZ2FtZS5hcGkuY29u",
-            "c3RhbnRzLkVudGl0eVByb3BlcnR5EisKBHR5cGUYAyABKA4yHS5nYW1lLmFw",
-            "aS5jb25zdGFudHMuQ3VydmVUeXBlEicKBGRhdGEYBCADKAsyGS5nYW1lLmFw",
-            "aS5kYXRhLkN1cnZlRGF0dW0SDAoEdGljaxgFIAEoASKSAQoMU2VydmVyU3Rh",
-            "dHVzEhIKCmlzX3N0YXJ0ZWQYASABKAgSDAoEdGljaxgCIAEoARIwCg10aWNr",
-            "X2R1cmF0aW9uGAMgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uEi4K",
-            "CnN0YXJ0X3RpbWUYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1w",
-            "ImoKBkVudGl0eRIRCgllbnRpdHlfaWQYASABKAkSLAoEdHlwZRgCIAEoDjIe",
-            "LmdhbWUuYXBpLmNvbnN0YW50cy5FbnRpdHlUeXBlEh8KA2FjbBgDIAEoCzIS",
-            "LmdhbWUuYXBpLmRhdGEuQUNMIloKCUdhbWVTdGF0ZRIkCgZjdXJ2ZXMYASAD",
+            "aWVudF9pZBgBIAEoCSIgCghQb3NpdGlvbhIJCgF4GAEgASgBEgkKAXkYAiAB",
+            "KAEiIgoKQ29vcmRpbmF0ZRIJCgF4GAEgASgFEgkKAXkYAiABKAUimwEKCkN1",
+            "cnZlRGF0dW0SDAoEdGljaxgBIAEoARIUCgpib29sX2RhdHVtGAIgASgISAAS",
+            "FQoLaW50MzJfZGF0dW0YAyABKAVIABIWCgxkb3VibGVfZGF0dW0YBCABKAFI",
+            "ABIxCg5wb3NpdGlvbl9kYXR1bRgFIAEoCzIXLmdhbWUuYXBpLmRhdGEuUG9z",
+            "aXRpb25IAEIHCgVkYXR1bSK0AQoFQ3VydmUSEQoJZW50aXR5X2lkGAEgASgJ",
+            "EjQKCHByb3BlcnR5GAIgASgOMiIuZ2FtZS5hcGkuY29uc3RhbnRzLkVudGl0",
+            "eVByb3BlcnR5EisKBHR5cGUYAyABKA4yHS5nYW1lLmFwaS5jb25zdGFudHMu",
+            "Q3VydmVUeXBlEicKBGRhdGEYBCADKAsyGS5nYW1lLmFwaS5kYXRhLkN1cnZl",
+            "RGF0dW0SDAoEdGljaxgFIAEoASKSAQoMU2VydmVyU3RhdHVzEhIKCmlzX3N0",
+            "YXJ0ZWQYASABKAgSDAoEdGljaxgCIAEoARIwCg10aWNrX2R1cmF0aW9uGAMg",
+            "ASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uEi4KCnN0YXJ0X3RpbWUY",
+            "BCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIkkKBkVudGl0eRIR",
+            "CgllbnRpdHlfaWQYASABKAkSLAoEdHlwZRgCIAEoDjIeLmdhbWUuYXBpLmNv",
+            "bnN0YW50cy5FbnRpdHlUeXBlIloKCUdhbWVTdGF0ZRIkCgZjdXJ2ZXMYASAD",
             "KAsyFC5nYW1lLmFwaS5kYXRhLkN1cnZlEicKCGVudGl0aWVzGAIgAygLMhUu",
             "Z2FtZS5hcGkuZGF0YS5FbnRpdHlCIloNZ2FtZS5hcGkuZGF0YaoCEERGLkdh",
             "bWUuQVBJLkRhdGFiBnByb3RvMw=="));
@@ -51,13 +49,12 @@ namespace DF.Game.API.Data {
           new pbr::FileDescriptor[] { global::DF.Game.API.Constants.ConstantsReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.ClientID), global::DF.Game.API.Data.ClientID.Parser, new[]{ "ClientId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.ACL), global::DF.Game.API.Data.ACL.Parser, new[]{ "ClientWritable", "PublicWritable" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Position), global::DF.Game.API.Data.Position.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Coordinate), global::DF.Game.API.Data.Coordinate.Parser, new[]{ "X", "Y" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.CurveDatum), global::DF.Game.API.Data.CurveDatum.Parser, new[]{ "Tick", "BoolDatum", "Int32Datum", "DoubleDatum", "PositionDatum" }, new[]{ "Datum" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Curve), global::DF.Game.API.Data.Curve.Parser, new[]{ "EntityId", "Property", "Type", "Data", "Tick" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.ServerStatus), global::DF.Game.API.Data.ServerStatus.Parser, new[]{ "IsStarted", "Tick", "TickDuration", "StartTime" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Entity), global::DF.Game.API.Data.Entity.Parser, new[]{ "EntityId", "Type", "Acl" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.Entity), global::DF.Game.API.Data.Entity.Parser, new[]{ "EntityId", "Type" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::DF.Game.API.Data.GameState), global::DF.Game.API.Data.GameState.Parser, new[]{ "Curves", "Entities" }, null, null, null, null)
           }));
     }
@@ -242,214 +239,6 @@ namespace DF.Game.API.Data {
 
   }
 
-  public sealed partial class ACL : pb::IMessage<ACL>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
-    private static readonly pb::MessageParser<ACL> _parser = new pb::MessageParser<ACL>(() => new ACL());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<ACL> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[1]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ACL() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ACL(ACL other) : this() {
-      clientWritable_ = other.clientWritable_;
-      publicWritable_ = other.publicWritable_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ACL Clone() {
-      return new ACL(this);
-    }
-
-    /// <summary>Field number for the "client_writable" field.</summary>
-    public const int ClientWritableFieldNumber = 1;
-    private bool clientWritable_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool ClientWritable {
-      get { return clientWritable_; }
-      set {
-        clientWritable_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "public_writable" field.</summary>
-    public const int PublicWritableFieldNumber = 2;
-    private bool publicWritable_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool PublicWritable {
-      get { return publicWritable_; }
-      set {
-        publicWritable_ = value;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as ACL);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(ACL other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (ClientWritable != other.ClientWritable) return false;
-      if (PublicWritable != other.PublicWritable) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (ClientWritable != false) hash ^= ClientWritable.GetHashCode();
-      if (PublicWritable != false) hash ^= PublicWritable.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
-      if (ClientWritable != false) {
-        output.WriteRawTag(8);
-        output.WriteBool(ClientWritable);
-      }
-      if (PublicWritable != false) {
-        output.WriteRawTag(16);
-        output.WriteBool(PublicWritable);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (ClientWritable != false) {
-        output.WriteRawTag(8);
-        output.WriteBool(ClientWritable);
-      }
-      if (PublicWritable != false) {
-        output.WriteRawTag(16);
-        output.WriteBool(PublicWritable);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (ClientWritable != false) {
-        size += 1 + 1;
-      }
-      if (PublicWritable != false) {
-        size += 1 + 1;
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(ACL other) {
-      if (other == null) {
-        return;
-      }
-      if (other.ClientWritable != false) {
-        ClientWritable = other.ClientWritable;
-      }
-      if (other.PublicWritable != false) {
-        PublicWritable = other.PublicWritable;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 8: {
-            ClientWritable = input.ReadBool();
-            break;
-          }
-          case 16: {
-            PublicWritable = input.ReadBool();
-            break;
-          }
-        }
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 8: {
-            ClientWritable = input.ReadBool();
-            break;
-          }
-          case 16: {
-            PublicWritable = input.ReadBool();
-            break;
-          }
-        }
-      }
-    }
-    #endif
-
-  }
-
   /// <summary>
   /// Position is a specific point in the map, representing a point in the map.
   /// </summary>
@@ -465,7 +254,7 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[2]; }
+      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -677,7 +466,7 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[3]; }
+      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -890,7 +679,7 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[4]; }
+      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1260,7 +1049,7 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[5]; }
+      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1573,7 +1362,7 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[6]; }
+      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1883,7 +1672,7 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[7]; }
+      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1902,7 +1691,6 @@ namespace DF.Game.API.Data {
     public Entity(Entity other) : this() {
       entityId_ = other.entityId_;
       type_ = other.type_;
-      acl_ = other.acl_ != null ? other.acl_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1936,17 +1724,6 @@ namespace DF.Game.API.Data {
       }
     }
 
-    /// <summary>Field number for the "acl" field.</summary>
-    public const int AclFieldNumber = 3;
-    private global::DF.Game.API.Data.ACL acl_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::DF.Game.API.Data.ACL Acl {
-      get { return acl_; }
-      set {
-        acl_ = value;
-      }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Entity);
@@ -1962,7 +1739,6 @@ namespace DF.Game.API.Data {
       }
       if (EntityId != other.EntityId) return false;
       if (Type != other.Type) return false;
-      if (!object.Equals(Acl, other.Acl)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1971,7 +1747,6 @@ namespace DF.Game.API.Data {
       int hash = 1;
       if (EntityId.Length != 0) hash ^= EntityId.GetHashCode();
       if (Type != global::DF.Game.API.Constants.EntityType.Unknown) hash ^= Type.GetHashCode();
-      if (acl_ != null) hash ^= Acl.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1996,10 +1771,6 @@ namespace DF.Game.API.Data {
         output.WriteRawTag(16);
         output.WriteEnum((int) Type);
       }
-      if (acl_ != null) {
-        output.WriteRawTag(26);
-        output.WriteMessage(Acl);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -2017,10 +1788,6 @@ namespace DF.Game.API.Data {
         output.WriteRawTag(16);
         output.WriteEnum((int) Type);
       }
-      if (acl_ != null) {
-        output.WriteRawTag(26);
-        output.WriteMessage(Acl);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -2035,9 +1802,6 @@ namespace DF.Game.API.Data {
       }
       if (Type != global::DF.Game.API.Constants.EntityType.Unknown) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
-      }
-      if (acl_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Acl);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2055,12 +1819,6 @@ namespace DF.Game.API.Data {
       }
       if (other.Type != global::DF.Game.API.Constants.EntityType.Unknown) {
         Type = other.Type;
-      }
-      if (other.acl_ != null) {
-        if (acl_ == null) {
-          Acl = new global::DF.Game.API.Data.ACL();
-        }
-        Acl.MergeFrom(other.Acl);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2082,13 +1840,6 @@ namespace DF.Game.API.Data {
           }
           case 16: {
             Type = (global::DF.Game.API.Constants.EntityType) input.ReadEnum();
-            break;
-          }
-          case 26: {
-            if (acl_ == null) {
-              Acl = new global::DF.Game.API.Data.ACL();
-            }
-            input.ReadMessage(Acl);
             break;
           }
         }
@@ -2113,13 +1864,6 @@ namespace DF.Game.API.Data {
             Type = (global::DF.Game.API.Constants.EntityType) input.ReadEnum();
             break;
           }
-          case 26: {
-            if (acl_ == null) {
-              Acl = new global::DF.Game.API.Data.ACL();
-            }
-            input.ReadMessage(Acl);
-            break;
-          }
         }
       }
     }
@@ -2139,7 +1883,7 @@ namespace DF.Game.API.Data {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[8]; }
+      get { return global::DF.Game.API.Data.DataReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
