@@ -65,7 +65,7 @@ func New(eid id.EntityID, t id.Tick, pos *gdpb.Position, cid id.ClientID) (*Enti
 	mc := linearmove.New(eid, t)
 	mc.Add(t, pos)
 	ac := timer.New(eid, t, cooloff, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TIMER)
-	tc := step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TARGET, reflect.TypeOf(""))
+	tc := step.New(eid, t, gcpb.EntityProperty_ENTITY_PROPERTY_ATTACK_TARGET, reflect.TypeOf(id.ClientID("")))
 
 	cidc := step.New(
 		eid,
