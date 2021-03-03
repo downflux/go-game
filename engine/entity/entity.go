@@ -3,16 +3,19 @@
 //
 // Example
 //
+//  type (
+//    lifecycleComponent = lifecycle.Component
+//    curveComponent = curve.Component
+//  )
 //  type ConcreteEntity struct {
 //    entity.Base
-//    entity.LifeCycle
+//    lifecycleComponent
+//    curveComponent
 //    ...
 //  }
 package entity
 
 import (
-	"sync"
-
 	"github.com/downflux/game/engine/curve/common/step"
 	"github.com/downflux/game/engine/curve/list"
 	"github.com/downflux/game/engine/id/id"
@@ -71,41 +74,4 @@ func (e Base) Export() *gdpb.Entity {
 		EntityId: e.ID().Value(),
 		Type:     e.Type(),
 	}
-}
-
-// LifeCycle implements a subset of the Entity interface concerned with
-// tracking the lifecycle of the Entity. Entities such as tanks are created
-// inside a factory, and are destroyed at the end of the game or when attacked
-// by another Entity.
-type LifeCycle struct {
-	lifetimeMux sync.RWMutex
-	start       id.Tick
-	end         id.Tick
-}
-
-// Start returns the tick at which the Entity is spawned. The tick is set in
-// the constructor (delegated to each concrete impementation).
-func (e *LifeCycle) Start() id.Tick {
-	e.lifetimeMux.RLock()
-	defer e.lifetimeMux.RUnlock()
-
-	return e.start
-}
-
-// End returns the tick at which the Entity was destroyed. Since the game state
-// is append-only, the instance itself is not removed from the internal list,
-// hence the need for this marker.
-func (e *LifeCycle) End() id.Tick {
-	e.lifetimeMux.RLock()
-	defer e.lifetimeMux.RUnlock()
-
-	return e.end
-}
-
-// Delete marks the target Entity as having been destroyed.
-func (e *LifeCycle) Delete(tick id.Tick) {
-	e.lifetimeMux.Lock()
-	defer e.lifetimeMux.Unlock()
-
-	e.end = tick
 }
