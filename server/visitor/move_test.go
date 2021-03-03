@@ -117,7 +117,7 @@ func TestVisit(t *testing.T) {
 			if err := c.v.Visit(c.i); err != nil {
 				t.Fatalf("Visit() = %v, want = nil", err)
 			}
-			got := c.v.dirties.Pop().Curves()
+			got := c.v.dirty.Pop().Curves()
 			if diff := cmp.Diff(c.want, got); diff != "" {
 				t.Errorf("Pop() mismatch (-want +got):\n%v", diff)
 			}

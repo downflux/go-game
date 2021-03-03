@@ -21,11 +21,11 @@ type Visitor struct {
 	dirty  *dirty.List
 }
 
-func New(dfStatus status.ReadOnlyStatus, dirties *dirty.List) *Visitor {
+func New(dfStatus status.ReadOnlyStatus, dcs *dirty.List) *Visitor {
 	return &Visitor{
 		Base:   *visitor.New(fsmType),
 		status: dfStatus,
-		dirty:  dirties,
+		dirty:  dcs,
 	}
 }
 
@@ -40,11 +40,11 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 	case commonstate.Executing:
 		// TODO(minkezhang): Implement a string step curve for
 		// recording targets, ENTITY_PROPERTY_ATTACK_TARGET.
-		dirtyCurves := []dirty.Curve{
+		dcs := []dirty.Curve{
 			{node.Source().ID(), node.Source().AttackTimerCurve().Property()},
 			{node.Target().ID(), node.Target().TargetHealthCurve().Property()},
 		}
-		for _, c := range dirtyCurves {
+		for _, c := range dcs {
 			if err := v.dirty.AddCurve(c); err != nil {
 				return err
 			}

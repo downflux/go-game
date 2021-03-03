@@ -39,20 +39,20 @@ type Visitor struct {
 
 	entities *list.List
 
-	// dirties is a reference to the global cache of mutated Curve and
+	// dirty is a reference to the global cache of mutated Curve and
 	// Entity instances.
-	dirties *dirty.List
+	dirty *dirty.List
 
 	// status is reference to the global Executor status struct.
 	status serverstatus.ReadOnlyStatus
 }
 
 // New creates a new instance of the Visitor struct.
-func New(dfStatus serverstatus.ReadOnlyStatus, entities *list.List, dirties *dirty.List) *Visitor {
+func New(dfStatus serverstatus.ReadOnlyStatus, entities *list.List, dcs *dirty.List) *Visitor {
 	return &Visitor{
 		Base:     *visitor.New(fsmType),
 		entities: entities,
-		dirties:  dirties,
+		dirty:    dcs,
 		status:   dfStatus,
 	}
 }
@@ -84,7 +84,7 @@ func (v *Visitor) visitFSM(node *produce.Action) error {
 			if err != nil {
 				return err
 			}
-			if err := v.dirties.AddEntity(dirty.Entity{ID: eid}); err != nil {
+			if err := v.dirty.AddEntity(dirty.Entity{ID: eid}); err != nil {
 				return err
 			}
 			if err := v.entities.Append(ne); err != nil {
@@ -96,7 +96,7 @@ func (v *Visitor) visitFSM(node *produce.Action) error {
 
 		if ne != nil {
 			for _, property := range ne.Curves().Properties() {
-				if err := v.dirties.AddCurve(dirty.Curve{EntityID: eid, Property: property}); err != nil {
+				if err := v.dirty.AddCurve(dirty.Curve{EntityID: eid, Property: property}); err != nil {
 					return err
 				}
 			}

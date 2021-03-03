@@ -62,9 +62,8 @@ type Visitor struct {
 	// current tick, etc.
 	status status.ReadOnlyStatus
 
-	// dirties is a shared object between the game engine and the
-	// Visitor.
-	dirties *dirty.List
+	// dirty is a shared object between the game engine and the Visitor.
+	dirty *dirty.List
 
 	// minPathLength represents the minimum lookahead path length to
 	// calculate, where the path is a list of tile.Map coordinates.
@@ -80,14 +79,14 @@ func New(
 	tileMap *tile.Map,
 	abstractGraph *graph.Graph,
 	dfStatus status.ReadOnlyStatus,
-	dirties *dirty.List,
+	dcs *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
 		Base:          *visitor.New(fsmType),
 		tileMap:       tileMap,
 		abstractGraph: abstractGraph,
 		status:        dfStatus,
-		dirties:       dirties,
+		dirty:         dcs,
 		minPathLength: minPathLength,
 	}
 }
@@ -137,7 +136,7 @@ func (v *Visitor) visitFSM(node *move.Action) error {
 			cv.Add(tick+id.Tick(i)*ticksPerTile+tickDelta, curPos)
 			prevPos = curPos
 		}
-		if err := v.dirties.AddCurve(dirty.Curve{
+		if err := v.dirty.AddCurve(dirty.Curve{
 			EntityID: e.ID(),
 			Property: c.Property(),
 		}); err != nil {
