@@ -38,10 +38,12 @@ const (
 	health = float64(100)
 )
 
-type moveComponent = moveable.Base
-type attackComponent = attackable.Base
-type targetComponent = targetable.Base
-type positionComponent = positionable.Base
+type (
+	moveComponent     = moveable.Base
+	attackComponent   = attackable.Base
+	targetComponent   = targetable.Base
+	positionComponent = positionable.Base
+)
 
 // Entity implements the entity.Entity interface and represents a simple armored
 // unit.
@@ -52,9 +54,6 @@ type Entity struct {
 	attackComponent
 	targetComponent
 	positionComponent
-
-	// eid is a UUID of the Entity.
-	eid id.EntityID
 
 	// curves is a list of Curves tracking the Entity properties.
 	curves *list.List

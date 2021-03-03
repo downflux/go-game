@@ -42,3 +42,27 @@ go_test(
         "//server/entity/component:targetable",
     ],
 )
+
+go_library(
+    name = "projectile",
+    srcs = ["projectile.go"],
+    importpath = "github.com/downflux/game/server/entity/projectile",
+    deps = [
+        "//engine/curve:list",
+        "//engine/entity:entity",
+        "//server/entity/component:moveable",
+        "//server/entity/component:positionable",
+    ],
+)
+
+go_test(
+    name = "projectile_test",
+    srcs = ["projectile_test.go"],
+    importpath = "github.com/downflux/game/server/entity/projectile_test",
+    embed = [":projectile"],
+    deps = [
+        "//engine/entity:entity",
+        "//server/entity/component:moveable",
+        "//server/entity/component:positionable",
+    ],
+)
