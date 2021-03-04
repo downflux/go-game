@@ -2,34 +2,6 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 package(default_visibility=["//server:__subpackages__"])
 
-go_library(
-    name = "direct",
-    srcs = ["direct.go"],
-    importpath = "github.com/downflux/game/server/fsm/move/direct",
-    deps = [
-        "//api:data_go_proto",
-        "//engine/fsm:action",
-        "//engine/fsm:fsm",
-        "//engine/fsm/api:constants_go_proto",
-        "//engine/id:id",
-        "//engine/status:status",
-        "//engine/visitor:visitor",
-        "//server/entity/component:moveable",
-        "//server/fsm:commonstate",
-        "@org_golang_google_protobuf//proto:go_default_library",
-    ],
-)
-
-go_test(
-    name = "direct_test",
-    srcs = ["direct_test.go"],
-    importpath = "github.com/downflux/game/server/fsm/move/direct_test",
-    embed = [":direct"],
-    deps = [
-        "//engine/fsm:action",
-    ],
-)
-
 go_test(
     name = "move_test",
     srcs = ["move_test.go"],
