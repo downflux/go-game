@@ -1,4 +1,4 @@
-package directmove
+package direct
 
 import (
 	"github.com/downflux/game/engine/fsm/action"

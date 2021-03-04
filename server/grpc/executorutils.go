@@ -14,8 +14,8 @@ import (
 	"github.com/downflux/game/server/entity/component/moveable"
 	"github.com/downflux/game/server/entity/component/targetable"
 	"github.com/downflux/game/server/visitor/attack"
-	"github.com/downflux/game/server/visitor/chase"
-	"github.com/downflux/game/server/visitor/move"
+	"github.com/downflux/game/server/visitor/move/chase"
+	"github.com/downflux/game/server/visitor/move/move"
 	"github.com/downflux/game/server/visitor/produce"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -30,8 +30,8 @@ import (
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
 	attackaction "github.com/downflux/game/server/fsm/attack"
-	chaseaction "github.com/downflux/game/server/fsm/chase"
-	moveaction "github.com/downflux/game/server/fsm/move"
+	chaseaction "github.com/downflux/game/server/fsm/move/chase"
+	moveaction "github.com/downflux/game/server/fsm/move/move"
 	produceaction "github.com/downflux/game/server/fsm/produce"
 )
 

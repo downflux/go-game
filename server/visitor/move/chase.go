@@ -4,7 +4,7 @@ import (
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
-	"github.com/downflux/game/server/fsm/chase"
+	"github.com/downflux/game/server/fsm/move/chase"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )

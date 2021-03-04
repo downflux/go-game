@@ -18,8 +18,8 @@ import (
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/server/entity/component/attackable"
 	"github.com/downflux/game/server/entity/component/targetable"
-	"github.com/downflux/game/server/fsm/chase"
 	"github.com/downflux/game/server/fsm/commonstate"
+	"github.com/downflux/game/server/fsm/move/chase"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )

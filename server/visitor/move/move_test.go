@@ -12,7 +12,7 @@ import (
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/tank"
-	"github.com/downflux/game/server/fsm/move"
+	"github.com/downflux/game/server/fsm/move/move"
 	"github.com/google/go-cmp/cmp"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"

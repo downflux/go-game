@@ -16,7 +16,7 @@ import (
 	"github.com/downflux/game/server/entity/component/moveable"
 	"github.com/downflux/game/server/entity/component/targetable"
 	"github.com/downflux/game/server/fsm/commonstate"
-	"github.com/downflux/game/server/fsm/move"
+	"github.com/downflux/game/server/fsm/move/move"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )

@@ -13,7 +13,7 @@ import (
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/fsm/commonstate"
-	"github.com/downflux/game/server/fsm/move"
+	"github.com/downflux/game/server/fsm/move/move"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
