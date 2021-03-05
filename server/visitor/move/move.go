@@ -79,14 +79,14 @@ func New(
 	tileMap *tile.Map,
 	abstractGraph *graph.Graph,
 	dfStatus status.ReadOnlyStatus,
-	dcs *dirty.List,
+	dirtystate *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
 		Base:          *visitor.New(fsmType),
 		tileMap:       tileMap,
 		abstractGraph: abstractGraph,
 		status:        dfStatus,
-		dirty:         dcs,
+		dirty:         dirtystate,
 		minPathLength: minPathLength,
 	}
 }

@@ -48,11 +48,11 @@ type Visitor struct {
 }
 
 // New creates a new instance of the Visitor struct.
-func New(dfStatus serverstatus.ReadOnlyStatus, entities *list.List, dcs *dirty.List) *Visitor {
+func New(dfStatus serverstatus.ReadOnlyStatus, entities *list.List, dirtystate *dirty.List) *Visitor {
 	return &Visitor{
 		Base:     *visitor.New(fsmType),
 		entities: entities,
-		dirty:    dcs,
+		dirty:    dirtystate,
 		status:   dfStatus,
 	}
 }

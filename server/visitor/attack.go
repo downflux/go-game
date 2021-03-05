@@ -21,11 +21,11 @@ type Visitor struct {
 	dirty  *dirty.List
 }
 
-func New(dfStatus status.ReadOnlyStatus, dcs *dirty.List) *Visitor {
+func New(dfStatus status.ReadOnlyStatus, dirtystate *dirty.List) *Visitor {
 	return &Visitor{
 		Base:   *visitor.New(fsmType),
 		status: dfStatus,
-		dirty:  dcs,
+		dirty:  dirtystate,
 	}
 }
 

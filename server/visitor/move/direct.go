@@ -6,14 +6,16 @@ import (
 	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/server/fsm/commonstate"
 	"github.com/downflux/game/server/fsm/move/move"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
+	serverstatus "github.com/downflux/game/engine/status/status"
 )
 
 const (
@@ -35,22 +37,35 @@ type Visitor struct {
 
 	// status is a shared object with the game engine and indicates
 	// current tick, etc.
-	status status.ReadOnlyStatus
+	status serverstatus.ReadOnlyStatus
 
 	// dirty is a shared object between the game engine and the Visitor.
 	dirty *dirty.List
+
+	dimension *gdpb.Coordinate
 }
 
 // New constructs a new move Visitor instance.
-func New(dfStatus status.ReadOnlyStatus, dcs *dirty.List) *Visitor {
+func New(dfStatus serverstatus.ReadOnlyStatus, dirtystate *dirty.List, d *gdpb.Coordinate) *Visitor {
 	return &Visitor{
-		Base:   *visitor.New(fsmType),
-		status: dfStatus,
-		dirty:  dcs,
+		Base:      *visitor.New(fsmType),
+		status:    dfStatus,
+		dirty:     dirtystate,
+		dimension: d,
 	}
 }
 
 func (v *Visitor) visitFSM(node *move.Action) error {
+	dimension := position(v.dimension)
+	if (node.Destination().GetX() >= dimension.GetX()) || (node.Destination().GetY() >= dimension.GetY()) {
+		return status.Errorf(
+			codes.OutOfRange,
+			"input Tile coordinate %v is outside the map boundary %v",
+			node.Destination(),
+			v.dimension,
+		)
+	}
+
 	s, err := node.State()
 	if err != nil {
 		return err

@@ -15,16 +15,39 @@ import (
 	gdpb "github.com/downflux/game/api/data_go_proto"
 )
 
+func TestMoveError(t *testing.T) {
+	eid := id.EntityID("entity-id")
+	cid := id.ClientID("client-id")
+	t0 := id.Tick(0)
+	p0 := &gdpb.Position{X: 0, Y: 0}
+	p1 := &gdpb.Position{X: 0, Y: 11}
+	dimension := &gdpb.Coordinate{X: 10, Y: 10}
+
+	s := status.New(time.Millisecond)
+
+	v := New(s, dirty.New(), dimension)
+	p, err := projectile.New(eid, t0, p0, cid)
+	if err != nil {
+		t.Fatalf("New() = %v, want = %v", err)
+	}
+	i := move.New(p, s, p1)
+
+	if err := v.Visit(i); err == nil {
+		t.Error("Visit() = nil, want a non-nil error")
+	}
+}
+
 func TestMove(t *testing.T) {
 	eid := id.EntityID("entity-id")
 	cid := id.ClientID("client-id")
 	t0 := id.Tick(0)
 	p0 := &gdpb.Position{X: 0, Y: 0}
-	p1 := &gdpb.Position{X: 0, Y: 100}
+	p1 := &gdpb.Position{X: 0, Y: 9}
+	dimension := &gdpb.Coordinate{X: 10, Y: 10}
 
 	s := status.New(time.Millisecond)
 
-	v := New(s, dirty.New())
+	v := New(s, dirty.New(), dimension)
 	p, err := projectile.New(eid, t0, p0, cid)
 	if err != nil {
 		t.Fatalf("New() = %v, want = %v", err)
