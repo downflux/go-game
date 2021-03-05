@@ -77,6 +77,22 @@ func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tan
 	return tankEntity
 }
 
+func TestVisitError(t *testing.T) {
+	const eid = "entity-id"
+	const t0 = 0
+	p0 := &gdpb.Position{X: 0, Y: 0}
+
+	v := newVisitor(t)
+	i := move.New(
+		newTank(t, eid, t0, p0),
+		v.status, &gdpb.Position{X: 0, Y: float64(simpleMap.GetDimension().GetY())})
+
+	if err := v.Visit(i); err == nil {
+		t.Error("Visit() = nil, want a non-nil error")
+	}
+
+}
+
 func TestVisit(t *testing.T) {
 	const eid = "entity-id"
 	const t0 = 0
