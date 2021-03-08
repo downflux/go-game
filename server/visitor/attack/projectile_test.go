@@ -31,11 +31,8 @@ func newTank(t *testing.T, eid id.EntityID, tick id.Tick, pos *gdpb.Position, ci
 	return e
 }
 
-func TestAttack(t *testing.T) {
+func TestVisitPending(t *testing.T) {
 	cid := id.ClientID("client-id")
-	eid0 := id.EntityID("entity-id-1")
-	eid1 := id.EntityID("entity-id-2")
-	peid := id.EntityID("projectile-of-eid1")
 	p0 := &gdpb.Position{X: 0, Y: 0}
 	p1 := &gdpb.Position{X: 1, Y: 0}
 	t0 := id.Tick(0)
@@ -45,41 +42,64 @@ func TestAttack(t *testing.T) {
 
 	projectileVisitor := New(s, d)
 
-	tank0 := newTank(t, eid0, t0, p0, cid)
-	tank1 := newTank(t, eid1, t0, p1, cid)
-
-	hp := tank1.TargetHealth(s.Tick())
+	source := newTank(t, id.EntityID("source-entity"), t0, p0, cid)
+	target := newTank(t, id.EntityID("target-entity"), t0, p1, cid)
 
 	// TODO(minkezhang): Link to tank.
-	shell, err := projectile.New(peid, t0, p1, cid)
+	shell, err := projectile.New(id.EntityID("shell-entity"), t0, source.Position(s.Tick()), cid)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
 	}
 
-	moveFSM := move.New(shell, s, p1)
-	projectileFSM := projectileaction.New(tank0, tank1, moveFSM)
+	moveFSM := move.New(shell, s, target.Position(s.Tick()))
+	projectileFSM := projectileaction.New(source, target, moveFSM)
 
-	// Verify preconditions.
-	// TODO(minkezhang): Move to projectile FSM test instead.
-	if got, err := moveFSM.State(); err != nil || got != commonstate.Finished {
-		t.Fatalf("State() = %v, %v, want = %v, nil", got, err, commonstate.Finished)
+	if err := projectileVisitor.Visit(projectileFSM); err != nil {
+		t.Fatalf("Visit() = %v, want = nil", err)
 	}
-	if got, err := projectileFSM.State(); err != nil || got != commonstate.Executing {
-		t.Fatalf("State() = %v, %v, want = %v, nil", got, err, commonstate.Executing)
+
+	if got, err := projectileFSM.State(); err != nil || got != commonstate.Pending {
+		t.Fatalf("State() = %v, %v, want = %v, nil", got, err, commonstate.Pending)
 	}
+}
+
+func TestVisitExecute(t *testing.T) {
+	cid := id.ClientID("client-id")
+	p0 := &gdpb.Position{X: 0, Y: 0}
+	p1 := &gdpb.Position{X: 1, Y: 0}
+	t0 := id.Tick(0)
+
+	s := status.New(time.Millisecond)
+	d := dirty.New()
+
+	projectileVisitor := New(s, d)
+
+	source := newTank(t, id.EntityID("source-entity"), t0, p0, cid)
+	target := newTank(t, id.EntityID("target-entity"), t0, p1, cid)
+
+	hp := target.TargetHealth(s.Tick())
+
+	// TODO(minkezhang): Link to tank.
+	shell, err := projectile.New(id.EntityID("shell-entity"), t0, target.Position(s.Tick()), cid)
+	if err != nil {
+		t.Fatalf("New() = %v, want = nil", err)
+	}
+
+	moveFSM := move.New(shell, s, target.Position(s.Tick()))
+	projectileFSM := projectileaction.New(source, target, moveFSM)
 
 	if err := projectileVisitor.Visit(projectileFSM); err != nil {
 		t.Fatalf("Visit() = %v, want = nil", err)
 	}
 
 	// Verify target was damaged.
-	if got := tank1.TargetHealth(s.Tick()); got >= hp {
+	if got := target.TargetHealth(s.Tick()); got >= hp {
 		t.Fatalf("GetHealth() = %v, want < %v", got, hp)
 	}
 
-	// Verify dirty curve.
+	// Verify target is marked as dirty.
 	dirtyCurves := []dirty.Curve{
-		{EntityID: eid1, Property: gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH},
+		{EntityID: target.ID(), Property: gcpb.EntityProperty_ENTITY_PROPERTY_HEALTH},
 	}
 	got := projectileVisitor.dirty.Pop().Curves()
 	if diff := cmp.Diff(dirtyCurves, got); diff != "" {
