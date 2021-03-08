@@ -27,7 +27,15 @@ go_test(
     importpath = "github.com/downflux/game/server/fsm/attack/projectile_test",
     embed = [":projectile"],
     deps = [
+        "//api:data_go_proto",
         "//engine/fsm:action",
+        "//engine/fsm:fsm",
+        "//engine/id:id",
+        "//engine/status:status",
+        "//server/entity:projectile",
+	"//server/entity:tank",
+        "//server/fsm:commonstate",
+        "//server/fsm/move:move",
     ],
 )
 

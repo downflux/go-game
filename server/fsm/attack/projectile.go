@@ -1,3 +1,9 @@
+// Package projectile defines the FSM used for e.g. a tank shell being fired at
+// a specific target. This is used for representing a specific durative shooting
+// action.
+//
+// Damage to the target may be calculated from the bound source and target
+// objects.
 package projectile
 
 import (
@@ -65,8 +71,8 @@ func (n *Action) State() (fsm.State, error) {
 	}
 
 	moveState, err := n.move.State()
-	if err != nil || s == commonstate.Canceled {
-		return s, err
+	if err != nil || moveState == commonstate.Canceled {
+		return moveState, err
 	}
 
 	switch s {
