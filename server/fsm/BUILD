@@ -43,39 +43,3 @@ go_library(
         "//engine/fsm/api:constants_go_proto",
     ],
 )
-
-go_library(
-    name = "attack",
-    srcs = ["attack.go"],
-    importpath = "github.com/downflux/game/server/fsm/attack",
-    deps = [
-        ":commonstate",
-        "//engine/fsm:action",
-        "//engine/fsm:fsm",
-        "//engine/fsm/api:constants_go_proto",
-        "//engine/id:id",
-        "//engine/status:status",
-        "//engine/visitor:visitor",
-        "//map:utils",
-        "//server/entity/component:attackable",
-        "//server/entity/component:targetable",
-        "//server/fsm/move:chase",
-    ],
-)
-
-go_test(
-    name = "attack_test",
-    srcs = ["attack_test.go"],
-    importpath = "github.com/downflux/game/server/fsm/attack_test",
-    embed = [":attack"],
-    deps = [
-        ":commonstate",
-        "//api:data_go_proto",
-        "//engine/fsm:action",
-        "//engine/fsm:fsm",
-        "//engine/id:id",
-        "//engine/status:status",
-        "//server/entity:tank",
-        "//server/fsm/move:chase",
-    ],
-)

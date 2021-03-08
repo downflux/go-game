@@ -32,27 +32,3 @@ go_test(
         "//engine/visitor:visitor",
     ],
 )
-
-go_test(
-    name = "attack_test",
-    srcs = ["attack_test.go"],
-    importpath = "github.com/downflux/game/server/visitor/attack_test",
-    embed = [":attack"],
-    deps = [
-        "//engine/visitor:visitor",
-    ],
-)
-
-go_library(
-    name = "attack",
-    srcs = ["attack.go"],
-    importpath = "github.com/downflux/game/server/visitor/attack",
-    deps = [
-        "//engine/gamestate:dirty",
-        "//engine/status:status",
-        "//engine/visitor:visitor",
-        "//server/fsm:attack",
-        "//server/fsm:commonstate",
-        "//engine/fsm/api:constants_go_proto",
-    ],
-)

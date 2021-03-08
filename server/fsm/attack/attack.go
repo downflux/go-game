@@ -20,6 +20,7 @@ import (
 	"github.com/downflux/game/server/entity/component/targetable"
 	"github.com/downflux/game/server/fsm/commonstate"
 	"github.com/downflux/game/server/fsm/move/chase"
+	"github.com/downflux/game/server/fsm/move/move"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
@@ -41,8 +42,9 @@ var (
 
 type Action struct {
 	*action.Base
-	chase *chase.Action // Read-only.
-	tick  id.Tick       // Read-only.
+	chase          *chase.Action // Read-only.
+	projectileMove *move.Action  // Read-only.
+	tick           id.Tick       // Read-only.
 
 	status status.ReadOnlyStatus // Read-only.
 	source attackable.Component  // Read-only.
@@ -80,8 +82,8 @@ func (a *Action) Precedence(o action.Action) bool {
 }
 
 func (a *Action) State() (fsm.State, error) {
-	if chaseState, err := a.chase.State(); err != nil || chaseState == commonstate.Canceled {
-		return chaseState, err
+	if s, err := a.chase.State(); (err != nil) || (s == commonstate.Canceled) {
+		return s, err
 	}
 
 	s, err := a.Base.State()

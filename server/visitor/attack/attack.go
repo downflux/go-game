@@ -4,7 +4,7 @@ import (
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
-	"github.com/downflux/game/server/fsm/attack"
+	"github.com/downflux/game/server/fsm/attack/attack"
 	"github.com/downflux/game/server/fsm/commonstate"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
@@ -53,7 +53,9 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 		if err := node.Source().AttackTimerCurve().Add(tick, true); err != nil {
 			return err
 		}
-		return node.Target().TargetHealthCurve().Add(tick, -1*node.Source().AttackStrength())
+
+		return node.Target().TargetHealthCurve().Add(tick,
+			-1*node.Source().AttackStrength())
 	}
 	return nil
 }
