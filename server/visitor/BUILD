@@ -8,6 +8,7 @@ go_library(
     importpath = "github.com/downflux/game/server/visitor/produce",
     deps = [
         "//api:constants_go_proto",
+        "//api:data_go_proto",
         "//engine/entity:entity",
         "//engine/entity:list",
 	"//engine/fsm/api:constants_go_proto",
@@ -15,6 +16,7 @@ go_library(
         "//engine/id:id",
         "//engine/status:status",
         "//engine/visitor:visitor",
+        "//server/entity:projectile",
         "//server/entity:tank",
         "//server/fsm:commonstate",
         "//server/fsm:produce",

@@ -20,7 +20,7 @@ var (
 
 func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Entity {
 	cid := id.ClientID("client-id")
-	tankEntity, err := tank.New(eid, tick, p, cid)
+	tankEntity, err := tank.New(eid, tick, p, cid, nil)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
 	}

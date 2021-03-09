@@ -38,8 +38,9 @@ func newTank(
 	eid id.EntityID,
 	tick id.Tick,
 	pos *gdpb.Position,
-	cid id.ClientID) *tank.Entity {
-	e, err := tank.New(eid, tick, pos, cid)
+	cid id.ClientID,
+	proj *projectile.Entity) *tank.Entity {
+	e, err := tank.New(eid, tick, pos, cid, proj)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
 	}
@@ -50,9 +51,12 @@ func TestState(t *testing.T) {
 	cid := id.ClientID("client-id")
 	s := status.New(time.Millisecond)
 
-	source := newTank(t, id.EntityID("source-entity"), 0, &gdpb.Position{X: 0, Y: 0}, cid)
-	target := newTank(t, id.EntityID("target-entity"), 0, &gdpb.Position{X: 0, Y: 1}, cid)
-	shell := newProjectile(t, id.EntityID("source-shell"), 0, source.Position(s.Tick()), cid)
+	p0 := &gdpb.Position{X: 0, Y: 0}
+	p1 := &gdpb.Position{X: 0, Y: 1}
+
+	shell := newProjectile(t, id.EntityID("source-shell"), 0, p0, cid)
+	source := newTank(t, id.EntityID("source-entity"), 0, p0, cid, shell)
+	target := newTank(t, id.EntityID("target-entity"), 0, p1, cid, nil)
 
 	canceledMove := move.New(shell, s, target.Position(s.Tick()))
 	if err := canceledMove.Cancel(); err != nil {

@@ -23,8 +23,14 @@ var (
 	_ visitor.Visitor = &Visitor{}
 )
 
-func newTank(t *testing.T, eid id.EntityID, tick id.Tick, pos *gdpb.Position, cid id.ClientID) *tank.Entity {
-	e, err := tank.New(eid, tick, pos, cid)
+func newTank(
+	t *testing.T,
+	eid id.EntityID,
+	tick id.Tick,
+	pos *gdpb.Position,
+	cid id.ClientID,
+	proj *projectile.Entity) *tank.Entity {
+	e, err := tank.New(eid, tick, pos, cid, proj)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
 	}
@@ -42,14 +48,14 @@ func TestVisitPending(t *testing.T) {
 
 	projectileVisitor := New(s, d)
 
-	source := newTank(t, id.EntityID("source-entity"), t0, p0, cid)
-	target := newTank(t, id.EntityID("target-entity"), t0, p1, cid)
-
-	// TODO(minkezhang): Link to tank.
-	shell, err := projectile.New(id.EntityID("shell-entity"), t0, source.Position(s.Tick()), cid)
+	shell, err := projectile.New(
+		id.EntityID("shell-entity"), t0, p0, cid)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
 	}
+
+	source := newTank(t, id.EntityID("source-entity"), t0, p0, cid, shell)
+	target := newTank(t, id.EntityID("target-entity"), t0, p1, cid, nil)
 
 	moveFSM := move.New(shell, s, target.Position(s.Tick()))
 	projectileFSM := projectileaction.New(source, target, moveFSM)
@@ -74,16 +80,16 @@ func TestVisitExecute(t *testing.T) {
 
 	projectileVisitor := New(s, d)
 
-	source := newTank(t, id.EntityID("source-entity"), t0, p0, cid)
-	target := newTank(t, id.EntityID("target-entity"), t0, p1, cid)
-
-	hp := target.TargetHealth(s.Tick())
-
-	// TODO(minkezhang): Link to tank.
-	shell, err := projectile.New(id.EntityID("shell-entity"), t0, target.Position(s.Tick()), cid)
+	shell, err := projectile.New(
+		id.EntityID("shell-entity"), t0, p1, cid)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
 	}
+
+	source := newTank(t, id.EntityID("source-entity"), t0, p0, cid, shell)
+	target := newTank(t, id.EntityID("target-entity"), t0, p1, cid, nil)
+
+	hp := target.TargetHealth(s.Tick())
 
 	moveFSM := move.New(shell, s, target.Position(s.Tick()))
 	projectileFSM := projectileaction.New(source, target, moveFSM)

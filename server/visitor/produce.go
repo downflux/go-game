@@ -6,6 +6,7 @@ import (
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/engine/visitor/visitor"
+	"github.com/downflux/game/server/entity/projectile"
 	"github.com/downflux/game/server/entity/tank"
 	"github.com/downflux/game/server/fsm/commonstate"
 	"github.com/downflux/game/server/fsm/produce"
@@ -13,6 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
+	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 	serverstatus "github.com/downflux/game/engine/status/status"
 )
@@ -60,6 +62,14 @@ func New(dfStatus serverstatus.ReadOnlyStatus, entities *list.List, dirtystate *
 // TODO(minkezhang): Delete this function.
 func (v *Visitor) Schedule(args interface{}) error { return nil }
 
+func (v *Visitor) generateEID(l int) id.EntityID {
+	eid := id.EntityID(id.RandomString(entityIDLen))
+	for v.entities.Get(eid) != nil {
+		eid = id.EntityID(id.RandomString(entityIDLen))
+	}
+	return eid
+}
+
 func (v *Visitor) visitFSM(node *produce.Action) error {
 	s, err := node.State()
 	if err != nil {
@@ -72,31 +82,36 @@ func (v *Visitor) visitFSM(node *produce.Action) error {
 	case commonstate.Executing:
 		defer node.Finish()
 
-		var eid id.EntityID = id.EntityID(id.RandomString(entityIDLen))
-		for v.entities.Get(eid) != nil {
-			eid = id.EntityID(id.RandomString(entityIDLen))
-		}
+		var es []entity.Entity
 
-		var ne entity.Entity
 		switch entityType := node.EntityType(); entityType {
 		case gcpb.EntityType_ENTITY_TYPE_TANK:
-			ne, err := tank.New(eid, tick, node.SpawnPosition(), node.SpawnClientID())
+			shellEID := v.generateEID(entityIDLen)
+			tankEID := v.generateEID(entityIDLen)
+
+			shell, err := projectile.New(
+				shellEID, tick, &gdpb.Position{X: 0, Y: 0}, node.SpawnClientID())
+			t, err := tank.New(
+				tankEID, tick, node.SpawnPosition(), node.SpawnClientID(), shell)
 			if err != nil {
 				return err
 			}
-			if err := v.dirty.AddEntity(dirty.Entity{ID: eid}); err != nil {
-				return err
-			}
-			if err := v.entities.Append(ne); err != nil {
-				return err
-			}
+
+			es = append(es, t, shell)
 		default:
 			return unsupportedEntityType(entityType)
 		}
 
-		if ne != nil {
-			for _, property := range ne.Curves().Properties() {
-				if err := v.dirty.AddCurve(dirty.Curve{EntityID: eid, Property: property}); err != nil {
+		for _, e := range es {
+			if err := v.dirty.AddEntity(dirty.Entity{ID: e.ID()}); err != nil {
+				return err
+			}
+			if err := v.entities.Append(e); err != nil {
+				return err
+			}
+
+			for _, property := range e.Curves().Properties() {
+				if err := v.dirty.AddCurve(dirty.Curve{EntityID: e.ID(), Property: property}); err != nil {
 					return err
 				}
 			}

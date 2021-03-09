@@ -22,6 +22,7 @@ go_library(
         "//engine/curve/common:step",
         "//engine/curve/common:timer",
         "//engine/id:id",
+        "//server/entity:projectile",
     ],
 )
 

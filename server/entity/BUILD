@@ -7,6 +7,7 @@ go_library(
     srcs = ["tank.go"],
     importpath = "github.com/downflux/game/server/entity/tank",
     deps = [
+        ":projectile",
 	"//api:constants_go_proto",
 	"//api:data_go_proto",
         "//engine/curve:curve",
