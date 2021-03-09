@@ -183,6 +183,6 @@ func (e *Executor) doTick() error {
 	return nil
 }
 
-func (e *Executor) Schedule(a action.Action) error {
-	return e.scheduleCache.Add(a)
+func (e *Executor) Schedule(actions []action.Action) error {
+	return e.scheduleCache.Extend(actions)
 }

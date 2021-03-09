@@ -117,6 +117,7 @@ go_library(
         "//engine/gamestate:dirty",
         "//engine/gamestate:gamestate",
         "//engine/entity:list",
+        "//engine/fsm:action",
         "//engine/fsm:schedule",
         "//engine/fsm/api:constants_go_proto",
         "//engine/id:id",

@@ -90,6 +90,7 @@ go_library(
     srcs = ["chase.go"],
     importpath = "github.com/downflux/game/server/visitor/move/chase",
     deps = [
+        "//engine/fsm:action",
         "//engine/status:status",
         "//engine/visitor:visitor",
         "//engine/fsm:schedule",

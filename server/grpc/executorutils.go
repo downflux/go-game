@@ -3,6 +3,7 @@ package executorutils
 import (
 	"time"
 
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/gamestate/gamestate"
@@ -98,7 +99,9 @@ func (u *Utils) Move(pb *apipb.MoveRequest) error {
 		}
 
 		if err := u.executor.Schedule(
-			moveaction.New(m, u.Status(), pb.GetDestination())); err != nil {
+			[]action.Action{
+				moveaction.New(m, u.Status(), pb.GetDestination()),
+			}); err != nil {
 			return err
 		}
 	}
@@ -127,10 +130,9 @@ func (u *Utils) Attack(pb *apipb.AttackRequest) error {
 		chaseAction := chaseaction.New(u.Status(), m, t)
 		attackAction := attackaction.New(u.Status(), a, t, chaseAction)
 
-		if err := u.executor.Schedule(chaseAction); err != nil {
-			return err
-		}
-		if err := u.executor.Schedule(attackAction); err != nil {
+		if err := u.executor.Schedule(
+			[]action.Action{chaseAction, attackAction},
+		); err != nil {
 			return err
 		}
 	}
@@ -142,10 +144,12 @@ func (u *Utils) ProduceDebug(entityType gcpb.EntityType, spawnPosition *gdpb.Pos
 	// TODO(minkezhang): Use arbitrary client-id after implementing
 	// per-instance ACLs and setting to PublicWritable here.
 	return u.executor.Schedule(
-		produceaction.New(
-			u.Status(),
-			u.Status().Tick(),
-			entityType,
-			spawnPosition,
-			id.ClientID("")))
+		[]action.Action{
+			produceaction.New(
+				u.Status(),
+				u.Status().Tick(),
+				entityType,
+				spawnPosition,
+				id.ClientID("")),
+		})
 }

@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/gamestate/gamestate"
@@ -47,7 +48,9 @@ func TestSchedule(t *testing.T) {
 	aid := id.ActionID("action-id")
 
 	e := newExecutor(t)
-	if err := e.Schedule(simpleaction.New(aid, priority)); err != nil {
+	if err := e.Schedule([]action.Action{
+		simpleaction.New(aid, priority),
+	}); err != nil {
 		t.Errorf("Schedule() = %v, want = nil", err)
 	}
 }
@@ -61,7 +64,9 @@ func TestDoTick(t *testing.T) {
 	tick := e.Status().GetTick()
 
 	// Executor should have added action to the cache.
-	if err := e.Schedule(simpleaction.New(aid, priority)); err != nil {
+	if err := e.Schedule([]action.Action{
+		simpleaction.New(aid, priority),
+	}); err != nil {
 		t.Fatalf("Schedule() = %v, want = nil", err)
 	}
 	if a := e.scheduleCache.Get(fcpb.FSMType_FSM_TYPE_MOVE).Get(aid); a == nil {
