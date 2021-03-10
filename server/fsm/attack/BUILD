@@ -44,6 +44,7 @@ go_library(
     srcs = ["attack.go"],
     importpath = "github.com/downflux/game/server/fsm/attack/attack",
     deps = [
+        ":projectile",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
         "//engine/fsm/api:constants_go_proto",
@@ -55,7 +56,6 @@ go_library(
         "//server/entity/component:targetable",
         "//server/fsm:commonstate",
         "//server/fsm/move:chase",
-        "//server/fsm/move:move",
     ],
 )
 
@@ -65,13 +65,16 @@ go_test(
     importpath = "github.com/downflux/game/server/fsm/attack/attack_test",
     embed = [":attack"],
     deps = [
+        ":projectile",
         "//api:data_go_proto",
         "//engine/fsm:action",
         "//engine/fsm:fsm",
         "//engine/id:id",
         "//engine/status:status",
+        "//server/entity:projectile",
         "//server/entity:tank",
         "//server/fsm:commonstate",
         "//server/fsm/move:chase",
+        "//server/fsm/move:move",
     ],
 )

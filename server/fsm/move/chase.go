@@ -68,7 +68,7 @@ func New(dfStatus status.ReadOnlyStatus, source moveable.Component, destination 
 }
 
 func GenerateMove(a *Action) *move.Action {
-	return move.New(a.Source(), a.Status(), a.Destination().Position(a.Status().Tick()))
+	return move.New(a.Source(), a.Status(), a.Destination().Position(a.Status().Tick()), move.Default)
 }
 func (a *Action) Accept(v visitor.Visitor) error    { return v.Visit(a) }
 func (a *Action) Source() moveable.Component        { return a.source }

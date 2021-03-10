@@ -57,7 +57,7 @@ func TestVisitPending(t *testing.T) {
 	source := newTank(t, id.EntityID("source-entity"), t0, p0, cid, shell)
 	target := newTank(t, id.EntityID("target-entity"), t0, p1, cid, nil)
 
-	moveFSM := move.New(shell, s, target.Position(s.Tick()))
+	moveFSM := move.New(shell, s, target.Position(s.Tick()), move.Direct)
 	projectileFSM := projectileaction.New(source, target, moveFSM)
 
 	if err := projectileVisitor.Visit(projectileFSM); err != nil {
@@ -91,7 +91,7 @@ func TestVisitExecute(t *testing.T) {
 
 	hp := target.TargetHealth(s.Tick())
 
-	moveFSM := move.New(shell, s, target.Position(s.Tick()))
+	moveFSM := move.New(shell, s, target.Position(s.Tick()), move.Direct)
 	projectileFSM := projectileaction.New(source, target, moveFSM)
 
 	if err := projectileVisitor.Visit(projectileFSM); err != nil {

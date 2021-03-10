@@ -52,11 +52,15 @@ go_library(
     srcs = ["attack.go"],
     importpath = "github.com/downflux/game/server/visitor/attack/attack",
     deps = [
+        "//engine/fsm:action",
+        "//engine/fsm:schedule",
         "//engine/fsm/api:constants_go_proto",
         "//engine/gamestate:dirty",
         "//engine/status:status",
         "//engine/visitor:visitor",
         "//server/fsm:commonstate",
         "//server/fsm/attack:attack",
+        "//server/fsm/attack:projectile",
+        "//server/fsm/move:move",
     ],
 )

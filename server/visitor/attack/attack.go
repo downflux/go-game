@@ -1,11 +1,15 @@
 package attack
 
 import (
+	"github.com/downflux/game/engine/fsm/action"
+	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/fsm/attack/attack"
+	"github.com/downflux/game/server/fsm/attack/projectile"
 	"github.com/downflux/game/server/fsm/commonstate"
+	"github.com/downflux/game/server/fsm/move/move"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
@@ -15,17 +19,22 @@ const (
 )
 
 type Visitor struct {
-	visitor.Base
+	visitor.Base                       // Read-only.
+	status       status.ReadOnlyStatus // Read-only.
 
-	status status.ReadOnlyStatus
-	dirty  *dirty.List
+	schedule *schedule.Schedule
+	dirty    *dirty.List
 }
 
-func New(dfStatus status.ReadOnlyStatus, dirtystate *dirty.List) *Visitor {
+func New(
+	dfStatus status.ReadOnlyStatus,
+	dirtystate *dirty.List,
+	schedule *schedule.Schedule) *Visitor {
 	return &Visitor{
-		Base:   *visitor.New(fsmType),
-		status: dfStatus,
-		dirty:  dirtystate,
+		Base:     *visitor.New(fsmType),
+		status:   dfStatus,
+		dirty:    dirtystate,
+		schedule: schedule,
 	}
 }
 
@@ -42,7 +51,6 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 		// recording targets, ENTITY_PROPERTY_ATTACK_TARGET.
 		dcs := []dirty.Curve{
 			{node.Source().ID(), node.Source().AttackTimerCurve().Property()},
-			{node.Target().ID(), node.Target().TargetHealthCurve().Property()},
 		}
 		for _, c := range dcs {
 			if err := v.dirty.AddCurve(c); err != nil {
@@ -54,8 +62,17 @@ func (v *Visitor) visitFSM(node *attack.Action) error {
 			return err
 		}
 
-		return node.Target().TargetHealthCurve().Add(tick,
-			-1*node.Source().AttackStrength())
+		// TODO(minkezhang): Move generator functions to attack FSM
+		// instead. See fsm/chase for example.
+		moveAction := move.New(
+			node.Source().AttackProjectile(),
+			v.status,
+			node.Target().Position(tick),
+			move.Direct)
+		projectileAction := projectile.New(node.Source(), node.Target(), moveAction)
+
+		node.SetProjectileMove(projectileAction)
+		return v.schedule.Extend([]action.Action{moveAction, projectileAction})
 	}
 	return nil
 }

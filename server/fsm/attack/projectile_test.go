@@ -58,7 +58,7 @@ func TestState(t *testing.T) {
 	source := newTank(t, id.EntityID("source-entity"), 0, p0, cid, shell)
 	target := newTank(t, id.EntityID("target-entity"), 0, p1, cid, nil)
 
-	canceledMove := move.New(shell, s, target.Position(s.Tick()))
+	canceledMove := move.New(shell, s, target.Position(s.Tick()), move.Direct)
 	if err := canceledMove.Cancel(); err != nil {
 		t.Fatalf("Cancel() = %v, want = nil", err)
 	}
@@ -70,12 +70,16 @@ func TestState(t *testing.T) {
 	}{
 		{
 			name: "TestMoving",
-			i:    New(source, target, move.New(shell, s, target.Position(s.Tick()))),
+			i: New(
+				source, target, move.New(
+					shell, s, target.Position(s.Tick()), move.Direct)),
 			want: commonstate.Pending,
 		},
 		{
 			name: "TestReachedDestination",
-			i:    New(source, target, move.New(shell, s, shell.Position(s.Tick()))),
+			i: New(
+				source, target, move.New(
+					shell, s, shell.Position(s.Tick()), move.Direct)),
 			want: commonstate.Executing,
 		},
 		{

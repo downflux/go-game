@@ -16,8 +16,11 @@ import (
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
+type MoveType int
+
 const (
-	fsmType = fcpb.FSMType_FSM_TYPE_MOVE
+	Default MoveType = iota
+	Direct
 )
 
 var (
@@ -28,7 +31,10 @@ var (
 		{From: commonstate.Executing, To: commonstate.Canceled},
 	}
 
-	FSM = fsm.New(transitions, fsmType)
+	FSMLookup = map[MoveType]*fsm.FSM{
+		Default: fsm.New(transitions, fcpb.FSMType_FSM_TYPE_MOVE),
+		Direct:  fsm.New(transitions, fcpb.FSMType_FSM_TYPE_DIRECT_MOVE),
+	}
 )
 
 type Action struct {
@@ -58,10 +64,11 @@ type Action struct {
 func New(
 	e moveable.Component,
 	dfStatus status.ReadOnlyStatus,
-	destination *gdpb.Position) *Action {
+	destination *gdpb.Position,
+	moveType MoveType) *Action {
 	t := dfStatus.Tick()
 	return &Action{
-		Base:          action.New(FSM, commonstate.Pending),
+		Base:          action.New(FSMLookup[moveType], commonstate.Pending),
 		e:             e,
 		status:        dfStatus,
 		tick:          t,
@@ -86,7 +93,7 @@ func (n *Action) SchedulePartialMove(t id.Tick) error {
 }
 
 func (n *Action) Precedence(i action.Action) bool {
-	if i.Type() != fsmType {
+	if i.Type() != n.Type() {
 		return false
 	}
 

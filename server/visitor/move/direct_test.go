@@ -30,7 +30,7 @@ func TestMoveError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("New() = %v, want = %v", err)
 	}
-	i := move.New(p, s, p1)
+	i := move.New(p, s, p1, move.Direct)
 
 	if err := v.Visit(i); err == nil {
 		t.Error("Visit() = nil, want a non-nil error")
@@ -52,7 +52,7 @@ func TestMove(t *testing.T) {
 	if err != nil {
 		t.Fatalf("New() = %v, want = %v", err)
 	}
-	i := move.New(p, s, p1)
+	i := move.New(p, s, p1, move.Direct)
 
 	if err := v.Visit(i); err != nil {
 		t.Fatalf("Visit() = %v, want = nil", err)

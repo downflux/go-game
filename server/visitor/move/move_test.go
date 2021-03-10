@@ -85,7 +85,8 @@ func TestVisitError(t *testing.T) {
 	v := newVisitor(t)
 	i := move.New(
 		newTank(t, eid, t0, p0),
-		v.status, &gdpb.Position{X: 0, Y: float64(simpleMap.GetDimension().GetY())})
+		v.status, &gdpb.Position{X: 0, Y: float64(simpleMap.GetDimension().GetY())},
+		move.Default)
 
 	if err := v.Visit(i); err == nil {
 		t.Error("Visit() = nil, want a non-nil error")
@@ -113,7 +114,8 @@ func TestVisit(t *testing.T) {
 			v:    testNoMoveVisitor,
 			i: move.New(
 				newTank(t, eid, t0, p0),
-				testNoMoveVisitor.status, p0),
+				testNoMoveVisitor.status, p0,
+				move.Default),
 			want: nil,
 		},
 		{
@@ -121,7 +123,8 @@ func TestVisit(t *testing.T) {
 			v:    testSimpleMoveVisitor,
 			i: move.New(
 				newTank(t, eid, t0, p0),
-				testSimpleMoveVisitor.status, p1),
+				testSimpleMoveVisitor.status, p1,
+				move.Default),
 			want: []dirty.Curve{
 				{EntityID: eid, Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION},
 			},

@@ -71,7 +71,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		produce.New(state.Status(), state.Entities(), dirtystate),
 		move.New(tm, g, state.Status(), dirtystate, minPathLength),
 		direct.New(state.Status(), dirtystate, tm.D),
-		attack.New(state.Status(), dirtystate),
+		attack.New(state.Status(), dirtystate, fsmSchedule),
 	})
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (u *Utils) Move(pb *apipb.MoveRequest) error {
 
 		if err := u.executor.Schedule(
 			[]action.Action{
-				moveaction.New(m, u.Status(), pb.GetDestination()),
+				moveaction.New(m, u.Status(), pb.GetDestination(), moveaction.Default),
 			}); err != nil {
 			return err
 		}
