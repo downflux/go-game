@@ -10,6 +10,7 @@ import (
 	"github.com/downflux/game/engine/curve/common/timer"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/downflux/game/server/entity/component/positionable"
+	"github.com/downflux/game/server/entity/projectile"
 )
 
 type Component interface {
@@ -26,6 +27,10 @@ type Component interface {
 	// be of speed positive infinity, representing a hitscan weapon.
 	AttackVelocity() float64
 
+	// AttackProjectile returns a link to the projectile used to convey
+	// attack damage for a non-infinite attack velocity.
+	AttackProjectile() *projectile.Entity
+
 	AttackTargetCurve() *step.Curve
 	AttackTimerCurve() *timer.Curve
 }
@@ -36,20 +41,29 @@ type Base struct {
 	velocity    float64
 	targetCurve *step.Curve
 	attackTimer *timer.Curve
+	projectile  *projectile.Entity
 }
 
-func New(s float64, r float64, v float64, t *step.Curve, c *timer.Curve) *Base {
+func New(
+	s float64,
+	r float64,
+	v float64,
+	t *step.Curve,
+	c *timer.Curve,
+	p *projectile.Entity) *Base {
 	return &Base{
 		strength:    s,
 		attackRange: r,
 		velocity:    v,
 		targetCurve: t,
 		attackTimer: c,
+		projectile:  p,
 	}
 }
 
-func (c Base) AttackStrength() float64        { return c.strength }
-func (c Base) AttackRange() float64           { return c.attackRange }
-func (c Base) AttackVelocity() float64        { return c.velocity }
-func (c Base) AttackTimerCurve() *timer.Curve { return c.attackTimer }
-func (c Base) AttackTargetCurve() *step.Curve { return c.targetCurve }
+func (c Base) AttackStrength() float64              { return c.strength }
+func (c Base) AttackRange() float64                 { return c.attackRange }
+func (c Base) AttackVelocity() float64              { return c.velocity }
+func (c Base) AttackTimerCurve() *timer.Curve       { return c.attackTimer }
+func (c Base) AttackTargetCurve() *step.Curve       { return c.targetCurve }
+func (c Base) AttackProjectile() *projectile.Entity { return c.projectile }

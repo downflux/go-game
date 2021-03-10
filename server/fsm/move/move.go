@@ -1,22 +1,27 @@
 package move
 
 import (
-	"sync"
-
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/server/entity/component/moveable"
 	"github.com/downflux/game/server/fsm/commonstate"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
+	serverstatus "github.com/downflux/game/engine/status/status"
 )
 
+type MoveType int
+
 const (
+	Default MoveType = iota
+	Direct
+
 	fsmType = fcpb.FSMType_FSM_TYPE_MOVE
 )
 
@@ -38,13 +43,11 @@ type Action struct {
 	// scheduled.
 	tick id.Tick // Read-only.
 
-	status      status.ReadOnlyStatus // Read-only.
-	destination *gdpb.Position        // Read-only.
+	status      serverstatus.ReadOnlyStatus // Read-only.
+	destination *gdpb.Position              // Read-only.
+	moveType    MoveType                    // Read-only.
 
 	e moveable.Component // Read-only.
-
-	// mux guards the Base and executionTick properties.
-	mux sync.Mutex
 
 	// TODO(minkezhang): Move executionTick and destination into
 	// separate external cache.
@@ -57,8 +60,9 @@ type Action struct {
 // future.
 func New(
 	e moveable.Component,
-	dfStatus status.ReadOnlyStatus,
-	destination *gdpb.Position) *Action {
+	dfStatus serverstatus.ReadOnlyStatus,
+	destination *gdpb.Position,
+	moveType MoveType) *Action {
 	t := dfStatus.Tick()
 	return &Action{
 		Base:          action.New(FSM, commonstate.Pending),
@@ -67,26 +71,30 @@ func New(
 		tick:          t,
 		executionTick: t,
 		destination:   destination,
+		moveType:      moveType,
 	}
 }
 
 func (n *Action) Accept(v visitor.Visitor) error { return v.Visit(n) }
 func (n *Action) Component() moveable.Component  { return n.e }
 func (n *Action) ID() id.ActionID                { return id.ActionID(n.e.ID()) }
+func (n *Action) MoveType() MoveType             { return n.moveType }
 
 // SchedulePartialMove allows us to mutate the FSM action to deal with
 // partial moves. This allows us to know when the visitor should make the next
 // meaningful calculation.
 func (n *Action) SchedulePartialMove(t id.Tick) error {
-	n.mux.Lock()
-	defer n.mux.Unlock()
-
+	if n.MoveType() == Direct {
+		return status.Error(
+			codes.FailedPrecondition,
+			"cannot schedule partial move for a direct move")
+	}
 	n.executionTick = t
 	return nil
 }
 
 func (n *Action) Precedence(i action.Action) bool {
-	if i.Type() != fsmType {
+	if i.Type() != n.Type() {
 		return false
 	}
 
@@ -98,10 +106,7 @@ func (n *Action) Precedence(i action.Action) bool {
 func (n *Action) Destination() *gdpb.Position { return n.destination }
 
 func (n *Action) Cancel() error {
-	n.mux.Lock()
-	defer n.mux.Unlock()
-
-	s, err := n.stateUnsafe()
+	s, err := n.State()
 	if err != nil {
 		return err
 	}
@@ -110,13 +115,6 @@ func (n *Action) Cancel() error {
 }
 
 func (n *Action) State() (fsm.State, error) {
-	n.mux.Lock()
-	defer n.mux.Unlock()
-
-	return n.stateUnsafe()
-}
-
-func (n *Action) stateUnsafe() (fsm.State, error) {
 	tick := n.status.Tick()
 
 	s, err := n.Base.State()

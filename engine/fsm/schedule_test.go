@@ -10,22 +10,22 @@ import (
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
 
-// TestAddError validates we cannot add unknown FSMs to the schedule.
-func TestAddError(t *testing.T) {
+// TestExtendError validates we cannot add unknown FSMs to the schedule.
+func TestExtendError(t *testing.T) {
 	s := New(nil)
 
 	a := simple.New(id.ActionID("action-id"), 0)
-	if err := s.Add(a); err == nil {
-		t.Errorf("Add() = nil, want a non-nil error %s", err)
+	if err := s.Extend([]action.Action{a}); err == nil {
+		t.Errorf("Extend() = nil, want a non-nil error %s", err)
 	}
 }
 
-func TestAdd(t *testing.T) {
+func TestExtend(t *testing.T) {
 	aid := id.ActionID("action-id")
 
 	s := New([]fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE})
 	i := simple.New(aid, 0)
-	if err := s.Add(i); err != nil {
+	if err := s.Extend([]action.Action{i}); err != nil {
 		t.Fatalf("Add() = %v, want = nil", err)
 	}
 
@@ -73,8 +73,8 @@ func TestMerge(t *testing.T) {
 			s2 := New(c.s2Types)
 
 			for _, i := range c.actions {
-				if err := s1.Add(i); err != nil {
-					t.Fatalf("Add() = %v, want = nil", err)
+				if err := s1.Extend([]action.Action{i}); err != nil {
+					t.Fatalf("Extend() = %v, want = nil", err)
 				}
 			}
 
@@ -96,8 +96,8 @@ func TestPop(t *testing.T) {
 
 	s1 := New([]fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE})
 	a := simple.New(aid, 0)
-	if err := s1.Add(a); err != nil {
-		t.Fatalf("Add() = %v, want = nil", err)
+	if err := s1.Extend([]action.Action{a}); err != nil {
+		t.Fatalf("Extend() = %v, want = nil", err)
 	}
 
 	s2 := s1.Pop()

@@ -40,10 +40,7 @@ func (s *Schedule) Pop() *Schedule {
 	return ns
 }
 
-func (s *Schedule) Add(i action.Action) error {
-	s.mux.Lock()
-	defer s.mux.Unlock()
-
+func (s *Schedule) addUnsafe(i action.Action) error {
 	if s.actions == nil {
 		s.actions = map[fcpb.FSMType]*list.List{}
 	}
@@ -59,6 +56,18 @@ func (s *Schedule) Add(i action.Action) error {
 	}
 
 	return s.actions[fsmType].Add(i)
+}
+
+func (s *Schedule) Extend(actions []action.Action) error {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
+	for _, i := range actions {
+		if err := s.addUnsafe(i); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Schedule) Merge(t *Schedule) error {

@@ -42,10 +42,10 @@ type Executor struct {
 
 	gamestate *gamestate.GameState
 
-	// dirties is a list of Entity and Curve instances which have been
+	// dirty is a list of Entity and Curve instances which have been
 	// modified during the current game tick. The Executor broadcasts this
 	// list to all clients to update the game state.
-	dirties *dirty.List
+	dirty *dirty.List
 
 	// clients is an append-only set of connected players / AI.
 	clients *clientlist.List
@@ -57,13 +57,13 @@ type Executor struct {
 func New(
 	visitors *visitorlist.List,
 	state *gamestate.GameState,
-	dirtystate *dirty.List,
+	dcs *dirty.List,
 	fsmSchedule *schedule.Schedule,
 ) *Executor {
 	return &Executor{
 		visitors:      visitors,
 		gamestate:     state,
-		dirties:       dirtystate,
+		dirty:         dcs,
 		clients:       clientlist.New(idLen),
 		schedule:      fsmSchedule,
 		scheduleCache: fsmSchedule.Pop(),
@@ -98,7 +98,7 @@ func (e *Executor) ClientChannel(cid id.ClientID) (<-chan *apipb.StreamDataRespo
 // broadcast will send the current game state delta or full game state to
 // all connected clients. This is a blocking call.
 func (e *Executor) broadcast() error {
-	partial := e.gamestate.Export(e.gamestate.Status().Tick()-100, e.dirties.Pop())
+	partial := e.gamestate.Export(e.gamestate.Status().Tick()-100, e.dirty.Pop())
 
 	return e.clients.Broadcast(
 		// Return the game state update that will need to be broadcast
@@ -183,6 +183,6 @@ func (e *Executor) doTick() error {
 	return nil
 }
 
-func (e *Executor) Schedule(a action.Action) error {
-	return e.scheduleCache.Add(a)
+func (e *Executor) Schedule(actions []action.Action) error {
+	return e.scheduleCache.Extend(actions)
 }

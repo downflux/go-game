@@ -12,7 +12,7 @@ import (
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/entity/tank"
-	"github.com/downflux/game/server/fsm/move"
+	"github.com/downflux/game/server/fsm/move/move"
 	"github.com/google/go-cmp/cmp"
 
 	gcpb "github.com/downflux/game/api/constants_go_proto"
@@ -70,11 +70,39 @@ func newVisitor(t *testing.T) *Visitor {
 
 func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tank.Entity {
 	cid := id.ClientID("client-id")
-	tankEntity, err := tank.New(eid, tick, p, cid)
+	tankEntity, err := tank.New(eid, tick, p, cid, nil)
 	if err != nil {
 		t.Fatalf("New() = %v, want = nil", err)
 	}
 	return tankEntity
+}
+
+func TestVisitError(t *testing.T) {
+	const eid = "entity-id"
+	const t0 = 0
+	p0 := &gdpb.Position{X: 0, Y: 0}
+
+	testConfigs := []struct {
+		name     string
+		moveType move.MoveType
+	}{
+		{name: "TestDefaultMove", moveType: move.Default},
+		{name: "TestDirectMove", moveType: move.Direct},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			v := newVisitor(t)
+			i := move.New(
+				newTank(t, eid, t0, p0),
+				v.status, &gdpb.Position{X: 0, Y: float64(simpleMap.GetDimension().GetY())},
+				c.moveType)
+
+			if err := v.Visit(i); err == nil {
+				t.Error("Visit() = nil, want a non-nil error")
+			}
+		})
+	}
 }
 
 func TestVisit(t *testing.T) {
@@ -85,6 +113,7 @@ func TestVisit(t *testing.T) {
 
 	testNoMoveVisitor := newVisitor(t)
 	testSimpleMoveVisitor := newVisitor(t)
+	testDirectMoveVisitor := newVisitor(t)
 
 	testConfigs := []struct {
 		name string
@@ -97,7 +126,8 @@ func TestVisit(t *testing.T) {
 			v:    testNoMoveVisitor,
 			i: move.New(
 				newTank(t, eid, t0, p0),
-				testNoMoveVisitor.status, p0),
+				testNoMoveVisitor.status, p0,
+				move.Default),
 			want: nil,
 		},
 		{
@@ -105,7 +135,19 @@ func TestVisit(t *testing.T) {
 			v:    testSimpleMoveVisitor,
 			i: move.New(
 				newTank(t, eid, t0, p0),
-				testSimpleMoveVisitor.status, p1),
+				testSimpleMoveVisitor.status, p1,
+				move.Default),
+			want: []dirty.Curve{
+				{EntityID: eid, Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION},
+			},
+		},
+		{
+			name: "TestDirectMove",
+			v:    testDirectMoveVisitor,
+			i: move.New(
+				newTank(t, eid, t0, p0),
+				testDirectMoveVisitor.status, p1,
+				move.Direct),
 			want: []dirty.Curve{
 				{EntityID: eid, Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION},
 			},
@@ -117,7 +159,7 @@ func TestVisit(t *testing.T) {
 			if err := c.v.Visit(c.i); err != nil {
 				t.Fatalf("Visit() = %v, want = nil", err)
 			}
-			got := c.v.dirties.Pop().Curves()
+			got := c.v.dirty.Pop().Curves()
 			if diff := cmp.Diff(c.want, got); diff != "" {
 				t.Errorf("Pop() mismatch (-want +got):\n%v", diff)
 			}

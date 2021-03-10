@@ -3,6 +3,7 @@ package executorutils
 import (
 	"time"
 
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/gamestate/gamestate"
@@ -13,9 +14,9 @@ import (
 	"github.com/downflux/game/server/entity/component/attackable"
 	"github.com/downflux/game/server/entity/component/moveable"
 	"github.com/downflux/game/server/entity/component/targetable"
-	"github.com/downflux/game/server/visitor/attack"
-	"github.com/downflux/game/server/visitor/chase"
-	"github.com/downflux/game/server/visitor/move"
+	"github.com/downflux/game/server/visitor/attack/attack"
+	"github.com/downflux/game/server/visitor/move/chase"
+	"github.com/downflux/game/server/visitor/move/move"
 	"github.com/downflux/game/server/visitor/produce"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,9 +30,9 @@ import (
 	visitorlist "github.com/downflux/game/engine/visitor/list"
 	mdpb "github.com/downflux/game/map/api/data_go_proto"
 	tile "github.com/downflux/game/map/map"
-	attackaction "github.com/downflux/game/server/fsm/attack"
-	chaseaction "github.com/downflux/game/server/fsm/chase"
-	moveaction "github.com/downflux/game/server/fsm/move"
+	attackaction "github.com/downflux/game/server/fsm/attack/attack"
+	chaseaction "github.com/downflux/game/server/fsm/move/chase"
+	moveaction "github.com/downflux/game/server/fsm/move/move"
 	produceaction "github.com/downflux/game/server/fsm/produce"
 )
 
@@ -67,7 +68,7 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		chase.New(state.Status(), fsmSchedule),
 		produce.New(state.Status(), state.Entities(), dirtystate),
 		move.New(tm, g, state.Status(), dirtystate, minPathLength),
-		attack.New(state.Status(), dirtystate),
+		attack.New(state.Status(), dirtystate, fsmSchedule),
 	})
 	if err != nil {
 		return nil, err
@@ -95,7 +96,9 @@ func (u *Utils) Move(pb *apipb.MoveRequest) error {
 		}
 
 		if err := u.executor.Schedule(
-			moveaction.New(m, u.Status(), pb.GetDestination())); err != nil {
+			[]action.Action{
+				moveaction.New(m, u.Status(), pb.GetDestination(), moveaction.Default),
+			}); err != nil {
 			return err
 		}
 	}
@@ -124,10 +127,9 @@ func (u *Utils) Attack(pb *apipb.AttackRequest) error {
 		chaseAction := chaseaction.New(u.Status(), m, t)
 		attackAction := attackaction.New(u.Status(), a, t, chaseAction)
 
-		if err := u.executor.Schedule(chaseAction); err != nil {
-			return err
-		}
-		if err := u.executor.Schedule(attackAction); err != nil {
+		if err := u.executor.Schedule(
+			[]action.Action{chaseAction, attackAction},
+		); err != nil {
 			return err
 		}
 	}
@@ -139,10 +141,12 @@ func (u *Utils) ProduceDebug(entityType gcpb.EntityType, spawnPosition *gdpb.Pos
 	// TODO(minkezhang): Use arbitrary client-id after implementing
 	// per-instance ACLs and setting to PublicWritable here.
 	return u.executor.Schedule(
-		produceaction.New(
-			u.Status(),
-			u.Status().Tick(),
-			entityType,
-			spawnPosition,
-			id.ClientID("")))
+		[]action.Action{
+			produceaction.New(
+				u.Status(),
+				u.Status().Tick(),
+				entityType,
+				spawnPosition,
+				id.ClientID("")),
+		})
 }

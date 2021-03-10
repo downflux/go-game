@@ -1,10 +1,11 @@
 package chase
 
 import (
+	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/schedule"
 	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
-	"github.com/downflux/game/server/fsm/chase"
+	"github.com/downflux/game/server/fsm/move/chase"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
@@ -37,7 +38,7 @@ func (v *Visitor) visitFSM(node *chase.Action) error {
 	switch s {
 	case chase.OutOfRange:
 		m := chase.GenerateMove(node)
-		if err := v.schedule.Add(m); err != nil {
+		if err := v.schedule.Extend([]action.Action{m}); err != nil {
 			return err
 		}
 		if err := node.SetMove(m); err != nil {

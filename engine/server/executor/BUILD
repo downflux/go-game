@@ -28,6 +28,7 @@ go_test(
     embed = [":executor"],
     deps = [
         "//engine/entity:list",
+        "//engine/fsm:action",
         "//engine/fsm:schedule",
         "//engine/fsm/api:constants_go_proto",
         "//engine/fsm/mock:simple",

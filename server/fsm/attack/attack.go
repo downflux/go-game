@@ -18,8 +18,9 @@ import (
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/server/entity/component/attackable"
 	"github.com/downflux/game/server/entity/component/targetable"
-	"github.com/downflux/game/server/fsm/chase"
+	"github.com/downflux/game/server/fsm/attack/projectile"
 	"github.com/downflux/game/server/fsm/commonstate"
+	"github.com/downflux/game/server/fsm/move/chase"
 
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
 )
@@ -41,8 +42,9 @@ var (
 
 type Action struct {
 	*action.Base
-	chase *chase.Action // Read-only.
-	tick  id.Tick       // Read-only.
+	chase          *chase.Action      // Read-only.
+	tick           id.Tick            // Read-only.
+	projectileMove *projectile.Action // Read-only.
 
 	status status.ReadOnlyStatus // Read-only.
 	source attackable.Component  // Read-only.
@@ -64,10 +66,11 @@ func New(
 	}
 }
 
-func (a *Action) Accept(v visitor.Visitor) error { return v.Visit(a) }
-func (a *Action) ID() id.ActionID                { return id.ActionID(a.source.ID()) }
-func (a *Action) Target() targetable.Component   { return a.target }
-func (a *Action) Source() attackable.Component   { return a.source }
+func (a *Action) Accept(v visitor.Visitor) error         { return v.Visit(a) }
+func (a *Action) ID() id.ActionID                        { return id.ActionID(a.source.ID()) }
+func (a *Action) Target() targetable.Component           { return a.target }
+func (a *Action) Source() attackable.Component           { return a.source }
+func (a *Action) SetProjectileMove(i *projectile.Action) { a.projectileMove = i }
 
 func (a *Action) Precedence(o action.Action) bool {
 	if a.Type() != fsmType {
@@ -80,13 +83,22 @@ func (a *Action) Precedence(o action.Action) bool {
 }
 
 func (a *Action) State() (fsm.State, error) {
-	if chaseState, err := a.chase.State(); err != nil || chaseState == commonstate.Canceled {
-		return chaseState, err
+	if s, err := a.chase.State(); (err != nil) || (s == commonstate.Canceled) {
+		return s, err
 	}
 
 	s, err := a.Base.State()
 	if err != nil {
 		return commonstate.Unknown, err
+	}
+
+	projectileState := commonstate.Unknown
+	if a.projectileMove != nil {
+		var err error
+		projectileState, err = a.projectileMove.State()
+		if err != nil {
+			return projectileState, err
+		}
 	}
 
 	// TODO(minkezhang): Account for AttackVelocity and AttackTarget here.
@@ -99,7 +111,9 @@ func (a *Action) State() (fsm.State, error) {
 		if a.source.AttackTimerCurve().Ok(tick) && utils.Euclidean(
 			a.source.Position(tick),
 			a.target.Position(tick),
-		) <= a.source.AttackRange() {
+		) <= a.source.AttackRange() && (projectileState == commonstate.Finished ||
+			projectileState == commonstate.Canceled ||
+			projectileState == commonstate.Unknown) {
 			return commonstate.Executing, a.To(s, commonstate.Executing, true)
 		}
 		return s, nil
