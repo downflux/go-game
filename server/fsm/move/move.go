@@ -71,6 +71,7 @@ func New(
 		tick:          t,
 		executionTick: t,
 		destination:   destination,
+		moveType:      moveType,
 	}
 }
 
