@@ -82,16 +82,27 @@ func TestVisitError(t *testing.T) {
 	const t0 = 0
 	p0 := &gdpb.Position{X: 0, Y: 0}
 
-	v := newVisitor(t)
-	i := move.New(
-		newTank(t, eid, t0, p0),
-		v.status, &gdpb.Position{X: 0, Y: float64(simpleMap.GetDimension().GetY())},
-		move.Default)
-
-	if err := v.Visit(i); err == nil {
-		t.Error("Visit() = nil, want a non-nil error")
+	testConfigs := []struct {
+		name     string
+		moveType move.MoveType
+	}{
+		{name: "TestDefaultMove", moveType: move.Default},
+		{name: "TestDirectMove", moveType: move.Direct},
 	}
 
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			v := newVisitor(t)
+			i := move.New(
+				newTank(t, eid, t0, p0),
+				v.status, &gdpb.Position{X: 0, Y: float64(simpleMap.GetDimension().GetY())},
+				c.moveType)
+
+			if err := v.Visit(i); err == nil {
+				t.Error("Visit() = nil, want a non-nil error")
+			}
+		})
+	}
 }
 
 func TestVisit(t *testing.T) {
@@ -102,6 +113,7 @@ func TestVisit(t *testing.T) {
 
 	testNoMoveVisitor := newVisitor(t)
 	testSimpleMoveVisitor := newVisitor(t)
+	testDirectMoveVisitor := newVisitor(t)
 
 	testConfigs := []struct {
 		name string
@@ -125,6 +137,17 @@ func TestVisit(t *testing.T) {
 				newTank(t, eid, t0, p0),
 				testSimpleMoveVisitor.status, p1,
 				move.Default),
+			want: []dirty.Curve{
+				{EntityID: eid, Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION},
+			},
+		},
+		{
+			name: "TestDirectMove",
+			v:    testDirectMoveVisitor,
+			i: move.New(
+				newTank(t, eid, t0, p0),
+				testDirectMoveVisitor.status, p1,
+				move.Direct),
 			want: []dirty.Curve{
 				{EntityID: eid, Property: gcpb.EntityProperty_ENTITY_PROPERTY_POSITION},
 			},

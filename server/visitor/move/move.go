@@ -7,16 +7,18 @@ import (
 	"github.com/downflux/game/engine/curve/common/linearmove"
 	"github.com/downflux/game/engine/gamestate/dirty"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/downflux/game/engine/status/status"
 	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/downflux/game/map/utils"
 	"github.com/downflux/game/pathing/hpf/astar"
 	"github.com/downflux/game/pathing/hpf/graph"
 	"github.com/downflux/game/server/fsm/commonstate"
 	"github.com/downflux/game/server/fsm/move/move"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	gdpb "github.com/downflux/game/api/data_go_proto"
 	fcpb "github.com/downflux/game/engine/fsm/api/constants_go_proto"
+	serverstatus "github.com/downflux/game/engine/status/status"
 	tile "github.com/downflux/game/map/map"
 )
 
@@ -60,7 +62,7 @@ type Visitor struct {
 
 	// status is a shared object with the game engine and indicates
 	// current tick, etc.
-	status status.ReadOnlyStatus
+	status serverstatus.ReadOnlyStatus
 
 	// dirty is a shared object between the game engine and the Visitor.
 	dirty *dirty.List
@@ -78,7 +80,7 @@ type Visitor struct {
 func New(
 	tileMap *tile.Map,
 	abstractGraph *graph.Graph,
-	dfStatus status.ReadOnlyStatus,
+	dfStatus serverstatus.ReadOnlyStatus,
 	dirtystate *dirty.List,
 	minPathLength int) *Visitor {
 	return &Visitor{
@@ -93,6 +95,39 @@ func New(
 
 // TODO(minkezhang): Remove function.
 func (v *Visitor) Schedule(interface{}) error { return nil }
+
+func (v *Visitor) generatePath(node *move.Action) ([]*tile.Tile, error) {
+	t := node.MoveType()
+	switch t {
+	case move.Default:
+		p, _, err := astar.Path(
+			v.tileMap,
+			v.abstractGraph,
+			utils.MC(coordinate(node.Component().Position(v.status.Tick()))),
+			utils.MC(coordinate(node.Destination())),
+			v.minPathLength,
+		)
+		// TODO(minkezhang): Handle error by logging and continuing.
+		return p, err
+	case move.Direct:
+		if node.Destination().GetX() >= float64(v.tileMap.D.X) ||
+			node.Destination().GetY() >= float64(v.tileMap.D.Y) {
+			return nil, status.Errorf(
+				codes.OutOfRange,
+				"input Tile coordinate %v is outside the map boundary %v",
+				node.Destination(),
+				v.tileMap.D,
+			)
+		}
+
+		// TODO(minkezhang): Check for collisions, e.g. walls.
+		return []*tile.Tile{v.tileMap.TileFromCoordinate(coordinate(node.Destination()))}, nil
+	default:
+		return nil, status.Errorf(
+			codes.Unimplemented,
+			"cannot process move of type %v", t)
+	}
+}
 
 func (v *Visitor) visitFSM(node *move.Action) error {
 	s, err := node.State()
@@ -113,29 +148,27 @@ func (v *Visitor) visitFSM(node *move.Action) error {
 		ticksPerSecond := float64(time.Second / v.status.TickDuration())
 		ticksPerTile := id.Tick(ticksPerSecond / e.MoveVelocity())
 
-		p, _, err := astar.Path(
-			v.tileMap,
-			v.abstractGraph,
-			utils.MC(coordinate(e.Position(tick))),
-			utils.MC(coordinate(node.Destination())),
-			v.minPathLength,
-		)
+		p, err := v.generatePath(node)
 		if err != nil {
-			// TODO(minkezhang): Handle error by logging and continuing.
 			return err
 		}
 
 		// Add to the existing curve, while smoothing out the existing
 		// trajectory.
 		prevPos := e.Position(tick)
+
 		cv := linearmove.New(e.ID(), tick)
 		cv.Add(tick, prevPos)
-		for i, tile := range p {
+
+		tickOffset := id.Tick(0)
+		for _, tile := range p {
 			curPos := position(tile.Val.GetCoordinate())
-			tickDelta := ticksPerTile * id.Tick(utils.Euclidean(prevPos, curPos))
-			cv.Add(tick+id.Tick(i)*ticksPerTile+tickDelta, curPos)
+			distance := utils.Euclidean(prevPos, curPos)
+			tickOffset += ticksPerTile * id.Tick(distance)
+			cv.Add(tick+tickOffset, curPos)
 			prevPos = curPos
 		}
+
 		if err := v.dirty.AddCurve(dirty.Curve{
 			EntityID: e.ID(),
 			Property: c.Property(),
@@ -149,10 +182,15 @@ func (v *Visitor) visitFSM(node *move.Action) error {
 		// Delay next lookup iteration until a suitable time in the
 		// future.
 		//
+		// We only need to do this for A*-generated paths, since direct
+		// paths do not recalculating.
+		//
 		// TODO(minkezhang): Add test for scheduling here.
-		if err := node.SchedulePartialMove(tick + ticksPerTile*id.Tick(len(p))); err != nil {
-			// TODO(minkezhang): Handle error by logging and continuing.
-			return err
+		if node.MoveType() == move.Default {
+			if err := node.SchedulePartialMove(tick + tickOffset); err != nil {
+				// TODO(minkezhang): Handle error by logging and continuing.
+				return err
+			}
 		}
 	default:
 		return nil

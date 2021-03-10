@@ -44,44 +44,8 @@ go_library(
         "//engine/id:id",
         "//server/fsm:commonstate",
         "//server/fsm/move:move",
-    ],
-)
-
-go_library(
-    name = "direct",
-    srcs = ["direct.go"],
-    importpath = "github.com/downflux/game/server/visitor/move/direct",
-    deps = [
-        "//api:data_go_proto",
-        "//engine/curve/common:linearmove",
-        "//engine/entity:entity",
-	"//engine/fsm/api:constants_go_proto",
-        "//engine/gamestate:dirty",
-        "//engine/status:status",
-        "//engine/visitor:visitor",
-        "//map:utils", 
-        "//engine/id:id",
-        "//server/fsm:commonstate",
-        "//server/fsm/move:move",
         "@org_golang_google_grpc//status:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",
-    ],
-)
-
-go_test(
-    name = "direct_test",
-    srcs = ["direct_test.go"],
-    importpath = "github.com/downflux/game/server/visitor/move/direct_test",
-    embed = [":direct"],
-    deps = [
-        "//api:constants_go_proto",
-        "//api:data_go_proto",
-        "//engine/id:id",
-        "//engine/gamestate:dirty",
-        "//engine/status:status",
-        "//server/entity:projectile",
-        "//server/fsm/move:move",
-        "@com_github_google_go_cmp//cmp:go_default_library",
     ],
 )
 

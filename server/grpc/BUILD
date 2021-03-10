@@ -138,7 +138,6 @@ go_library(
         "//server/visitor:produce",
         "//server/visitor/attack:attack",
         "//server/visitor/move:chase",
-        "//server/visitor/move:direct",
         "//server/visitor/move:move",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",

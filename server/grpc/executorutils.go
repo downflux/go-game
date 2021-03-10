@@ -16,7 +16,6 @@ import (
 	"github.com/downflux/game/server/entity/component/targetable"
 	"github.com/downflux/game/server/visitor/attack/attack"
 	"github.com/downflux/game/server/visitor/move/chase"
-	"github.com/downflux/game/server/visitor/move/direct"
 	"github.com/downflux/game/server/visitor/move/move"
 	"github.com/downflux/game/server/visitor/produce"
 	"google.golang.org/grpc/codes"
@@ -59,7 +58,6 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 	fsmSchedule := schedule.New([]fcpb.FSMType{
 		fcpb.FSMType_FSM_TYPE_CHASE,
 		fcpb.FSMType_FSM_TYPE_MOVE,
-		fcpb.FSMType_FSM_TYPE_DIRECT_MOVE,
 		fcpb.FSMType_FSM_TYPE_PRODUCE,
 		fcpb.FSMType_FSM_TYPE_ATTACK,
 	})
@@ -70,7 +68,6 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		chase.New(state.Status(), fsmSchedule),
 		produce.New(state.Status(), state.Entities(), dirtystate),
 		move.New(tm, g, state.Status(), dirtystate, minPathLength),
-		direct.New(state.Status(), dirtystate, tm.D),
 		attack.New(state.Status(), dirtystate, fsmSchedule),
 	})
 	if err != nil {
