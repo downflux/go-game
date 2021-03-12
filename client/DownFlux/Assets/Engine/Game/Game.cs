@@ -35,6 +35,8 @@ namespace DF.Game
         //
         // This is expensive and should only be called once every several
         // ticks.
+        //
+        // TODO(minkezhang): Change to a while loop on Pop() instead.
         public void Merge()
         {
             var s = _listener.Pop();

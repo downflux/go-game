@@ -59,6 +59,23 @@ namespace DF.Game.Client
             return _c.Move(req);
         }
 
+        public DF.Game.API.API.AttackResponse Attack(
+            DF.Game.ID.Tick tick,
+            System.Collections.Generic.List<DF.Game.ID.EntityID> entityIDs,
+            DF.Game.ID.EntityID targetID
+        )
+        {
+            System.Collections.Generic.IEnumerable<string> eids = from eid in entityIDs select eid.String;
+            var req = new DF.Game.API.API.AttackRequest
+            {
+                Tick = tick.Double,
+                ClientId = ID,
+                EntityIds = { eids },
+                TargetEntityId = targetID.String
+            };
+            return _c.Attack(req);
+        }
+
         public async void StreamData(
             System.Threading.CancellationToken ct,
             DF.Game.ID.Tick t,
@@ -74,6 +91,7 @@ namespace DF.Game.Client
 
             try
             {
+                // Process incoming data stream.
                 while (await stream.ResponseStream.MoveNext(ct))
                 {
                     f(stream.ResponseStream.Current);

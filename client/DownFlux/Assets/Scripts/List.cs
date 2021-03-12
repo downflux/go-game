@@ -9,6 +9,7 @@ namespace DF.Unity
     {
 
         public GameObject TankModel;
+        public GameObject ShellModel;
 
         public class Entity
         {

@@ -4,6 +4,9 @@ namespace DF.Game.Curve
         DF.Game.Curve.LinearPosition.LinearPosition
     >
     {
+        public static System.Collections.Generic.HashSet<DF.Game.API.Constants.EntityProperty> ImplementedProperties = new System.Collections.Generic.HashSet<DF.Game.API.Constants.EntityProperty>{
+            DF.Game.API.Constants.EntityProperty.Position
+        };
         public static CurveOneOf Import(DF.Game.API.Data.Curve c)
         {
             switch (c.Property)
