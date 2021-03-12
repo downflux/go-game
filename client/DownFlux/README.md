@@ -59,6 +59,10 @@ different for Windows installs.
 
 ## [Optional] Install Visual Studio Code
 
+N.B.: Occasionally, `mono` and `VSCode` seem to clash for some archaic dark
+magical reason -- we can reinstall VSCode via `apt purge code` to attempt to
+reset behavior.
+
 1. Install [VSCode](https://code.visualstudio.com/docs/setup/linux), taking
    care to go the `apt` update route.
 
