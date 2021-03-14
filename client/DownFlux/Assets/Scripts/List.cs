@@ -42,7 +42,9 @@ namespace DF.Unity
 
         public void Append(DF.Game.Entity.Entity entity)
         {
-            if (_modelLookup.ContainsKey(entity.Type) && !(_entities.ContainsKey(entity.ID)))
+            if (
+                _modelLookup.ContainsKey(entity.Type) && !(
+                    _entities.ContainsKey(entity.ID)))
             {
                 _entities[entity.ID] = new Entity(
                     Instantiate(_modelLookup[entity.Type], transform.position, transform.rotation),
