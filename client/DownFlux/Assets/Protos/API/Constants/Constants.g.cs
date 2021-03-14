@@ -34,10 +34,11 @@ namespace DF.Game.API.Constants {
             "WV9DTElFTlRfSUQQBSqAAQoJQ3VydmVUeXBlEhYKEkNVUlZFX1RZUEVfVU5L",
             "Tk9XThAAEhoKFkNVUlZFX1RZUEVfTElORUFSX01PVkUQARITCg9DVVJWRV9U",
             "WVBFX1NURVAQAhIUChBDVVJWRV9UWVBFX0RFTFRBEAMSFAoQQ1VSVkVfVFlQ",
-            "RV9USU1FUhAEKlgKCkVudGl0eVR5cGUSFwoTRU5USVRZX1RZUEVfVU5LTk9X",
-            "ThAAEhQKEEVOVElUWV9UWVBFX1RBTksQARIbChdFTlRJVFlfVFlQRV9FTlRJ",
-            "VFlfTElTVBACQixaEmdhbWUuYXBpLmNvbnN0YW50c6oCFURGLkdhbWUuQVBJ",
-            "LkNvbnN0YW50c2IGcHJvdG8z"));
+            "RV9USU1FUhAEKnkKCkVudGl0eVR5cGUSFwoTRU5USVRZX1RZUEVfVU5LTk9X",
+            "ThAAEhQKEEVOVElUWV9UWVBFX1RBTksQARIfChtFTlRJVFlfVFlQRV9UQU5L",
+            "X1BST0pFQ1RJTEUQAxIbChdFTlRJVFlfVFlQRV9FTlRJVFlfTElTVBACQixa",
+            "EmdhbWUuYXBpLmNvbnN0YW50c6oCFURGLkdhbWUuQVBJLkNvbnN0YW50c2IG",
+            "cHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::DF.Game.API.Constants.MoveType), typeof(global::DF.Game.API.Constants.EntityProperty), typeof(global::DF.Game.API.Constants.CurveType), typeof(global::DF.Game.API.Constants.EntityType), }, null, null));
@@ -88,6 +89,7 @@ namespace DF.Game.API.Constants {
   public enum EntityType {
     [pbr::OriginalName("ENTITY_TYPE_UNKNOWN")] Unknown = 0,
     [pbr::OriginalName("ENTITY_TYPE_TANK")] Tank = 1,
+    [pbr::OriginalName("ENTITY_TYPE_TANK_PROJECTILE")] TankProjectile = 3,
     /// <summary>
     /// Server-only entity types.
     /// </summary>

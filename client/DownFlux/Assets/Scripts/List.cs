@@ -7,7 +7,8 @@ namespace DF.Unity
 
     public class List : MonoBehaviour
     {
-
+        private System.Collections.Generic.Dictionary<
+            DF.Game.API.Constants.EntityType, GameObject> _modelLookup;
         public GameObject TankModel;
         public GameObject ShellModel;
 
@@ -41,26 +42,24 @@ namespace DF.Unity
 
         public void Append(DF.Game.Entity.Entity entity)
         {
-            switch (entity.Type)
+            if (_modelLookup.ContainsKey(entity.Type) && !(_entities.ContainsKey(entity.ID)))
             {
-                case DF.Game.API.Constants.EntityType.Tank:
-                    if (_entities.ContainsKey(entity.ID))
-                    {
-                        return;
-                    }
-                    _entities[entity.ID] = new Entity(
-                        Instantiate(TankModel, transform.position, transform.rotation),
-                        entity
-                    );
-                    break;
+                _entities[entity.ID] = new Entity(
+                    Instantiate(_modelLookup[entity.Type], transform.position, transform.rotation),
+                    entity
+                );
             }
-
         }
 
         // Start is called before the first frame update
         void Start()
         {
             _entities = new System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, Entity>();
+            _modelLookup = new System.Collections.Generic.Dictionary<
+            DF.Game.API.Constants.EntityType, GameObject>{
+                { DF.Game.API.Constants.EntityType.Tank, TankModel },
+                { DF.Game.API.Constants.EntityType.TankProjectile, ShellModel }
+            };
         }
 
         // Update is called once per frame
