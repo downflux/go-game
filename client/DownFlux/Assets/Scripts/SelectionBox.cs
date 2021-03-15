@@ -75,8 +75,15 @@ public class SelectionBox : MonoBehaviour
             {
                 // Get selected units bound by selection box projection.
                 _selected = GetComponent<DF.Unity.List>().Filter(
-                    DF.Unity.Filters.FilterByProjectedPosition(
-                        p0, p1, cam));
+                    DF.Unity.Filters.And(
+                        DF.Unity.Filters.Not(
+                            DF.Unity.Filters.FilterByEntityTypes(
+                                DF.Game.API.Constants.EntityType.TankProjectile
+                            )
+                        ),
+                        DF.Unity.Filters.FilterByProjectedPosition(
+                            p0, p1, cam))
+                    );
             }
         }
     }
