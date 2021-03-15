@@ -21,7 +21,7 @@ namespace DF.Unity
         {
             return new DF.Unity.F((DF.Unity.List.Entity e) => !a(e));
         }
-        public static DF.Unity.F FilterByEntityTypes(params DF.Game.API.Constants.EntityType[] ets)
+        public static DF.Unity.F ByEntityTypes(params DF.Game.API.Constants.EntityType[] ets)
         {
             return new DF.Unity.F((DF.Unity.List.Entity e) =>
             {
@@ -36,7 +36,7 @@ namespace DF.Unity
                 return false;
             });
         }
-        public static DF.Unity.F FilterByProjectedPosition(Vector2 p0, Vector2 p1, Camera camera)
+        public static DF.Unity.F ByProjectedPosition(Vector2 p0, Vector2 p1, Camera camera)
         {
             return new DF.Unity.F((DF.Unity.List.Entity e) =>
             {

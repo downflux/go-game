@@ -77,11 +77,11 @@ public class SelectionBox : MonoBehaviour
                 _selected = GetComponent<DF.Unity.List>().Filter(
                     DF.Unity.Filters.And(
                         DF.Unity.Filters.Not(
-                            DF.Unity.Filters.FilterByEntityTypes(
+                            DF.Unity.Filters.ByEntityTypes(
                                 DF.Game.API.Constants.EntityType.TankProjectile
                             )
                         ),
-                        DF.Unity.Filters.FilterByProjectedPosition(
+                        DF.Unity.Filters.ByProjectedPosition(
                             p0, p1, cam))
                     );
             }
