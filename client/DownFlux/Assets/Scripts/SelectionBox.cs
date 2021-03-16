@@ -13,6 +13,7 @@ public class SelectionBox : MonoBehaviour
     private RaycastHit _hit;
     private bool _isDown;
     private const int _primaryButton = 0;
+    private const int _secondaryButton = 1;
     private List<DF.Game.ID.EntityID> _selected;
 
     // Start is called before the first frame update
@@ -26,7 +27,9 @@ public class SelectionBox : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(_primaryButton) || (!Input.GetMouseButtonUp(_primaryButton) && _isDown))
+        if (
+            Input.GetMouseButtonDown(_primaryButton) || (
+            !Input.GetMouseButtonUp(_primaryButton) && _isDown))
         {
             if (Input.GetMouseButtonDown(_primaryButton))
             {
@@ -68,7 +71,10 @@ public class SelectionBox : MonoBehaviour
                         DF.Game.API.Constants.MoveType.Forward
                     );
 
-                    print(string.Format("DEBUG(minkezhang): Moving to ({0}, {1})", _hit.point.x + 0.5, _hit.point.z + 0.5));
+                    print(
+                        string.Format(
+                            "DEBUG(minkezhang): Moving to ({0}, {1})",
+                            _hit.point.x + 0.5, _hit.point.z + 0.5));
                 }
             }
             else
@@ -84,6 +90,22 @@ public class SelectionBox : MonoBehaviour
                         DF.Unity.Filters.ByProjectedPosition(
                             p0, p1, cam))
                     );
+            }
+        }
+        else if (
+            Input.GetMouseButtonUp(_secondaryButton))
+        {
+            var mousePos = Input.mousePosition;
+            Ray r = cam.ScreenPointToRay(mousePos);
+
+            if (Physics.Raycast(r, out _hit, 50000, LayerMask.GetMask("Entities")))
+            {
+                var e = GetComponent<DF.Unity.List>().GetByInstanceID(_hit.transform.gameObject.GetInstanceID());
+                GetComponent<DF.Unity.Game>().Client.Attack(
+                    GetComponent<DF.Unity.Game>().Tick,
+                    _selected,
+                    e.E.ID
+                );
             }
         }
     }
