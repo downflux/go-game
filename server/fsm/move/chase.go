@@ -86,6 +86,12 @@ func (a *Action) Precedence(other action.Action) bool {
 		return false
 	}
 
+	// Move is only set during execution -- it's possible that the visitor
+	// has not yet scheduled a move.
+	if a.move == nil || other.(*Action).move == nil {
+		return true
+	}
+
 	return a.move.Precedence(other.(*Action).move)
 }
 

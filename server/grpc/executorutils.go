@@ -15,6 +15,7 @@ import (
 	"github.com/downflux/game/server/entity/component/moveable"
 	"github.com/downflux/game/server/entity/component/targetable"
 	"github.com/downflux/game/server/visitor/attack/attack"
+	"github.com/downflux/game/server/visitor/attack/projectile"
 	"github.com/downflux/game/server/visitor/move/chase"
 	"github.com/downflux/game/server/visitor/move/move"
 	"github.com/downflux/game/server/visitor/produce"
@@ -60,14 +61,16 @@ func New(pb *mdpb.TileMap, d *gdpb.Coordinate, tickDuration time.Duration, minPa
 		fcpb.FSMType_FSM_TYPE_MOVE,
 		fcpb.FSMType_FSM_TYPE_PRODUCE,
 		fcpb.FSMType_FSM_TYPE_ATTACK,
+		fcpb.FSMType_FSM_TYPE_PROJECTILE_SHOOT,
 	})
 
 	state := gamestate.New(serverstatus.New(tickDuration), entitylist.New())
 	dirtystate := dirty.New()
 	visitors, err := visitorlist.New([]visitor.Visitor{
-		chase.New(state.Status(), fsmSchedule),
 		produce.New(state.Status(), state.Entities(), dirtystate),
 		move.New(tm, g, state.Status(), dirtystate, minPathLength),
+		projectile.New(state.Status(), dirtystate),
+		chase.New(state.Status(), fsmSchedule),
 		attack.New(state.Status(), dirtystate, fsmSchedule),
 	})
 	if err != nil {

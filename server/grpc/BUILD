@@ -137,6 +137,7 @@ go_library(
         "//server/fsm/move:move",
         "//server/visitor:produce",
         "//server/visitor/attack:attack",
+        "//server/visitor/attack:projectile",
         "//server/visitor/move:chase",
         "//server/visitor/move:move",
         "@org_golang_google_grpc//codes:go_default_library",
