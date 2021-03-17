@@ -38,44 +38,83 @@ func TestMerge(t *testing.T) {
 	const eid = "entity-id"
 	aid := id.ActionID("action-id")
 
-	testConfigs := []struct {
-		name    string
-		s1Types []fcpb.FSMType
-		s2Types []fcpb.FSMType
+	type sc struct {
+		ts      []fcpb.FSMType
 		actions []action.Action
-		want    []action.Action
+	}
+
+	testPrecedenceReferencedActionLow := simple.New(aid, 0)
+	testPrecedenceReferencedActionHigh := simple.New(aid, 1)
+
+	testConfigs := []struct {
+		name string
+		s1   sc
+		s2   sc
+		want []action.Action
 	}{
 		{
-			name:    "TestSimpleMerge",
-			s1Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
-			s2Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
-			actions: []action.Action{
-				simple.New(aid, 0),
+			name: "TestSimpleMerge",
+
+			s1: sc{
+				ts: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
+				actions: []action.Action{
+					simple.New(aid, 0),
+				},
 			},
+			s2: sc{
+				ts: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
+			},
+
 			want: []action.Action{
 				simple.New(aid, 0),
 			},
 		},
 		{
-			name:    "TestMergeFilter",
-			s1Types: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
-			s2Types: nil,
-			actions: []action.Action{
-				simple.New(aid, 0),
+			name: "TestMergeFilter",
+
+			s1: sc{
+				ts: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
+				actions: []action.Action{
+					simple.New(aid, 0),
+				},
 			},
+			s2: sc{ts: nil},
+
 			want: nil,
+		},
+		// TODO(minkezhang): Move to list_test instead.
+		{
+			name: "TestPrecedence",
+
+			s1: sc{
+				ts: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
+				actions: []action.Action{
+					testPrecedenceReferencedActionHigh,
+				},
+			},
+			s2: sc{
+				ts: []fcpb.FSMType{fcpb.FSMType_FSM_TYPE_MOVE},
+				actions: []action.Action{
+					testPrecedenceReferencedActionLow,
+				},
+			},
+
+			want: []action.Action{
+				testPrecedenceReferencedActionHigh,
+			},
 		},
 	}
 
 	for _, c := range testConfigs {
 		t.Run(c.name, func(t *testing.T) {
-			s1 := New(c.s1Types)
-			s2 := New(c.s2Types)
+			s1 := New(c.s1.ts)
+			s2 := New(c.s2.ts)
 
-			for _, i := range c.actions {
-				if err := s1.Extend([]action.Action{i}); err != nil {
-					t.Fatalf("Extend() = %v, want = nil", err)
-				}
+			if err := s1.Extend(c.s1.actions); err != nil {
+				t.Fatalf("Extend() = %v, want = nil", err)
+			}
+			if err := s2.Extend(c.s2.actions); err != nil {
+				t.Fatalf("Extend() = %v, want = nil", err)
 			}
 
 			if err := s2.Merge(s1); err != nil {
@@ -88,6 +127,10 @@ func TestMerge(t *testing.T) {
 				}
 			}
 		})
+	}
+
+	if s, err := testPrecedenceReferencedActionLow.State(); err != nil || s != simple.Canceled {
+		t.Errorf("State() = %v, %v, want = %v, nil", s, err, simple.Canceled)
 	}
 }
 

@@ -7,7 +7,6 @@ import (
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/fsm/mock/simple"
 	"github.com/downflux/game/engine/id/id"
-	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 

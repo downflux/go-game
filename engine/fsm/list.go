@@ -58,6 +58,7 @@ func (l *List) Accept(v visitor.Visitor) error {
 	return eg.Wait()
 }
 
+// Merge replaces internal FSMs with FSMs of higher priority.
 func (l *List) Merge(j *List) error {
 	// TODO(minkezhang): Consider making this concurrent.
 	for _, i := range j.actions {

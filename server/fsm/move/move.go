@@ -72,10 +72,10 @@ func New(
 		executionTick: t,
 		// TODO(minkezhang): Change to original position after mesh nav
 		// migration.
-		destination:   &gdpb.Position{
+		destination: &gdpb.Position{
 			X: float64(int(destination.GetX())),
 			Y: float64(int(destination.GetY()))},
-		moveType:      moveType,
+		moveType: moveType,
 	}
 }
 
