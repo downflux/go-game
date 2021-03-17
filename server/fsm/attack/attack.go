@@ -35,6 +35,7 @@ var (
 		{From: commonstate.Pending, To: commonstate.Finished, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Canceled},
 		{From: commonstate.Executing, To: commonstate.Canceled},
+		{From: commonstate.Canceled, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
