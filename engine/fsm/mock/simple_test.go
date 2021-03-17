@@ -60,37 +60,10 @@ func TestPrecedence(t *testing.T) {
 }
 
 func TestCancel(t *testing.T) {
-	cancelAction := New(id.ActionID("entity-id"), 0)
-	if err := cancelAction.Cancel(); err != nil {
+	n := New(id.ActionID("entity-id"), 0)
+
+	err := n.Cancel()
+	if err != nil {
 		t.Fatalf("Cancel() = %v, want = nil", err)
-	}
-
-	testConfigs := []struct {
-		name    string
-		action  *Action
-		success bool
-	}{
-		{
-			name:    "PendingCancelTransition",
-			action:  New(id.ActionID("entity-id"), 0),
-			success: true,
-		},
-		{
-			name:    "InvalidCancel",
-			action:  cancelAction,
-			success: false,
-		},
-	}
-
-	for _, c := range testConfigs {
-		t.Run(c.name, func(t *testing.T) {
-			err := c.action.Cancel()
-			if c.success && err != nil {
-				t.Fatalf("Cancel() = %v, want = nil", err)
-			}
-			if !c.success && err == nil {
-				t.Error("Cancel() = nil, want a non-nil error")
-			}
-		})
 	}
 }

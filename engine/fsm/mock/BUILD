@@ -25,3 +25,27 @@ go_test(
         "//engine/id:id",
     ],
 )
+
+go_library(
+    name = "dependent",
+    srcs = [":dependent.go"],
+    importpath = "github.com/downflux/game/engine/fsm/mock/dependent",
+    deps = [
+        ":simple",
+        "//engine/id:id",
+        "//engine/fsm:fsm",
+    ]
+)
+
+go_test(
+    name = "dependent_test",
+    srcs = ["dependent_test.go"],
+    importpath = "github.com/downflux/game/engine/fsm/mock/dependent_test",
+    embed = [":dependent"],
+    deps = [
+        ":simple",
+        "//engine/fsm:action",
+        "//engine/fsm:fsm",
+        "//engine/id:id",
+    ],
+)

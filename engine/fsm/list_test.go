@@ -7,6 +7,7 @@ import (
 	"github.com/downflux/game/engine/fsm/fsm"
 	"github.com/downflux/game/engine/fsm/mock/simple"
 	"github.com/downflux/game/engine/id/id"
+	"github.com/downflux/game/engine/visitor/visitor"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -16,6 +17,9 @@ import (
 const (
 	fsmType = fcpb.FSMType_FSM_TYPE_MOVE
 )
+
+func TestDelete(t *testing.T) {
+}
 
 func TestNew(t *testing.T) {
 	l := New(fsmType)

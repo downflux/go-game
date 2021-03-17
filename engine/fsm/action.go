@@ -37,11 +37,6 @@ func (n *Base) State() (fsm.State, error) { return n.state, nil }
 func (n *Base) Type() fcpb.FSMType        { return n.fsm.Type() }
 
 func (n *Base) To(f fsm.State, t fsm.State, virtual bool) error {
-	// A transition to the same state is interpreted as a no-op.
-	if f == t {
-		return nil
-	}
-
 	exists, virtualOnly := n.fsm.Exists(f, t)
 	if !exists {
 		return status.Errorf(codes.FailedPrecondition, "no %v transition exists between the %v and %v states", n.Type(), f, t)
