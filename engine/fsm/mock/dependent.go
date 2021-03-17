@@ -22,6 +22,8 @@ func New(aid id.ActionID, priority int, child *Action) *Action {
 	}
 }
 
+func (n *Action) Child() *Action { return n.child }
+
 func (n *Action) State() (fsm.State, error) {
 	if n.child != nil {
 		s, err := n.child.State()

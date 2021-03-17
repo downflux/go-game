@@ -5,6 +5,7 @@ import (
 
 	"github.com/downflux/game/engine/fsm/action"
 	"github.com/downflux/game/engine/fsm/fsm"
+	"github.com/downflux/game/engine/fsm/mock/dependent"
 	"github.com/downflux/game/engine/fsm/mock/simple"
 	"github.com/downflux/game/engine/id/id"
 	"github.com/google/go-cmp/cmp"
@@ -17,7 +18,30 @@ const (
 	fsmType = fcpb.FSMType_FSM_TYPE_MOVE
 )
 
-func TestDelete(t *testing.T) {
+func TestRemove(t *testing.T) {
+	cid := id.ActionID("child-id")
+	pid := id.ActionID("parent-id")
+
+	l := New(fsmType)
+
+	c := dependent.New(cid, 0, nil)
+	p := dependent.New(pid, 0, c)
+
+	if err := l.Add(c); err != nil {
+		t.Fatalf("Add() = %v, want = nil", err)
+	}
+	if err := l.Remove(cid); err != nil {
+		t.Fatalf("Remove() = %v, want = nil", err)
+	}
+
+	// Ensure removing an FSM reference does not garbage collect the FSM.
+	// This is necessary for chaining FSMs.
+	if p.Child() == nil {
+		t.Fatal("Child() = nil, want a non-nil value")
+	}
+	if got := p.Child().ID(); got != cid {
+		t.Errorf("ID() = %v, want = %v", got, cid)
+	}
 }
 
 func TestNew(t *testing.T) {
