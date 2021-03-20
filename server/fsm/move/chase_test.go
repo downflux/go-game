@@ -70,6 +70,28 @@ func TestPrecedence(t *testing.T) {
 	}
 }
 
+func TestCancel(t *testing.T) {
+	a := newAction(
+		status.New(0),
+		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
+		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: chaseRadius}),
+	)
+	if err := a.SetMove(GenerateMove(a)); err != nil {
+		t.Fatalf("SetMove() = %v, want = nil", err)
+	}
+
+	if err := a.Cancel(); err != nil {
+		t.Fatalf("Cancel() = %v, want = nil", err)
+	}
+
+	for _, a := range []action.Action{a, a.move} {
+		want := commonstate.Canceled
+		if got, err := a.State(); err != nil || got != want {
+			t.Fatalf("State() = %v, %v, want = %v, nil", got, err, want)
+		}
+	}
+}
+
 func TestState(t *testing.T) {
 	actionWithMoveInRange := newAction(
 		status.New(0),
