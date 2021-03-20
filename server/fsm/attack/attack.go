@@ -43,9 +43,9 @@ var (
 
 type Action struct {
 	*action.Base
-	chase          *chase.Action      // Read-only.
-	tick           id.Tick            // Read-only.
-	projectileMove *projectile.Action // Read-only.
+	chase          *chase.Action // Read-only.
+	tick           id.Tick       // Read-only.
+	projectileMove *projectile.Action
 
 	status status.ReadOnlyStatus // Read-only.
 	source attackable.Component  // Read-only.

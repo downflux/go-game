@@ -173,3 +173,41 @@ func TestState(t *testing.T) {
 		})
 	}
 }
+
+func TestCancel(t *testing.T) {
+	status := status.New(0)
+	source := newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}, nil)
+	target := newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}, nil)
+
+	a := newAction(status, source, target)
+	m := move.New(
+		source,
+		status,
+		target.Position(status.Tick()),
+		move.Direct)
+	pm := projectileaction.New(source, target, m)
+	a.SetProjectileMove(pm)
+
+	if err := a.Cancel(); err != nil {
+		t.Fatalf("Cancel() = %v, want = nil", err)
+	}
+
+	testConfigs := []struct {
+		name string
+		a    action.Action
+		want fsm.State
+	}{
+		{name: "TestAttackCancel", a: a, want: commonstate.Canceled},
+		{name: "TestChaseCancel", a: a.chase, want: commonstate.Canceled},
+		{name: "TestProjectileMoveNoCancel", a: pm, want: commonstate.Pending},
+		{name: "TestMoveNoCancel", a: m, want: commonstate.Executing},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			if got, err := c.a.State(); err != nil || got != c.want {
+				t.Errorf("State() = %v, %v, want = %v, nil", got, err, c.want)
+			}
+		})
+	}
+}
