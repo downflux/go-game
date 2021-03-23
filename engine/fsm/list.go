@@ -42,7 +42,7 @@ func (l *List) Clear() error {
 			return err
 		}
 		if s == fsm.State(fcpb.CommonState_COMMON_STATE_CANCELED.String()) || s == fsm.State(fcpb.CommonState_COMMON_STATE_FINISHED.String()) {
-			delete(l.actions, iid)
+			l.Remove(iid)
 		}
 	}
 	return nil
@@ -58,6 +58,7 @@ func (l *List) Accept(v visitor.Visitor) error {
 	return eg.Wait()
 }
 
+// Merge replaces internal FSMs with FSMs of higher priority.
 func (l *List) Merge(j *List) error {
 	// TODO(minkezhang): Consider making this concurrent.
 	for _, i := range j.actions {

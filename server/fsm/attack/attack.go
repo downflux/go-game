@@ -35,6 +35,7 @@ var (
 		{From: commonstate.Pending, To: commonstate.Finished, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Canceled},
 		{From: commonstate.Executing, To: commonstate.Canceled},
+		{From: commonstate.Canceled, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
@@ -42,9 +43,9 @@ var (
 
 type Action struct {
 	*action.Base
-	chase          *chase.Action      // Read-only.
-	tick           id.Tick            // Read-only.
-	projectileMove *projectile.Action // Read-only.
+	chase          *chase.Action // Read-only.
+	tick           id.Tick       // Read-only.
+	projectileMove *projectile.Action
 
 	status status.ReadOnlyStatus // Read-only.
 	source attackable.Component  // Read-only.

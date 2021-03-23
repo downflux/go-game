@@ -7,11 +7,15 @@ namespace DF.Unity
 
     public class List : MonoBehaviour
     {
-
+        private System.Collections.Generic.Dictionary<
+            DF.Game.API.Constants.EntityType, GameObject> _modelLookup;
         public GameObject TankModel;
+        public GameObject ShellModel;
 
         public class Entity
         {
+            // TODO(minkezhang): Consider ways to encapsulate entity data in
+            // the GameObject itself instead.
             private GameObject _o;
             private DF.Game.Entity.Entity _e;
 
@@ -35,31 +39,43 @@ namespace DF.Unity
         }
 
         private System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, Entity> _entities;
+        private System.Collections.Generic.Dictionary<int, DF.Game.ID.EntityID> _instanceIDs;
 
         public Entity Get(DF.Game.ID.EntityID id) => _entities[id];
 
         public void Append(DF.Game.Entity.Entity entity)
         {
-            switch (entity.Type)
+            if (
+                _modelLookup.ContainsKey(entity.Type) && !(
+                    _entities.ContainsKey(entity.ID)))
             {
-                case DF.Game.API.Constants.EntityType.Tank:
-                    if (_entities.ContainsKey(entity.ID))
-                    {
-                        return;
-                    }
-                    _entities[entity.ID] = new Entity(
-                        Instantiate(TankModel, transform.position, transform.rotation),
-                        entity
-                    );
-                    break;
+                var e = new Entity(
+                    Instantiate(
+                        _modelLookup[entity.Type],
+                        transform.position,
+                        transform.rotation),
+                    entity
+                );
+                e.O.layer = LayerMask.NameToLayer("Entities");
+                _entities[entity.ID] = e;
+                _instanceIDs[e.O.GetInstanceID()] = e.E.ID;
             }
-
         }
+        public Entity GetByInstanceID(int id) => GetByEntityID(_instanceIDs[id]);
+        public Entity GetByEntityID(DF.Game.ID.EntityID eid) => _entities[eid];
+
 
         // Start is called before the first frame update
         void Start()
         {
             _entities = new System.Collections.Generic.Dictionary<DF.Game.ID.EntityID, Entity>();
+            _instanceIDs = new System.Collections.Generic.Dictionary<int, DF.Game.ID.EntityID>();
+
+            _modelLookup = new System.Collections.Generic.Dictionary<
+            DF.Game.API.Constants.EntityType, GameObject>{
+                { DF.Game.API.Constants.EntityType.Tank, TankModel },
+                { DF.Game.API.Constants.EntityType.TankProjectile, ShellModel }
+            };
         }
 
         // Update is called once per frame

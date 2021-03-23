@@ -1,9 +1,13 @@
+// Listener implements a consumer for the API StreamData API.
 namespace DF.Game.Entity.Listener
 {
     // LastState overwrites the internal cache with new gRPC server updates.
     //
     // For (playable) game clients, we don't need to rewind into the past, so
     // there's no point in storing corrected past data.
+    //
+    // TODO(minkezhang): Address this assumption -- if e.g. a state adds a new
+    // Entity, we need to ensure the entity actually exists going forward.
     public class LastState
     {
         private System.Threading.ReaderWriterLock _l;
@@ -18,6 +22,7 @@ namespace DF.Game.Entity.Listener
             _serverTick = new DF.Game.ID.Tick(0);
         }
 
+        // Pop returns the last received state from StreamData.
         public DF.Game.Entity.List Pop()
         {
             DF.Game.Entity.List v;
@@ -34,6 +39,7 @@ namespace DF.Game.Entity.Listener
             return v;
         }
 
+        // Set stores the internal cache for next state query.
         public void Set(DF.Game.ID.Tick t, DF.Game.Entity.List v)
         {
             try

@@ -40,7 +40,7 @@ namespace DF.Game.Entity
 
                 }
                 // TODO(minkezhang): Make this import all curves.
-                if (c.Property == DF.Game.API.Constants.EntityProperty.Position)
+                if (DF.Game.Curve.CurveOneOf.ImplementedProperties.Contains(c.Property))
                 {
                     Entity(eid).Curves.Add(DF.Game.Curve.CurveOneOf.Import(c));
                 }
@@ -79,15 +79,18 @@ namespace DF.Game.Entity
             }
         }
 
-        public List Filter(F f) {
+        public List Filter(F f)
+        {
             var l = new List(null, delegate (DF.Game.Entity.Entity _) { });
-            foreach(var e in _entities.Values) {
-                if (f(e)) {
+            foreach (var e in _entities.Values)
+            {
+                if (f(e))
+                {
                     // e is a reference here.
                     l.Append(e);
                 }
             }
             return l;
         }
-    }       
+    }
 }

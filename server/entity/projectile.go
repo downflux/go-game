@@ -57,7 +57,7 @@ func New(eid id.EntityID, t id.Tick, pos *gdpb.Position, cid id.ClientID) (*Enti
 
 	return &Entity{
 		Base: *entity.New(
-			gcpb.EntityType_ENTITY_TYPE_TANK, eid, cidc),
+			gcpb.EntityType_ENTITY_TYPE_TANK_PROJECTILE, eid, cidc),
 		moveComponent:     *moveable.New(moveVelocity),
 		positionComponent: *positionable.New(mc),
 		curveComponent:    *curvecomponent.New(curves),

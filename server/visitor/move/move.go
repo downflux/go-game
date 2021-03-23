@@ -93,9 +93,6 @@ func New(
 	}
 }
 
-// TODO(minkezhang): Remove function.
-func (v *Visitor) Schedule(interface{}) error { return nil }
-
 func (v *Visitor) generatePath(node *move.Action) ([]*tile.Tile, error) {
 	t := node.MoveType()
 	switch t {

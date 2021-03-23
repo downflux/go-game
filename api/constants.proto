@@ -42,6 +42,7 @@ enum CurveType {
 enum EntityType {
   ENTITY_TYPE_UNKNOWN = 0;
   ENTITY_TYPE_TANK = 1;
+  ENTITY_TYPE_TANK_PROJECTILE = 3;
 
   // Server-only entity types.
   ENTITY_TYPE_ENTITY_LIST = 2;

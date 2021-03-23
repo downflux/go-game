@@ -37,6 +37,7 @@ go_test(
         ":action",
         ":fsm",
         "//engine/fsm/api:constants_go_proto",
+        "//engine/fsm/mock:dependent",
         "//engine/fsm/mock:simple",
         "//engine/id:id",
         "@com_github_google_go_cmp//cmp:go_default_library",

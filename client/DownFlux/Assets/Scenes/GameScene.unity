@@ -298,6 +298,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TankModel: {fileID: 5345973440485480377, guid: 662f207c97702a03ab6de956c698c0bb,
     type: 3}
+  ShellModel: {fileID: 3519973388709559371, guid: 4ed290c41e27efba4908d16808c742c7,
+    type: 3}
 --- !u!114 &700643717
 MonoBehaviour:
   m_ObjectHideFlags: 0

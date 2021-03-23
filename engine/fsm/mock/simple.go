@@ -18,6 +18,7 @@ const (
 var (
 	transitions = []fsm.Transition{
 		{From: Pending, To: Canceled},
+		{From: Canceled, To: Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)

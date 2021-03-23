@@ -35,6 +35,7 @@ var (
 		{From: commonstate.Pending, To: commonstate.Executing, VirtualOnly: true},
 		{From: commonstate.Pending, To: OutOfRange, VirtualOnly: true},
 		{From: commonstate.Pending, To: commonstate.Canceled},
+		{From: commonstate.Canceled, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
@@ -49,6 +50,7 @@ type chaseRange struct {
 type Action struct {
 	*action.Base
 
+	tick        id.Tick               // Read-only.
 	source      moveable.Component    // Read-only.
 	destination targetable.Component  // Read-only.
 	chaseRadius float64               // Read-only.
@@ -57,18 +59,26 @@ type Action struct {
 	move *move.Action
 }
 
-func New(dfStatus status.ReadOnlyStatus, source moveable.Component, destination targetable.Component) *Action {
+func New(
+	dfStatus status.ReadOnlyStatus,
+	source moveable.Component,
+	destination targetable.Component) *Action {
 	return &Action{
 		Base:        action.New(FSM, commonstate.Pending),
 		source:      source,
 		destination: destination,
 		chaseRadius: chaseRadius,
 		status:      dfStatus,
+		tick:        dfStatus.Tick(),
 	}
 }
 
 func GenerateMove(a *Action) *move.Action {
-	return move.New(a.Source(), a.Status(), a.Destination().Position(a.Status().Tick()), move.Default)
+	return move.New(
+		a.Source(),
+		a.Status(),
+		a.Destination().Position(a.Status().Tick()),
+		move.Default)
 }
 func (a *Action) Accept(v visitor.Visitor) error    { return v.Visit(a) }
 func (a *Action) Source() moveable.Component        { return a.source }
@@ -81,12 +91,14 @@ func (a *Action) SetMove(m *move.Action) error {
 	return nil
 }
 
-func (a *Action) Precedence(other action.Action) bool {
-	if other.Type() != fsmType {
+func (a *Action) Precedence(o action.Action) bool {
+	if o.Type() != fsmType {
 		return false
 	}
 
-	return a.move.Precedence(other.(*Action).move)
+	b := o.(*Action)
+
+	return a.tick >= b.tick && a.destination != b.destination
 }
 
 func (a *Action) State() (fsm.State, error) {

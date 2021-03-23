@@ -31,6 +31,7 @@ var (
 		{From: commonstate.Pending, To: commonstate.Canceled},
 		{From: commonstate.Pending, To: commonstate.Finished, VirtualOnly: true},
 		{From: commonstate.Executing, To: commonstate.Canceled},
+		{From: commonstate.Canceled, To: commonstate.Canceled},
 	}
 
 	FSM = fsm.New(transitions, fsmType)
@@ -70,8 +71,12 @@ func New(
 		status:        dfStatus,
 		tick:          t,
 		executionTick: t,
-		destination:   destination,
-		moveType:      moveType,
+		// TODO(minkezhang): Change to original position after mesh nav
+		// migration.
+		destination: &gdpb.Position{
+			X: float64(int(destination.GetX())),
+			Y: float64(int(destination.GetY()))},
+		moveType: moveType,
 	}
 }
 

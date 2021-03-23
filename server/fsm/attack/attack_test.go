@@ -35,10 +35,46 @@ func newTank(
 	return tankEntity
 }
 
-func newAction(source *tank.Entity, dest *tank.Entity) *Action {
+func newAction(status *status.Status, source *tank.Entity, dest *tank.Entity) *Action {
+	chaseAction := chase.New(status, source, dest)
+	return New(status, source, dest, chaseAction)
+}
+
+func TestPrecedence(t *testing.T) {
 	s := status.New(0)
-	chaseAction := chase.New(s, source, dest)
-	return New(s, source, dest, chaseAction)
+	source := newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}, nil)
+	t1 := newTank(t, "target-1", 0, &gdpb.Position{X: 0, Y: 1}, nil)
+	t2 := newTank(t, "target-2", 0, &gdpb.Position{X: 0, Y: 1}, nil)
+
+	attackTargetLow := newAction(s, source, t1)
+	attackDiffTargetLow := newAction(s, source, t2)
+
+	s.IncrementTick()
+
+	attackTargetHigh := newAction(s, source, t1)
+	attackDiffTargetHigh := newAction(s, source, t2)
+
+	testConfigs := []struct {
+		name string
+		a1   *Action
+		a2   *Action
+		want bool
+	}{
+		{name: "TestSameTickSameTarget", a1: attackTargetLow, a2: attackTargetLow, want: false},
+		{name: "TestDiffTickSameTarget", a1: attackTargetHigh, a2: attackTargetLow, want: false},
+		{name: "TestDiffTickSameTargetReverse", a1: attackTargetLow, a2: attackTargetHigh, want: false},
+		{name: "TestSameTickDiffTarget", a1: attackDiffTargetLow, a2: attackTargetLow, want: true},
+		{name: "TestDiffTickDiffTarget", a1: attackDiffTargetHigh, a2: attackTargetLow, want: true},
+		{name: "TestDiffTickDiffTargetReverse", a1: attackDiffTargetLow, a2: attackTargetHigh, want: false},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			if got := c.a1.Precedence(c.a2); got != c.want {
+				t.Fatalf("Precedence() = %v, want = %v", got, c.want)
+			}
+		})
+	}
 }
 
 func TestState(t *testing.T) {
@@ -62,6 +98,7 @@ func TestState(t *testing.T) {
 	pendingAttackAction.SetProjectileMove(pendingProjectileAction)
 
 	chaseCanceledAction := newAction(
+		status.New(0),
 		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}, nil),
 		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}, nil),
 	)
@@ -70,6 +107,7 @@ func TestState(t *testing.T) {
 	}
 
 	targetDeadAction := newAction(
+		status.New(0),
 		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}, nil),
 		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}, nil),
 	)
@@ -78,6 +116,7 @@ func TestState(t *testing.T) {
 	}
 
 	targetNotReady := newAction(
+		status.New(0),
 		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}, nil),
 		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}, nil),
 	)
@@ -87,11 +126,13 @@ func TestState(t *testing.T) {
 
 	targetOutOfRangeSource := newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}, nil)
 	targetOutOfRange := newAction(
+		status.New(0),
 		targetOutOfRangeSource,
 		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: targetOutOfRangeSource.AttackRange() + 1}, nil),
 	)
 
 	attackCanceled := newAction(
+		status.New(0),
 		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}, nil),
 		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}, nil),
 	)
@@ -114,6 +155,7 @@ func TestState(t *testing.T) {
 		{
 			name: "TestExecuting",
 			a: newAction(
+				status.New(0),
 				newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}, nil),
 				newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 0}, nil),
 			),
@@ -121,6 +163,44 @@ func TestState(t *testing.T) {
 		},
 		{name: "TestCancel", a: attackCanceled, want: commonstate.Canceled},
 		{name: "TestPendingMove", a: pendingAttackAction, want: commonstate.Pending},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			if got, err := c.a.State(); err != nil || got != c.want {
+				t.Errorf("State() = %v, %v, want = %v, nil", got, err, c.want)
+			}
+		})
+	}
+}
+
+func TestCancel(t *testing.T) {
+	status := status.New(0)
+	source := newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}, nil)
+	target := newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}, nil)
+
+	a := newAction(status, source, target)
+	m := move.New(
+		source,
+		status,
+		target.Position(status.Tick()),
+		move.Direct)
+	pm := projectileaction.New(source, target, m)
+	a.SetProjectileMove(pm)
+
+	if err := a.Cancel(); err != nil {
+		t.Fatalf("Cancel() = %v, want = nil", err)
+	}
+
+	testConfigs := []struct {
+		name string
+		a    action.Action
+		want fsm.State
+	}{
+		{name: "TestAttackCancel", a: a, want: commonstate.Canceled},
+		{name: "TestChaseCancel", a: a.chase, want: commonstate.Canceled},
+		{name: "TestProjectileMoveNoCancel", a: pm, want: commonstate.Pending},
+		{name: "TestMoveNoCancel", a: m, want: commonstate.Executing},
 	}
 
 	for _, c := range testConfigs {

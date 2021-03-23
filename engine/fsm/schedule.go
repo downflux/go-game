@@ -70,6 +70,7 @@ func (s *Schedule) Extend(actions []action.Action) error {
 	return nil
 }
 
+// Merge replaces the internal FSMs with FSMs of higher priority.
 func (s *Schedule) Merge(t *Schedule) error {
 	s.mux.Lock()
 	defer s.mux.Unlock()

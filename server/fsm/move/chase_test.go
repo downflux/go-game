@@ -26,12 +26,75 @@ func newTank(t *testing.T, eid id.EntityID, tick id.Tick, p *gdpb.Position) *tan
 	return tankEntity
 }
 
-func newAction(source *tank.Entity, dest *tank.Entity) *Action {
-	return New(status.New(0), source, dest)
+func newAction(status *status.Status, source *tank.Entity, dest *tank.Entity) *Action {
+	return New(status, source, dest)
+}
+
+func TestPrecedence(t *testing.T) {
+	s := status.New(0)
+	nilMoveLow := newAction(
+		s,
+		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
+		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}),
+	)
+	nilMoveLowDiffTarget := newAction(
+		s,
+		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
+		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}),
+	)
+	s.IncrementTick()
+	nilMoveHigh := newAction(
+		s,
+		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
+		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}),
+	)
+
+	testConfigs := []struct {
+		name string
+		a1   *Action
+		a2   *Action
+		want bool
+	}{
+		{name: "TestSameTickPrecedence", a1: nilMoveLow, a2: nilMoveLow, want: false},
+		{name: "TestSameTickPrecedenceDiffTarget", a1: nilMoveLow, a2: nilMoveLowDiffTarget, want: true},
+		{name: "TestTickPrecedence", a1: nilMoveLow, a2: nilMoveHigh, want: false},
+		{name: "TestTickPrecedenceReverse", a1: nilMoveHigh, a2: nilMoveLow, want: true},
+	}
+
+	for _, c := range testConfigs {
+		t.Run(c.name, func(t *testing.T) {
+			if got := c.a1.Precedence(c.a2); got != c.want {
+				t.Errorf("Precedence() = %v, want = %v", got, c.want)
+			}
+		})
+	}
+}
+
+func TestCancel(t *testing.T) {
+	a := newAction(
+		status.New(0),
+		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
+		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: chaseRadius}),
+	)
+	if err := a.SetMove(GenerateMove(a)); err != nil {
+		t.Fatalf("SetMove() = %v, want = nil", err)
+	}
+
+	if err := a.Cancel(); err != nil {
+		t.Fatalf("Cancel() = %v, want = nil", err)
+	}
+
+	for _, a := range []action.Action{a, a.move} {
+		want := commonstate.Canceled
+		if got, err := a.State(); err != nil || got != want {
+			t.Fatalf("State() = %v, %v, want = %v, nil", got, err, want)
+		}
+	}
 }
 
 func TestState(t *testing.T) {
 	actionWithMoveInRange := newAction(
+		status.New(0),
 		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
 		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: chaseRadius}),
 	)
@@ -40,6 +103,7 @@ func TestState(t *testing.T) {
 	}
 
 	actionWithMoveOutOfRange := newAction(
+		status.New(0),
 		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
 		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: chaseRadius + 1}),
 	)
@@ -51,6 +115,7 @@ func TestState(t *testing.T) {
 	d0 := &gdpb.Position{X: 0, Y: chaseRadius + 1}
 	d1 := &gdpb.Position{X: 0, Y: (chaseRadius + 1) + (chaseRadius + 1)}
 	actionWithFinishedOutOfRange := newAction(
+		status.New(0),
 		newTank(t, "source", 0, s0),
 		newTank(t, "target", 0, d0),
 	)
@@ -63,7 +128,10 @@ func TestState(t *testing.T) {
 		t.Fatalf("State() = %v, %v, want = %v, nil", err, got, commonstate.Finished)
 	}
 
-	actionWithPropagatedCancel := newAction(newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}), newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}))
+	actionWithPropagatedCancel := newAction(
+		status.New(0),
+		newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
+		newTank(t, "target", 0, &gdpb.Position{X: 0, Y: 1}))
 	if err := actionWithPropagatedCancel.SetMove(GenerateMove(actionWithPropagatedCancel)); err != nil {
 		t.Fatalf("SetMove() = %v, want = nil", err)
 	}
@@ -79,6 +147,7 @@ func TestState(t *testing.T) {
 		{
 			name: "NewWithinRange",
 			a: newAction(
+				status.New(0),
 				newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
 				newTank(t, "target", 0, &gdpb.Position{X: 0, Y: chaseRadius})),
 			want: commonstate.Pending,
@@ -86,6 +155,7 @@ func TestState(t *testing.T) {
 		{
 			name: "NewOutOfRange",
 			a: newAction(
+				status.New(0),
 				newTank(t, "source", 0, &gdpb.Position{X: 0, Y: 0}),
 				newTank(t, "target", 0, &gdpb.Position{X: 0, Y: chaseRadius + 1})),
 			want: OutOfRange,

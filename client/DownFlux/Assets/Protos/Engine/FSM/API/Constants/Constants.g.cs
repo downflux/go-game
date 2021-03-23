@@ -25,19 +25,19 @@ namespace DF.Game.Engine.FSM.API.Constants {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch5lbmdpbmUvZnNtL2FwaS9jb25zdGFudHMucHJvdG8SHWdhbWUuZW5naW5l",
-            "LmZzbS5hcGkuY29uc3RhbnRzKocBCgdGU01UeXBlEhQKEEZTTV9UWVBFX1VO",
+            "LmZzbS5hcGkuY29uc3RhbnRzKqYBCgdGU01UeXBlEhQKEEZTTV9UWVBFX1VO",
             "S05PV04QABIRCg1GU01fVFlQRV9NT1ZFEAESFAoQRlNNX1RZUEVfUFJPRFVD",
             "RRACEhIKDkZTTV9UWVBFX0NIQVNFEAMSEwoPRlNNX1RZUEVfQVRUQUNLEAQS",
-            "FAoPRlNNX1RZUEVfQ0xJRU5UEOgHKl0KCkNoYXNlU3RhdGUSFwoTQ0hBU0Vf",
-            "U1RBVEVfVU5LTk9XThAAEhgKFENIQVNFX1NUQVRFX0lOX1JBTkdFEAESHAoY",
-            "Q0hBU0VfU1RBVEVfT1VUX09GX1JBTkdFEAIqQAoLQXR0YWNrU3RhdGUSGAoU",
-            "QVRUQUNLX1NUQVRFX1VOS05PV04QABIXChNBVFRBQ0tfU1RBVEVfRklSSU5H",
-            "EAEqkwEKC0NvbW1vblN0YXRlEhgKFENPTU1PTl9TVEFURV9VTktOT1dOEAAS",
-            "GAoUQ09NTU9OX1NUQVRFX1BFTkRJTkcQARIaChZDT01NT05fU1RBVEVfRVhF",
-            "Q1VUSU5HEAISGQoVQ09NTU9OX1NUQVRFX0NBTkNFTEVEEAMSGQoVQ09NTU9O",
-            "X1NUQVRFX0ZJTklTSEVEEARCQlodZ2FtZS5lbmdpbmUuZnNtLmFwaS5jb25z",
-            "dGFudHOqAiBERi5HYW1lLkVuZ2luZS5GU00uQVBJLkNvbnN0YW50c2IGcHJv",
-            "dG8z"));
+            "HQoZRlNNX1RZUEVfUFJPSkVDVElMRV9TSE9PVBAFEhQKD0ZTTV9UWVBFX0NM",
+            "SUVOVBDoBypdCgpDaGFzZVN0YXRlEhcKE0NIQVNFX1NUQVRFX1VOS05PV04Q",
+            "ABIYChRDSEFTRV9TVEFURV9JTl9SQU5HRRABEhwKGENIQVNFX1NUQVRFX09V",
+            "VF9PRl9SQU5HRRACKkAKC0F0dGFja1N0YXRlEhgKFEFUVEFDS19TVEFURV9V",
+            "TktOT1dOEAASFwoTQVRUQUNLX1NUQVRFX0ZJUklORxABKpMBCgtDb21tb25T",
+            "dGF0ZRIYChRDT01NT05fU1RBVEVfVU5LTk9XThAAEhgKFENPTU1PTl9TVEFU",
+            "RV9QRU5ESU5HEAESGgoWQ09NTU9OX1NUQVRFX0VYRUNVVElORxACEhkKFUNP",
+            "TU1PTl9TVEFURV9DQU5DRUxFRBADEhkKFUNPTU1PTl9TVEFURV9GSU5JU0hF",
+            "RBAEQkJaHWdhbWUuZW5naW5lLmZzbS5hcGkuY29uc3RhbnRzqgIgREYuR2Ft",
+            "ZS5FbmdpbmUuRlNNLkFQSS5Db25zdGFudHNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::DF.Game.Engine.FSM.API.Constants.FSMType), typeof(global::DF.Game.Engine.FSM.API.Constants.ChaseState), typeof(global::DF.Game.Engine.FSM.API.Constants.AttackState), typeof(global::DF.Game.Engine.FSM.API.Constants.CommonState), }, null, null));
@@ -52,6 +52,7 @@ namespace DF.Game.Engine.FSM.API.Constants {
     [pbr::OriginalName("FSM_TYPE_PRODUCE")] Produce = 2,
     [pbr::OriginalName("FSM_TYPE_CHASE")] Chase = 3,
     [pbr::OriginalName("FSM_TYPE_ATTACK")] Attack = 4,
+    [pbr::OriginalName("FSM_TYPE_PROJECTILE_SHOOT")] ProjectileShoot = 5,
     [pbr::OriginalName("FSM_TYPE_CLIENT")] Client = 1000,
   }
 
