@@ -33,6 +33,10 @@ type ClientID ID
 
 func (id ClientID) Value() string { return string(id) }
 
+type GroupID ID
+
+func (id GroupID) Value() string { return string(id) }
+
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 // RandomString returns a random string of the specified length.

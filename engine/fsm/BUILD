@@ -2,6 +2,32 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 package(default_visibility=["//visibility:public"])
 
+go_library(
+    name = "flow",
+    srcs = ["flow.go"],
+    importpath = "github.com/downflux/game/engine/fsm/flow",
+    deps = [
+        ":action",
+        ":fsm",
+        "//engine/fsm/api:constants_go_proto",
+        "//engine/fsm/group:group",
+        "//engine/id:id",
+        "//engine/visitor:visitor",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+    ],
+)
+
+go_test(
+    name = "flow_test",
+    srcs = ["flow_test.go"],
+    importpath = "github.com/downflux/game/engine/fsm/flow_test",
+    embed = [":flow"],
+    deps = [
+        ":action",
+    ],
+)
+
 go_test(
     name = "schedule_test",
     srcs = ["schedule_test.go"],
